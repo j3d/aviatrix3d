@@ -24,7 +24,7 @@ import javax.vecmath.Matrix4d;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class BoundingBox extends BoundingVolume
 {
@@ -66,6 +66,45 @@ public class BoundingBox extends BoundingVolume
     //---------------------------------------------------------------
     // Methods defined by BoundingVolume
     //---------------------------------------------------------------
+
+    /**
+     * The type of bounds this object represents.
+     *
+     * @return One of the constant types defined
+     */
+    public int getType()
+    {
+        return BOX_BOUNDS;
+    }
+
+    /**
+     * Get the maximum extents of the bounding volume.
+     *
+     * @param min The minimum position of the bounds
+     * @param max The maximum position of the bounds
+     */
+    public void getExtents(float[] min, float[] max)
+    {
+        min[0] = this.min[0];
+        min[1] = this.min[1];
+        min[2] = this.min[2];
+
+        max[0] = this.max[0];
+        max[1] = this.max[1];
+        max[2] = this.max[2];
+    }
+
+    /**
+     * Get the center of the bounding volume.
+     *
+     * @param center The center of the bounds will be copied here
+     */
+    public void getCenter(float[] center)
+    {
+       center[0] = (min[0] + max[0]) * 0.5f;
+       center[1] = (min[1] + max[1]) * 0.5f;
+       center[2] = (min[2] + max[2]) * 0.5f;
+    }
 
     /**
      * Check for the given point lieing inside this bounds.
@@ -178,6 +217,20 @@ public class BoundingBox extends BoundingVolume
     }
 
     /**
+     * Set the minimum bounds for the box.
+     *
+     * @param x The x component of the minimum position
+     * @param y The y component of the minimum position
+     * @param z The z component of the minimum position
+     */
+    public void setMinimum(float x, float y, float z)
+    {
+        min[0] = x;
+        min[1] = y;
+        min[2] = z;
+    }
+
+    /**
      * Get the minimum bounds position of the box.
      *
      * @param pos The position to copy the values into
@@ -199,6 +252,20 @@ public class BoundingBox extends BoundingVolume
         max[0] = pos[0];
         max[1] = pos[1];
         max[2] = pos[2];
+    }
+
+    /**
+     * Set the maximum bounds for the box.
+     *
+     * @param x The x component of the minimum position
+     * @param y The y component of the minimum position
+     * @param z The z component of the minimum position
+     */
+    public void setMaximum(float x, float y, float z)
+    {
+        max[0] = x;
+        max[1] = y;
+        max[2] = z;
     }
 
     /**

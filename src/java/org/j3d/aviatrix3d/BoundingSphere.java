@@ -24,7 +24,7 @@ import javax.vecmath.Matrix4d;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class BoundingSphere extends BoundingVolume
 {
@@ -34,6 +34,9 @@ public class BoundingSphere extends BoundingVolume
     /** The radius expressed as a squared value for faster calcs */
     private float radiusSquared;
 
+    /** Standard radius value */
+    private float radius;
+
     /**
      * The default constructor with the sphere radius as one and
      * center at the origin.
@@ -42,10 +45,28 @@ public class BoundingSphere extends BoundingVolume
     {
         center = new float[3];
         radiusSquared = 1;
+        radius = 1;
     }
 
     /**
-     * Constructor a bounding sphere with a set radius and position.
+     * Construct a bounding sphere at the origin with a set radius.
+     *
+     * @param radius The new radius value to use
+     * @throws IllegalArgumentException Radius was negative
+     */
+    public BoundingSphere(float radius)
+    {
+        if(radius < 0)
+            throw new IllegalArgumentException("Negative radius value");
+
+        center = new float[3];
+
+        radiusSquared = radius * radius;
+        this.radius = radius;
+    }
+
+    /**
+     * Construct a bounding sphere with a set radius and position.
      *
      * @param pos The new position of the center of the sphere to be used
      * @param radius The new radius value to use
@@ -56,17 +77,54 @@ public class BoundingSphere extends BoundingVolume
         if(radius < 0)
             throw new IllegalArgumentException("Negative radius value");
 
-        center = new float[3];
-        center[0] = pos[0];
-        center[1] = pos[1];
-        center[2] = pos[2];
+        center = new float[] { pos[0], pos[1], pos[2] };
 
         radiusSquared = radius * radius;
+        this.radius = radius;
     }
 
     //---------------------------------------------------------------
     // Methods defined by BoundingVolume
     //---------------------------------------------------------------
+
+    /**
+     * The type of bounds this object represents.
+     *
+     * @return One of the constant types defined
+     */
+    public int getType()
+    {
+        return SPHERE_BOUNDS;
+    }
+
+    /**
+     * Get the maximum extents of the bounding volume.
+     *
+     * @param min The minimum position of the bounds
+     * @param max The maximum position of the bounds
+     */
+    public void getExtents(float[] min, float[] max)
+    {
+        min[0] = center[0] - radius;
+        min[1] = center[1] - radius;
+        min[2] = center[2] - radius;
+
+        max[0] = center[0] + radius;
+        max[1] = center[1] + radius;
+        max[2] = center[2] + radius;
+    }
+
+    /**
+     * Get the center of the bounding volume.
+     *
+     * @param center The center of the bounds will be copied here
+     */
+    public void getCenter(float[] center)
+    {
+        center[0] = this.center[0];
+        center[1] = this.center[1];
+        center[2] = this.center[2];
+    }
 
     /**
      * Check for the given point lieing inside this bounds.
@@ -162,18 +220,6 @@ public class BoundingSphere extends BoundingVolume
     }
 
     /**
-     * Get the current center the of the sphere.
-     *
-     * @param pos The position to copy the values into
-     */
-    public void getCenter(float[] pos)
-    {
-        pos[0] = center[0];
-        pos[1] = center[1];
-        pos[2] = center[2];
-    }
-
-    /**
      * Set the radius of the sphere to the new value. When the
      * radius is zero, it is considered to be a point space.
      *
@@ -186,6 +232,7 @@ public class BoundingSphere extends BoundingVolume
             throw new IllegalArgumentException("Negative radius value");
 
         radiusSquared = radius * radius;
+        this.radius = radius;
     }
 
     /**
@@ -195,7 +242,30 @@ public class BoundingSphere extends BoundingVolume
      */
     public float getRadius()
     {
-        return (float)Math.sqrt(radiusSquared);
+        return radius;
     }
 
+    /**
+     * Internal method to set the square of the radius and normal radius
+     * in a single call. Used by the boundsUtils which already have these
+     * numbers precalculated.
+     *
+     * @param radius The normal radius value
+     * @param r2 The radius squared value
+     */
+    void setRadius(float radius, float r2)
+    {
+        radiusSquared = r2;
+        this.radius = radius;
+    }
+
+    /**
+     * Get the current radius of the sphere
+     *
+     * @return A non-negative value
+     */
+    float getRadiusSquared()
+    {
+        return radiusSquared;
+    }
 }

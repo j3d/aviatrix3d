@@ -28,16 +28,44 @@ import javax.vecmath.Matrix4d;
  * assumed to be represented in the same local coordinate space.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class BoundingVolume
 {
+    /** The bounding volume type is sphere */
+    public static final int SPHERE_BOUNDS = 1;
+
+    /** The bounding volume type is sphere */
+    public static final int BOX_BOUNDS = 2;
+
     /**
      * The default constructor.
      */
     protected BoundingVolume()
     {
     }
+
+    /**
+     * The type of bounds this object represents.
+     *
+     * @return One of the constant types defined
+     */
+    public abstract int getType();
+
+    /**
+     * Get the maximum extents of the bounding volume.
+     *
+     * @param min The minimum position of the bounds
+     * @param max The maximum position of the bounds
+     */
+    public abstract void getExtents(float[] min, float[] max);
+
+    /**
+     * Get the center of the bounding volume.
+     *
+     * @param center The center of the bounds will be copied here
+     */
+    public abstract void getCenter(float[] center);
 
     /**
      * Check for the given point lieing inside this bounds.
@@ -97,4 +125,5 @@ public abstract class BoundingVolume
      * @param mat The matrix to transform this bounds by
      */
     public abstract void transform(Matrix4d mat);
+
 }
