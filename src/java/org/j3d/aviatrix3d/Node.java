@@ -23,7 +23,7 @@ import gl4java.drawable.GLDrawable;
  * A Node class is the base class for all renderable nodes in the SceneGraph.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class Node extends SceneGraphObject
 {
@@ -32,6 +32,20 @@ public abstract class Node extends SceneGraphObject
 
     /** The premultiplied transformation applied to this node */
     protected Matrix4f transform;
+
+    /** Bounding volume set by the user */
+    protected BoundingVolume bounds;
+
+    /** Was the bounds automatically calculated? */
+    protected boolean implicitBounds;
+
+    /**
+     * Construct a new instance of this node, with implicit bounds calculation.
+     */
+    protected Node()
+    {
+        implicitBounds = true;
+    }
 
     /**
      * This method is called to render this node.  All openGL commands needed
@@ -98,5 +112,44 @@ public abstract class Node extends SceneGraphObject
     public Matrix4f getTransform()
     {
         return transform;
+    }
+
+    /**
+     * Set the bounds to the given explicit value. When set, auto computation
+     * of the bounds of this node is turned off. A value of null can be used
+     * to clear the current explicit bounds and return to auto computation.
+     *
+     * @param b The new bounds to use or null to clear
+     */
+    public void setBounds(BoundingVolume b)
+    {
+        bounds = b;
+        implicitBounds = (bounds == null);
+    }
+
+    /**
+     * Get the currently set bounds for this object. If no explicit bounds have
+     * been set, then an implicit set of bounds is returned based on the
+     * current scene graph state.
+     *
+     * @return The current bounds of this object
+     */
+    public BoundingVolume getBounds()
+    {
+        // need to check and set a new instance here if needed.
+        if(implicitBounds && bounds == null)
+            recomputeBounds();
+
+        return bounds;
+    }
+
+    /**
+     * Internal method to recalculate the implicit bounds of this Node. By
+     * default the bounds are a point sphere, so derived classes should
+     * override this method with something better.
+     */
+    protected void recomputeBounds()
+    {
+        bounds = new BoundingSphere(0);
     }
 }
