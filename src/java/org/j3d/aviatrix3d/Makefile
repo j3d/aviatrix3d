@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.aviatrix3d directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.3 $
+# Version: $Revision: 1.4 $
 #
 #*********************************************************************
 
@@ -20,6 +20,7 @@ SOURCE = NodeUpdateListener.java \
 	BoundingVolume.java \
 	BoundingSphere.java \
 	BoundingBox.java \
+	BoundsUtils.java \
     Node.java \
     NodeComponent.java \
     Leaf.java \
