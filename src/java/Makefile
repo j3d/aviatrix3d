@@ -1,20 +1,20 @@
 #*********************************************************************
 #
 #                      (C) 2003 Yumetech, Inc
-#  		       http://javr.j3d.org
+#  		       http://aviatrix3d.j3d.org
 # 
 #*********************************************************************
 
 # Names of packages to be compiled. These are declared in the order that
 # they are to be compiled in. We create one at a time
-BUILD_ORDER = org.j3d.javr \
+BUILD_ORDER = org.j3d.aviatrix3d \
 
 
 # Names of packages that we want included in the javadoc
-JAVADOC_PACKAGES = org.j3d.javr \
+JAVADOC_PACKAGES = org.j3d.aviatrix3d \
 
 # Names of JAR files we want to create
-JARS = javr-all.jar
+JARS = aviatrix3d-all.jar
 
 # List of packages that have native code libraries in use and require
 # JNI header generation
@@ -27,7 +27,7 @@ JARS_3RDPARTY=
 # Definitions of setup information if we are making a self-executable JAR
 MAIN_CLASS     = 
 MAIN_PACKAGE   = 
-MAIN_JAR       = javr-all.jar
+MAIN_JAR       = aviatrix3d-all.jar
 
 #*********************************************************************
 #
@@ -36,12 +36,12 @@ MAIN_JAR       = javr-all.jar
 #*********************************************************************
 
 OVERVIEW    = overview.html
-WINDOWTITLE = 'j3d.org jAVR Code Library'
-DOCTITLE    = 'j3d.org jAVR Code Repository API'
-HEADER      = 'j3d.org Code'
+WINDOWTITLE = 'j3d.org Aviatrix3D Code Library'
+DOCTITLE    = 'j3d.org Aviatrix3D Project API'
+HEADER      = 'j3d.org Aviatrix3D'
 BOTTOM      = '<center> \
-               Latest Info from <a href="http://javr.j3d.org"> \
-               http://javr.j3d.org/</a><br> \
+               Latest Info from <a href="http://aviatrix3d.j3d.org"> \
+               http://aviatrix3d.j3d.org/</a><br> \
                <font size=2>Copyright &copy; 2003 - \
                <a href="http://www.j3d.org">j3d.org</a></font> \
                </center>'
