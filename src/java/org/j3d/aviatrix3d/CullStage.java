@@ -31,7 +31,7 @@ import gl4java.drawable.GLDrawable;
  * A future optimization will sort the render list by OGL state.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 
 public class CullStage
@@ -44,7 +44,7 @@ public class CullStage
 
     /** The list of nodes to render */
     private Node[] renderList;
-    private int renderOp[];
+    private int[] renderOp;
     private int lastRender;
 
     public CullStage()
@@ -107,7 +107,7 @@ public class CullStage
 
         resizeList();
         renderList[lastRender] = node;
-        renderOp[lastRender++] = Draw.RENDER;
+        renderOp[lastRender++] = DrawStage.RENDER;
 
         // Convert to getPrimaryType()
         if(node instanceof Group)
@@ -122,7 +122,7 @@ public class CullStage
         }
 
         renderList[lastRender] = node;
-        renderOp[lastRender++] = Draw.POSTRENDER;
+        renderOp[lastRender++] = DrawStage.POSTRENDER;
     }
 
     /**
