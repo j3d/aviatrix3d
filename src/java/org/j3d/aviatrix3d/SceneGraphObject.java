@@ -22,12 +22,15 @@ package org.j3d.aviatrix3d;
  * The SceneGraphObject is a common superclass for all scene graph objects.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SceneGraphObject
 {
     /** The scene this node belongs to */
     protected NodeUpdateHandler updateHandler;
+
+    /** User-provided data */
+    private Object userData;
 
     /**
      * Set the scenegraph update handler for this node.  It will notify
@@ -69,5 +72,26 @@ public class SceneGraphObject
             return;
 
         updateHandler.dataChanged(l);
+    }
+
+    /**
+     * Set the user data to the new object. Null will clear the existing
+     * object.
+     *
+     * @param data The new piece of data to set
+     */
+    public void setUserData(Object data)
+    {
+        userData = data;
+    }
+
+    /**
+     * Get the currently set user data object. If none set, null is returned.
+     *
+     * @return The current user data or null
+     */
+    public Object getUserData()
+    {
+        return userData;
     }
 }
