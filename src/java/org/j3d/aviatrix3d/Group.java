@@ -12,11 +12,12 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
+// External imports
 //import org.web3d.vecmath.Matrix4f;
 import javax.vecmath.Matrix4f;
 
-// Application specific imports
+// Local imports
+// None
 
 /**
  * The Group node object is a generic container object.
@@ -25,7 +26,7 @@ import javax.vecmath.Matrix4f;
  * are allowed but no operation is performed on a null child.
  *
  * @author Alan Hudson
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Group extends Node
 {
@@ -230,6 +231,51 @@ public class Group extends Node
         {
             childList[i].setUpdateHandler(handler);
         }
+    }
+
+    /**
+     * Check for all intersections against this geometry and it's children to
+     * see if there is an intersection with the given ray. Return the first
+     * found.
+     *
+     * @param start The start point of the ray
+     * @param direction The direction vector of the ray
+     * @param useGeom True if this should check against the geometry, false for
+     *    bounds-only test.
+     * @param path Copy the path from this object to the first found item in here
+     * @return true if an intersection was found
+     */
+    public boolean pickClosestRay(float[] start,
+                                  float[] direction,
+                                  boolean useGeom,
+                                  SceneGraphPath path)
+    {
+        // Not implemented yet
+        return false;
+    }
+
+    /**
+     * Check for all intersections against this geometry and it's children to
+     * see if there is an intersection with the given ray. Return all found in
+     * the paths parameter. If the paths parameter contains some path instances
+     * already, they are used first and updated with the new path information.
+     * If there are not enough instances, new instances will be created and
+     * placed into the paths list as well.
+     *
+     * @param start The start point of the ray
+     * @param direction The direction vector of the ray
+     * @param useGeom True if this should check against the geometry, false for
+     *    bounds-only test.
+     * @param paths Copy the path from this object to the first found item in here
+     * @return The number of intersections found
+     */
+    public int pickAllRay(float[] start,
+                          float[] direction,
+                          boolean useGeom,
+                          ArrayList paths)
+    {
+        // Not implemented yet
+        return 0;
     }
 
     //---------------------------------------------------------------
