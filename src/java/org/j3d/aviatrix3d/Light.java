@@ -15,10 +15,11 @@ package org.j3d.aviatrix3d;
 // Standard imports
 import javax.vecmath.Matrix4f;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
+
+// Local imports
+// None
 
 /**
  * Base representation of a light source.
@@ -27,7 +28,7 @@ import gl4java.drawable.GLDrawable;
  * By default a light is not enabled and the colour is set to black.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class Light extends Leaf
 {

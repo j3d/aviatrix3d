@@ -13,19 +13,10 @@
 package org.j3d.aviatrix3d.surface;
 
 // External imports
-import gl4java.GLCapabilities
-import gl4java.awt.GLCanvas;
-import gl4java.drawable.GLDrawable;
-import gl4java.drawable.GLEventListener;
+import net.java.games.jogl.*;
 
 // Local imports
-import org.j3d.aviatrix3d.DrawableSurface;
-import org.j3d.aviatrix3d.SceneGraphPath;
-import org.j3d.aviatrix3d.Fog;
-import org.j3d.aviatrix3d.Background;
-import org.j3d.aviatrix3d.Viewpoint;
-import org.j3d.aviatrix3d.Leaf;
-import org.j3d.aviatrix3d.ViewEnvironment;
+import org.j3d.aviatrix3d.*;
 
 /**
  * Interface representing the output of a render pipeline.
@@ -36,21 +27,21 @@ import org.j3d.aviatrix3d.ViewEnvironment;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class SimpleAWTSurface extends GLCanvas
+public class SimpleAWTSurface
     implements DrawableSurface, GLEventListener
 {
     /** Error message when the scene does not have a valid viewpoint */
-    private static final int INVALID_VIEW_MSG =
+    private static final String INVALID_VIEW_MSG =
         "The path does not terminate in a Viewpoint node.";
 
     /** Error message when the scene does not have a valid background */
-    private static final int INVALID_BACKGROUND_MSG =
+    private static final String INVALID_BACKGROUND_MSG =
         "The path does not terminate in a Background node.";
 
     /** Error message when the scene does not have a valid fog */
-    private static final int INVALID_FOG_MSG =
+    private static final String INVALID_FOG_MSG =
         "The path does not terminate in a Fog node.";
 
     /** The current viewpoint instance */
@@ -80,15 +71,26 @@ public class SimpleAWTSurface extends GLCanvas
     /** Time of the last call. Used to implement frame cycle timing */
     private long lastRenderTime;
 
-    /**
-     * Construct a surface that requires the given set of capabilities
-     * width and height for initial values.
-     */
-    public SimpleAWTSurface(GLCapabilities caps, int width, int height)
-    {
-        super(caps, width, height);
+    /** The real canvas that we draw to */
+    private GLCanvas canvas;
 
+    /** Flag to say that colour needs to be reset this frame */
+    private boolean resetColor;
+
+    /**
+     * Construct a surface that requires the given set of capabilities.
+     *
+     * @param caps A set of required capabilities for this canvas.
+     */
+    public SimpleAWTSurface(GLCapabilities caps)
+    {
         clearColor = new float[4];
+
+        GLDrawableFactory fac = GLDrawableFactory.getFactory();
+        canvas = fac.createGLCanvas(caps);
+        canvas.addGLEventListener(this);
+
+        resetColor = false;
     }
 
     //---------------------------------------------------------------
@@ -150,6 +152,7 @@ public class SimpleAWTSurface extends GLCanvas
 
         currentBackground = (Background)l;
         currentBackgroundPath = bgPath;
+        resetColor = true;
     }
 
     /**
@@ -176,6 +179,8 @@ public class SimpleAWTSurface extends GLCanvas
         clearColor[1] = g;
         clearColor[2] = b;
         clearColor[3] = a;
+
+        resetColor = true;
     }
 
     /**
@@ -214,7 +219,8 @@ public class SimpleAWTSurface extends GLCanvas
      */
     public void dispose()
     {
-        cvsDispose();
+        canvas.removeGLEventListener(this);
+
     }
 
     //---------------------------------------------------------------
@@ -230,23 +236,17 @@ public class SimpleAWTSurface extends GLCanvas
      */
     public void init(GLDrawable drawable)
     {
-        GLFunc gl = drawable.getGL();
-        GLUFunc glu = drawable.getGLU();
-        GLContext glc = drawable.getGLContext();
+        GL gl = drawable.getGL();
+        GLU glu = drawable.getGLU();
 
         gl.glClearColor(clearColor[0],
                         clearColor[1],
                         clearColor[2],
                         clearColor[3]);
-        gl.glEnable(GL_CULL_FACE);
-        gl.glEnable(GL_DEPTH_TEST);
-        gl.glEnable(gl.GL_LIGHTING);
-        gl.glHint(gl.GL_PERSPECTIVE_CORRECTION_HINT, gl.GL_NICEST);
-
-        // TODO:  Do we need this?
-        gl.glEnable(GL_NORMALIZE);
-
-        glc.gljCheckGL();
+        gl.glEnable(GL.GL_CULL_FACE);
+        gl.glEnable(GL.GL_DEPTH_TEST);
+        gl.glEnable(GL.GL_LIGHTING);
+        gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
     }
 
     /**
@@ -255,27 +255,34 @@ public class SimpleAWTSurface extends GLCanvas
      *
      * @param drawable The display context to render to
      */
-    public void reshape(GLDrawable drawable, int width, int height)
+    public void reshape(GLDrawable drawable,
+                        int x,
+                        int y,
+                        int width,
+                        int height)
     {
         float aspect_ratio = (float)width / (float)height;
-        GLFunc gl = drawable.getGL();
-        GLUFunc glu = drawable.getGLU();
+        GL gl = drawable.getGL();
+        GLU glu = drawable.getGLU();
 
         gl.glViewport(0, 0, width, height);
-        gl.glMatrixMode(GL_PROJECTION);
+        gl.glMatrixMode(GL.GL_PROJECTION);
         gl.glLoadIdentity();
 
         // TODO: hardcoded back clip, need to get value from ViewEnvironment
         glu.gluPerspective(45, aspect_ratio, 1, 1000);
-        gl.glMatrixMode(GL_MODELVIEW);
+        gl.glMatrixMode(GL.GL_MODELVIEW);
     }
 
     /**
-     * Called by the drawable before initiate rendering by the client.
+     * Called by the drawable when the display mode or the display device
+     * associated with the GLDrawable has changed.
      *
      * @param drawable The display context to render to
      */
-    public void preDisplay(GLDrawable drawable)
+    public void displayChanged(GLDrawable drawable,
+                               boolean modeChanged,
+                               boolean deviceChanged)
     {
     }
 
@@ -286,34 +293,35 @@ public class SimpleAWTSurface extends GLCanvas
      */
     public void display(GLDrawable gld)
     {
-        if(root == null || !initialized)
-            return;
+        GL gl = gld.getGL();
+        GLU glu = gld.getGLU();
 
-        GLFunc gl = gld.getGL();
 
-        gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if(currentBackground != null)
+        {
+            if(!(currentBackground instanceof ColorBackground))
+                gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
-        if(viewpoint != null)
-            viewpoint.setupView(gld);
+            currentBackground.render(gl, glu);
 
-        d.draw(c.getRenderList(), c.getRenderOp(), c.getRenderListSize());
-    }
+            // currentBackground.postRender(gl, glu);
+        }
+        else
+        {
+            if(resetColor)
+            {
+                gl.glClearColor(clearColor[0],
+                                clearColor[1],
+                                clearColor[2],
+                                clearColor[3]);
+            }
 
-    /**
-     * Called by the drawable after initiating rendering by the client.
-     *
-     * @param drawable The display context to render to
-     */
-    public void postDisplay(GLDrawable drawable)
-    {
-    }
+            gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        }
 
-    /**
-     * Called by the drawable if it wants to destroy itself.
-     *
-     * @param drawable The display context to render to
-     */
-    public void cleanup(GLDrawable drawable)
-    {
+        if(currentViewpoint != null)
+            currentViewpoint.setupView(gl, glu);
+
+//        d.draw(c.getRenderList(), c.getRenderOp(), c.getRenderListSize());
     }
 }

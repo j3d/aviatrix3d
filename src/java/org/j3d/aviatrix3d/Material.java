@@ -15,17 +15,17 @@ package org.j3d.aviatrix3d;
 // Standard imports
 import java.util.HashMap;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLContext;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
+
+// Local imports
+// None
 
 /**
  * Describes the material properties of an object.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Material extends NodeComponent
 {
@@ -186,31 +186,28 @@ public class Material extends NodeComponent
      *
      * @param gld The drawable for reseting the state
      */
-    public void renderState(GLDrawable gld)
+    public void renderState(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-        GLContext glj = gld.getGLContext();
+        Integer listName = (Integer)dispListMap.get(gl);
 
-        Integer listName = (Integer)dispListMap.get(glj);
+        gl.glPushAttrib(GL.GL_LIGHTING_BIT);
 
-        gl.glPushAttrib(GLEnum.GL_LIGHTING_BIT);
-
-        if (listName == null) {
+        if(listName == null)
+        {
             listName = new Integer(gl.glGenLists(1));
 
-            gl.glNewList(listName.intValue(), GLEnum.GL_COMPILE_AND_EXECUTE);
+            gl.glNewList(listName.intValue(), GL.GL_COMPILE_AND_EXECUTE);
 
             // TODO: Do we need to set BACK props for two sided lighting?
 
-            gl.glMaterialfv(GLEnum.GL_FRONT_AND_BACK, GLEnum.GL_DIFFUSE, diffuseColor);
-            gl.glMaterialfv(GLEnum.GL_FRONT_AND_BACK, GLEnum.GL_AMBIENT, ambientColor);
-            gl.glMaterialfv(GLEnum.GL_FRONT_AND_BACK, GLEnum.GL_SPECULAR, specularColor);
-            gl.glMaterialfv(GLEnum.GL_FRONT_AND_BACK, GLEnum.GL_EMISSION, emissiveColor);
-            gl.glMaterialf(GLEnum.GL_FRONT_AND_BACK, GLEnum.GL_SHININESS, shininess);
+            gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, diffuseColor);
+            gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, ambientColor);
+            gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, specularColor);
+            gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, emissiveColor);
+            gl.glMaterialf(GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, shininess);
 
             gl.glEndList();
-            dispListMap.put(glj, listName);
-
+            dispListMap.put(gl, listName);
         }
         else
         {
@@ -224,10 +221,8 @@ public class Material extends NodeComponent
      *
      * @param gld The drawable for reseting the state
      */
-    public void restoreState(GLDrawable gld)
+    public void restoreState(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-
         gl.glPopAttrib();
     }
 }

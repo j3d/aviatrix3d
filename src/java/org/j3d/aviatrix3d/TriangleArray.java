@@ -15,18 +15,17 @@ package org.j3d.aviatrix3d;
 // Standard imports
 import java.util.HashMap;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLContext;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
 
+// Local imports
+// None
 
 /**
  * An OpenGL TriangleArray.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TriangleArray extends VertexGeometry
 {
@@ -42,7 +41,7 @@ public class TriangleArray extends VertexGeometry
      *
      * @param gld The drawable for resetting the state
      */
-    public void renderState(GLDrawable gld)
+    public void renderState(GL gl, GLU glu)
     {
         // If we have changed state, then clear the old display lists
         if(stateChanged)
@@ -58,24 +57,21 @@ public class TriangleArray extends VertexGeometry
         if((vertexFormat & COORDINATES) == 0)
             return;
 
-        GLFunc gl = gld.getGL();
-        GLContext glj = gld.getGLContext();
-
-        Integer listName = (Integer)displayListMap.get(glj);
+        Integer listName = (Integer)displayListMap.get(gl);
 
         if(listName == null)
         {
             listName = new Integer(gl.glGenLists(1));
 
-            gl.glNewList(listName.intValue(), GLEnum.GL_COMPILE_AND_EXECUTE);
+            gl.glNewList(listName.intValue(), GL.GL_COMPILE_AND_EXECUTE);
 
-            gl.glEnableClientState(GLEnum.GL_VERTEX_ARRAY);
-            gl.glVertexPointer(3, GLEnum.GL_FLOAT, 0, coordinates);
+            gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+            gl.glVertexPointer(3, GL.GL_FLOAT, 0, vertexBuffer);
 
             if((vertexFormat & NORMALS) != 0)
             {
-                gl.glEnableClientState(GLEnum.GL_NORMAL_ARRAY);
-                gl.glNormalPointer(GLEnum.GL_FLOAT, 0, normals);
+                gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+                gl.glNormalPointer(GL.GL_FLOAT, 0, normalBuffer);
             }
 
             if((vertexFormat & TEXTURE_MASK) != 0)
@@ -83,21 +79,21 @@ public class TriangleArray extends VertexGeometry
                 // single texturing or multi-texturing
                 if(numTextureArrays == 1)
                 {
-                    gl.glEnableClientState(GLEnum.GL_TEXTURE_COORD_ARRAY);
+                    gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
                     gl.glTexCoordPointer(textureTypes[0],
-                                         GLEnum.GL_FLOAT,
+                                         GL.GL_FLOAT,
                                          0,
-                                         textures[0]);
+                                         textureBuffer);
                 }
                 else
                 {
                     // Only sets the first for now. Need to look into how to handle
                     // the multitexture case.
-                    gl.glEnableClientState(GLEnum.GL_TEXTURE_COORD_ARRAY);
+                    gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
                     gl.glTexCoordPointer(textureTypes[0],
-                                         GLEnum.GL_FLOAT,
+                                         GL.GL_FLOAT,
                                          0,
-                                         textures[0]);
+                                         textureBuffer);
                 }
             }
 
@@ -105,17 +101,17 @@ public class TriangleArray extends VertexGeometry
             {
                 int size = ((vertexFormat & COLOR_3) != 0) ? 3 : 4;
 
-                gl.glEnableClientState(GLEnum.GL_COLOR_ARRAY);
+                gl.glEnableClientState(GL.GL_COLOR_ARRAY);
                 gl.glTexCoordPointer(size,
-                                     GLEnum.GL_FLOAT,
+                                     GL.GL_FLOAT,
                                      0,
-                                     colors);
+                                     colorBuffer);
             }
 
             gl.glDrawArrays(gl.GL_TRIANGLES, 0, numCoords);
 
             gl.glEndList();
-            displayListMap.put(glj, listName);
+            displayListMap.put(gl, listName);
         }
         else
         {
@@ -128,10 +124,8 @@ public class TriangleArray extends VertexGeometry
      *
      * @param gld The drawable for resetting the state
      */
-    public void restoreState(GLDrawable gld)
+    public void restoreState(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-
         if((vertexFormat & COORDINATES) != 0)
         {
             gl.glDisableClientState(gl.GL_VERTEX_ARRAY);

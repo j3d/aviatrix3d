@@ -15,16 +15,17 @@ package org.j3d.aviatrix3d;
 // Standard imports
 import javax.vecmath.Matrix4f;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
+
+// Local imports
+// None
 
 /**
  * A Shape3D class wraps all geometry and appearance information.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Shape3D extends Leaf
 {
@@ -96,9 +97,8 @@ public class Shape3D extends Leaf
      *
      * @param gld The drawable for setting the state
      */
-    public void render(GLDrawable gld)
+    public void render(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
 /*
         gl.glPushMatrix();
         //System.out.println("Shape Trans1:");
@@ -110,10 +110,10 @@ public class Shape3D extends Leaf
         //SGUtils.printMatrix(gld, GLEnum.GL_MODELVIEW_MATRIX);
 */
         if(app != null)
-            app.renderState(gld);
+            app.renderState(gl, glu);
 
         if(geom != null)
-            geom.renderState(gld);
+            geom.renderState(gl, glu);
     }
 
     /*
@@ -122,15 +122,13 @@ public class Shape3D extends Leaf
      *
      * @param gld The drawable for resetting the state
      */
-    public void postRender(GLDrawable gld)
+    public void postRender(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-
         if(geom != null)
-            geom.restoreState(gld);
+            geom.restoreState(gl, glu);
 
         if(app != null)
-            app.restoreState(gld);
+            app.restoreState(gl, glu);
 
         //gl.glPopMatrix();
     }

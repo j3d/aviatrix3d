@@ -12,13 +12,11 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
-import gl4java.*;
+// External imports
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
 
-import gl4java.drawable.GLDrawable;
-import gl4java.drawable.GLEventListener;
-
-// Application specific imports
+// Local imports
 import org.j3d.util.HashSet;
 
 
@@ -27,7 +25,7 @@ import org.j3d.util.HashSet;
  * simultaneous rendering threads.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultRenderManager
     implements GLEventListener, NodeUpdateHandler, RenderPipelineManager

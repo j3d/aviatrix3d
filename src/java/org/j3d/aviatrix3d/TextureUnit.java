@@ -15,17 +15,17 @@ package org.j3d.aviatrix3d;
 // Standard imports
 import java.util.HashMap;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLContext;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
+
+// Local imports
+// None
 
 /**
  * Describes a texture stage and its associated texture and attributes.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TextureUnit extends NodeComponent
 {
@@ -125,15 +125,13 @@ public class TextureUnit extends NodeComponent
      *
      * @param gld The drawable for reseting the state
      */
-    public void renderState(GLDrawable gld)
+    public void renderState(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-        GLContext glj = gld.getGLContext();
 
         // TODO: Should we move this to the Appearance node
-        gl.glPushAttrib(GLEnum.GL_TEXTURE_BIT);
+        gl.glPushAttrib(GL.GL_TEXTURE_BIT);
 
-        Integer listName = (Integer)dispListMap.get(glj);
+        Integer listName = (Integer)dispListMap.get(gl);
 
         if(texObject == 0)
         {
@@ -144,22 +142,22 @@ public class TextureUnit extends NodeComponent
 
             // Setup Texture state
             if (texture != null)
-                texture.renderState(gld);
+                texture.renderState(gl, glu);
 
             // Setup TextureAttribute state
             if (tatts != null)
-                tatts.renderState(gld);
+                tatts.renderState(gl, glu);
             else
                 gl.glTexEnvf(gl.GL_TEXTURE_ENV, gl.GL_TEXTURE_ENV_MODE, gl.GL_REPLACE);
 
             // Setup TexCoordGeneration state
             if (tcg != null)
-                tcg.renderState(gld);
+                tcg.renderState(gl, glu);
 
 
 //            listName = new Integer(gl.glGenLists(1));
 
-//            gl.glNewList(listName.intValue(), GLEnum.GL_COMPILE_AND_EXECUTE);
+//            gl.glNewList(listName.intValue(), GL.GL_COMPILE_AND_EXECUTE);
 
             gl.glEnable(gl.GL_TEXTURE_2D);
             // TODO: Is it safe to start with a 2D Texture for everything?
@@ -181,15 +179,15 @@ public class TextureUnit extends NodeComponent
 
             // Setup Texture state
             if (texture != null)
-                texture.renderState(gld);
+                texture.renderState(gl, glu);
 
             // Setup TexttureAttribute state
             if (tatts != null && (tattsChanged || tatts.hasChanged()))
-                tatts.renderState(gld);
+                tatts.renderState(gl, glu);
 
             // Setup TexCoordGeneration state
             if (tcg != null && (tcgChanged || tcg.hasChanged()))
-                tcg.renderState(gld);
+                tcg.renderState(gl, glu);
         }
     }
 
@@ -198,12 +196,10 @@ public class TextureUnit extends NodeComponent
      *
      * @param gld The drawable for reseting the state
      */
-    public void restoreState(GLDrawable gld)
+    public void restoreState(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-
         if (texture != null)
-            texture.restoreState(gld);
+            texture.restoreState(gl, glu);
 
         // TODO: Should we move this the Appearance node
         // All other state restored by attribute pop

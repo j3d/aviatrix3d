@@ -16,14 +16,17 @@ package org.j3d.aviatrix3d;
 //import org.web3d.vecmath.Matrix4f;
 import javax.vecmath.Matrix4f;
 
-// Application specific imports
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
+
+// Local imports
+// None
 
 /**
  * A Node class is the base class for all renderable nodes in the SceneGraph.
  *
  * @author Alan Hudson
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class Node extends SceneGraphObject
 {
@@ -56,7 +59,7 @@ public abstract class Node extends SceneGraphObject
      *
      * @param gld The drawable context to use
      */
-    public void render(GLDrawable gld)
+    public void render(GL gl, GLU glu)
     {
     }
 
@@ -66,7 +69,7 @@ public abstract class Node extends SceneGraphObject
      *
      * @param gld The drawable context to use
      */
-    public void postRender(GLDrawable gld)
+    public void postRender(GL gl, GLU glu)
     {
     }
 

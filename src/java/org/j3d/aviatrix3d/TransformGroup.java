@@ -16,11 +16,11 @@ package org.j3d.aviatrix3d;
 //import org.web3d.vecmath.Matrix4f;
 import javax.vecmath.Matrix4f;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLEnum;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
 
-import gl4java.drawable.GLDrawable;
+// Local imports
+// None
 
 /**
  * A grouping node that contains a transform.  The node contains a single
@@ -32,7 +32,7 @@ import gl4java.drawable.GLDrawable;
  * to and including a possible core reactor meltdown in a foreign country.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TransformGroup extends Group
 {
@@ -93,10 +93,8 @@ public class TransformGroup extends Group
      *
      * @param gld The drawable for setting the state
      */
-    public void render(GLDrawable gld)
+    public void render(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-
         // TODO: can we stop this copy?  Transpose in place
         matrix[0] = localTransform.m00;
         matrix[1] = localTransform.m10;
@@ -125,10 +123,8 @@ public class TransformGroup extends Group
      *
      * @param gld The drawable for resetting the state
      */
-    public void postRender(GLDrawable gld)
+    public void postRender(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-
         gl.glPopMatrix();
     }
 }

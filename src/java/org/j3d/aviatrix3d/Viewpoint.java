@@ -17,26 +17,20 @@ import java.util.HashMap;
 //import org.web3d.vecmath.Matrix4f;
 import javax.vecmath.Matrix4f;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLUFunc;
-import gl4java.GLContext;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
-import gl4java.utils.glut.GLUTFunc;
-import gl4java.utils.glut.GLUTFuncLightImpl;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
+
+// Local imports
+// None
 
 /**
  * A viewpoint into the scene.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Viewpoint extends Leaf
 {
-    /** The display list for this item */
-    private static int dispList;
-
     /** Is this the active viewpoint? */
     private boolean isActive;
 
@@ -60,7 +54,7 @@ public class Viewpoint extends Leaf
      * method must be re-entrant as it can be called from multiple
      * places at once.
      */
-    public void render(GLDrawable gld)
+    public void render(GL gl, GLU glu)
     {
         // Do nothing
     }
@@ -70,17 +64,14 @@ public class Viewpoint extends Leaf
      *
      * @param gld The drawable for setting the state
      */
-    public void setupView(GLDrawable gld)
+    public void setupView(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-        GLUFunc glu = gld.getGLU();
-
         gl.glLoadIdentity();
 
         gl.glEnable(gl.GL_LIGHT0);
 
         // Wait till the nodes are initialized
-        if (transform != null) {
+        if(transform != null) {
             transform.invert();
             // TODO: can we stop this copy?  Transpose in place
             matrix[0] = transform.m00;
@@ -113,7 +104,7 @@ public class Viewpoint extends Leaf
      *
      * @param gld The drawable for resetting the state
      */
-    public void postRender(GLDrawable gld)
+    public void postRender(GL gl, GLU glu)
     {
     }
 

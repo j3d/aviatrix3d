@@ -13,7 +13,8 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-//import org.web3d.vecmath.Matrix4f;
+import java.util.ArrayList;
+
 import javax.vecmath.Matrix4f;
 
 // Local imports
@@ -26,7 +27,7 @@ import javax.vecmath.Matrix4f;
  * are allowed but no operation is performed on a null child.
  *
  * @author Alan Hudson
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Group extends Node
 {

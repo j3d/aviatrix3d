@@ -22,20 +22,20 @@ import net.java.games.jogl.GLU;
 // None
 
 /**
- * Describes a texture's automatic texture coordinate generation.
- * <p>
+ * Base collection of functionality marking background nodes of various types.
  *
- * Not implemented yet.
- *
- * @author Alan Hudson
- * @version $Revision: 1.2 $
+ * @author Justin Couch
+ * @version $Revision: 1.1 $
  */
-public class TexCoordGeneration extends NodeComponent
+public abstract class Background extends Leaf
 {
+    /** Map of display contexts to maps */
+    protected HashMap dispListMap;
+
     /**
-     * Constructs a TexCoordGeneration with default values.
+     * Constructs a background node
      */
-    public TexCoordGeneration()
+    protected Background()
     {
     }
 }

@@ -15,17 +15,18 @@ package org.j3d.aviatrix3d;
 // Standard imports
 import java.util.HashMap;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLContext;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLDrawable;
+import net.java.games.jogl.GLU;
+
+// Local imports
+// None
 
 /**
  * Describes the texture properties of an object.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class Texture extends NodeComponent
 {
@@ -36,11 +37,11 @@ public abstract class Texture extends NodeComponent
     public static final int MODE_MULTI_LEVEL_MIPMAP = 1;
 
     // Boundary Modes
-    public static final int BM_WRAP = GLEnum.GL_REPEAT;
-    public static final int BM_CLAMP = GLEnum.GL_CLAMP;
-    public static final int BM_CLAMP_TO_EDGE = GLEnum.GL_CLAMP_TO_EDGE;
-    public static final int BM_CLAMP_TO_BOUNDARY = GLEnum.GL_CLAMP_TO_BORDER;
-    //public static final int BM_MIRRORED_REPEAT = GLEnum.GL_MIRRORED_REPEAT;
+    public static final int BM_WRAP = GL.GL_REPEAT;
+    public static final int BM_CLAMP = GL.GL_CLAMP;
+    public static final int BM_CLAMP_TO_EDGE = GL.GL_CLAMP_TO_EDGE;
+    public static final int BM_CLAMP_TO_BOUNDARY = GL.GL_CLAMP_TO_BORDER;
+    //public static final int BM_MIRRORED_REPEAT = GL.GL_MIRRORED_REPEAT;
 
     // Maxification Filter Techniques
     public static final int MAGFILTER_FASTEST = 0;
@@ -64,8 +65,8 @@ public abstract class Texture extends NodeComponent
     public static final int ANISOTROPIC_MODE_SINGLE = 1;
 
     // Format values
-    public static final int FORMAT_RGB = GLEnum.GL_RGB;
-    public static final int FORMAT_RGBA = GLEnum.GL_RGBA;
+    public static final int FORMAT_RGB = GL.GL_RGB;
+    public static final int FORMAT_RGBA = GL.GL_RGBA;
 
     /** The images defining this texture */
     protected ImageComponent[] images;

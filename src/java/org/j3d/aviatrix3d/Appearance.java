@@ -12,18 +12,18 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
+// External imports
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
 
-// Application specific imports
-import gl4java.drawable.GLDrawable;
-import gl4java.GLFunc;
-import gl4java.GLEnum;
+// Local imports
+// None
 
 /**
  * Describes the appearance of an object.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Appearance extends NodeComponent
 {
@@ -65,12 +65,10 @@ public class Appearance extends NodeComponent
      *
      * @param gld The surface to draw upon
      */
-    public void renderState(GLDrawable gld)
+    public void renderState(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-
         if(material != null)
-            material.renderState(gld);
+            material.renderState(gl, glu);
 
         if(texUnits != null)
         {
@@ -80,17 +78,17 @@ public class Appearance extends NodeComponent
             {
                 switch(i)
                 {
-                    case 0: gl.glActiveTextureARB(GLEnum.GL_TEXTURE0_ARB);
+                    case 0: gl.glActiveTextureARB(GL.GL_TEXTURE0_ARB);
                           break;
-                    case 1: gl.glActiveTextureARB(GLEnum.GL_TEXTURE1_ARB);
+                    case 1: gl.glActiveTextureARB(GL.GL_TEXTURE1_ARB);
                           break;
-                    case 2: gl.glActiveTextureARB(GLEnum.GL_TEXTURE2_ARB);
+                    case 2: gl.glActiveTextureARB(GL.GL_TEXTURE2_ARB);
                           break;
-                    case 3: gl.glActiveTextureARB(GLEnum.GL_TEXTURE3_ARB);
+                    case 3: gl.glActiveTextureARB(GL.GL_TEXTURE3_ARB);
                           break;
                 }
 
-                texUnits[i].renderState(gld);
+                texUnits[i].renderState(gl, glu);
             }
         }
     }
@@ -100,17 +98,17 @@ public class Appearance extends NodeComponent
      *
      * @param gld The surface to draw upon
      */
-    public void restoreState(GLDrawable gld)
+    public void restoreState(GL gl, GLU glu)
     {
         if(texUnits != null)
         {
             int len = texUnits.length;
 
             for(int i=len-1; i >= 0; i--)
-                texUnits[i].restoreState(gld);
+                texUnits[i].restoreState(gl, glu);
         }
 
         if(material != null)
-            material.restoreState(gld);
+            material.restoreState(gl, glu);
     }
 }

@@ -12,17 +12,19 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
+// External imports
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
 
-// Application specific imports
-import gl4java.drawable.GLDrawable;
+// Local imports
+// None
 
 /**
  * The NodeComponent class is the superclass for all non renderable nodes.
  * These nodes provides data for other nodes.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class NodeComponent extends SceneGraphObject
 {
@@ -31,7 +33,7 @@ public abstract class NodeComponent extends SceneGraphObject
      *
      * @param gld The drawable context to use
      */
-    public void renderState(GLDrawable gld)
+    public void renderState(GL gl, GLU glu)
     {
     }
 
@@ -40,7 +42,7 @@ public abstract class NodeComponent extends SceneGraphObject
      *
      * @param gld The drawable context to use
      */
-    public void restoreState(GLDrawable gld)
+    public void restoreState(GL gl, GLU glu)
     {
     }
 

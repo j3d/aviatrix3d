@@ -17,19 +17,17 @@ import java.awt.image.*;
 
 import java.util.HashMap;
 
-import gl4java.GLFunc;
-import gl4java.GLContext;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
 
-// Application specific imports
+// Local imports
 // None
 
 /**
  * Wraps an image that gets used in textures.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ImageComponent extends NodeComponent
 {
@@ -209,7 +207,7 @@ public class ImageComponent extends NodeComponent
      *
      * @param gld The drawable for setting the state
      */
-    public void renderState(GLDrawable gld)
+    public void renderState(GL gl, GLU glu)
     {
         // Do nothing
     }
@@ -219,7 +217,7 @@ public class ImageComponent extends NodeComponent
      *
      * @param gld The drawable for resetting the state
      */
-    public void restoreState(GLDrawable gld)
+    public void restoreState(GL gl, GLU glu)
     {
         // Do nothing
     }

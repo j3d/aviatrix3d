@@ -15,10 +15,11 @@ package org.j3d.aviatrix3d;
 // Standard imports
 import javax.vecmath.Matrix4f;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
+
+// Local imports
+// None
 
 /**
  * Representation of a directional light source.
@@ -27,7 +28,7 @@ import gl4java.drawable.GLDrawable;
  * A directional light has a direction, but no location.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class DirectionalLight extends Light
 {
@@ -86,12 +87,10 @@ public class DirectionalLight extends Light
      *
      * @param gld The drawable for setting the state
      */
-    public void render(GLDrawable gld)
+    public void render(GL gl, GLU glu)
     {
         if(!enabled)
             return;
-
-        GLFunc gl = gld.getGL();
     }
 
     /*
@@ -100,12 +99,10 @@ public class DirectionalLight extends Light
      *
      * @param gld The drawable for resetting the state
      */
-    public void postRender(GLDrawable gld)
+    public void postRender(GL gl, GLU glu)
     {
         if(!enabled)
             return;
-
-        GLFunc gl = gld.getGL();
 
         //gl.glPopMatrix();
     }

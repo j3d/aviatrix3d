@@ -17,17 +17,17 @@ import java.awt.image.*;
 
 import java.util.HashMap;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLContext;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
+
+// Local imports
+// None
 
 /**
  * Wraps a 3D image.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ImageComponent3D extends ImageComponent
 {

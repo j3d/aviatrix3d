@@ -12,18 +12,19 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
+// External imports
 import java.awt.image.*;
 
+import java.nio.FloatBuffer;
 import java.util.HashMap;
 
-// Application specific imports
+// Local imports
 
 /**
  * Common representation of vertex-based geometry.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class VertexGeometry extends Geometry
 {
@@ -88,6 +89,18 @@ public abstract class VertexGeometry extends Geometry
 
     /** A mapping between glContext and displayListID(Integer) */
     protected HashMap displayListMap;
+
+    /** Buffer for holding vertex data */
+    protected FloatBuffer vertexBuffer;
+
+    /** Buffer for holding colour data */
+    protected FloatBuffer colorBuffer;
+
+    /** Buffer for holding normal data */
+    protected FloatBuffer normalBuffer;
+
+    /** Buffer for holding texture coordinate data */
+    protected FloatBuffer textureBuffer;
 
     /** Reference to the user array of coordinates used */
     protected float[] coordinates;
@@ -193,6 +206,13 @@ public abstract class VertexGeometry extends Geometry
         coordinates = vertices;
         numCoords = numValid;
 
+        if(numValid > vertexBuffer.capacity())
+            vertexBuffer = FloatBuffer.allocate(numValid * 3);
+        else
+            vertexBuffer.clear();
+
+        vertexBuffer.put(vertices, 0, numValid * 3);
+
         if(numCoords == 0)
             vertexFormat &= COORDINATE_CLEAR;
         else
@@ -214,6 +234,8 @@ public abstract class VertexGeometry extends Geometry
     public void setColors(boolean hasAlpha, float[] colors)
         throws IllegalStateException, IllegalArgumentException
     {
+        int num_valid = 0;
+
         // check based on format
         if(colors != null)
         {
@@ -223,14 +245,16 @@ public abstract class VertexGeometry extends Geometry
                     throw new IllegalArgumentException("Color array too short " +
                                                    "for 4 component colour");
 
-                vertexFormat |= COLOR_3;
+                vertexFormat |= COLOR_4;
+                num_valid = numCoords * 4;
             }
             else
             {
                 if(colors.length / 3 < numCoords)
                     throw new IllegalArgumentException("Color array too short " +
                                                    "for 3 component colour");
-                vertexFormat |= COLOR_4;
+                vertexFormat |= COLOR_3;
+                num_valid = numCoords * 3;
             }
         }
         else
@@ -240,6 +264,13 @@ public abstract class VertexGeometry extends Geometry
 
         stateChanged = true;
         this.colors = colors;
+
+        if(num_valid > colorBuffer.capacity())
+            colorBuffer = FloatBuffer.allocate(num_valid);
+        else
+            colorBuffer.clear();
+
+        vertexBuffer.put(colors, 0, num_valid);
     }
 
     /**
@@ -254,11 +285,18 @@ public abstract class VertexGeometry extends Geometry
     public void setNormals(float[] normals)
         throws IllegalStateException, IllegalArgumentException
     {
-        if((normals != null) && ((normals.length / 3) < numCoords))
+        if((normals != null) && (normals.length < numCoords * 3))
             throw new IllegalArgumentException("Normal array too short");
 
         stateChanged = true;
         this.normals = normals;
+
+        if(numCoords * 3 > normalBuffer.capacity())
+            normalBuffer = FloatBuffer.allocate(numCoords * 3);
+        else
+            normalBuffer.clear();
+
+        normalBuffer.put(normals, 0, numCoords * 3);
 
         if(normals == null)
             vertexFormat &= NORMAL_CLEAR;
@@ -327,6 +365,8 @@ public abstract class VertexGeometry extends Geometry
             throw new IllegalArgumentException("Invalid texture set specified: " +
                                                textureSet);
 
+        int num_valid = 0;
+
         if(texCoords != null)
         {
             switch(type)
@@ -334,13 +374,13 @@ public abstract class VertexGeometry extends Geometry
                 case TEXTURE_COORDINATE_1:
                     if(texCoords.length < numCoords)
                         throw new IllegalArgumentException("texCoord array too short " +
-                                                       "for 4D texture coordiantes");
+                                                       "for 1D texture coordiantes");
                     break;
 
                 case TEXTURE_COORDINATE_2:
                     if(texCoords.length / 2 < numCoords)
                         throw new IllegalArgumentException("texCoord array too short " +
-                                                       "for 4D texture coordiantes");
+                                                       "for 2D texture coordiantes");
                     break;
 
                 case TEXTURE_COORDINATE_3:
@@ -361,6 +401,13 @@ public abstract class VertexGeometry extends Geometry
         }
 
         stateChanged = true;
+
+        if(texCoords.length> normalBuffer.capacity())
+            textureBuffer = FloatBuffer.allocate(texCoords.length);
+        else
+            textureBuffer.clear();
+
+        textureBuffer.put(texCoords, 0, texCoords.length);
     }
 
     /**
@@ -402,6 +449,7 @@ public abstract class VertexGeometry extends Geometry
         {
             vertexFormat &= TEXTURE_CLEAR;
             numTextureArrays = 0;
+            textureBuffer.clear();
         }
         else
         {
@@ -411,16 +459,44 @@ public abstract class VertexGeometry extends Geometry
             if((types == null) || (types.length < numSets))
                 throw new IllegalArgumentException("Not enough types specified");
 
+            int total = 0;
+
             // check the types for all valid values
             for(int i = 0; i < numSets; i++)
             {
                 switch(types[i])
                 {
                     case TEXTURE_COORDINATE_1:
+                        if(texCoords[i].length < numCoords)
+                            throw new IllegalArgumentException(
+                                "Texture coordinate set " + i + " does not have " +
+                                "enough values for a 1D texture");
+                        total += texCoords[i].length;
+                        break;
+
                     case TEXTURE_COORDINATE_2:
+                        if(texCoords[i].length < numCoords * 2)
+                            throw new IllegalArgumentException(
+                                "Texture coordinate set " + i + " does not have " +
+                                "enough values for a 2D texture");
+                        total += texCoords[i].length;
+                        break;
+
                     case TEXTURE_COORDINATE_3:
+                        if(texCoords[i].length < numCoords * 3)
+                            throw new IllegalArgumentException(
+                                "Texture coordinate set " + i + " does not have " +
+                                "enough values for a 3D texture");
+                        total += texCoords[i].length;
+                        break;
+
                     case TEXTURE_COORDINATE_4:
-                        continue;
+                        if(texCoords[i].length < numCoords * 4)
+                            throw new IllegalArgumentException(
+                                "Texture coordinate set " + i + " does not have " +
+                                "enough values for a 4D texture");
+                        total += texCoords[i].length;
+                        break;
 
                     default:
                         throw new IllegalArgumentException("Invalid texture type");
@@ -432,10 +508,19 @@ public abstract class VertexGeometry extends Geometry
             // just have to set some flag to say textures are available.
             vertexFormat |= (numSets > 1) ? TEXTURE_COORDINATE_SINGLE :
                                             TEXTURE_COORDINATE_MULTI;
+
+            if(total > normalBuffer.capacity())
+                textureBuffer = FloatBuffer.allocate(total);
+            else
+                textureBuffer.clear();
+
+            for(int i = 0; i < numSets; i++)
+                textureBuffer.put(texCoords[i], 0, texCoords[i].length);
         }
 
         textures = texCoords;
         textureTypes = types;
+
 
         stateChanged = true;
     }

@@ -24,7 +24,7 @@ import javax.vecmath.Matrix4d;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BoundingSphere extends BoundingVolume
 {
@@ -134,7 +134,12 @@ public class BoundingSphere extends BoundingVolume
      */
     public boolean checkIntersectionPoint(float[] pos)
     {
-        return false;
+        float x = pos[0] - center[0];
+        float y = pos[1] - center[1];
+        float z = pos[2] - center[2];
+        float d = x * x + y * y + z * z;
+
+        return d <= radiusSquared;
     }
 
     /**
@@ -159,7 +164,7 @@ public class BoundingSphere extends BoundingVolume
      */
     public boolean checkIntersectionRay(float[] pos, float[] dir)
     {
-        return false;
+        return raySphere(pos, dir);
     }
 
     /**
@@ -267,5 +272,39 @@ public class BoundingSphere extends BoundingVolume
     float getRadiusSquared()
     {
         return radiusSquared;
+    }
+
+
+    /**
+     * Internal computation of the intersection point of the ray and a sphere.
+     * Uses raw data types.
+     *
+     * @param origin The coordinates of the origin of the ray
+     * @param direction The direction vector of the ray
+     * @return true if there was an intersection, false if not
+     */
+    private boolean raySphere(float[] origin, float[] direction)
+    {
+        double Xc = center[0];
+        double Yc = center[1];
+        double Zc = center[2];
+
+        double Xo = origin[0];
+        double Yo = origin[1];
+        double Zo = origin[2];
+        double Xd = direction[0];
+        double Yd = direction[1];
+        double Zd = direction[2];
+
+        // compute A, B, C
+        double a = Xd * Xd + Yd * Yd + Zd * Zd;
+        double b = 2 * (Xd * (Xo - Xc) + Yd * (Yo - Yc) + Zd * (Zo - Zc));
+        double c = (Xo - Xc) * (Xo - Xc) + (Yo - Yc) * (Yo - Yc) +
+                   (Zo - Zc) * (Zo - Zc) - radiusSquared;
+
+        // compute discriminant
+        double disc = b * b - 4 * a * c;
+
+        return (disc >= 0);
     }
 }

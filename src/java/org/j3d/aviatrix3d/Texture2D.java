@@ -15,17 +15,17 @@ package org.j3d.aviatrix3d;
 // Standard imports
 import java.util.HashMap;
 
-// Application specific imports
-import gl4java.GLFunc;
-import gl4java.GLContext;
-import gl4java.GLEnum;
-import gl4java.drawable.GLDrawable;
+import net.java.games.jogl.GL;
+import net.java.games.jogl.GLU;
+
+// Local imports
+// None
 
 /**
  * Describes the 2D texture properties of an object.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Texture2D extends Texture
 {
@@ -111,24 +111,21 @@ public class Texture2D extends Texture
      *
      * @param gld The drawable for reseting the state
      */
-    public void renderState(GLDrawable gld)
+    public void renderState(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-        GLContext glj = gld.getGLContext();
-
         if(images == null || images.length < 1)
             return;
 
-        gl.glEnable(GLEnum.GL_TEXTURE_2D);
+        gl.glEnable(GL.GL_TEXTURE_2D);
 
         if(changed)
         {
-            gl.glTexParameteri(GLEnum.GL_TEXTURE_2D,
-                               GLEnum.GL_TEXTURE_WRAP_S,
+            gl.glTexParameteri(GL.GL_TEXTURE_2D,
+                               GL.GL_TEXTURE_WRAP_S,
                                boundaryModeS);
 
-            gl.glTexParameteri(GLEnum.GL_TEXTURE_2D,
-                               GLEnum.GL_TEXTURE_WRAP_T,
+            gl.glTexParameteri(GL.GL_TEXTURE_2D,
+                               GL.GL_TEXTURE_WRAP_T,
                                boundaryModeT);
 
             int numImages = images.length;
@@ -136,54 +133,54 @@ public class Texture2D extends Texture
             switch(magFilter) {
                 case MAGFILTER_FASTEST:
                 case MAGFILTER_BASE_LEVEL_POINT:
-                    mode = GLEnum.GL_NEAREST;
+                    mode = GL.GL_NEAREST;
                     break;
 
                 case MAGFILTER_NICEST:
                 case MAGFILTER_BASE_LEVEL_LINEAR:
-                    mode = GLEnum.GL_LINEAR;
+                    mode = GL.GL_LINEAR;
                     break;
 
                 default: System.out.println("Unknown mode in MagFilter: " + magFilter);
             }
 
-            gl.glTexParameteri(GLEnum.GL_TEXTURE_2D, GLEnum.GL_TEXTURE_MAG_FILTER, mode);
+            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, mode);
 
             switch(minFilter)
             {
                 case MINFILTER_FASTEST:
                 case MINFILTER_BASE_LEVEL_POINT:
-                    mode = GLEnum.GL_NEAREST;
+                    mode = GL.GL_NEAREST;
                     break;
                 case MINFILTER_BASE_LEVEL_LINEAR:
-                    mode = GLEnum.GL_LINEAR;
+                    mode = GL.GL_LINEAR;
                 case MINFILTER_MULTI_LEVEL_LINEAR:
-                    mode = GLEnum.GL_LINEAR_MIPMAP_LINEAR;
+                    mode = GL.GL_LINEAR_MIPMAP_LINEAR;
                     break;
                 case MINFILTER_MULTI_LEVEL_POINT:
-                    mode = GLEnum.GL_NEAREST_MIPMAP_NEAREST;
+                    mode = GL.GL_NEAREST_MIPMAP_NEAREST;
                     break;
                 case MINFILTER_NICEST:
                     if (numImages > 1)
-                        mode = GLEnum.GL_LINEAR_MIPMAP_LINEAR;
+                        mode = GL.GL_LINEAR_MIPMAP_LINEAR;
                     else
-                        mode = GLEnum.GL_LINEAR;
+                        mode = GL.GL_LINEAR;
 
                     break;
                 default: System.out.println("Unknown mode in MinFilter: " + minFilter);
             }
 
-            gl.glTexParameteri(GLEnum.GL_TEXTURE_2D,
-                               GLEnum.GL_TEXTURE_MIN_FILTER,
+            gl.glTexParameteri(GL.GL_TEXTURE_2D,
+                               GL.GL_TEXTURE_MIN_FILTER,
                                mode);
 
             if (anisotropicMode != ANISOTROPIC_MODE_NONE)
             {
                 // float[] val = new float[1];
 
-                //gl.glGetFloatv(GLEnum.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, val);
-                gl.glTexParameterf(GLEnum.GL_TEXTURE_2D,
-                                   GLEnum.GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                //gl.glGetFloatv(GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, val);
+                gl.glTexParameterf(GL.GL_TEXTURE_2D,
+                                   GL.GL_TEXTURE_MAX_ANISOTROPY_EXT,
                                    anisotropicDegree);
             }
 
@@ -200,24 +197,24 @@ public class Texture2D extends Texture
                 switch(images[0].getDataType())
                 {
                     case ImageComponent2D.TYPE_INT:
-                        gl.glPixelStorei(GLEnum.GL_UNPACK_ALIGNMENT, 1);
-                        gl.glTexImage2D(GLEnum.GL_TEXTURE_2D,
+                        gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1);
+                        gl.glTexImage2D(GL.GL_TEXTURE_2D,
                                         i,
-                                        GLEnum.GL_RGB,
+                                        GL.GL_RGB,
                                         width,
                                         height,
                                         0,
-                                        GLEnum.GL_RGB,
-                                        GLEnum.GL_UNSIGNED_BYTE,
+                                        GL.GL_RGB,
+                                        GL.GL_UNSIGNED_BYTE,
                                         (byte[])data);
 
                         break;
 
                     case ImageComponent2D.TYPE_BYTE:
                         System.out.println("Byte");
-                        gl.glPixelStorei(GLEnum.GL_UNPACK_ALIGNMENT,1);
-                        gl.glTexImage2D(GLEnum.GL_TEXTURE_2D, i, GLEnum.GL_RGBA, width, height, 0,
-                            GLEnum.GL_RGBA, GLEnum.GL_UNSIGNED_BYTE,(byte[])data);
+                        gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT,1);
+                        gl.glTexImage2D(GL.GL_TEXTURE_2D, i, GL.GL_RGBA, width, height, 0,
+                            GL.GL_RGBA, GL.GL_UNSIGNED_BYTE,(byte[])data);
                         break;
                 }
             }
@@ -231,13 +228,11 @@ public class Texture2D extends Texture
      *
      * @param gld The drawable for reseting the state
      */
-    public void restoreState(GLDrawable gld)
+    public void restoreState(GL gl, GLU glu)
     {
-        GLFunc gl = gld.getGL();
-
         if (images == null || images.length < 1)
             return;
 
-        gl.glDisable(GLEnum.GL_TEXTURE_2D);
+        gl.glDisable(GL.GL_TEXTURE_2D);
     }
 }
