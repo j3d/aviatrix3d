@@ -27,7 +27,7 @@ package org.j3d.aviatrix3d;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface DrawableSurface
 {
@@ -81,6 +81,15 @@ public interface DrawableSurface
      * @param a The alpha component of the background clear colour
      */
     public void setClearColor(float r, float g, float b, float a);
+
+    /**
+     * Update the list of items to be rendered to the current list. Draw them
+     * at the next oppourtunity.
+     *
+     * @param nodes The list of nodes in sorted order
+     * @param numValid The number of valid items in the array
+     */
+    public void setDrawableObjects(Node[] nodes, int numValid);
 
     /**
      * Instruct the surface to draw the collected set of nodes now. The
