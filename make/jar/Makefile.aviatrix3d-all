@@ -1,18 +1,18 @@
 #*********************************************************************
 #
 #                         (C) 2001-02 j3d.org
-#                         http://javr.j3d.org/
+#                         http://aviatrix3d.j3d.org/
 #
-# Package makefile producing javr-all.jar
+# Package makefile producing aviatrix3d-all.jar
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.1.1.1 $
+# Version: $Revision: 1.1 $
 #
 #*********************************************************************
 
 # No need to put in subdirs here. We only do that if we want to explicitly
 # exclude some directory and then we name everything around it.
-JAR_CONTENT= 
+JAR_CONTENT= org/j3d/aviatrix3d
 
 # Manifest file name. Stored in the make/manifest directory
 MANIFEST=all.mf
