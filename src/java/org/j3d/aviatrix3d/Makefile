@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.aviatrix3d directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -42,6 +42,7 @@ SOURCE = NodeUpdateListener.java \
     DrawStage.java \
     RenderPipelineManager.java \
     DefaultRenderManager.java \
+	SwitchGroup.java 
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

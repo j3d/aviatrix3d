@@ -25,7 +25,7 @@ import javax.vecmath.Matrix4f;
  * are allowed but no operation is performed on a null child.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Group extends Node
 {
@@ -124,6 +124,28 @@ public class Group extends Node
             throw new IndexOutOfBoundsException(CHILD_IDX_ERR);
 
         return childList[idx];
+    }
+
+    /**
+     * Get the list of children that are valid to be rendered according to
+     * the rules of the grouping node.
+     *
+     * @return an array of nodes
+     */
+    public Node[] getRenderableChild()
+    {
+        return childList;
+    }
+
+    /**
+     * Returns the number of valid renderable children to process. If there are
+     * no valid renderable children return -1.
+     *
+     * @return A number greater than or equal to zero or -1
+     */
+    public int numRenderableChildren()
+    {
+        return lastList + 1;
     }
 
     /**
