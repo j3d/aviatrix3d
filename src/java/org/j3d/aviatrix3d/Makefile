@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.aviatrix3d directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
 
@@ -17,6 +17,9 @@ PACKAGE = org.j3d.aviatrix3d
 SOURCE = NodeUpdateListener.java \
     NodeUpdateHandler.java \
     SceneGraphObject.java \
+	BoundingVolume.java \
+	BoundingSphere.java \
+	BoundingBox.java \
     Node.java \
     NodeComponent.java \
     Leaf.java \
@@ -38,6 +41,10 @@ SOURCE = NodeUpdateListener.java \
     View.java \
     VertexGeometry.java \
     TriangleArray.java \
+	Light.java \
+	DirectionalLight.java \
+	SpotLight.java \
+	PointLight.java \
     CullStage.java \
     DrawStage.java \
     RenderPipelineManager.java \
