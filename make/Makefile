@@ -18,7 +18,7 @@
 #
 
 ifndef PROJECT_ROOT
-export PROJECT_ROOT=/usr/local/src/projects/j3d.org/javr
+export PROJECT_ROOT=/usr/local/src/projects/j3d.org/aviatrix3d
 endif
 
 include $(PROJECT_ROOT)/make/Makefile.inc

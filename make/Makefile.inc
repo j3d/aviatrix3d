@@ -1,17 +1,17 @@
 #*********************************************************************
 #
 #                         (C) 2003- j3d.org
-#                         http://javr.j3d.org/
+#                         http://aviatrix3d.j3d.org/
 #
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.1.1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
 ifndef PROJECT_ROOT
-  export PROJECT_ROOT=/usr/local/src/projects/j3d.org
+  export PROJECT_ROOT=/usr/local/src/projects/j3d.org/aviatrix3d
 endif
 
 ifndef JAVA_HOME
