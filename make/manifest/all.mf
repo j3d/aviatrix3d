@@ -1,0 +1,12 @@
+Extension-List: jogl
+java3d-Extension-Name: net.java.jogl
+java3d-Specification-Version: 1.0
+java3d-Implementation-Version: 1.0
+java3d-Implementation-Vendor-Id: net.java
+java3d-Implementation-Title: JOGL Core Runtime Environment
+Extension-Name: j3d-org-javr
+Specification-Vendor: Justin Couch
+Specification-Version: 0.1
+Implementation-Vendor-Id: org.j3d
+Implementation-Vendor: Yumetech, Inc
+Implementation-Version: 0.1
