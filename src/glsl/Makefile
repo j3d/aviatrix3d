@@ -13,7 +13,7 @@ BUILD_ORDER = \
 
 # A version number we tack onto the JAR file name for eclipse versioning
 # purposes.
-JAR_VERSION=2.2.0
+JAR_VERSION=3.0.0
 
 # 3rd party libraries that need including.
 JARS_3RDPARTY=
