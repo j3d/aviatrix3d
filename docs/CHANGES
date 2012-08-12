@@ -1,0 +1,51 @@
+			      
+                      Aviatrix3D Changes
+
+Major Changes since 1.0
+
+- Reorganised the interfaces to the rendering pipeline to not use 
+  most of the user-facing classes. Now uses the separate Cullable/
+  Renderable-derived interfaces. Some small exceptions still
+  remaining but will be cleared by the next beta release
+
+- Introduced a lot of customisation capabilities within the pipeline, 
+  particularly with the ability to have your own culling and sorting
+  code.
+
+- Addition of SWT lightweight rendering capabilities (Draw2D and GEF)
+  This is somewhat a work in progress as SWT Image handles are an issue
+  with long running code. Works on SWT 3.2 and later.
+
+- Introduction of VBO capabilities
+
+- Many package changes for the renderer/pipeline classes. Now is a little
+  bit more easy to see what belongs where. 
+
+- Ability to create multiple independent windows that share a scene graph 
+  and/or render management. 
+
+- Multipass rendering ability. This allows for most multipass rendering
+  techniques to be implemented. The one except we know of right now is
+  shadow volumes due to the need to have a custom, infinite view frustum
+  matrix. This will be fixed in 2.1.
+
+- Layers (compositing) and viewports within a layer can be created. 
+
+- Point sprite extensions added
+
+
+
+Known Remaining Issues
+
+- Nested Pbuffer (Pbuffer using a shader/texture that uses another Pbuffer) 
+  usage still has some bugs.
+
+- BlendAttributes is missing the ability to set the blend equation
+
+- Ability to set custom view frustum matrices, which is needed for 
+  shadow rendering capabilities
+
+- Some startup/timing issues related to lightweight surfaces, particularly
+  on OS/X
+
+13 Oct 2008

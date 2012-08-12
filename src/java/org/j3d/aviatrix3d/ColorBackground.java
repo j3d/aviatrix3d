@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Web3d.org Copyright (c) 2003
+ *                     Yumetech, Inc Copyright (c) 2004-2005
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -12,11 +12,10 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
+// External imports
 import java.util.HashMap;
 
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
+import javax.media.opengl.GL;
 
 // Local imports
 // None
@@ -27,58 +26,120 @@ import net.java.games.jogl.GLU;
  *
  * This will set the background colour to a single colour for the entire
  * viewport. If used, this will override the setClearColor() on
- * {@link org.j3d.aviatrix3d.DrawableSurface}.
+ * {@link org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice}. Note that
+ * if the user has turned the useClearColor flag off in the base class, that
+ * this node effectively will do nothing.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.21 $
  */
 public class ColorBackground extends Background
 {
-    /** Base colour of the fog */
-    private float[] color;
-
     /**
      * Constructs a background node for a base colour of black.
      */
     public ColorBackground()
     {
-        color = new float[4];
+        super();
     }
 
     /**
-     * Construct a background node for a user-provided colour
+     * Construct a background node for a user-provided colour. The colour
+     * provided should have 3 or 4 elements. If 3 are provided, a fully opaque
+     * background is assumed. If less than 3 elements are provided, an exception
+     * is generated. If the array is null, this assumes the a default black
+     * background.
+     *
+     * @param c The array of colours to use, or null
+     * @throws IllegalArgumentException The colour array is not long enough
      */
     public ColorBackground(float[] c)
+        throws IllegalArgumentException
     {
-        this();
-        color[0] = c[0];
-        color[1] = c[1];
-        color[2] = c[2];
-        color[3] = c[3];
+        super(c);
     }
 
     //----------------------------------------------------------
-    // Methods overriding the Node class
+    // Methods defined by BackgroundRenderable
+    //----------------------------------------------------------
+
+    /**
+     * Check to see whether this shape is something that represents 2D or 3D
+     * renderable background. Pure 2D backgrounds do not need transformation
+     * stacks or frustums set up to render - they can blit straight to the
+     * screen as needed.
+     *
+     * @return True if this is 2D background, false if this is 3D
+     */
+    public boolean is2D()
+    {
+        return true;
+    }
+
+    //----------------------------------------------------------
+    // Methods defined by ObjectRenderable
     //----------------------------------------------------------
 
     /**
      * Issue ogl commands needed for this component
      *
-     * @param gld The drawable for reseting the state
+     * @param gl The gl context to draw with
      */
-    public void render(GL gl, GLU glu)
+    public void render(GL gl)
     {
-        gl.glClearColor(color[0], color[1], color[2], color[3]);
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        if(useClearColor)
+        {
+            gl.glClearColor(color[0], color[1], color[2], color[3]);
+            gl.glClear(GL.GL_COLOR_BUFFER_BIT);
+        }
     }
 
     /**
      * Restore all openGL state to the given drawable.
      *
-     * @param gld The drawable for reseting the state
+     * @param gl The gl context to draw with
      */
-    public void postRender(GL gl, GLU glu)
+    public void postRender(GL gl)
     {
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by Comparable
+    //---------------------------------------------------------------
+
+    /**
+     * Compares this object with the specified object for order. Returns a
+     * negative integer, zero, or a positive integer as this object is less
+     * than, equal to, or greater than the specified object.
+     *
+     * @param o The objec to be compared
+     * @return -1, 0 or 1 depending on order
+     * @throws ClassCastException The specified object's type prevents it from
+     *    being compared to this Object
+     */
+    public int compareTo(Object o)
+        throws ClassCastException
+    {
+        ColorBackground app = (ColorBackground)o;
+        return compareTo(app);
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by Object
+    //---------------------------------------------------------------
+
+    /**
+     * Compare this object for equality to the given object.
+     *
+     * @param o The object to be compared
+     * @return True if these represent the same values
+     */
+    public boolean equals(Object o)
+    {
+        if(!(o instanceof ColorBackground))
+            return false;
+        else
+            return equals((ColorBackground)o);
     }
 
     //----------------------------------------------------------
@@ -86,28 +147,45 @@ public class ColorBackground extends Background
     //----------------------------------------------------------
 
     /**
-     * Change the colour to the new colour. Colour takes RGBA.
+     * Compares this object with the specified object for order. Returns a
+     * negative integer, zero, or a positive integer as this object is less
+     * than, equal to, or greater than the specified object.
      *
-     * @param c The colour to copy in
+     * @param bg The argument instance to be compared
+     * @return -1, 0 or 1 depending on order
      */
-    public void setColor(float[] c)
+    public int compareTo(ColorBackground bg)
     {
-        color[0] = c[0];
-        color[1] = c[1];
-        color[2] = c[2];
-        color[3] = c[3];
+        if(bg == null)
+            return 1;
+
+        if(bg == this)
+            return 0;
+
+        int res = compareColor4(color, bg.color);
+        if(res != 0)
+            return res;
+
+        return 0;
     }
 
     /**
-     * Get the current drawing colour
+     * Compares this object with the specified object to check for equivalence.
      *
-     * @param c An array of length 4 or more to copy the colour to
+     * @param bg The background instance to be compared
+     * @return true if the objects represent identical values
      */
-    public void getColor(float[] c)
+    public boolean equals(ColorBackground bg)
     {
-        c[0] = color[0];
-        c[1] = color[1];
-        c[2] = color[2];
-        c[3] = color[3];
+        if(bg == this)
+            return true;
+
+        if(bg == null)
+            return false;
+
+        if(!equalsColor4(color, bg.color))
+            return false;
+
+        return true;
     }
 }

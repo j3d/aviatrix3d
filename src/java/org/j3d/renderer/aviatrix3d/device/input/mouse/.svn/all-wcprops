@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/aviatrix3d/!svn/ver/1968/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/mouse
+END
+MouseManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/aviatrix3d/!svn/ver/1729/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/mouse/MouseManager.java
+END
+MouseTracker.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/aviatrix3d/!svn/ver/1960/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/mouse/MouseTracker.java
+END
+MouseDevice.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/aviatrix3d/!svn/ver/1729/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/mouse/MouseDevice.java
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/aviatrix3d/!svn/ver/1968/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/mouse/Makefile
+END
+package.html
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/aviatrix3d/!svn/ver/1729/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/mouse/package.html
+END

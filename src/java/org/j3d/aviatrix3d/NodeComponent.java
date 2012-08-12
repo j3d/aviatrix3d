@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Web3d.org Copyright (c) 2001
+ *                   Yumetech, Inc Copyright (c) 2004 - 2006
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -13,8 +13,9 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
+import javax.media.opengl.GL;
+
+import org.j3d.util.I18nManager;
 
 // Local imports
 // None
@@ -22,39 +23,164 @@ import net.java.games.jogl.GLU;
 /**
  * The NodeComponent class is the superclass for all non renderable nodes.
  * These nodes provides data for other nodes.
+ * <p>
+ *
+ * <b>Internationalisation Resource Names</b>
+ * <ul>
+ * <li>nullAddParentMsg: Error message when the (internal) caller tries to
+ *     call addParent() with a null reference.</li>
+ * <li>nullArrayParentMsg: Error message when the (internal) caller tries to
+ *     call getParents() with a null array reference.</li>
+ * </ul>
  *
  * @author Alan Hudson
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.14 $
  */
 public abstract class NodeComponent extends SceneGraphObject
 {
+    /** Message for addParent(null) case error */
+    private static final String SINGLE_PARENT_NULL_PROP =
+        "org.j3d.aviatrix3d.NodeComponent.nullAddParentMsg";
+
+    /** Message for getParent(null) case error */
+    private static final String ARRAY_PARENT_NULL_PROP =
+        "org.j3d.aviatrix3d.NodeComponent.nullArrayParentMsg";
+
+    /** The initial size of the children list */
+    private static final int LIST_START_SIZE = 5;
+
+    /** The increment size of the list if it gets overflowed */
+    private static final int LIST_INCREMENT = 5;
+
+    /** Listing of all the parents of this node */
+    protected SceneGraphObject[] parentList;
+
+    /** Index to the next place to add items in the nodeList */
+    protected int lastParent;
+
     /**
-     * Issue ogl commands needed for this component.
-     *
-     * @param gld The drawable context to use
+     * Counter for how many times we've been marked as live so to know
+     * when to notify the children of a change of state.
      */
-    public void renderState(GL gl, GLU glu)
+    protected int liveCount;
+
+    /**
+     * Initialise a new instance of the component, setting up the internal
+     * state needed.
+     */
+    protected NodeComponent()
     {
+        parentList = new Node[LIST_START_SIZE];
+        lastParent = 0;
+        liveCount = 0;
+    }
+
+    //---------------------------------------------------------------
+    // Local Methods
+    //---------------------------------------------------------------
+
+    /**
+     * Specify this nodes parent, overridden to provide behaviour that appends
+     * the node to the list rather than replacing it. The parent must be a group
+     * node in this case.
+     *
+     * @param p The new parent instance to add to the list
+     * @throws AlreadyParentedException There is a valid parent already set
+     * @throws InvalidNodeTypeException Either a null reference or not the
+     *    right generic type of parent
+     */
+    protected void addParent(SceneGraphObject p)
+        throws AlreadyParentedException, InvalidNodeTypeException
+    {
+        // Should never have this, but a sanity check just in case
+        if(p != null)
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(SINGLE_PARENT_NULL_PROP);
+            throw new InvalidNodeTypeException(msg);
+        }
+
+        // Check to see that this parent isn't already in the list
+        for(int i = 0; i < lastParent; i++)
+            if(parentList[i] == p)
+                return;
+
+        resizeList();
+        parentList[lastParent++] = p;
     }
 
     /**
-     * Restore all openGL state.
+     * Remove a parent from this shared group. Since setParent() cannot be
+     * used to remove a parent from the graph, you'll need to use this method
+     * to remove the parent.
      *
-     * @param gld The drawable context to use
+     * @param p The new parent instance to remove from the list
      */
-    public void restoreState(GL gl, GLU glu)
+    protected void removeParent(SceneGraphObject p)
     {
+        // find the location, move everything down one
+        for(int i = 0; i < lastParent; i++)
+        {
+            if(parentList[i] == p)
+            {
+                int move_size = lastParent - i;
+                if(move_size != 0)
+                    System.arraycopy(parentList,
+                                     i,
+                                     parentList,
+                                     i + 1,
+                                     move_size);
+                break;
+            }
+        }
     }
 
     /**
-     * Has an attribute been changed.  If not then the
-     * renderState/restoreState might not be called.  Components
-     * that always need to update state should set this to true.
+     * Request the number of parents this node currently contains
      *
-     * @return Has an attribute changed.
+     * @return a positive number
      */
-    public boolean hasChanged()
+    public int numParents()
     {
-        return true;
+        return lastParent;
+    }
+
+    /**
+     * Get the listing of the number of parents that this node currently has.
+     * The provided array must be at least big enough to copy all the values
+     * into it.
+     *
+     * @param parents An array to copy the parent listing into
+     * @throws NullPointerException The parents array provided is null
+     */
+    public void getParents(Node[] parents)
+    {
+        if(parents == null)
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(ARRAY_PARENT_NULL_PROP);
+            throw new NullPointerException(msg);
+        }
+
+        System.arraycopy(parentList, 0, parents, 0, lastParent);
+    }
+
+    /**
+     * Resize the list if needed. Marked as final in order to encourage the
+     * compiler to inline the code for faster execution
+     */
+    private final void resizeList()
+    {
+        if((lastParent + 1) == parentList.length)
+        {
+            int old_size = parentList.length;
+            int new_size = old_size + LIST_INCREMENT;
+
+            SceneGraphObject[] tmp_nodes = new SceneGraphObject[new_size];
+
+            System.arraycopy(parentList, 0, tmp_nodes, 0, old_size);
+
+            parentList = tmp_nodes;
+        }
     }
 }

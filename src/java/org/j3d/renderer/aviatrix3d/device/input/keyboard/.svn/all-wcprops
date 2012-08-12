@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/aviatrix3d/!svn/ver/1968/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/keyboard
+END
+KeyboardDevice.java
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/aviatrix3d/!svn/ver/1932/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/keyboard/KeyboardDevice.java
+END
+KeyboardManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/aviatrix3d/!svn/ver/1932/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/keyboard/KeyboardManager.java
+END
+KeyboardTracker.java
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/aviatrix3d/!svn/ver/1932/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/keyboard/KeyboardTracker.java
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/aviatrix3d/!svn/ver/1968/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/keyboard/Makefile
+END
+package.html
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/aviatrix3d/!svn/ver/1729/trunk/src/java/org/j3d/renderer/aviatrix3d/device/input/keyboard/package.html
+END

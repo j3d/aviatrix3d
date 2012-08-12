@@ -1,0 +1,120 @@
+<html>
+<body>
+Particle systems implemented using the Aviatrix3D scene graph.
+<P>
+
+Particle systems are used to provide lots of visual effects like smoke and
+water in a 3D environment. This generalised system builds on the basic 
+system provided by {@link org.j3d.geom.particle} with code that links it to
+Aviatrix3D rendering structures. 
+<P>
+
+<h3>Design Notes</h3>
+
+The implementations provided here are not necessarily the most efficient. 
+They're designed to be extensible and cover a wide range of possible 
+applications. Several improvements could be implemented over the top of these
+nodes, such as using programmable shaders to align the particles to the
+current view location.
+
+<h3>Using A Particle System in code</h3>
+
+The majority of the particle system setup is through the general classes 
+provided in {@link org.j3d.geom.particle}. There is only a couple of classes 
+needed per-system from this package. These classes are the implementation of
+the particle system manager, and some internal, private implementation classes.
+<p>
+
+For example, to set up a particle system that uses points for particles and an
+emitter that is a line, use the following code:
+
+<pre>
+import org.j3d.geom.particle.*;
+import org.j3d.renderer.aviatrix3d.geom.particle.PointParticleSystem;
+
+public class MyParticleApp implements ApplicationUpdateObserver { ...
+
+    // The particle system manager that we want to clock
+    private ParticleSystemManager particleSystem;
+
+	... 
+
+    private void setupSceneGraph() {
+	    ....
+
+        // this will do basic color interpolations over time
+        float[] time = { 0, 1.5f, 2.5f, 5 };
+        float[] colors = {
+           1, 1, 1, 0,
+           1, 0, 0, 0,
+           1, 1, 0, 0,
+           1, 1, 0, 1
+        };
+
+        int particleCount = 10000;
+        float[] position = {0, -0.5f, -20};
+        float[] direction = {0, 0, 0};
+
+        // create the ParticleInitializer for the ParticleSystem
+        // the initializer is used to control how long particles within
+        // the system live and how they are reinitialized when they die.
+        // this simple initializer lets particles live for 200 iterations
+        // and moves them to point 0,0,0 when they die
+        float[] line = { -1, 0, 0,
+                         -0.5f, -0.5f, 0,
+                         0, 0, 0,
+                         0.5f, -0.5f, 0,
+                         1, 0, 0  };
+
+        float[] velocity = { 0, -0.1f, 0 };
+
+        ParticleInitializer emitter =
+            new PolylineEmitter(10000,
+                                particleCount,
+                                line,
+                                line.length / 3,
+                                colors,
+                                velocity,
+                                0.25f);
+
+
+        PointParticleSystem smoke_system =
+           new PointParticleSystem("smoke", particleCount, 4);
+        smoke_system.setParticleInitializer(emitter);
+
+        smoke_system.addParticleFunction(new MaxTimeParticleFunction());
+        smoke_system.addParticleFunction(new PhysicsFunction());
+
+        ColorRampFunction colorRamp = new ColorRampFunction(time, colors, true);
+        smoke_system.addParticleFunction(colorRamp);
+        smoke_system.initialize();
+
+        particleSystem = new ParticleSystemManager();
+        particleSystem.addParticleSystem(smoke_system);
+
+        // Now create the shape to put the particle system in
+        Shape3D p_shape = new Shape3D();
+        p_shape.setGeometry(smoke_system.getNode());
+
+        scene_root.addChild(p_shape);
+
+		....
+    }
+
+    public void updateSceneGraph() {
+        particleSystem.update();
+    }
+
+...
+}
+</pre>
+
+And that's it. You should see a raining set of points like this figure:
+<p>
+<center>
+<img src="doc-files/point_particle_demo.png" width="400" height="400"/>
+</center>
+</p>
+
+</body>
+</html>

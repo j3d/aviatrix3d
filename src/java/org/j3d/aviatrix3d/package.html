@@ -1,9 +1,45 @@
-<HTML>
-<BODY>
-A lightweight Object Oriented wrapper for OpenGL.  This API will vaguely mirror
-the J3D API but will be considerably lighter.  It will also be openGL specific
-so it can enable an application to use OpenGL specific mechanisms.
-<P>
+<html>
+<body>
 
-</BODY>
-</HTML>
+<p>
+A core set of lightweight Object Oriented scenegraph-based wrapper objects
+for OpenGL. In this package are all the core nodes and interfaces that define
+the basic structure of Aviatrix3D. These nodes represent the scenegraph itself,
+but none of the rendering process.
+</p>
+
+<p>
+For how the rendering is performed, see the following packages:
+</p>
+
+<ul>
+<li>{@link org.j3d.aviatrix3d.pipeline}</li>
+<li>{@link org.j3d.aviatrix3d.pipeline.audio}</li>
+<li>{@link org.j3d.aviatrix3d.pipeline.graphics}</li>
+<li>{@link org.j3d.aviatrix3d.output.audio}</li>
+<li>{@link org.j3d.aviatrix3d.output.graphics}</li>
+<li>{@link org.j3d.aviatrix3d.rendering}</li>
+</ul>
+
+<h3>Setting geometry</h3>
+
+<p>Part of the optimisation we make is to only copy into the underlying
+structures the exact number of coordinates, normals etc that are needed.
+To know this number, we need to know how many coordinates exist before
+attempting to set anything else. When constructing, or updating, geometry, you
+should always make sure that you first set the vertex list, then the sizing
+information for the strip or fan counts, and then set normals as needed.
+</p>
+
+<h3>Implementation Notes</h3>
+
+<p>The following features are not implemented as at V2.0 even though the APIs and
+classes exist.</p>
+
+<ul>
+<li>Multipass rendering</li>
+<li>Light bounding and global flags - always locally scoped</li>
+</ul>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Web3d.org Copyright (c) 2001
+ *                     Yumetech, Inc Copyright (c) 2004 - 2006
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -12,11 +12,11 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
+// External imports
 // None
 
-// Application specific imports
-// None
+// Local imports
+import org.j3d.aviatrix3d.rendering.BoundingVolume;
 
 /**
  * Utility functionality for bounds management.
@@ -24,7 +24,7 @@ package org.j3d.aviatrix3d;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.6 $
  */
 public class BoundsUtils
 {

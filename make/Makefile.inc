@@ -1,41 +1,40 @@
 #*********************************************************************
 #
-#                         (C) 2003- j3d.org
-#                         http://aviatrix3d.j3d.org/
+#                         (C) 2003 - 2007 j3d.org
+#                        http://aviatrix3d.j3d.org/
 #
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.11 $
 #
 #*********************************************************************
 
-ifndef PROJECT_ROOT
-  export PROJECT_ROOT=/usr/local/src/projects/j3d.org/aviatrix3d
-endif
-
-ifndef JAVA_HOME
-  JAVA_HOME=/usr/local/java/jdk1.3
-endif
-
-SRC_DIR=$(PROJECT_ROOT)/src
-DOCS_DIR=$(PROJECT_ROOT)/docs
-LIB_DIR=$(PROJECT_ROOT)/lib
-MAKE_DIR=$(PROJECT_ROOT)/make
+SRC_DIR=src
+DOCS_DIR=docs
+MAKE_DIR=make
 
 JAVA_DIR=$(SRC_DIR)/java
-NATIVE_DIR=$(SRC_DIR)/native
-INCLUDE_DIR=$(NATIVE_DIR)/include
+CONFIG_DIR=$(SRC_DIR)/config
+SHADER_DIR=$(SRC_DIR)/glsl
 EXAMPLES_DIR=$(PROJECT_ROOT)/examples
+ECLIPSE_DIR=$(SRC_DIR)/eclipse
 
 DELETE    = rm -f
 MAKEDIR   = mkdir -p
 RMDIR     = rm -fr
 PRINT     = @echo
 COPY      = cp 
-COPY_PATH = cp -P
+COPY_PATH = cp --parents
 CHMOD     = chmod
 CD        = cd
 
-MAKEFLAGS=-s
+# Pass these variables down between the environments
+export JAR_VERSION
 
+# General runtime flags for various commands
+#JAVAC_FLAGS=-deprecation
+#JAVADOC_FLAGS=
+JAVAC_FLAGS=-Xlint:unchecked -source 1.5 -target 1.5
+
+MAKEFLAGS=-s

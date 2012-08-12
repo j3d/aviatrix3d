@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Web3d.org Copyright (c) 2001
+ *                     Yumetech, Inc Copyright (c) 2004 - 2006
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -12,22 +12,39 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
-import javax.vecmath.Matrix4d;
+// External imports
+import java.text.Format;
+import java.text.MessageFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 
-// Application specific imports
-// None
+import javax.vecmath.Matrix4d;
+import javax.vecmath.Matrix4f;
+import javax.vecmath.Vector4f;
+
+import org.j3d.util.I18nManager;
+
+// Local imports
+import org.j3d.aviatrix3d.rendering.BoundingVolume;
 
 /**
  * Bounds described as a spherical volume.
  * <p>
+ * <b>Internationalisation Resource Names</b>
+ * <ul>
+ * <li>negRadiusMsg: Error message when the radius is negative.</li>
+ * </ul>
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.17 $
  */
 public class BoundingSphere extends BoundingVolume
 {
+	/** Attribute array is not long enough for the coords */
+	private static final String NEG_RADIUS_PROP =
+		"org.j3d.aviatrix3d.BoundingSphere.negRadiusMsg";
+
     /** The center of the sphere */
     private float[] center;
 
@@ -43,9 +60,7 @@ public class BoundingSphere extends BoundingVolume
      */
     public BoundingSphere()
     {
-        center = new float[3];
-        radiusSquared = 1;
-        radius = 1;
+		this(1);
     }
 
     /**
@@ -56,8 +71,7 @@ public class BoundingSphere extends BoundingVolume
      */
     public BoundingSphere(float radius)
     {
-        if(radius < 0)
-            throw new IllegalArgumentException("Negative radius value");
+        checkRadius(radius);
 
         center = new float[3];
 
@@ -74,8 +88,7 @@ public class BoundingSphere extends BoundingVolume
      */
     public BoundingSphere(float[] pos, float radius)
     {
-        if(radius < 0)
-            throw new IllegalArgumentException("Negative radius value");
+        checkRadius(radius);
 
         center = new float[] { pos[0], pos[1], pos[2] };
 
@@ -200,6 +213,147 @@ public class BoundingSphere extends BoundingVolume
     }
 
     /**
+     * Check for the given sphere intersecting this bounds. The sphere is
+     * described by a centre location and the radius.
+     *
+     * @param c The location of the sphere's center
+     * @param r The radius of the sphere
+     * @return true if the sphere intersects this bounds
+     */
+    public boolean checkIntersectionSphere(float[] c, float r)
+    {
+        float x = c[0] - center[0];
+        float y = c[1] - center[1];
+        float z = c[2] - center[2];
+
+        float distance = (float)Math.sqrt(x * x + y * y + z * z);
+
+        return distance <= (radius + r);
+    }
+
+    /**
+     * Check for the given triangle intersecting this bounds. Assumes the
+     * three coordinates of the triangle are declared in RH coordinate system.
+     *
+     * @param v0 The first vertex of the triangle
+     * @param v1 The second vertex of the triangle
+     * @param v2 The third vertex of the triangle
+     * @return true if the sphere intersects this bounds
+     */
+    public boolean checkIntersectionTriangle(float[] v0, float[] v1, float[] v2)
+    {
+        return false;
+    }
+
+    /**
+     * Check for the given cylinder segment intersecting this bounds. The
+     * cylinder is described by a centre location, axial direction and the
+     * radius.
+     *
+     * @param center The location of the cylinder's center
+     * @param direction A unit vector indicating the axial direction
+     * @param radius The radius of the cylinder
+     * @param height The half-height of the cylinder from the center point
+     * @return true if the sphere intersects this bounds
+     */
+    public boolean checkIntersectionCylinder(float[] center,
+                                             float[] direction,
+                                             float radius,
+                                             float height)
+    {
+        return false;
+    }
+
+    /**
+     * Check for the given cone intersecting this bounds. The
+     * cone is described by the location of the vertex, a direction vector
+     * and the spread angle of the cone.
+     *
+     * @param vertex The location of the cone's vertex
+     * @param direction A unit vector indicating the axial direction
+     * @param angle The spread angle of the cone
+     * @return true if the sphere intersects this bounds
+     */
+    public boolean checkIntersectionCone(float[] vertex,
+                                         float[] direction,
+                                         float angle)
+    {
+        return false;
+    }
+
+    /**
+     * Check for the given AA box intersecting this bounds. The box is
+     * described by the minimum and maximum extents on each axis.
+     *
+     * @param minExtents The minimum extent value on each axis
+     * @param maxExtents The maximum extent value on each axis
+     * @return true if the box intersects this bounds
+     */
+    public boolean checkIntersectionBox(float[] minExtents, float[] maxExtents)
+    {
+        float d_min = 0;
+
+        if(center[0] < minExtents[0])
+        {
+            float d = center[0] - minExtents[0];
+            d_min += d * d;
+        }
+        else if(center[0] > maxExtents[0])
+        {
+            float d = center[0] - maxExtents[0];
+            d_min += d * d;
+        }
+
+        if(center[1] < minExtents[1])
+        {
+            float d = center[1] - minExtents[1];
+            d_min += d * d;
+        }
+        else if(center[1] > maxExtents[1])
+        {
+            float d = center[1] - maxExtents[1];
+            d_min += d * d;
+        }
+
+        if(center[2] < minExtents[2])
+        {
+            float d = center[2] - minExtents[2];
+            d_min += d * d;
+        }
+        else if(center[2] > maxExtents[2])
+        {
+            float d = center[2] - maxExtents[2];
+            d_min += d * d;
+        }
+
+        return d_min <= radiusSquared;
+    }
+
+    /**
+     * Check whether this volume intersects with the view frustum.
+     *
+     * @param planes The 6 planes of the frustum
+     * @param mat The vworld to local transformation matrix
+     * @return int FRUSTUM_ALLOUT, FRUSTUM_ALLIN, FRUSTUM_PARTIAL.
+     */
+    public int checkIntersectionFrustum(Vector4f[] planes, Matrix4d mat)
+    {
+        return FRUSTUM_PARTIAL;
+    }
+
+    /**
+     * Check whether this volume intersects with the view frustum.
+     *
+     * @param planes The 6 planes of the frustum
+     * @param mat The vworld to local transformation matrix
+     * @return int FRUSTUM_ALLOUT, FRUSTUM_ALLIN, FRUSTUM_PARTIAL.
+     */
+    public int checkIntersectionFrustum(Vector4f[] planes, Matrix4f mat)
+    {
+        return FRUSTUM_PARTIAL;
+    }
+
+    /**
      * Transform the current postion by the given transformation matrix.
      *
      * @param mat The matrix to transform this bounds by
@@ -208,8 +362,40 @@ public class BoundingSphere extends BoundingVolume
     {
     }
 
+    /**
+     * Transform the current postion by the given transformation matrix.
+     *
+     * @param mat The matrix to transform this bounds by
+     */
+    public void transform(Matrix4f mat)
+    {
+    }
+
     //---------------------------------------------------------------
-    // Misc local methods
+    // Methods defined by Object
+    //---------------------------------------------------------------
+
+    /**
+     * Generate a string representation of this box.
+     *
+     * @return A string representing the bounds information
+     */
+    public String toString()
+    {
+        StringBuilder buf = new StringBuilder("Bounding Sphere: center: ( ");
+        buf.append(center[0]);
+        buf.append(' ');
+        buf.append(center[1]);
+        buf.append(' ');
+        buf.append(center[2]);
+        buf.append(") r: ");
+        buf.append(radius);
+
+        return buf.toString();
+    }
+
+    //---------------------------------------------------------------
+    // Local methods
     //---------------------------------------------------------------
 
     /**
@@ -233,8 +419,7 @@ public class BoundingSphere extends BoundingVolume
      */
     public void setRadius(float radius)
     {
-        if(radius < 0)
-            throw new IllegalArgumentException("Negative radius value");
+        checkRadius(radius);
 
         radiusSquared = radius * radius;
         this.radius = radius;
@@ -307,4 +492,35 @@ public class BoundingSphere extends BoundingVolume
 
         return (disc >= 0);
     }
+
+	/**
+	 * Convenience method to check for negative radius. If the radius is OK
+	 * it returns normally.
+	 *
+	 * @param radius The radius value to check against
+	 * @throws IllegalArgumentException The radius is negative or zero
+	 */
+	private void checkRadius(float radius)
+		throws IllegalArgumentException
+	{
+		if (radius < 0) 
+		{
+			I18nManager intl_mgr = I18nManager.getManager();
+			String msg_pattern = intl_mgr.getString(NEG_RADIUS_PROP);
+			
+			Locale lcl = intl_mgr.getFoundLocale();
+			
+			NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
+			
+			Object[] msg_args = { new Float(radius) };
+			
+			Format[] fmts = { n_fmt };
+			MessageFormat msg_fmt =
+				new MessageFormat(msg_pattern, lcl);
+			msg_fmt.setFormats(fmts);
+			String msg = msg_fmt.format(msg_args);
+			
+			throw new IllegalArgumentException(msg);
+		}
+	}
 }

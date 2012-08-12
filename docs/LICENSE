@@ -1,0 +1,32 @@
+			      
+                      Aviatrix3D Licensing information
+
+This codebase contains a lot of code, licensed under a number of different
+licenses, dependent on the intended use. The text for each license may be
+found in the same directory as this file is located.
+
+Each directory is given relative to the root of the tree as checked out
+from CVS.
+
+GNU LGPL (LGPL.txt):
+  All code under the /src directory
+  All code under the /make directory
+  All code under the /test directory
+  Most of the pre-compiled libraries contained under /lib
+    (need more specific detail on this)
+
+BSD (BSD.txt):
+  All code under /examples
+  All code under /bin
+
+Documents under /docs are not currently assigned a license, thus
+redistributable under standard copyright terms.
+
+Files in /contrib each have their own license. Please consult the source
+to find out in each specific case.
+
+This code makes reference to and includes a collection of prebuilt code 
+from other j3d.org projects. Specifically the SWT OpenGL bindings. The 
+source for that can be found at http://opengl.j3d.org/swt/ and is licensed
+under the BSD License. That in turn is derived from Sun's BSD licensed
+JSR 231 reference implementation. 

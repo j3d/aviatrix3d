@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Web3d.org Copyright (c) 2001
+ *                     Yumetech, Inc Copyright (c) 2004-2005
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -12,11 +12,8 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
-import javax.vecmath.Matrix4f;
-
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
+// External imports
+import javax.media.opengl.GL;
 
 // Local imports
 // None
@@ -25,24 +22,26 @@ import net.java.games.jogl.GLU;
  * Representation of a directional light source.
  * <p>
  *
- * A directional light has a direction, but no location.
+ * A directional light has a direction, but no location. This implementation
+ * uses the OpenGL convention of having the light vector pointed in the
+ * opposite direction to where you think the light is pointing.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.19 $
  */
 public class DirectionalLight extends Light
 {
     /** The colour of the light */
-    protected float[] direction;
+    private float[] direction;
 
     /**
      * Creates a light with the colour set to black.
      */
     public DirectionalLight()
     {
-        super();
+        super(DIRECTIONAL_TYPE);
 
-        direction = new float[3];
+        direction = new float[4];
     }
 
     /**
@@ -54,9 +53,9 @@ public class DirectionalLight extends Light
     public DirectionalLight(float[] col)
         throws IllegalArgumentException
     {
-        super(col);
+        super(DIRECTIONAL_TYPE, col);
 
-        direction = new float[3];
+        direction = new float[4];
     }
 
     /**
@@ -69,9 +68,50 @@ public class DirectionalLight extends Light
     public DirectionalLight(float[] col, float[] dir)
         throws IllegalArgumentException
     {
-        super(col);
+        super(DIRECTIONAL_TYPE, col);
 
-        direction = new float[] { dir[0], dir[1], dir[2] };
+        direction = new float[] { dir[0], dir[1], dir[2], 0 };
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by ComponentRenderable
+    //---------------------------------------------------------------
+
+    /**
+     * Overloaded form of the render() method to render the light details given
+     * the specific Light ID used by OpenGL. Since the active light ID for this
+     * node may vary over time, a fixed ID cannot be used by OpenGL. The
+     * renderer will always call this method rather than the normal render()
+     * method. The normal post render will still be called
+     *
+     * @param gl The GL context to render with
+     * @param lightId the ID of the light to make GL calls with
+     */
+    public void render(GL gl, Object lightId)
+    {
+        int l_id = ((Integer)lightId).intValue();
+
+        gl.glLightfv(l_id, GL.GL_AMBIENT, ambientColor, 0);
+        gl.glLightfv(l_id, GL.GL_POSITION, direction, 0);
+        gl.glLightfv(l_id, GL.GL_DIFFUSE, diffuseColor, 0);
+        gl.glLightfv(l_id, GL.GL_SPECULAR, specularColor, 0);
+
+        gl.glEnable(l_id);
+    }
+
+    /*
+     * Overloaded form of the postRender() method to render the light details given
+     * the specific Light ID used by OpenGL. Since the active light ID for this
+     * node may vary over time, a fixed ID cannot be used by OpenGL. The
+     * renderer will always call this method rather than the normal postRender()
+     * method. The normal post render will still be called
+     *
+     * @param gl The GL context to render with
+     * @param lightId the ID of the light to make GL calls with
+     */
+    public void postRender(GL gl, Object lightId)
+    {
+        gl.glDisable(((Integer)lightId).intValue());
     }
 
     //---------------------------------------------------------------
@@ -79,36 +119,17 @@ public class DirectionalLight extends Light
     //---------------------------------------------------------------
 
     /**
-     * This method is called to render this node. All openGL commands needed
-     * to render the node should be executed.  Any transformations needed
-     * should be added to the transformation stack premultiplied.  This
-     * method must be re-entrant as it can be called from multiple
-     * places at once.
-     *
-     * @param gld The drawable for setting the state
+     * Mark this node as having dirty bounds due to one of it's children having
+     * their bounds changed.
      */
-    public void render(GL gl, GLU glu)
+    protected void markBoundsDirty()
     {
-        if(!enabled)
-            return;
-    }
-
-    /*
-     * This method is called after a node has been rendered.  This method
-     * must be re-entrant.
-     *
-     * @param gld The drawable for resetting the state
-     */
-    public void postRender(GL gl, GLU glu)
-    {
-        if(!enabled)
-            return;
-
-        //gl.glPopMatrix();
+        if(parent != null)
+            parent.markBoundsDirty();
     }
 
     //---------------------------------------------------------------
-    // Misc local methods
+    // Local methods
     //---------------------------------------------------------------
 
     /**
@@ -116,9 +137,16 @@ public class DirectionalLight extends Light
      * light is shining.
      *
      * @param dir The new direction value to use
+     * @throws InvalidWriteTimingException An attempt was made to write outside
+     *   of the NodeUpdateListener data changed callback method
      */
     public void setDirection(float[] dir)
+        throws InvalidWriteTimingException
     {
+        if(isLive() && updateHandler != null &&
+           !updateHandler.isDataWritePermitted(this))
+            throw new InvalidWriteTimingException(getDataWriteTimingMessage());
+
         direction[0] = dir[0];
         direction[1] = dir[1];
         direction[2] = dir[2];
@@ -131,9 +159,16 @@ public class DirectionalLight extends Light
      * @param x The x component of the direction value to use
      * @param y The y component of the direction value to use
      * @param z The z component of the direction value to use
+     * @throws InvalidWriteTimingException An attempt was made to write outside
+     *   of the NodeUpdateListener data changed callback method
      */
     public void setDirection(float x, float y, float z)
+        throws InvalidWriteTimingException
     {
+        if(isLive() && updateHandler != null &&
+           !updateHandler.isDataWritePermitted(this))
+            throw new InvalidWriteTimingException(getDataWriteTimingMessage());
+
         direction[0] = x;
         direction[1] = y;
         direction[2] = z;
@@ -149,5 +184,24 @@ public class DirectionalLight extends Light
         dir[0] = direction[0];
         dir[1] = direction[1];
         dir[2] = direction[2];
+    }
+
+    /**
+     * Compares this object with the specified object for order. Returns a
+     * negative integer, zero, or a positive integer as this object is less
+     * than, equal to, or greater than the specified object.
+     *
+     * @param l The light instance to be compared
+     * @return -1, 0 or 1 depending on order
+     */
+    public int compareTo(Light l)
+    {
+        int res = super.compareTo(l);
+        if(res != 0)
+            return res;
+
+        DirectionalLight dl = (DirectionalLight)l;
+
+        return compareColor3(direction, dl.direction);
     }
 }

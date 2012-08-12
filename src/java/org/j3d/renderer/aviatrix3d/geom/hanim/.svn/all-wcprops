@@ -1,0 +1,125 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/aviatrix3d/!svn/ver/1968/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim
+END
+SoftwareSpeedHumanoid.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/aviatrix3d/!svn/ver/849/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/SoftwareSpeedHumanoid.java
+END
+AVShaderHAnimFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/aviatrix3d/!svn/ver/849/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/AVShaderHAnimFactory.java
+END
+ShaderObjectParent.java
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/aviatrix3d/!svn/ver/849/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/ShaderObjectParent.java
+END
+ShaderJoint.java
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/aviatrix3d/!svn/ver/849/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/ShaderJoint.java
+END
+AVJoint.java
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/aviatrix3d/!svn/ver/1942/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/AVJoint.java
+END
+SoftwareSpaceJoint.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/aviatrix3d/!svn/ver/1941/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/SoftwareSpaceJoint.java
+END
+HAnimShaderProgram.java
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/aviatrix3d/!svn/ver/849/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/HAnimShaderProgram.java
+END
+package.html
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/aviatrix3d/!svn/ver/735/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/package.html
+END
+SoftwareHumanoid.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/aviatrix3d/!svn/ver/1394/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/SoftwareHumanoid.java
+END
+SoftwareSpeedJoint.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/aviatrix3d/!svn/ver/1941/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/SoftwareSpeedJoint.java
+END
+AVHumanoidPart.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/aviatrix3d/!svn/ver/849/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/AVHumanoidPart.java
+END
+HAnimShader.java
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/aviatrix3d/!svn/ver/1947/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/HAnimShader.java
+END
+AVSoftwareHAnimFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/aviatrix3d/!svn/ver/849/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/AVSoftwareHAnimFactory.java
+END
+AVSegment.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/aviatrix3d/!svn/ver/1942/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/AVSegment.java
+END
+ShaderHumanoid.java
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/aviatrix3d/!svn/ver/1942/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/ShaderHumanoid.java
+END
+SoftwareSpaceHumanoid.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/aviatrix3d/!svn/ver/849/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/SoftwareSpaceHumanoid.java
+END
+AVSite.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/aviatrix3d/!svn/ver/1942/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/AVSite.java
+END
+AVHumanoid.java
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/aviatrix3d/!svn/ver/1942/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/AVHumanoid.java
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/aviatrix3d/!svn/ver/1968/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/Makefile
+END
+SoftwareJoint.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/aviatrix3d/!svn/ver/849/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/hanim/SoftwareJoint.java
+END

@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Web3d.org Copyright (c) 2001
+ *                     Yumetech, Inc Copyright (c) 2004-2005
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -12,10 +12,10 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
+// External imports
 // None
 
-// Application specific imports
+// Local imports
 // None
 
 /**
@@ -23,12 +23,23 @@ package org.j3d.aviatrix3d;
  * representation in the Scene Graph.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.6 $
  */
 public interface NodeUpdateListener
 {
     /**
-     * Notification that its safe to update the node now.
+     * Notification that its safe to update the node now with any operations
+     * that could potentially effect the node's bounds.
+     *
+     * @param src The node or Node Component that is to be updated.
      */
-    public void updateNode();
+    public void updateNodeBoundsChanges(Object src);
+
+    /**
+     * Notification that its safe to update the node now with any operations
+     * that only change the node's properties, but do not change the bounds.
+     *
+     * @param src The node or Node Component that is to be updated.
+     */
+    public void updateNodeDataChanges(Object src);
 }

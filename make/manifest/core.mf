@@ -1,0 +1,24 @@
+Extension-Name: j3d-org-aviatrix3d-core
+Specification-Vendor: Justin Couch
+Specification-Version: 2.2
+Implementation-Vendor-Id: j3d.org
+Implementation-Vendor: j3d.org
+Implementation-Version: 2.2
+Bundle-ManifestVersion: 2
+Bundle-Name: Aviatrix3D
+Bundle-SymbolicName: org.j3d.aviatrix3d.core; singleton:=true
+Bundle-Version: 2.2.0
+Bundle-Localization: plugin
+Bundle-Vendor: j3d.org
+Export-Package: org.j3d.aviatrix3d, 
+ org.j3d.aviatrix3d.picking,
+ org.j3d.aviatrix3d.output.audio,
+ org.j3d.aviatrix3d.output.graphics,
+ org.j3d.aviatrix3d.pipeline,
+ org.j3d.aviatrix3d.pipeline.audio,
+ org.j3d.aviatrix3d.pipeline.graphics,
+ org.j3d.aviatrix3d.rendering,
+ org.j3d.aviatrix3d.management
+Require-Bundle: org.eclipse.swt, org.j3d.opengl.swt, org.j3d.core, 
+ javax.vecmath, net.java.games.joal
+Eclipse-AutoStart: true

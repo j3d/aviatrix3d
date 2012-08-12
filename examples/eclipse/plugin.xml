@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="org.j3d.examples.aviatrix3d.swt"
+   name="Aviatrix3D 3D Model Viewer Example Plug-in"
+   version="1.0.0"
+   provider-name="j3d.org">
+
+  <extension point="org.eclipse.ui.views">
+    <category name="3D Viewers" id="org.j3d.examples.aviatrix3d.swt.views.3d"/>
+    <view
+      name="Aviatrix3D Model Viewer"
+      icon="icons/aviatrix3d16.png"
+      category="org.j3d.examples.aviatrix3d.swt.views.3d"
+      class="org.j3d.examples.aviatrix3d.swt.File3DView"
+      id="org.j3d.examples.aviatrix3d.swt.views.3d.ModelView">
+    </view>
+  </extension>
+   
+  <extension point="org.eclipse.ui.viewActions">
+    <viewContribution
+        targetID="org.j3d.examples.aviatrix3d.swt.views.3d.ModelView"
+        id="org.j3d.examples.aviatrix3d.swt.views.3d.ModelView.buttons">
+
+      <!-- Open button -->
+      <action
+          label="open"
+          icon="icons/open.gif"
+	  tooltip="Open model"
+	  class="org.j3d.examples.aviatrix3d.swt.Load3DActionDelegate"
+	  toolbarPath="3d_group"
+	  enablesFor="*"
+	  id="toolbar.open">
+      </action>
+
+      <!-- Start Animation button -->
+      <action
+          label="Start Animation"
+          icon="icons/start.gif"
+          tooltip="Rotate"
+          class="org.j3d.examples.aviatrix3d.swt.AnimationActionDelegate"
+          toolbarPath="3d_group"
+          enablesFor="*"
+          id="toolbar.start">
+      </action>
+      
+      <!-- Stop Animation button -->
+      <action
+          label="Stop Animation"
+          icon="icons/stop.gif"
+          tooltip="Fit window"
+          class="org.j3d.examples.aviatrix3d.swt.AnimationActionDelegate"
+          toolbarPath="3d_group"
+          enablesFor="*"
+          id="toolbar.stop">
+      </action>
+    </viewContribution>
+  </extension>
+</plugin>

@@ -1,0 +1,10 @@
+<html>
+<body>
+Lightweight output device implementation for SWT's Draw2D framework.
+<p>
+
+Making use of the classes in this package will require the use of the Draw2D
+plugin.
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Web3d.org Copyright (c) 2001
+ *                     Yumetech, Inc Copyright (c) 2004-2005
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -12,11 +12,8 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
-import javax.vecmath.Matrix4f;
-
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
+// External imports
+import javax.media.opengl.GL;
 
 // Local imports
 // None
@@ -25,24 +22,37 @@ import net.java.games.jogl.GLU;
  * Representation of a point light source.
  * <p>
  *
- * A positional light has a position, but no location.
+ * A positional light has a position, but no orientation and attenuates
+ * over distance from the position.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.22 $
  */
 public class PointLight extends Light
 {
     /** The colour of the light */
     protected float[] position;
 
+    /** The constant attentuation factor */
+    protected float cAttenuation;
+
+    /** The linear attentuation factor */
+    protected float lAttenuation;
+
+    /** The quadratic attentuation factor */
+    protected float qAttenuation;
+
     /**
      * Creates a light with the colour set to black.
      */
     public PointLight()
     {
-        super();
+        super(POINT_TYPE);
 
-        position = new float[3];
+        position = new float[4];
+        position[3] = 1;
+
+        cAttenuation = 1;
     }
 
     /**
@@ -54,9 +64,12 @@ public class PointLight extends Light
     public PointLight(float[] col)
         throws IllegalArgumentException
     {
-        super(col);
+        super(POINT_TYPE, col);
 
-        position = new float[3];
+        position = new float[4];
+        position[3] = 1;
+
+        cAttenuation = 1;
     }
 
     /**
@@ -69,9 +82,55 @@ public class PointLight extends Light
     public PointLight(float[] col, float[] pos)
         throws IllegalArgumentException
     {
-        super(col);
+        super(POINT_TYPE, col);
 
-        position = new float[] { pos[0], pos[1], pos[2] };
+        position = new float[] { pos[0], pos[1], pos[2], 1 };
+
+        cAttenuation = 1;
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by ComponentRenderable
+    //---------------------------------------------------------------
+
+    /**
+     * Overloaded form of the render() method to render the light details given
+     * the specific Light ID used by OpenGL. Since the active light ID for this
+     * node may vary over time, a fixed ID cannot be used by OpenGL. The
+     * renderer will always call this method rather than the normal render()
+     * method. The normal post render will still be called
+     *
+     * @param gl The GL context to render with
+     * @param lightId the ID of the light to make GL calls with
+     */
+    public void render(GL gl, Object lightId)
+    {
+        int l_id = ((Integer)lightId).intValue();
+
+        gl.glLightfv(l_id, GL.GL_AMBIENT, ambientColor, 0);
+        gl.glLightfv(l_id, GL.GL_SPECULAR, specularColor, 0);
+        gl.glLightfv(l_id, GL.GL_DIFFUSE, diffuseColor, 0);
+        gl.glLightfv(l_id, GL.GL_POSITION, position, 0);
+        gl.glLightf(l_id, GL.GL_CONSTANT_ATTENUATION, cAttenuation);
+        gl.glLightf(l_id, GL.GL_LINEAR_ATTENUATION, lAttenuation);
+        gl.glLightf(l_id, GL.GL_QUADRATIC_ATTENUATION, qAttenuation);
+
+        gl.glEnable(l_id);
+    }
+
+    /*
+     * Overloaded form of the postRender() method to render the light details given
+     * the specific Light ID used by OpenGL. Since the active light ID for this
+     * node may vary over time, a fixed ID cannot be used by OpenGL. The
+     * renderer will always call this method rather than the normal postRender()
+     * method. The normal post render will still be called
+     *
+     * @param gl The GL context to render with
+     * @param lightId the ID of the light to make GL calls with
+     */
+    public void postRender(GL gl, Object lightId)
+    {
+        gl.glDisable(((Integer)lightId).intValue());
     }
 
     //---------------------------------------------------------------
@@ -79,32 +138,13 @@ public class PointLight extends Light
     //---------------------------------------------------------------
 
     /**
-     * This method is called to render this node. All openGL commands needed
-     * to render the node should be executed.  Any transformations needed
-     * should be added to the transformation stack premultiplied.  This
-     * method must be re-entrant as it can be called from multiple
-     * places at once.
-     *
-     * @param gld The drawable for setting the state
+     * Mark this node as having dirty bounds due to one of it's children having
+     * their bounds changed.
      */
-    public void render(GL gl, GLU glu)
+    protected void markBoundsDirty()
     {
-        if(!enabled)
-            return;
-    }
-
-    /*
-     * This method is called after a node has been rendered.  This method
-     * must be re-entrant.
-     *
-     * @param gld The drawable for resetting the state
-     */
-    public void postRender(GL gl, GLU glu)
-    {
-        if(!enabled)
-            return;
-
-        //gl.glPopMatrix();
+        if(parent != null)
+            parent.markBoundsDirty();
     }
 
     //---------------------------------------------------------------
@@ -116,9 +156,16 @@ public class PointLight extends Light
      * light is shining.
      *
      * @param pos The new position value to use
+     * @throws InvalidWriteTimingException An attempt was made to write outside
+     *   of the NodeUpdateListener bounds change callback method
      */
     public void setPosition(float[] pos)
+        throws InvalidWriteTimingException
     {
+        if(isLive() && updateHandler != null &&
+           !updateHandler.isBoundsWritePermitted(this))
+            throw new InvalidWriteTimingException(getBoundsWriteTimingMessage());
+
         position[0] = pos[0];
         position[1] = pos[1];
         position[2] = pos[2];
@@ -131,9 +178,16 @@ public class PointLight extends Light
      * @param x The x component of the position value to use
      * @param y The y component of the position value to use
      * @param z The z component of the position value to use
+     * @throws InvalidWriteTimingException An attempt was made to write outside
+     *   of the NodeUpdateListener bounds change callback method
      */
     public void setPosition(float x, float y, float z)
+        throws InvalidWriteTimingException
     {
+        if(isLive() && updateHandler != null &&
+           !updateHandler.isBoundsWritePermitted(this))
+            throw new InvalidWriteTimingException(getBoundsWriteTimingMessage());
+
         position[0] = x;
         position[1] = y;
         position[2] = z;
@@ -149,5 +203,94 @@ public class PointLight extends Light
         pos[0] = position[0];
         pos[1] = position[1];
         pos[2] = position[2];
+    }
+
+    /**
+     * Set the attenuation factors for the light. See class header
+     * documentation for more inforamtion on these values.
+     *
+     * @param constant The constant attenuation factor
+     * @param linear The linear attenuation factor
+     * @param quad The quadratic attenuation factor
+     * @throws InvalidWriteTimingException An attempt was made to write outside
+     *   of the NodeUpdateListener data change callback method
+     */
+    public void setAttenuation(float constant, float linear, float quad)
+        throws InvalidWriteTimingException
+    {
+        if(isLive() && updateHandler != null &&
+           !updateHandler.isDataWritePermitted(this))
+            throw new InvalidWriteTimingException(getDataWriteTimingMessage());
+
+        cAttenuation = constant;
+        lAttenuation = linear;
+        qAttenuation = quad;
+    }
+
+    /**
+     * Set the attenuation factors for the light. See class header
+     * documentation for more inforamtion on these values.
+     *
+     * @param values Each value in the order:<br>
+     *    [0] The constant attenuation factor<br>
+     *    [1] The linear attenuation factor<br>
+     *    [2] The quadratic attenuation factor
+     * @throws InvalidWriteTimingException An attempt was made to write outside
+     *   of the NodeUpdateListener data change callback method
+     */
+    public void setAttenuation(float[] values)
+        throws InvalidWriteTimingException
+    {
+        if(isLive() && updateHandler != null &&
+           !updateHandler.isDataWritePermitted(this))
+            throw new InvalidWriteTimingException(getDataWriteTimingMessage());
+
+        cAttenuation = values[0];
+        lAttenuation = values[1];
+        qAttenuation = values[2];
+    }
+
+    /**
+     * Set the attenuation factors for the light. See class header
+     * documentation for more inforamtion on these values.
+     *
+     * @param values Array to copy the values into, in the order:<br>
+     *    [0] The constant attenuation factor<br>
+     *    [1] The linear attenuation factor<br>
+     *    [2] The quadratic attenuation factor
+     */
+    public void getAttenuation(float[] values)
+    {
+        values[0] = cAttenuation;
+        values[1] = lAttenuation;
+        values[2] = qAttenuation;
+    }
+
+    /**
+     * Compares this object with the specified object for order. Returns a
+     * negative integer, zero, or a positive integer as this object is less
+     * than, equal to, or greater than the specified object.
+     *
+     * @param l The light instance to be compared
+     * @return -1, 0 or 1 depending on order
+     */
+    public int compareTo(Light l)
+    {
+        int res = super.compareTo(l);
+        if(res != 0)
+            return res;
+
+        PointLight pl = (PointLight)l;
+
+        if(cAttenuation != pl.cAttenuation)
+            return cAttenuation < pl.cAttenuation ? -1 : 1;
+
+        if(lAttenuation != pl.lAttenuation)
+            return lAttenuation < pl.lAttenuation ? -1 : 1;
+
+        if(qAttenuation != pl.qAttenuation)
+            return qAttenuation < pl.qAttenuation ? -1 : 1;
+
+        return compareColor3(position, pl.position);
     }
 }

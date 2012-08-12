@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/aviatrix3d/!svn/ver/1968/trunk/src/java/org/j3d/renderer/aviatrix3d/loader/vterrain
+END
+BTModel.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/aviatrix3d/!svn/ver/1921/trunk/src/java/org/j3d/renderer/aviatrix3d/loader/vterrain/BTModel.java
+END
+BTLoader.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/aviatrix3d/!svn/ver/1076/trunk/src/java/org/j3d/renderer/aviatrix3d/loader/vterrain/BTLoader.java
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/aviatrix3d/!svn/ver/1968/trunk/src/java/org/j3d/renderer/aviatrix3d/loader/vterrain/Makefile
+END
+package.html
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/aviatrix3d/!svn/ver/1076/trunk/src/java/org/j3d/renderer/aviatrix3d/loader/vterrain/package.html
+END

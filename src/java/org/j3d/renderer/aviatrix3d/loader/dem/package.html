@@ -1,0 +1,32 @@
+<html>
+<body>
+File loader for the USGS Digital Elevation Model (DEM) file format.
+<P>
+
+File loaders are built over the top of the basic parsing framework defined in
+the {@link org.j3d.loaders.dem} package to handle the parsing.
+
+<h3>Implementation Notes</h3>
+
+The geometry loaded by this loader does not provide any coordinate
+projection capability. All rendered coordinates are in the raw values
+provided by the file.
+<p>
+
+Since a DEM model is static geometry, there are no runtime abilities
+created, regardless of the flag settings.
+<p>
+
+DEM models do not contain layers, nor any other form of interesting geometry
+beyond the raw terrain itself.
+
+<h3>Required Support JARS and packages</h3>
+
+<ul>
+<li>{@link org.j3d.loaders.dem}, <code>j3d-org-loaders-dem.jar</code></li>
+<li>{@link org.j3d.aviatrix3d}, <code>aviatrix3d-core.jar</code></li>
+<li>{@link org.j3d.renderer.aviatrix3d.loader}, <code>aviatix3d-util.jar</code></li>
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,281 @@
+
+                           Aviatrix3D 2.1
+                 Compiling and Installation Guide
+
+Aviatrix3D is a pure-Java scene graph API that utilitises a number of lower
+level libraries. To compile Aviatrix3D, you will need to make sure you have 
+these extra libraries installed. Some libraries are included with the basic
+download (either pre-built or from CVS). These libraries are those that do not
+require any native code. Anything that uses native code, we require you to 
+download that separately for your platform. 
+
+External Downloads
+-------------------
+
+The following libraries are required:
+
+J2SE (Java development environment)
+
+Where: 
+Version: 1.5.0 or later
+
+JOGL (SWT Java OpenGL Bindings)
+
+Where: http://opengl.j3d.org/swt/jogl.html
+Version: 0.7 or later
+
+Our code supports AWT, Swing and SWT. While you could download the reference
+implementation of JOGL, sections of Aviatrix3D will not compile as the RI does
+not support SWT. If you have no intentions of using the SWT capabilities, then 
+you may use the JOGL Reference Implementation from Sun. You'll need v1.1.0 RC1
+or later. 
+
+JOAL (Java OpenAL Bindings)
+
+Where: https://joal.dev.java.net/
+Version: 1.1 Beta 01 only (The Jan 2006 or later, the numbering seems to have 
+  gone backwards after the old 1.1.0b04!)
+
+Vecmath 
+
+Where: https://vecmath.dev.java.net/
+Version: 1.3.1
+
+SWT (Standard Windowing Toolkit)
+
+Where: http://www.eclipse.org/swt/
+Version: 3.2 or later
+
+You may use the default that comes installed with Eclipse if you are using 
+Eclipse for an IDE.
+
+Build Environment
+------------------
+
+The code is built around a standard unix environment for setup. We use the 
+various GNU tools to build the code - in particular there is a heavy reliance
+on GNU Make for the compilation.
+
+You can of course compile the codebase by hand using javac or another tool like
+ant. This is entirely possible, and we make sure to architect the codebase so
+that you will not get caught with needing to compile 3 different directories
+simultaneously. However we do recommend using the build environment because it
+makes life soooooo much easier and ensures that code that is not yet ready for 
+compilation is not accidently compiled, such as indescriminant tools like ant
+do.
+
+When installing the native code libraries required above, we recommend that you
+do not place them into your JRE lib/ext directory. Instead, place them 
+somewhere common that all users can get to, but where different versions of 
+the same toolkit can co-exist depending on your runtime needs. 
+
+Win32
+
+For Microsoft OS users, you will need to download and install cygwin from 
+Redhat. This can be found at http://sourceware.cygnus.com/cygwin/. Follow the
+installation instructions, specifically making sure that you select 
+the Unix text file type and not MS Windows. If you do select the Windows
+version, then CVS will check out the makefiles with the extra linefeed characters
+and make will complain. The default environment should be good enough for 
+you. Make sure you have at least Make and Bash installed.
+
+Unix & Mac OS/X
+
+You really don't need to do much at all. Make sure that you have the GNU tools
+installed as we use a number of features from GNU Make. The local 
+vendor-specific make will not work as the build system uses several GNU 
+features to provide cross-platform compile ability.
+
+
+			   -----------------
+
+Environment Settings
+
+The code needs one environment variable set in order to compile due to the need
+for platform-specific libraries for both OpenGL and SWT/Eclispe. This 
+environment variable will also be used if you wanted to provide your own 
+personal CLASSPATH setttings to override the stock values.
+
+The makefile that comes with this codebase ignores your standard CLASSPATH. To
+include and of that system-level information, you define another variable 
+called PROJECT_CLASSPATH. This is used to bring the platform-specific and other
+general/system JARs that you might wish to The typical usage is to write the 
+following:
+
+  export PROJECT_CLASSPATH=${CLASSPATH}
+
+If you are using BASH for your shell, then I find the following little setup
+handy in my .bashrc/.bash_login. This allows me to swap between various 
+different projects on the fly and work regardless of whether I'm on a Windows 
+or unix machine:
+
+JOGL_DEV_ROOT="/cygdrive/c/java/jogl/jsr231/jogl/build"
+JOGL_DEV_DOS_ROOT="c:/java/jogl/jsr231/jogl/build"
+JOGL_DEV_CLASSPATH="${JOGL_DEV_DOS_ROOT}/jogl.jar"
+JOGL_DEV_LIB_PATH="${JOGL_DEV_ROOT}/obj"
+
+ECLIPSE_DEV_DOS_ROOT="c:/Program Files/eclipse/plugins"
+
+SWT_DEV_ROOT="/cygdrive/c/java/swt-3.2M3"
+SWT_DEV_DOS_ROOT="c:/java/swt-3.2M3"
+
+SWT_DEV_CLASSPATH="${SWT_DEV_DOS_ROOT}/swt.jar;${ECLIPSE_DEV_DOS_ROOT}/org.eclipse.ui.workbench_3.1.1.jar"
+SWT_DEV_CLASSPATH="${SWT_DEV_CLASSPATH};${ECLIPSE_DEV_DOS_ROOT}/org.eclipse.core.runtime_3.1.1.jar"
+SWT_DEV_CLASSPATH="${SWT_DEV_CLASSPATH};${ECLIPSE_DEV_DOS_ROOT}/org.eclipse.jface_3.1.1.jar"
+SWT_DEV_LIB_PATH="${SWT_DEV_ROOT}"
+
+J3D_HOME=${HOME}/j3d.org
+J3D_CVSROOT=":pserver:anonymous@cvs.j3d.org:/cvs/j3d/cvsroot"
+J3D_LIB_PATH=
+J3D_PATH="$PATH:${JAVA_CYG_HOME}/bin"
+
+J3D_BASE_CLASSPATH="${JUNIT_CLASSPATH}"
+
+J3D_SWT_PROJECT_ROOT="${J3D_DOS_HOME}/swt_opengl"
+J3D_SWT_CLASSPATH="${J3D_SWT_PROJECT_ROOT}/classes"
+J3D_SWT_CLASSPATH="${J3D_SWT_CLASSPATH};${JOGL_DEV_CLASSPATH}"
+J3D_SWT_CLASSPATH="${J3D_SWT_CLASSPATH};${SWT_DEV_CLASSPATH}"
+J3D_SWT_PROJECT_CLASSPATH="${JUNIT_CLASSPATH}"
+J3D_SWT_LIB_PATH="${JOGL_DEV_LIB_PATH}:${SWT_DEV_LIB_PATH}"
+J3D_SWT_PATH="{$J3D_PATH}:${J3D_SWT_LIB_PATH}"
+
+J3D_AVIATRIX_PROJECT_ROOT="${J3D_DOS_HOME}/aviatrix3d"
+J3D_AVIATRIX_CLASSPATH="${J3D_AVIATRIX_PROJECT_ROOT}/classes"
+J3D_AVIATRIX_CLASSPATH="${J3D_AVIATRIX_CLASSPATH};${J3D_AVIATRIX_PROJECT_ROOT}/config"
+J3D_AVIATRIX_CLASSPATH="${J3D_AVIATRIX_CLASSPATH};${J3D_AVIATRIX_PROJECT_ROOT}/images"
+J3D_AVIATRIX_CLASSPATH="${J3D_AVIATRIX_CLASSPATH};${J3D_CODE_PROJECT_ROOT}/classes"
+J3D_AVIATRIX_CLASSPATH="${J3D_AVIATRIX_CLASSPATH};${J3D_SWT_CLASSPATH}"
+J3D_AVIATRIX_PROJECT_CLASSPATH="${JOGL_DEV_CLASSPATH};${SWT_DEV_CLASSPATH}"
+J3D_AVIATRIX_LIB_PATH="${JOGL_DEV_LIB_PATH}:${SWT_DEV_LIB_PATH}"
+J3D_AVIATRIX_PATH="{$J3D_PATH}:${J3D_AVIATRIX_LIB_PATH}"
+
+cd()
+{
+  case $# in
+    0)  builtin cd $HOME
+        ;;
+    1)  builtin cd $1
+        echo `pwd`
+        ;;
+    2)  dir=$1/$2
+        if [ ! -x $dir ] ; then
+          echo $2 does not exist
+          builtin cd $1
+        else
+          builtin cd $dir
+          echo `pwd`
+        fi
+  esac
+}
+
+av3d()
+{
+  export PROJECT_HOME=${J3D_HOME}/aviatrix3d
+  export AREA=AV3D
+  export PS1="[${RED}$AREA ${WHITE}\W${NORMAL}] \$ "
+  export CVSROOT=${J3D_CVSROOT}
+  export CVS_RSH=$J3D_CVS_RSH
+  export LD_LIBRARY_PATH=${J3D_AVIATRIX_LIB_PATH}
+  export PATH=${J3D_AVIATRIX_PATH}
+  export CLASSPATH="${J3D_BASE_CLASSPATH};${J3D_AVIATRIX_CLASSPATH}"
+  export PROJECT_CLASSPATH=${J3D_AVIATRIX_PROJECT_CLASSPATH}
+  cd $PROJECT_HOME $1
+}
+
+			   -----------------
+
+Using the Build Environment
+
+With the environment variable set up, all you need to do is change to the 
+directory that contains the CVS checkout and type 
+
+  bash$ make 
+
+This will generate a list of options that you can run with make. The various options
+with make are:
+
+    * class - Generates just the class files
+    * jar - Compiles the code and creates a JAR file
+    * javadoc - Creates javadoc for you
+    * shaders - Copying the shader source files into the classes directory
+    * shadersjar - Build the shader files into a separate JAR
+    * all - Build everything, including docs.
+    * clean - Cleans up everything!
+
+The code directory structure has 7 subdirectories under the main code area. 
+Five of these are there when you download the code:
+
+    * make The makefiles for building the code
+    * docs Project documentation and the generated javadoc
+    * src Source files for the project. Sub directories broken down by 
+          implementation language and/or environment
+    * examples Example code to show how to use the toolkit
+
+The classes, jar and docs/javadoc directories are created by the build process.
+
+Building the class files
+
+To build the entire codebase from scratch, change to the project root 
+directory. Now type:
+
+   [j3d aviatrix3d] $ make clean
+   [j3d aviatrix3d] $ make class
+
+You will now see make run off and do its thing. If everything compiles 
+successfully, you will find all the .class files in the 
+classes under the top directory of the project directory. You may elect to use 
+these directly or build a JAR file for them
+
+If you only wish to recompile a single directory then you can change to that
+directory and just type:
+
+   [j3d aviatrix3d] $ make
+
+This will then build only the local files.
+
+Building JAR files
+
+If you wish for a binary distribution of the code, they you can create the 
+jar file with the command
+
+   [j3d aviatrix3d] $ make jar
+
+These file will be built and placed in the jars directory under the top directory
+(if the directory does not exist it will be created). 
+
+If you get the following error message, it means that you have not run 
+"make shaders" before attempting to build the JAR file:
+
+   Building the new JAR file aviatrix3d-all_2.0.0.jar
+   cp: cannot stat `classes/standard/*.*': No such file or directory
+   make[2]: *** [aviatrix3d-all_2.0.0.jar.JAR] Error 1
+   make[1]: *** [aviatrix3d-all.jar] Error 2
+   make: *** [jar] Error 2
+
+
+Building Javadocs
+
+Of course, no Java project is complete without the accompanying javadoc. This 
+too can be generated using the make system. Before running the make process, 
+you may want to customise the code for your system. We automatically attempt to
+link to any other javadoc that you have on your machine - in particular the 
+Java 3D, JDK and XML projects. To include these, or to disable the ability, you
+will need to edit one of the makefiles.
+
+Firstly change into the $PROJECT_ROOT/java directory. There you will find a 
+file called Makefile. Open this up in your editor of choice and go to the very 
+bottom of the file. There you will find a variable called LINK_URLS. Edit the 
+values there to suit your system. Make sure you follow the instructions there 
+and put fully qualified URLs.
+
+Now, to generate the documentation, change back to the project root directory
+and type
+
+   [j3d aviatrix3d] $ make javadoc
+
+If everything goes according to plan, you will see a big stream of printouts as
+the documentation is produced. After all this is finished, you will find the 
+docs in the docs/javadoc directory under the top directory.
+
+Justin Couch
+justin@vlc.com.au

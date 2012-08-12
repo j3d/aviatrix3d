@@ -1,0 +1,59 @@
+<html>
+<body>
+Implementations of file loaders that produce an Aviatrix3D scene graph.
+<P>
+
+
+File loaders are built over the top of the basic parsing framework defined in
+the {@link org.j3d.loaders} package and subpackages.
+
+<h3>Limitations</h3>
+
+Loaders are generally designed for static model loading and, as such don't
+behave quite so well with model formats that also include a runtime component
+(eg X3D/VRML97). Even for formats that do include runtime capabilities, a lot
+of the time only the non-runtime part is required. The basic
+{@link org.j3d.renderer.aviatrix3d.loader.AVLoader} interface represents
+this desire for a loader's functionality to explicitly exclude some parts of
+the model capability by the use of a set of load flags.
+<p>
+
+<h3>Using Loaders</h3>
+
+The loaders are abstracted into a common interface that allows and application
+to load models without needing to know about specific class names. A loader is
+used to parse input in the form of a stream, file pointer or URL. In return,
+you are given an instance of {@link org.j3d.renderer.aviatrix3d.loader.AVModel}
+to fetch the loaded contents from.
+<p>
+
+<h3>Layers</h3>
+<p>
+The behaviour of the loader is is dependent on whether or not a fileformat and
+particular file contain layers. Most formats do not contain any concept of
+composited scenes, but a few do. Aviatrix3D also has the capability to render
+composited scenes, so we allow model loaders to expose this capability as well.
+</p>
+<p>
+When the user requests that layers are loaded, and some are found in the
+requested file, then no root model is defined and
+{@link org.j3d.renderer.aviatrix3d.loader.AVModel#getModelRoot()} will return
+null. All content is accessed through the
+{@link org.j3d.renderer.aviatrix3d.loader.AVModel#getLayers()} method. Layers
+are returned in the order of front-most to rear-most. Layers that are defined,
+but contain no content will still have valid layer object instances. With all
+layers, unless the file format contains a specific size, the
+{@link org.j3d.aviatrix3d.Viewport} will have zero size. It is up to the
+calling application to ensure that viewports are correctly sized before
+adding them to the scene.
+</p>
+<p>
+When no layer loading is requested, or the loaded file does not contain any
+layers, then the {@link org.j3d.renderer.aviatrix3d.loader.AVModel#getLayers()}
+method will return an empty list and
+{@link org.j3d.renderer.aviatrix3d.loader.AVModel#getModelRoot()} will return a
+valid object representing the root of the loaded model.
+</p>
+
+</body>
+</html>

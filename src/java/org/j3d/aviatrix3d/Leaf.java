@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Web3d.org Copyright (c) 2001
+ *                     Yumetech, Inc Copyright (c) 2004 - 2006
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -12,16 +12,18 @@
 
 package org.j3d.aviatrix3d;
 
-// Standard imports
+// External imports
+// None
 
-// Application specific imports
+// Local imports
+// None
 
 /**
- * A Leaf class is the base class for all Scene Graph objects that have no
- * children.
+ * A Leaf class is the base class for all scene graph objects that have no
+ * children but provide something that may be renderable in the scene graph.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.6 $
  */
 public abstract class Leaf extends Node
 {

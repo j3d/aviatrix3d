@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/aviatrix3d/!svn/ver/1968/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/volume
+END
+OctTree.java
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/aviatrix3d/!svn/ver/1941/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/volume/OctTree.java
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/aviatrix3d/!svn/ver/1968/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/volume/Makefile
+END
+package.html
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/aviatrix3d/!svn/ver/684/trunk/src/java/org/j3d/renderer/aviatrix3d/geom/volume/package.html
+END
