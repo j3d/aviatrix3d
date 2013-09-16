@@ -19,11 +19,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ArrayList;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
-
+import org.j3d.maths.vector.*;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -78,7 +74,7 @@ class DefaultBatchPickingHandler
     private PickTarget[] pickPath;
 
     /** Path of transforms from the root of the scene to the stent place */
-    private Matrix4f[] transformPath;
+    private Matrix4d[] transformPath;
 
     /** Flags to say with of the transforms are stently valid */
     private boolean[] validTransform;
@@ -105,19 +101,19 @@ class DefaultBatchPickingHandler
     private float[] vertexPickData;
 
     /** The matrix to set everything in and then invert it. */
-    private Matrix4f vworldMatrix;
+    private Matrix4d vworldMatrix;
 
     /** The matrix containing the local inverted form. */
-    private Matrix4f invertedMatrix;
+    private Matrix4d invertedMatrix;
 
     /** Working vector for interacting with the world matrix */
-    private Vector4f wkVec;
+    private Vector4d wkVec;
 
     /** Working vector for interacting with the world matrix */
-    private Vector3f wkNormal;
+    private Vector3d wkNormal;
 
     /** Temp value for holding the frustum planes */
-    private Vector4f[][] frustumPlanes;
+    private Vector4d[][] frustumPlanes;
 
     /** Matrix utility code for doing inversions */
     private MatrixUtils matrixUtils;
@@ -132,18 +128,18 @@ class DefaultBatchPickingHandler
     {
         vertexPickData = new float[3];
         pickPath = new PickTarget[LIST_START_SIZE];
-        transformPath = new Matrix4f[LIST_START_SIZE];
+        transformPath = new Matrix4d[LIST_START_SIZE];
         validTransform = new boolean[LIST_START_SIZE];
 
         for(int i = 0; i < LIST_START_SIZE; i++)
-            transformPath[i] = new Matrix4f();
+            transformPath[i] = new Matrix4d();
 
-        vworldMatrix = new Matrix4f();
-        invertedMatrix = new Matrix4f();
-        wkVec = new Vector4f();
+        vworldMatrix = new Matrix4d();
+        invertedMatrix = new Matrix4d();
+        wkVec = new Vector4d();
         wkVec.w = 1;
 
-        wkNormal = new Vector3f();
+        wkNormal = new Vector3d();
 
         // Only assign activePicks because the first time through the call to
         // here we're going to reallocate everything anyway in resizeForBatch.
@@ -478,7 +474,7 @@ class DefaultBatchPickingHandler
         // and transform them across to the new items.
         if(target_node instanceof TransformPickTarget)
         {
-            Matrix4f tx = transformPath[lastPathIndex];
+            Matrix4d tx = transformPath[lastPathIndex];
             ((TransformPickTarget)target_node).getTransform(tx);
             ((TransformPickTarget)target_node).getInverseTransform(invertedMatrix);
 
@@ -981,12 +977,12 @@ class DefaultBatchPickingHandler
 
             pickPath = tmp_nodes;
 
-            Matrix4f[] tmp_tx = new Matrix4f[new_size];
+            Matrix4d[] tmp_tx = new Matrix4d[new_size];
             System.arraycopy(transformPath, 0, tmp_tx, 0, old_size);
             transformPath = tmp_tx;
 
             for(int i = old_size; i < new_size; i++)
-                transformPath[i] = new Matrix4f();
+                transformPath[i] = new Matrix4d();
 
             boolean[] tmp_flags = new boolean[new_size];
             System.arraycopy(validTransform, 0, tmp_flags, 0, old_size);
@@ -1015,16 +1011,16 @@ class DefaultBatchPickingHandler
         end = new float[numBatch][depth][3];
         extraData = new float[numBatch][depth][2];
 
-        frustumPlanes = new Vector4f[numBatch][6];
+        frustumPlanes = new Vector4d[numBatch][6];
 
         for(int i = 0; i < numBatch; i++)
         {
-            frustumPlanes[i][0] = new Vector4f();
-            frustumPlanes[i][1] = new Vector4f();
-            frustumPlanes[i][2] = new Vector4f();
-            frustumPlanes[i][3] = new Vector4f();
-            frustumPlanes[i][4] = new Vector4f();
-            frustumPlanes[i][5] = new Vector4f();
+            frustumPlanes[i][0] = new Vector4d();
+            frustumPlanes[i][1] = new Vector4d();
+            frustumPlanes[i][2] = new Vector4d();
+            frustumPlanes[i][3] = new Vector4d();
+            frustumPlanes[i][4] = new Vector4d();
+            frustumPlanes[i][5] = new Vector4d();
         }
     }
 
@@ -1036,15 +1032,15 @@ class DefaultBatchPickingHandler
      * @param vec The vector to be changed
      * @param out The vector to put the updated values in
      */
-    private void transform(Matrix4f mat, float[] vec, float[] out)
+    private void transform(Matrix4d mat, float[] vec, float[] out)
     {
         float x = vec[0];
         float y = vec[1];
         float z = vec[2];
 
-        out[0] = x * mat.m00 + y * mat.m01 + z * mat.m02 + mat.m03;
-        out[1] = x * mat.m10 + y * mat.m11 + z * mat.m12 + mat.m13;
-        out[2] = x * mat.m20 + y * mat.m21 + z * mat.m22 + mat.m23;
+        out[0] = (float)(x * mat.m00 + y * mat.m01 + z * mat.m02 + mat.m03);
+        out[1] = (float)(x * mat.m10 + y * mat.m11 + z * mat.m12 + mat.m13);
+        out[2] = (float)(x * mat.m20 + y * mat.m21 + z * mat.m22 + mat.m23);
     }
 
     /**
@@ -1055,14 +1051,14 @@ class DefaultBatchPickingHandler
      * @param vec The vector to be changed
      * @param out The vector to put the updated values in
      */
-    private void transformNormal(Matrix4f mat, float[] vec, float[] out)
+    private void transformNormal(Matrix4d mat, float[] vec, float[] out)
     {
         float x = vec[0];
         float y = vec[1];
         float z = vec[2];
 
-        out[0] = x * mat.m00 + y * mat.m01 + z * mat.m02;
-        out[1] = x * mat.m10 + y * mat.m11 + z * mat.m12;
-        out[2] = x * mat.m20 + y * mat.m21 + z * mat.m22;
+        out[0] = (float)(x * mat.m00 + y * mat.m01 + z * mat.m02);
+        out[1] = (float)(x * mat.m10 + y * mat.m11 + z * mat.m12);
+        out[2] = (float)(x * mat.m20 + y * mat.m21 + z * mat.m22);
     }
 }

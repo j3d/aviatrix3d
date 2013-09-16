@@ -13,11 +13,12 @@
 package org.j3d.aviatrix3d.pipeline.graphics;
 
 // External imports
-import javax.vecmath.Matrix4f;
+
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.rendering.*;
+import org.j3d.maths.vector.Matrix4d;
 
 /**
  * Handles the scenegraph maintenance and culling operations.
@@ -376,7 +377,7 @@ public class NullCullStage extends BaseCullStage
                     resizeLightList();
                     lightList[lastLight] = effect;
 
-                    Matrix4f mat = transformStack[lastTxStack];
+                    Matrix4d mat = transformStack[lastTxStack];
 
                     // Transpose the matrix in place as it is being copied
                     lightTxList[lastLight][0] = (float)mat.m00;
@@ -489,7 +490,7 @@ public class NullCullStage extends BaseCullStage
                             workCullList[ret_val].renderable = r;
                             workCullList[ret_val].localFog = null;
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             // Transpose the matrix in place as it is being copied
                             workCullList[ret_val].transform.set(mat);
@@ -507,7 +508,7 @@ public class NullCullStage extends BaseCullStage
                             workCullList[ret_val].renderable = r;
                             workCullList[ret_val].localFog = fogStack[lastFogStack];
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             // Transpose the matrix in place as it is being copied
                             workCullList[ret_val].transform.set(mat);
@@ -654,7 +655,7 @@ public class NullCullStage extends BaseCullStage
                         workCullList[ret_val].renderable = r;
                         workCullList[ret_val].localFog = null;
 
-                        Matrix4f mat = transformStack[lastTxStack];
+                        Matrix4d mat = transformStack[lastTxStack];
 
                         // Transpose the matrix in place as it is being copied
                         workCullList[ret_val].transform.set(mat);
@@ -674,7 +675,7 @@ public class NullCullStage extends BaseCullStage
                         workCullList[cullEndIndex].renderable = r;
                         workCullList[cullEndIndex].localFog = fogStack[lastFogStack];
 
-                        Matrix4f mat = transformStack[lastTxStack];
+                        Matrix4d mat = transformStack[lastTxStack];
 
                         // Transpose the matrix in place as it is being copied
                         workCullList[cullEndIndex].transform.set(mat);

@@ -16,11 +16,9 @@ package org.j3d.aviatrix3d;
 import java.text.MessageFormat;
 import java.util.Locale;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-
-import net.java.games.joal.AL;
-
+import com.jogamp.openal.AL;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
 import org.j3d.util.I18nManager;
 import org.j3d.util.MatrixUtils;
 
@@ -58,13 +56,13 @@ public class PointSound extends Sound
     private int source;
 
     /** PointSound Position */
-    private Point3f position;
+    private Point3d position;
 
     /** Scratch point */
-    private Point3f tmpPoint;
+    private Point3d tmpPoint;
 
     /** Scratch matrix val */
-    private Matrix4f tmpMatrix;
+    private Matrix4d tmpMatrix;
 
     /** Matrix Utilities to invert matrices */
     private MatrixUtils matrixUtils;
@@ -83,9 +81,9 @@ public class PointSound extends Sound
      */
     public PointSound()
     {
-        position = new Point3f();
-        tmpPoint = new Point3f();
-        tmpMatrix = new Matrix4f();
+        position = new Point3d();
+        tmpPoint = new Point3d();
+        tmpMatrix = new Matrix4d();
         matrixUtils = new MatrixUtils();
 
         refDistance = 0;
@@ -107,7 +105,7 @@ public class PointSound extends Sound
      * @param al The al context to render with
      * @param transform The transformation stack to this node
      */
-    public void render(AL al, Matrix4f transform)
+    public void render(AL al, Matrix4d transform)
     {
         transform.transform(position,tmpPoint);
 
@@ -151,7 +149,7 @@ public class PointSound extends Sound
                 al.alSourcef(source, AL.AL_PITCH, 1.0f);
                 al.alSourcef(source, AL.AL_GAIN, 1.0f);
 
-                al.alSource3f(source, AL.AL_POSITION, tmpPoint.x, tmpPoint.y,tmpPoint.z);
+                al.alSource3f(source, AL.AL_POSITION, (float)tmpPoint.x, (float)tmpPoint.y, (float)tmpPoint.z);
                 al.alSourcei(source, AL.AL_LOOPING, loop ? 1 : 0);
                 al.alSourcef(source, AL.AL_PITCH, pitch);
 
@@ -180,7 +178,7 @@ public class PointSound extends Sound
             paramsChanged = false;
         }
 
-        al.alSource3f(source, AL.AL_POSITION, tmpPoint.x, tmpPoint.y,tmpPoint.z);
+        al.alSource3f(source, AL.AL_POSITION, (float)tmpPoint.x, (float)tmpPoint.y, (float)tmpPoint.z);
 
         if (playChanged)
         {

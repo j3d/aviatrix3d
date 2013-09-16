@@ -14,9 +14,8 @@ package org.j3d.aviatrix3d.pipeline.audio;
 
 // External imports
 
-import javax.vecmath.Matrix4f;
-
 // Local imports
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.MatrixUtils;
 
 import org.j3d.aviatrix3d.rendering.AudioRenderable;
@@ -165,7 +164,7 @@ public class NullAudioSortStage implements AudioSortStage
 
             if(ar.isSpatialised())
             {
-                Matrix4f tx = nodes[i].transform;
+                Matrix4d tx = nodes[i].transform;
 
                 matrixUtils.inverse(tx, tx);
 

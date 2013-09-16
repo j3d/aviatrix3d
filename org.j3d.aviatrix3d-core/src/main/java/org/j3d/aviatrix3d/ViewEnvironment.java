@@ -18,10 +18,9 @@ import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector4f;
-
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
+import org.j3d.maths.vector.Vector4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -819,11 +818,11 @@ public class ViewEnvironment extends SceneGraphObject
      *
      * @param planes The planes to place the data in
      */
-    public void generateViewFrustumPlanes(Vector4f[] planes)
+    public void generateViewFrustumPlanes(Vector4d[] planes)
     {
         updateProjMatrix();
 
-        Matrix4f prjMatrix = new Matrix4f();
+        Matrix4d prjMatrix = new Matrix4d();
         prjMatrix.m00 = projectionMatrix[0];
         prjMatrix.m01 = projectionMatrix[1];
         prjMatrix.m02 = projectionMatrix[2];
@@ -841,7 +840,7 @@ public class ViewEnvironment extends SceneGraphObject
         prjMatrix.m32 = projectionMatrix[14];
         prjMatrix.m33 = projectionMatrix[15];
 
-        float x, y, z, w;
+        double x, y, z, w;
 
         /* Extract the numbers for the LEFT plane */
         x = prjMatrix.m03 + prjMatrix.m00;
@@ -957,7 +956,7 @@ public class ViewEnvironment extends SceneGraphObject
      * @param y The Y coordinate
      * @param position The converted position.  It must be preallocated.
      */
-    public void getPixelLocationInSurface(float x, float y, Point3f position)
+    public void getPixelLocationInSurface(float x, float y, Point3d position)
     {
         getPixelLocationInSurface(x, y, null, position);
     }
@@ -974,8 +973,8 @@ public class ViewEnvironment extends SceneGraphObject
      */
     public void getPixelLocationInSurface(float x,
                                           float y,
-                                          Point3f offset,
-                                          Point3f position)
+                                          Point3d offset,
+                                          Point3d position)
     {
         if(viewportSize[VIEW_WIDTH] == 0)
             return;

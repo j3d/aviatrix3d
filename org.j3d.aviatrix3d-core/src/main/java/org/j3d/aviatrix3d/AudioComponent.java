@@ -13,13 +13,11 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-
 import java.nio.ByteBuffer;
-
 import java.text.MessageFormat;
 import java.util.Locale;
 
-import net.java.games.joal.AL;
+import com.jogamp.openal.AL;
 
 import org.j3d.util.I18nManager;
 

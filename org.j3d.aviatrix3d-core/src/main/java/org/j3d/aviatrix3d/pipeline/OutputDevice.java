@@ -13,8 +13,7 @@
 package org.j3d.aviatrix3d.pipeline;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
+// None
 
 // Local imports
 import org.j3d.util.ErrorReporter;

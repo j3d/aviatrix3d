@@ -18,11 +18,10 @@ import java.util.Locale;
 import java.util.HashMap;
 import java.util.Stack;
 
-import javax.vecmath.Matrix4f;
-
 import javax.media.opengl.GL;
 
 import org.j3d.aviatrix3d.HashSet;
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -243,7 +242,7 @@ public abstract class BaseStateSortStage extends BaseSortStage
 
             instr.renderList[idx].renderable = geom;
 
-            Matrix4f tx = node.transform;
+            Matrix4d tx = node.transform;
 
             if(!shape.is2D())
             {
@@ -310,7 +309,7 @@ public abstract class BaseStateSortStage extends BaseSortStage
             instr.renderList[idx].renderable = node.renderable;
             instr.renderList[idx].instructions = node.customData;
 
-            Matrix4f tx = node.transform;
+            Matrix4d tx = node.transform;
 
             instr.renderList[idx].transform[0] = tx.m00;
             instr.renderList[idx].transform[1] = tx.m10;

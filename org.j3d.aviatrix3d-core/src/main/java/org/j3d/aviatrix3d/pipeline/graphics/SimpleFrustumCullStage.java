@@ -13,14 +13,9 @@
 package org.j3d.aviatrix3d.pipeline.graphics;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Point4f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
+import org.j3d.maths.vector.*;
 
 // Local imports
-import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.rendering.*;
 
 /**
@@ -47,16 +42,16 @@ public class SimpleFrustumCullStage extends BaseCullStage
     private double[] viewFrustum;
 
     /** Working var to calculate the view matrix */
-    private Matrix4f viewMatrix;
+    private Matrix4d viewMatrix;
 
     /** The 8 bounding points of the frustum volume */
-    private Point4f[] frustumPoints;
+    private Point4d[] frustumPoints;
 
     /** The planes describing this frustum */
-    private Vector4f[] frustumPlanes;
+    private Vector4d[] frustumPlanes;
 
     /** Projection matrix used to generate the frustum planes with. */
-    private Matrix4f prjMatrix;
+    private Matrix4d prjMatrix;
 
     /** Array form of the projection matrix */
     private float[] projectionMatrix;
@@ -83,18 +78,18 @@ public class SimpleFrustumCullStage extends BaseCullStage
     {
         super(numSurfaces);
 
-        viewMatrix = new Matrix4f();
-        prjMatrix = new Matrix4f();
+        viewMatrix = new Matrix4d();
+        prjMatrix = new Matrix4d();
 
         projectionMatrix = new float[16];
 
-        frustumPoints = new Point4f[8];
+        frustumPoints = new Point4d[8];
         for(int i=0; i < 8; i++)
-            frustumPoints[i] = new Point4f();
+            frustumPoints[i] = new Point4d();
 
-        frustumPlanes = new Vector4f[6];
+        frustumPlanes = new Vector4d[6];
         for(int i=0; i < 6; i++)
-            frustumPlanes[i] = new Vector4f();
+            frustumPlanes[i] = new Vector4d();
     }
 
     //---------------------------------------------------------------
@@ -405,7 +400,7 @@ public class SimpleFrustumCullStage extends BaseCullStage
 
         if(!allInBounds)
         {
-            Matrix4f mat;
+            Matrix4d mat;
 
             int matIdx;
 
@@ -470,7 +465,7 @@ public class SimpleFrustumCullStage extends BaseCullStage
                     resizeLightList();
                     lightList[lastLight] = effect;
 
-                    Matrix4f mat = transformStack[lastTxStack];
+                    Matrix4d mat = transformStack[lastTxStack];
 
                     // Transpose the matrix in place as it is being copied
                     lightTxList[lastLight][0] = (float)mat.m00;
@@ -609,7 +604,7 @@ public class SimpleFrustumCullStage extends BaseCullStage
                             workCullList[ret_val].numLights = 0;
                             workCullList[ret_val].numClipPlanes = 0;
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             workCullList[ret_val].transform.set(mat);
 
@@ -650,7 +645,7 @@ public class SimpleFrustumCullStage extends BaseCullStage
 
                             workCullList[ret_val].localFog = fogStack[lastFogStack];
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             workCullList[ret_val].transform.set(mat);
 
@@ -823,7 +818,7 @@ public class SimpleFrustumCullStage extends BaseCullStage
                             workCullList[ret_val].numLights = 0;
                             workCullList[ret_val].numClipPlanes = 0;
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             workCullList[ret_val].transform.set(mat);
 
@@ -864,7 +859,7 @@ public class SimpleFrustumCullStage extends BaseCullStage
 
                             workCullList[ret_val].localFog = fogStack[lastFogStack];
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             // Transpose the matrix in place as it is being copied
                             workCullList[cullEndIndex].transform.set(mat);
@@ -976,7 +971,7 @@ public class SimpleFrustumCullStage extends BaseCullStage
         prjMatrix.m32 = projectionMatrix[14];
         prjMatrix.m33 = projectionMatrix[15];
 
-        float x, y, z, w;
+        double x, y, z, w;
 
         matrixUtils.inverse(viewMatrix, viewMatrix);
         viewMatrix.mul(prjMatrix, viewMatrix);

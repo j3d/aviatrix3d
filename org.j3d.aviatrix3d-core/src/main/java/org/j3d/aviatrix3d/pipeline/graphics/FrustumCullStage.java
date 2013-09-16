@@ -2029,7 +2029,7 @@ public class FrustumCullStage extends BaseCullStage
         prjMatrix.m32 = projectionMatrix[14];
         prjMatrix.m33 = projectionMatrix[15];
 
-        float x, y, z, w;
+        double x, y, z, w;
 
         matrixUtils.inverse(viewMatrix, viewMatrix);
         viewMatrix.mul(prjMatrix, viewMatrix);

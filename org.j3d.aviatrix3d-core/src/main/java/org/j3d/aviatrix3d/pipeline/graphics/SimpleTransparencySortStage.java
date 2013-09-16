@@ -17,8 +17,7 @@ import java.text.MessageFormat;
 
 import java.util.Locale;
 
-import javax.vecmath.Matrix4f;
-
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -388,7 +387,7 @@ public class SimpleTransparencySortStage extends BaseSortStage
      * resize as needed. However, each resize is costly, so the closer this can
      * be to estimating the real size, the better for performance.
      *
-     * @param scene The scene bucket to use for the source
+     * @param nodes The scene bucket to use for the source
      * @return A greater than zero value
      */
     private int estimateInstructionSize(GraphicsCullOutputDetails[] nodes,
@@ -472,7 +471,7 @@ public class SimpleTransparencySortStage extends BaseSortStage
         if(node.renderable instanceof ShapeRenderable)
         {
             ShapeRenderable shape = (ShapeRenderable)node.renderable;
-            Matrix4f tx = node.transform;
+            Matrix4d tx = node.transform;
 
             if(!shape.is2D())
             {

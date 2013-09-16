@@ -16,12 +16,9 @@ package org.j3d.aviatrix3d;
 import java.text.MessageFormat;
 import java.util.Locale;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-
-import net.java.games.joal.AL;
-
-import org.j3d.util.MatrixUtils;
+import com.jogamp.openal.AL;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -61,13 +58,10 @@ public class ConeSound extends PointSound
     private int source;
 
     /** ConeSound Position */
-    private Point3f position;
+    private Point3d position;
 
     /** Scratch point */
-    private Point3f tmpPoint;
-
-    /** Scratch matrix val */
-    private Matrix4f tmpMatrix;
+    private Point3d tmpPoint;
 
     /** The sound direction */
     private float[] direction;
@@ -83,9 +77,8 @@ public class ConeSound extends PointSound
      */
     public ConeSound()
     {
-        position = new Point3f();
-        tmpPoint = new Point3f();
-        tmpMatrix = new Matrix4f();
+        position = new Point3d();
+        tmpPoint = new Point3d();
 
         refDistance = 0;
         maxDistance = Float.MAX_VALUE;
@@ -109,9 +102,10 @@ public class ConeSound extends PointSound
      * @param al The OpenAL context to render with
      * @param transform The transformation stack to this node
      */
-    public void render(AL al, Matrix4f transform)
+    @Override
+    public void render(AL al, Matrix4d transform)
     {
-        transform.transform(position,tmpPoint);
+        transform.transform(position, tmpPoint);
 
         if(dataChanged)
         {
@@ -156,7 +150,7 @@ public class ConeSound extends PointSound
                 al.alSourcei(source, AL.AL_LOOPING, loop ? 1 : 0);
                 al.alSourcef(source, AL.AL_PITCH, pitch);
 
-                al.alSource3f(source, AL.AL_POSITION, tmpPoint.x, tmpPoint.y,tmpPoint.z);
+                al.alSource3f(source, AL.AL_POSITION, (float)tmpPoint.x, (float)tmpPoint.y, (float)tmpPoint.z);
 
                 error = al.alGetError();
                 if (error != AL.AL_NO_ERROR)
@@ -183,7 +177,7 @@ public class ConeSound extends PointSound
             paramsChanged = false;
         }
 
-        al.alSource3f(source, AL.AL_POSITION, tmpPoint.x, tmpPoint.y,tmpPoint.z);
+        al.alSource3f(source, AL.AL_POSITION, (float)tmpPoint.x, (float)tmpPoint.y,(float)tmpPoint.z);
 
         if(playChanged)
         {
@@ -223,6 +217,7 @@ public class ConeSound extends PointSound
      *
      * @param al The OpenAL context to draw with
      */
+    @Override
     public void postRender(AL al)
     {
     }
@@ -241,6 +236,7 @@ public class ConeSound extends PointSound
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -258,6 +254,7 @@ public class ConeSound extends PointSound
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof ConeSound))

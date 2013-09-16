@@ -13,13 +13,11 @@
 package org.j3d.aviatrix3d;
 
 // Standard imports
+import javax.media.opengl.GL;
+import javax.media.opengl.glu.GLU;
 import java.awt.image.*;
 
 import java.awt.image.Raster;
-import java.util.HashMap;
-
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
 
 // Local imports
 // None
@@ -206,7 +204,7 @@ public class ImageComponent extends NodeComponent
     /**
      * Issue ogl commands needed for this component
      *
-     * @param gld The drawable for setting the state
+     * @param gl The drawable for setting the state
      */
     public void renderState(GL gl, GLU glu)
     {
@@ -216,7 +214,7 @@ public class ImageComponent extends NodeComponent
     /**
      * Restore all openGL state to the given drawable
      *
-     * @param gld The drawable for resetting the state
+     * @param gl The drawable for resetting the state
      */
     public void restoreState(GL gl, GLU glu)
     {

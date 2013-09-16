@@ -14,9 +14,8 @@ package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
 import org.j3d.util.ErrorReporter;
 
 // Local imports
@@ -231,7 +230,7 @@ public interface RenderingProcessor
                                    int y,
                                    int layer,
                                    int subLayer,
-                                   Matrix4f matrix,
+                                   Matrix4d matrix,
                                    String deviceId,
                                    boolean useLastFound);
 
@@ -258,7 +257,7 @@ public interface RenderingProcessor
                                           int y,
                                           int layer,
                                           int subLayer,
-                                          Point3f position,
+                                          Point3d position,
                                           String deviceId,
                                           boolean useLastFound);
 
@@ -285,7 +284,7 @@ public interface RenderingProcessor
                                       int y,
                                       int layer,
                                       int subLayer,
-                                      Point3f position,
+                                      Point3d position,
                                       String deviceId,
                                       boolean useLastFound);
 

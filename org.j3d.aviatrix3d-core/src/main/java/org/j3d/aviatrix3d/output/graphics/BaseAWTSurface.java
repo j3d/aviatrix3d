@@ -13,7 +13,6 @@
 package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
-import javax.media.opengl.GLJPanel;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.ProfilingData;
@@ -23,6 +22,8 @@ import org.j3d.aviatrix3d.pipeline.graphics.GraphicsResizeListener;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsProfilingData;
 
 import org.j3d.util.ErrorReporter;
+
+import javax.media.opengl.awt.GLJPanel;
 
 /**
  * Implementation of the most basic drawable surface extended to provide

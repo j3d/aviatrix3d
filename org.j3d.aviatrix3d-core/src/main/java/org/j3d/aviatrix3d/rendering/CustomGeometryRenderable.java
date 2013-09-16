@@ -14,8 +14,9 @@ package org.j3d.aviatrix3d.rendering;
 
 // External imports
 import javax.media.opengl.GL;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector4f;
+
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector4d;
 
 // Local imports
 // None
@@ -63,9 +64,9 @@ public interface CustomGeometryRenderable extends GeometryRenderable
      *    calculable from the available data.
      * @return Any information that may be useful for the rendering step
      */
-    public Object processCull(Matrix4f vworldTx,
-                              Matrix4f viewTransform,
-                              Vector4f[] viewFrustum,
+    public Object processCull(Matrix4d vworldTx,
+                              Matrix4d viewTransform,
+                              Vector4d[] viewFrustum,
                               float angularRes);
     /**
      * Render the geometry now using the supplied extra external data, using

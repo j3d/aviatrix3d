@@ -15,13 +15,12 @@ package org.j3d.aviatrix3d.pipeline.audio;
 // External imports
 import java.util.ArrayList;
 
-import javax.vecmath.Matrix4f;
-
 // Local imports
 import org.j3d.aviatrix3d.rendering.*;
 
 import org.j3d.aviatrix3d.pipeline.RenderableRequestData;
 
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
 import org.j3d.util.I18nManager;
@@ -91,7 +90,7 @@ public class NullAudioCullStage implements AudioCullStage
     private int lastOutputList;
 
     /** A stack used to control the depth of the transform tree */
-    private Matrix4f[] transformStack;
+    private Matrix4d[] transformStack;
 
     /** Index to the next place to add items in the transformStack */
     private int lastTxStack;
@@ -103,10 +102,10 @@ public class NullAudioCullStage implements AudioCullStage
     private ArrayList<Cullable> currentViewpointPath;
 
     /** Matrix used for pre-computing the view stack */
-    private Matrix4f viewMatrix1;
+    private Matrix4d viewMatrix1;
 
     /** Matrix used for pre-computing the view stack */
-    private Matrix4f viewMatrix2;
+    private Matrix4d viewMatrix2;
 
     /** Flag indicating a shutdown of the current processing is requested */
     private boolean terminate;
@@ -135,8 +134,8 @@ public class NullAudioCullStage implements AudioCullStage
         validCullSize = new int[numDevices];
 
         currentViewpointPath = new ArrayList<Cullable>(TRANSFORM_DEPTH_SIZE);
-        viewMatrix1 = new Matrix4f();
-        viewMatrix2 = new Matrix4f();
+        viewMatrix1 = new Matrix4d();
+        viewMatrix2 = new Matrix4d();
 
         // populate the list with valid instances...
         for(int i = 0; i < numDevices; i++)
@@ -147,11 +146,11 @@ public class NullAudioCullStage implements AudioCullStage
             for(int j = 0; j < LIST_START_DEPTH; j++)
                 validCullList[i][j] = new AudioCullOutputDetails();
 
-        transformStack = new Matrix4f[TRANSFORM_DEPTH_SIZE];
+        transformStack = new Matrix4d[TRANSFORM_DEPTH_SIZE];
 
         // populate the list with valid instances...
         for(int i = 0; i < TRANSFORM_DEPTH_SIZE; i++)
-            transformStack[i] = new Matrix4f();
+            transformStack[i] = new Matrix4d();
     }
 
     //---------------------------------------------------------------
@@ -623,7 +622,7 @@ public class NullAudioCullStage implements AudioCullStage
             resizeCullList(ret_val);
             workCullList[ret_val].renderable = ar;
 
-            Matrix4f mat = transformStack[lastTxStack];
+            Matrix4d mat = transformStack[lastTxStack];
 
             // Transpose the matrix in place as it is being copied
             workCullList[ret_val].transform.set(mat);
@@ -639,8 +638,7 @@ public class NullAudioCullStage implements AudioCullStage
      *
      * @param scene The scene to take data from
      * @param envData Data instance to copy it to
-     * @param buffer The buffer ID to use to output the data to when
-     *   multi-threaded
+ed
      */
     private void fillEnvData(SceneCullable scene,
                              AudioEnvironmentData envData)
@@ -699,7 +697,7 @@ public class NullAudioCullStage implements AudioCullStage
             TransformCullable c =
                 (TransformCullable)currentViewpointPath.get(i);
             c.getTransform(viewMatrix1);
-            viewMatrix2.mul(viewMatrix1);
+            viewMatrix2.mul(viewMatrix2, viewMatrix1);
         }
 
         currentViewpointPath.clear();
@@ -711,7 +709,7 @@ public class NullAudioCullStage implements AudioCullStage
      * Resize the list if needed. Marked as final in order to encourage the
      * compiler to inline the code for faster execution
      */
-    private final void resizeCullList(int cur_size)
+    private void resizeCullList(int cur_size)
     {
         if((cur_size + 1) == workCullList.length)
         {
@@ -733,19 +731,19 @@ public class NullAudioCullStage implements AudioCullStage
      * Resize the transform stack if needed. Marked as final in order to
      * encourage the compiler to inline the code for faster execution
      */
-    private final void resizeStack()
+    private void resizeStack()
     {
         if((lastTxStack + 1) == transformStack.length)
         {
             int old_size = transformStack.length;
             int new_size = old_size + STACK_INCREMENT;
 
-            Matrix4f[] tmp_matrix = new Matrix4f[new_size];
+            Matrix4d[] tmp_matrix = new Matrix4d[new_size];
 
             System.arraycopy(transformStack, 0, tmp_matrix, 0, old_size);
 
             for(int i = old_size; i < new_size; i++)
-                tmp_matrix[i] = new Matrix4f();
+                tmp_matrix[i] = new Matrix4d();
 
             transformStack = tmp_matrix;
         }

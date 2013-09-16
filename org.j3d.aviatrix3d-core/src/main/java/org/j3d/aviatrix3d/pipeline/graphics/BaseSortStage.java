@@ -19,8 +19,6 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.HashMap;
 
-import javax.vecmath.Matrix4f;
-
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
 import org.j3d.util.I18nManager;

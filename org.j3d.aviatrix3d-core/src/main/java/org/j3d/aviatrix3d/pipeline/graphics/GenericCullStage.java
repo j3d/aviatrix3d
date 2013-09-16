@@ -13,12 +13,13 @@
 package org.j3d.aviatrix3d.pipeline.graphics;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector4f;
+// None
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.rendering.*;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector4d;
 
 /**
  * A cull stange that does not cull anything except those parts requested by
@@ -37,7 +38,7 @@ import org.j3d.aviatrix3d.rendering.*;
 public class GenericCullStage extends BaseCullStage
 {
     /** Working var to calculate the view matrix */
-    private Matrix4f viewMatrix;
+    private Matrix4d viewMatrix;
 
     /** Class for interacting with the current CustomCullable object */
     private CullInstructions cullInstructions;
@@ -52,10 +53,10 @@ public class GenericCullStage extends BaseCullStage
     private double[] viewFrustum;
 
     /** The planes describing this frustum */
-    private Vector4f[] frustumPlanes;
+    private Vector4d[] frustumPlanes;
 
     /** Matrix representing the projection transform */
-    private Matrix4f prjMatrix;
+    private Matrix4d prjMatrix;
 
     /** Array form of the projection matrix */
     private float[] projectionMatrix;
@@ -82,17 +83,17 @@ public class GenericCullStage extends BaseCullStage
     {
         super(numSurfaces);
 
-        viewMatrix = new Matrix4f();
-        prjMatrix = new Matrix4f();
+        viewMatrix = new Matrix4d();
+        prjMatrix = new Matrix4d();
 
         projectionMatrix = new float[16];
 
         cullInstructions = new CullInstructions();
         renderInstructions = new RenderableInstructions();
 
-        frustumPlanes = new Vector4f[6];
+        frustumPlanes = new Vector4d[6];
         for(int i=0; i < 6; i++)
-            frustumPlanes[i] = new Vector4f();
+            frustumPlanes[i] = new Vector4d();
     }
 
     //---------------------------------------------------------------
@@ -596,7 +597,7 @@ public class GenericCullStage extends BaseCullStage
                     resizeLightList();
                     lightList[lastLight] = effect;
 
-                    Matrix4f mat = transformStack[lastTxStack];
+                    Matrix4d mat = transformStack[lastTxStack];
 
                     // Transpose the matrix in place as it is being copied
                     lightTxList[lastLight][0] = (float)mat.m00;
@@ -722,7 +723,7 @@ public class GenericCullStage extends BaseCullStage
                             workCullList[ret_val].numLights = 0;
                             workCullList[ret_val].numClipPlanes = 0;
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             workCullList[ret_val].transform.set(mat);
 
@@ -737,7 +738,7 @@ public class GenericCullStage extends BaseCullStage
                             workCullList[ret_val].renderable = r;
                             workCullList[ret_val].localFog = fogStack[lastFogStack];
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             // Transpose the matrix in place as it is being copied
                             workCullList[ret_val].transform.set(mat);
@@ -908,7 +909,7 @@ public class GenericCullStage extends BaseCullStage
                     resizeLightList();
                     lightList[lastLight] = effect;
 
-                    Matrix4f mat = transformStack[lastTxStack];
+                    Matrix4d mat = transformStack[lastTxStack];
 
                     // Transpose the matrix in place as it is being copied
                     lightTxList[lastLight][0] = (float)mat.m00;
@@ -1037,7 +1038,7 @@ public class GenericCullStage extends BaseCullStage
                             workCullList[ret_val].numLights = 0;
                             workCullList[ret_val].numClipPlanes = 0;
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             // Transpose the matrix in place as it is being copied
                             workCullList[ret_val].transform.set(mat);
@@ -1053,7 +1054,7 @@ public class GenericCullStage extends BaseCullStage
                             workCullList[ret_val].renderable = r;
                             workCullList[ret_val].localFog = fogStack[lastFogStack];
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             // Transpose the matrix in place as it is being copied
                             workCullList[ret_val].transform.set(mat);
@@ -1161,9 +1162,8 @@ public class GenericCullStage extends BaseCullStage
      * Recursive walk of the tree to find all the renderable nodes, starting
      * from a CustomRenderable object.
      *
-     * @param cullable The parent node to walk into
+     * @param root The parent node to walk into
      * @param cullEndIndex The current last item on the cull list
-     * @param ignoreTrans Ignore the last transformation
      * @return The index of the last item on the cull list
      */
     private int findAllNodes(CustomRenderable root, int cullEndIndex)
@@ -1197,7 +1197,7 @@ public class GenericCullStage extends BaseCullStage
         workCullList[ret_val].localFog = fogStack[lastFogStack];
         workCullList[ret_val].customData = renderInstructions.instructions;
 
-        Matrix4f mat = transformStack[lastTxStack];
+        Matrix4d mat = transformStack[lastTxStack];
 
         workCullList[ret_val].transform.set(mat);
 
@@ -1344,7 +1344,7 @@ public class GenericCullStage extends BaseCullStage
                             workCullList[ret_val].numLights = 0;
                             workCullList[ret_val].numClipPlanes = 0;
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             // Transpose the matrix in place as it is being copied
                             workCullList[ret_val].transform.set(mat);
@@ -1360,7 +1360,7 @@ public class GenericCullStage extends BaseCullStage
                             workCullList[cullEndIndex].renderable = r;
                             workCullList[cullEndIndex].localFog = fogStack[lastFogStack];
 
-                            Matrix4f mat = transformStack[lastTxStack];
+                            Matrix4d mat = transformStack[lastTxStack];
 
                             // Transpose the matrix in place as it is being copied
                             workCullList[cullEndIndex].transform.set(mat);
@@ -1480,7 +1480,7 @@ public class GenericCullStage extends BaseCullStage
         prjMatrix.m32 = projectionMatrix[14];
         prjMatrix.m33 = projectionMatrix[15];
 
-        float x, y, z, w;
+        double x, y, z, w;
 
         matrixUtils.inverse(viewMatrix, viewMatrix);
         viewMatrix.mul(prjMatrix, viewMatrix);

@@ -16,9 +16,11 @@ package org.j3d.aviatrix3d.pipeline;
 // None
 
 // Local imports
+import org.j3d.aviatrix3d.DrawableSurface;
+import org.j3d.aviatrix3d.Group;
 import org.j3d.aviatrix3d.RenderPipeline;
-import org.j3d.aviatrix3d.CullStage;
-import org.j3d.aviatrix3d.SortStage;
+import org.j3d.aviatrix3d.pipeline.graphics.CullToSingleSortListener;
+import org.j3d.aviatrix3d.pipeline.graphics.SortToSingleDrawListener;
 
 /**
  * The default implementation of the rendering pipeline usable by most

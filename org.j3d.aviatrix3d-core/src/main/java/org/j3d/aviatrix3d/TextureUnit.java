@@ -13,11 +13,10 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import javax.vecmath.Matrix4f;
-
 import javax.media.opengl.GL;
 import javax.media.opengl.GLContext;
 
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -140,6 +139,7 @@ public class TextureUnit extends NodeComponent
      * @param parent The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
      */
+    @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws CyclicSceneGraphStructureException
     {
@@ -157,6 +157,7 @@ public class TextureUnit extends NodeComponent
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -178,6 +179,7 @@ public class TextureUnit extends NodeComponent
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         if(state)
@@ -211,6 +213,7 @@ public class TextureUnit extends NodeComponent
      *
      * @return true if any form of non-opaque rendering is defined
      */
+    @Override
     public boolean hasTransparency()
     {
         if(texture == null)
@@ -231,6 +234,7 @@ public class TextureUnit extends NodeComponent
      *
      * @return true if the texture contains an offscreen source
      */
+    @Override
     public boolean isOffscreenSource()
     {
         return texture instanceof OffscreenCullable;
@@ -242,6 +246,7 @@ public class TextureUnit extends NodeComponent
      *
      * @return The Cullable instance for the offscreen, if available
      */
+    @Override
     public OffscreenCullable getOffscreenSource()
     {
         if(texture instanceof OffscreenCullable)
@@ -258,6 +263,7 @@ public class TextureUnit extends NodeComponent
      *
      * @return true if this represents an offscreen buffer of some sort
      */
+    @Override
     public boolean isOffscreenBuffer()
     {
         return texture instanceof OffscreenRenderTargetRenderable;
@@ -272,6 +278,7 @@ public class TextureUnit extends NodeComponent
      * @param context The containing context to find the matching buffer for
      * @return A buffer descriptor for that context, or null if none found
      */
+    @Override
     public OffscreenBufferDescriptor getBuffer(GLContext context)
     {
         OffscreenBufferDescriptor desc = null;
@@ -294,6 +301,7 @@ public class TextureUnit extends NodeComponent
      * @param gl The GL context to render with
      * @param stageId The ID of the texture stage we're reading
      */
+    @Override
     public void activateTexture(GL gl, Object stageId)
     {
         if(!queryComplete)
@@ -333,6 +341,7 @@ public class TextureUnit extends NodeComponent
      * @param gl The GL context to render with
      * @param stageId The ID of the texture stage we're reading
      */
+    @Override
     public void deactivateTexture(GL gl, Object stageId)
     {
         if(texture == null || !texture.hasValidData())
@@ -347,6 +356,7 @@ public class TextureUnit extends NodeComponent
      * @param gl The gl context to draw with
      * @param stageId The ID of the texture stage we're reading
      */
+    @Override
     public void render(GL gl, Object stageId)
     {
         if(!queryComplete)
@@ -623,7 +633,7 @@ public class TextureUnit extends NodeComponent
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener data changed callback method
      */
-    public void setTextureTransform(Matrix4f mat)
+    public void setTextureTransform(Matrix4d mat)
         throws InvalidWriteTimingException
     {
         if(isLive() && updateHandler != null &&
@@ -686,7 +696,7 @@ public class TextureUnit extends NodeComponent
      *
      * @param mat The matrix to copy the current values into
      */
-    public void getTextureTransform(Matrix4f mat)
+    public void getTextureTransform(Matrix4d mat)
     {
         // Transpose while copying.
         mat.m00 = texTransform[0];

@@ -28,9 +28,8 @@ import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
 import org.j3d.util.IntHashMap;
@@ -71,7 +70,7 @@ public abstract class BaseRenderingProcessor
     implements RenderingProcessor
 {
     /** The invalid shader ID */
-    protected static final Integer INVALID_SHADER = new Integer(-1);
+    protected static final Integer INVALID_SHADER = -1;
 
     /** Message when the GL context failed to initialise */
     private static final String FAILED_CONTEXT_PROP =
@@ -191,7 +190,7 @@ public abstract class BaseRenderingProcessor
      * in setEnvironmentData when we had a single one. Now there is
      * one per layer and we need to do something about it.
      */
-    protected Matrix4f surfaceMatrix;
+    protected Matrix4d surfaceMatrix;
 
     /** The eye offset from the normal position */
     protected float[] eyePoint;
@@ -288,7 +287,7 @@ public abstract class BaseRenderingProcessor
 
         colorTmp = new float[4];
         clearColor = new float[4];
-        surfaceMatrix = new Matrix4f();
+        surfaceMatrix = new Matrix4d();
         eyePoint = new float[3];
 
         alphaCutoff = 1.0f;
@@ -730,7 +729,7 @@ public abstract class BaseRenderingProcessor
                                    int y,
                                    int layer,
                                    int subLayer,
-                                   Matrix4f matrix,
+                                   Matrix4d matrix,
                                    String deviceId,
                                    boolean useLastFound)
     {
@@ -770,7 +769,7 @@ public abstract class BaseRenderingProcessor
                                           int y,
                                           int layer,
                                           int subLayer,
-                                          Point3f position,
+                                          Point3d position,
                                           String deviceId,
                                           boolean useLastFound)
     {
@@ -842,7 +841,7 @@ public abstract class BaseRenderingProcessor
                                       int y,
                                       int layer,
                                       int subLayer,
-                                      Point3f position,
+                                      Point3d position,
                                       String deviceId,
                                       boolean useLastFound)
     {

@@ -13,10 +13,11 @@
 package org.j3d.aviatrix3d.picking;
 
 // External imports
-import javax.vecmath.Matrix4f;
+import org.j3d.maths.vector.Matrix4d;
 
 // Local imports
 // None
+
 
 /**
  * Container for returning the details about what should be picked as a
@@ -54,7 +55,7 @@ public class PickInstructions
      * traversal process. If no transformation is needed. then set
      * {@link #hasTransform} to false and ignore this matrix.
      */
-    public Matrix4f localTransform;
+    public Matrix4d localTransform;
 
     /**
      * Initialise a new instance of this instruction.
@@ -62,7 +63,7 @@ public class PickInstructions
     public PickInstructions()
     {
         children = new PickTarget[8];
-        localTransform = new Matrix4f();
+        localTransform = new Matrix4d();
         hasTransform = false;
     }
 

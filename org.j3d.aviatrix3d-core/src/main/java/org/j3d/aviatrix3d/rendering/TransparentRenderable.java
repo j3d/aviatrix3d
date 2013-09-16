@@ -13,10 +13,7 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector4f;
-
-import javax.media.opengl.GL;
+// None
 
 // Local imports
 // None

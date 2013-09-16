@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d.picking;
 
 // External imports
-import javax.vecmath.Matrix4f;
+// None
 
 // Local imports
 // None

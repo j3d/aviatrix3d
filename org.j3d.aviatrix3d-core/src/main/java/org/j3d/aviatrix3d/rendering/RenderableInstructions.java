@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.vecmath.Matrix4f;
+import org.j3d.maths.vector.Matrix4d;
 
 // Local imports
 // None
@@ -43,7 +43,7 @@ public class RenderableInstructions
      * traversal process. If no transformation is needed. then set
      * {@link #hasTransform} to false and ignore this matrix.
      */
-    public Matrix4f localTransform;
+    public Matrix4d localTransform;
 
     /**
      * Any local data that may need to be passed around. Not useful for the
@@ -57,7 +57,7 @@ public class RenderableInstructions
      */
     public RenderableInstructions()
     {
-        localTransform = new Matrix4f();
+        localTransform = new Matrix4d();
         hasTransform = false;
     }
 }

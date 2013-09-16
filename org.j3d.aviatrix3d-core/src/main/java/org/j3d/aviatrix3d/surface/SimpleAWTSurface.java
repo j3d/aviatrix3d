@@ -13,10 +13,14 @@
 package org.j3d.aviatrix3d.surface;
 
 // External imports
-import net.java.games.jogl.*;
+// None
 
 // Local imports
 import org.j3d.aviatrix3d.*;
+
+import javax.media.opengl.*;
+import javax.media.opengl.awt.GLCanvas;
+import javax.media.opengl.glu.GLU;
 
 /**
  * Interface representing the output of a render pipeline.
@@ -289,7 +293,7 @@ public class SimpleAWTSurface
     /**
      * Called by the drawable to perform rendering by the client.
      *
-     * @param drawable The display context to render to
+     * @param gld The display context to render to
      */
     public void display(GLDrawable gld)
     {

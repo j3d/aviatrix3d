@@ -13,11 +13,12 @@
 package org.j3d.aviatrix3d.pipeline.graphics;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
+// None
 
 // Local imports
 import org.j3d.aviatrix3d.pipeline.OutputDevice;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
 
 /**
  * Interface representing the output of a render pipeline that specifically
@@ -236,7 +237,7 @@ public interface GraphicsOutputDevice extends OutputDevice
                                    int y,
                                    int layer,
                                    int subLayer,
-                                   Matrix4f matrix,
+                                   Matrix4d matrix,
                                    String deviceId,
                                    boolean useLastFound);
 
@@ -260,7 +261,7 @@ public interface GraphicsOutputDevice extends OutputDevice
                                           int y,
                                           int layer,
                                           int subLayer,
-                                          Point3f position,
+                                          Point3d position,
                                           String deviceId,
                                           boolean useLastFound);
 
@@ -284,7 +285,7 @@ public interface GraphicsOutputDevice extends OutputDevice
                                       int y,
                                       int layer,
                                       int subLayer,
-                                      Point3f position,
+                                      Point3d position,
                                       String deviceId,
                                       boolean useLastFound);
 

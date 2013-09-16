@@ -13,8 +13,8 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector4f;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector4d;
 
 // Local imports
 // None
@@ -54,8 +54,8 @@ public interface CustomCullable extends Cullable
      *    calculable from the available data.
      */
     public void cullChildren(CullInstructions output,
-                             Matrix4f vworldTx,
-                             Matrix4f viewTransform,
-                             Vector4f[] frustumPlanes,
+                             Matrix4d vworldTx,
+                             Matrix4d viewTransform,
+                             Vector4d[] frustumPlanes,
                              float angularRes);
 }

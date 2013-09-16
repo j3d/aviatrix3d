@@ -15,10 +15,6 @@ package org.j3d.aviatrix3d.pipeline.graphics;
 // External imports
 import java.util.Arrays;
 
-import javax.vecmath.Matrix4f;
-
-import javax.media.opengl.GL;
-
 // Local imports
 
 

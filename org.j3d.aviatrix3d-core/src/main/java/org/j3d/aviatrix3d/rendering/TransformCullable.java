@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.vecmath.Matrix4f;
+import org.j3d.maths.vector.Matrix4d;
 
 // Local imports
 // None
@@ -42,5 +42,5 @@ public interface TransformCullable extends Cullable
      *
      * @param mat The matrix to copy the transform data to
      */
-    public void getTransform(Matrix4f mat);
+    public void getTransform(Matrix4d mat);
 }

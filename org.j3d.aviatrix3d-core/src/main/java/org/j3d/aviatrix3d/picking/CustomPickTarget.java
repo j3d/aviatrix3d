@@ -13,10 +13,12 @@
 package org.j3d.aviatrix3d.picking;
 
 // External imports
-import javax.vecmath.Matrix4f;
+// None
 
 // Local imports
 // None
+
+import org.j3d.maths.vector.Matrix4d;
 
 /**
  * Marker interface for all grouping objects that wish to interact with the
@@ -66,6 +68,6 @@ public interface CustomPickTarget extends PickTarget
      * @param req The picking request made of this object
      */
     public void pickChildren(PickInstructions output,
-                             Matrix4f vworldTx,
+                             Matrix4d vworldTx,
                              PickRequest req);
 }

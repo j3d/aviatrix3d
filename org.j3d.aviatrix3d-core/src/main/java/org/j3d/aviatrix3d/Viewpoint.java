@@ -17,7 +17,6 @@ import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
-import javax.vecmath.Matrix4f;
 
 import javax.media.opengl.GL;
 

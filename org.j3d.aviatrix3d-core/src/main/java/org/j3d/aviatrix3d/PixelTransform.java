@@ -13,12 +13,9 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Matrix4d;
-
-import javax.media.opengl.GL;
 
 // Local imports
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.MatrixUtils;
 
 import org.j3d.aviatrix3d.picking.TransformPickTarget;
@@ -52,20 +49,20 @@ public class PixelTransform extends Group
     private static final MatrixUtils matrixUtils = new MatrixUtils();
 
     /** Local transformation added to the parent transforms */
-    private Matrix4f localTransform;
+    private Matrix4d localTransform;
 
     /** Inverse of the transformation */
-    private Matrix4f inverseTransform;
+    private Matrix4d inverseTransform;
 
     /**
      * The default constructor
      */
     public PixelTransform()
     {
-        localTransform = new Matrix4f();
+        localTransform = new Matrix4d();
         localTransform.setIdentity();
 
-        inverseTransform = new Matrix4f();
+        inverseTransform = new Matrix4d();
         inverseTransform.setIdentity();
     }
 
@@ -551,7 +548,7 @@ public class PixelTransform extends Group
      *
      * @param mat The matrix to copy the transform data to
      */
-    public void getTransform(Matrix4f mat)
+    public void getTransform(Matrix4d mat)
     {
         mat.set(localTransform);
     }
@@ -562,7 +559,7 @@ public class PixelTransform extends Group
      *
      * @param mat The matrix to copy the transform data to
      */
-    public void getInverseTransform(Matrix4f mat)
+    public void getInverseTransform(Matrix4d mat)
     {
         mat.set(inverseTransform);
     }
@@ -633,8 +630,8 @@ public class PixelTransform extends Group
      */
     public void getZoom(float[] zoom)
     {
-        zoom[0] = localTransform.m00;
-        zoom[1] = localTransform.m11;
+        zoom[0] = (float)localTransform.m00;
+        zoom[1] = (float)localTransform.m11;
     }
 
     /**
@@ -643,8 +640,8 @@ public class PixelTransform extends Group
      */
     private void transform()
     {
-        wkVec2[0] = wkVec1[0] * localTransform.m00 + localTransform.m03;
-        wkVec2[1] = wkVec1[1] * localTransform.m11 + localTransform.m13;
+        wkVec2[0] = (float)(wkVec1[0] * localTransform.m00 + localTransform.m03);
+        wkVec2[1] = (float)(wkVec1[1] * localTransform.m11 + localTransform.m13);
         wkVec2[2] = wkVec1[2]; // Nothing happens for this
     }
 }

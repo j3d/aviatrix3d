@@ -17,11 +17,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-
-import net.java.games.joal.AL;
-
 // Local imports
 import org.j3d.aviatrix3d.iutil.AudioUpdateListener;
 import org.j3d.aviatrix3d.rendering.AudioRenderable;

@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d.pipeline.audio;
 
 // External imports
-import javax.vecmath.Matrix4f;
+// None
 
 // Local imports
 import org.j3d.aviatrix3d.pipeline.CullOutputDetails;

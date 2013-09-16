@@ -13,11 +13,13 @@
 package org.j3d.aviatrix3d.pipeline;
 
 // External imports
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
 
 // Local imports
-import org.j3d.aviatrix3d.HashSet;
+import org.j3d.aviatrix3d.*;
+
+import javax.media.opengl.GLContext;
+import javax.media.opengl.GLDrawable;
+import javax.media.opengl.GLEventListener;
 
 
 /**

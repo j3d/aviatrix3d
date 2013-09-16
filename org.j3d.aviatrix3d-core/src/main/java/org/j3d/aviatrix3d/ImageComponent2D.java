@@ -15,11 +15,6 @@ package org.j3d.aviatrix3d;
 // Standard imports
 import java.awt.image.*;
 
-import java.util.HashMap;
-
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
-
 // Local imports
 // None
 

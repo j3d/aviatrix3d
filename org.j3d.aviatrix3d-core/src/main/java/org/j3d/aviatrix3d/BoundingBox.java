@@ -657,82 +657,6 @@ public class BoundingBox extends BoundingVolume
             y = vert[i][1];
             z = vert[i][2];
             
-            xvert[i][0] = (float)(mat.m00 * x + mat.m01 * y + mat.m02 * z + mat.m03);
-            xvert[i][1] = (float)(mat.m10 * x + mat.m11 * y + mat.m12 * z + mat.m13);
-            xvert[i][2] = (float)(mat.m20 * x + mat.m21 * y + mat.m22 * z + mat.m23);
-        }
-        
-        int cnt;
-        int cnt2 = 0;
-        
-        for(int p = 0; p < 6; p++)
-        {
-            cnt = 0;
-            if(planes[p].x * xvert[0][0] + planes[p].y * xvert[0][1] +
-                planes[p].z * xvert[0][2] + planes[p].w > 0 )
-                cnt++;
-            
-            if(planes[p].x * xvert[1][0] + planes[p].y * xvert[1][1] +
-                planes[p].z * xvert[1][2] + planes[p].w > 0 )
-                cnt++;
-            
-            if(planes[p].x * xvert[2][0] + planes[p].y * xvert[2][1] +
-                planes[p].z * xvert[2][2] + planes[p].w > 0 )
-                cnt++;
-             
-            if(planes[p].x * xvert[3][0] + planes[p].y * xvert[3][1] +
-                planes[p].z * xvert[3][2] + planes[p].w > 0 )
-                cnt++;
-            
-            if(planes[p].x * xvert[4][0] + planes[p].y * xvert[4][1] +
-                planes[p].z * xvert[4][2] + planes[p].w > 0 )
-                cnt++;
-            
-            if(planes[p].x * xvert[5][0] + planes[p].y * xvert[5][1] +
-                planes[p].z * xvert[5][2] + planes[p].w > 0 )
-                cnt++;
-             
-            if(planes[p].x * xvert[6][0] + planes[p].y * xvert[6][1] +
-                planes[p].z * xvert[6][2] + planes[p].w > 0 )
-                cnt++;
-             
-            if(planes[p].x * xvert[7][0] + planes[p].y * xvert[7][1] +
-                planes[p].z * xvert[7][2] + planes[p].w > 0 )
-                cnt++;
-             
-            if(cnt == 0)
-            {
-                return FRUSTUM_ALLOUT;
-            }
-            
-            if(cnt == 8)
-                cnt2++;
-        }
-        
-        return (cnt2 == 6) ? FRUSTUM_ALLIN : FRUSTUM_PARTIAL;
-    }
-
-    /**
-     * Check whether this volume intersects with the view frustum.
-     *
-     * @param planes The 6 planes of the frustum
-     * @param mat The vworld to local transformation matrix
-     * @return int FRUSTUM_ALLOUT, FRUSTUM_ALLIN, FRUSTUM_PARTIAL.
-     */
-    public int checkIntersectionFrustum(Vector4d[] planes, Matrix4d mat)
-    {
-        // transform the vertices of the bounding box
-        // for comparison with the view frustum
-        double x;
-        double y;
-        double z;
-        
-        for (int i = 0; i < 8; i++) 
-        {
-            x = vert[i][0];
-            y = vert[i][1];
-            z = vert[i][2];
-            
             xvert[i][0] = mat.m00 * x + mat.m01 * y + mat.m02 * z + mat.m03;
             xvert[i][1] = mat.m10 * x + mat.m11 * y + mat.m12 * z + mat.m13;
             xvert[i][2] = mat.m20 * x + mat.m21 * y + mat.m22 * z + mat.m23;
@@ -846,12 +770,12 @@ public class BoundingBox extends BoundingVolume
         max.y = size[1];
         max.z = size[2];
         
-        mat.transform(min);
-        mat.transform(max);
+        mat.transform(min, min);
+        mat.transform(max, max);
         
-        center[0] = min.x;
-        center[1] = min.y;
-        center[2] = min.z;
+        center[0] = (float)min.x;
+        center[1] = (float)min.y;
+        center[2] = (float)min.z;
         
         size[0] = (float)Math.abs(max.x);
         size[1] = (float)Math.abs(max.y);

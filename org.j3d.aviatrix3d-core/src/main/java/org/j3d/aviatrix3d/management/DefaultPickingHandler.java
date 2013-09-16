@@ -19,11 +19,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ArrayList;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
-
+import org.j3d.maths.vector.*;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -78,7 +74,7 @@ class DefaultPickingHandler
     private PickTarget[] pickPath;
 
     /** Path of transforms from the root of the scene to the current place */
-    private Matrix4f[] transformPath;
+    private Matrix4d[] transformPath;
 
     /** Flags to say with of the transforms are currently valid */
     private boolean[] validTransform;
@@ -99,19 +95,19 @@ class DefaultPickingHandler
     private float[] vertexPickData;
 
     /** The matrix to set everything in and then invert it. */
-    private Matrix4f vworldMatrix;
+    private Matrix4d vworldMatrix;
 
     /** The matrix containing the local inverted form. */
-    private Matrix4f invertedMatrix;
+    private Matrix4d invertedMatrix;
 
     /** Working vector for interacting with the world matrix */
-    private Vector4f wkVec;
+    private Vector4d wkVec;
 
     /** Working vector for interacting with the world matrix */
-    private Vector3f wkNormal;
+    private Vector3d wkNormal;
 
     /** Temp value for holding the frustum planes */
-    private Vector4f[] frustumPlanes;
+    private Vector4d[] frustumPlanes;
 
     /** Matrix utility code for doing inversions */
     private MatrixUtils matrixUtils;
@@ -134,23 +130,23 @@ class DefaultPickingHandler
 
         vertexPickData = new float[3];
         pickPath = new PickTarget[LIST_START_SIZE];
-        transformPath = new Matrix4f[LIST_START_SIZE];
+        transformPath = new Matrix4d[LIST_START_SIZE];
         validTransform = new boolean[LIST_START_SIZE];
 
         for(int i = 0; i < LIST_START_SIZE; i++)
-            transformPath[i] = new Matrix4f();
+            transformPath[i] = new Matrix4d();
 
-        vworldMatrix = new Matrix4f();
-        invertedMatrix = new Matrix4f();
-        wkVec = new Vector4f();
+        vworldMatrix = new Matrix4d();
+        invertedMatrix = new Matrix4d();
+        wkVec = new Vector4d();
         wkVec.w = 1;
 
-        wkNormal = new Vector3f();
+        wkNormal = new Vector3d();
 
-        frustumPlanes = new Vector4f[]
+        frustumPlanes = new Vector4d[]
         {
-            new Vector4f(), new Vector4f(), new Vector4f(),
-            new Vector4f(), new Vector4f(), new Vector4f()
+            new Vector4d(), new Vector4d(), new Vector4d(),
+            new Vector4d(), new Vector4d(), new Vector4d()
         };
 
         matrixUtils = new MatrixUtils();
@@ -573,7 +569,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param loc The location of the point to pick with in local coords
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
@@ -640,7 +636,7 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      */
     private boolean pickSinglePoint(GroupPickTarget root,
                                     PickRequest req,
@@ -721,7 +717,7 @@ class DefaultPickingHandler
 
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -797,7 +793,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point from a
      * custom pickable.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      */
     private boolean pickSinglePoint(CustomPickTarget root,
                                     PickRequest req,
@@ -946,7 +942,7 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param path A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -1050,7 +1046,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -1153,7 +1149,7 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      */
     private int pickAllPoint(GroupPickTarget root,
                              PickRequest req,
@@ -1230,7 +1226,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -1313,7 +1309,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param loc The location of the point to pick with in local coords
      * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
@@ -1386,7 +1382,7 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      */
     private int pickAllPoint(CustomPickTarget root,
                              PickRequest req,
@@ -1539,7 +1535,7 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -1707,7 +1703,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -1817,7 +1813,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single line segment.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -1910,7 +1906,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -2004,7 +2000,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path The place to put the results in
@@ -2087,7 +2083,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single line segment.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -2269,7 +2265,7 @@ class DefaultPickingHandler
      * segment.
      *
      * @param geom The geom we are picking against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -2411,7 +2407,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -2527,7 +2523,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -2626,7 +2622,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -2724,7 +2720,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -2813,7 +2809,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -3005,7 +3001,7 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -3166,7 +3162,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -3280,7 +3276,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path The place to put the results in
@@ -3364,7 +3360,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -3457,7 +3453,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -3548,7 +3544,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -3847,7 +3843,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[lastPathIndex];
+                        Matrix4d tx = transformPath[lastPathIndex];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -3959,7 +3955,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path The place to put the results in
@@ -4044,7 +4040,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single line segment.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -4137,7 +4133,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -4228,7 +4224,7 @@ class DefaultPickingHandler
      * segment.
      *
      * @param geom The geom we are picking against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -4308,7 +4304,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single line segment.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -4552,7 +4548,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -4667,7 +4663,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -4767,7 +4763,7 @@ class DefaultPickingHandler
             resizePath();
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -4865,7 +4861,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -4955,7 +4951,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -5137,7 +5133,7 @@ class DefaultPickingHandler
      *
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -5297,7 +5293,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -5406,7 +5402,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -5499,7 +5495,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -5594,7 +5590,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path The place to put the results in
@@ -5679,7 +5675,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -5867,7 +5863,6 @@ class DefaultPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickCylinder(PickTarget root, PickRequest req)
     {
@@ -5908,7 +5903,6 @@ class DefaultPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickSingleCylinder(PickTarget root, PickRequest req)
     {
@@ -5984,7 +5978,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -6102,9 +6096,11 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
+     * @param req flags to compare against for picking
+     * @param center The center of the axis of the cylinder to pick against
+     * @param axis Vector describing the axis of the cylinder to pick against
+     * @param radius The height of the cylinder to pick against
+     * @param height The height of the cylinder to pick against
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -6198,7 +6194,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -6289,7 +6285,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -6374,9 +6370,11 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
+     * @param req flags to compare against for picking
+     * @param center The center of the axis of the cylinder to pick against
+     * @param axis Vector describing the axis of the cylinder to pick against
+     * @param radius The height of the cylinder to pick against
+     * @param height The height of the cylinder to pick against
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -6556,10 +6554,12 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
+     * @param geom The geom node to test against
+     * @param req flags to compare against for picking
+     * @param center The center of the axis of the cylinder to pick against
+     * @param axis Vector describing the axis of the cylinder to pick against
+     * @param radius The height of the cylinder to pick against
+     * @param height The height of the cylinder to pick against
      * @param path A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -6685,7 +6685,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -6813,10 +6813,11 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param req flags to compare against for picking
+     * @param center The center of the axis of the cylinder to pick against
+     * @param axis Vector describing the axis of the cylinder to pick against
+     * @param radius The height of the cylinder to pick against
+     * @param height The height of the cylinder to pick against
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCylinder(GroupPickTarget root,
@@ -6900,7 +6901,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -6993,10 +6994,11 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param req flags to compare against for picking
+     * @param center The center of the axis of the cylinder to pick against
+     * @param axis Vector describing the axis of the cylinder to pick against
+     * @param radius The height of the cylinder to pick against
+     * @param height The height of the cylinder to pick against
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCylinder(SinglePickTarget root,
@@ -7068,13 +7070,15 @@ class DefaultPickingHandler
     }
 
     /**
-     * Recurse the tree looking for intersections with a single point.
+     * Recurse the tree looking for intersections with anything that fits into the cylinder.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param req flags to compare against for picking
+     * @param center The center of the axis of the cylinder to pick against
+     * @param axis Vector describing the axis of the cylinder to pick against
+     * @param radius The height of the cylinder to pick against
+     * @param height The height of the cylinder to pick against
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCylinder(CustomPickTarget root,
@@ -7246,7 +7250,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param paths A place to set the results in
@@ -7313,7 +7317,6 @@ class DefaultPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickCone(PickTarget root, PickRequest req)
     {
@@ -7417,7 +7420,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -7526,7 +7529,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -7607,7 +7610,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -7689,7 +7692,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -7758,7 +7761,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -7916,7 +7919,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path A place to set the results in
@@ -8030,7 +8033,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -8149,10 +8152,10 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCone(GroupPickTarget root,
@@ -8243,7 +8246,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -8341,7 +8344,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -8427,7 +8430,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -8614,7 +8617,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param paths A place to set the results in
@@ -8680,7 +8683,6 @@ class DefaultPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickBox(PickTarget root, PickRequest req)
     {
@@ -8781,7 +8783,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -8884,7 +8886,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -8961,7 +8963,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -9041,7 +9043,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -9104,7 +9106,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -9256,8 +9258,8 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param geom The geom node to test against
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path A place to set the results in
@@ -9367,7 +9369,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -9479,7 +9481,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -9558,7 +9560,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -9641,10 +9643,10 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllBox(SinglePickTarget root,
@@ -9710,10 +9712,10 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllBox(CustomPickTarget root,
@@ -9866,8 +9868,8 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param geom The geom node to test against
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param paths A place to set the results in
@@ -10067,7 +10069,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[lastPathIndex];
+                        Matrix4d tx = transformPath[lastPathIndex];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -10155,7 +10157,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -10171,7 +10173,7 @@ class DefaultPickingHandler
         validTransform[lastPathIndex] = false;
         pickPath[lastPathIndex] = root;
 
-        Matrix4f tx = transformPath[lastPathIndex - 1];
+        Matrix4d tx = transformPath[lastPathIndex - 1];
         transformPath[lastPathIndex].set(tx);
 
         lastPathIndex++;
@@ -10222,7 +10224,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -10290,7 +10292,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -10300,7 +10302,7 @@ class DefaultPickingHandler
             }
             else
             {
-                Matrix4f tx = transformPath[lastPathIndex - 1];
+                Matrix4d tx = transformPath[lastPathIndex - 1];
                 transformPath[lastPathIndex].set(tx);
                 validTransform[lastPathIndex] = false;
             }
@@ -10357,7 +10359,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -10425,7 +10427,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(pickInstructions.hasTransform)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 tx.set(pickInstructions.localTransform);
                 tx.mul(transformPath[lastPathIndex - 1], tx);
@@ -10434,7 +10436,7 @@ class DefaultPickingHandler
             }
             else
             {
-                Matrix4f tx = transformPath[lastPathIndex - 1];
+                Matrix4d tx = transformPath[lastPathIndex - 1];
                 transformPath[lastPathIndex].set(tx);
                 validTransform[lastPathIndex] = false;
             }
@@ -10623,7 +10625,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -10720,7 +10722,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths Array of paths place to set the results in
      * @param currentPath Active index in the paths array
      * @param needTransform true if we should calc vworld information
@@ -10738,7 +10740,7 @@ class DefaultPickingHandler
         validTransform[lastPathIndex] = false;
         pickPath[lastPathIndex] = root;
 
-        Matrix4f tx = transformPath[lastPathIndex - 1];
+        Matrix4d tx = transformPath[lastPathIndex - 1];
         transformPath[lastPathIndex].set(tx);
 
         lastPathIndex++;
@@ -10793,7 +10795,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -10867,7 +10869,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -10876,7 +10878,7 @@ class DefaultPickingHandler
             }
             else
             {
-                Matrix4f tx = transformPath[lastPathIndex - 1];
+                Matrix4d tx = transformPath[lastPathIndex - 1];
                 transformPath[lastPathIndex].set(tx);
                 validTransform[lastPathIndex] = false;
             }
@@ -10938,7 +10940,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -11011,14 +11013,14 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(pickInstructions.hasTransform)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
                 tx.set(pickInstructions.localTransform);
                 tx.mul(transformPath[lastPathIndex - 1], tx);
                 validTransform[lastPathIndex] = true;
             }
             else
             {
-                Matrix4f tx = transformPath[lastPathIndex - 1];
+                Matrix4d tx = transformPath[lastPathIndex - 1];
                 transformPath[lastPathIndex].set(tx);
                 validTransform[lastPathIndex] = false;
             }
@@ -11079,7 +11081,7 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths Array of paths place to set the results in
      * @param currentPath Active index in the paths array
      * @param needTransform True if the local to v-world transform needs
@@ -11243,7 +11245,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -11349,7 +11351,7 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path The place to put the results in
@@ -11414,7 +11416,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path The place to put the results in
@@ -11498,7 +11500,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -11584,7 +11586,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path The place to put the results in
@@ -11752,7 +11754,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path A place to set the results in
@@ -11859,7 +11861,7 @@ class DefaultPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -11971,10 +11973,10 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllSphere(GroupPickTarget root,
@@ -12058,7 +12060,7 @@ class DefaultPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -12149,10 +12151,10 @@ class DefaultPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
+     * @param req flags to compare against for picking
+     * @param min req minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllSphere(SinglePickTarget root,
@@ -12230,7 +12232,7 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path The place to put the results in
@@ -12403,8 +12405,8 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param geom The geom node to test against
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param paths A place to set the results in
@@ -12440,7 +12442,7 @@ class DefaultPickingHandler
                 paths.add(p);
             }
             else
-                p = (SceneGraphPath)paths.get(currentPath);
+                p = paths.get(currentPath);
 
             if(needTransform)
                 buildVWorldTransform();
@@ -12466,7 +12468,7 @@ class DefaultPickingHandler
      * pickInstructions for the individual methods to process.
      *
      * @param node The target node to test against
-     * @param req The current picking request
+     * @param request The current picking request
      * @return true if this target has valid children returned
      */
     private boolean pickCustom(CustomPickTarget node, PickRequest request)
@@ -12486,7 +12488,7 @@ class DefaultPickingHandler
      * Resize the list if needed. Marked as final in order to encourage the
      * compiler to inline the code for faster execution
      */
-    private final void resizePath()
+    private void resizePath()
     {
         if(lastPathIndex == pickPath.length)
         {
@@ -12499,12 +12501,12 @@ class DefaultPickingHandler
 
             pickPath = tmp_nodes;
 
-            Matrix4f[] tmp_tx = new Matrix4f[new_size];
+            Matrix4d[] tmp_tx = new Matrix4d[new_size];
             System.arraycopy(transformPath, 0, tmp_tx, 0, old_size);
             transformPath = tmp_tx;
 
             for(int i = old_size; i < new_size; i++)
-                transformPath[i] = new Matrix4f();
+                transformPath[i] = new Matrix4d();
 
             boolean[] tmp_flags = new boolean[new_size];
             System.arraycopy(validTransform, 0, tmp_flags, 0, old_size);
@@ -12518,11 +12520,14 @@ class DefaultPickingHandler
      * @param mat The matrix to do the transformation with
      * @param vec The vector to be changed
      */
-    private void transform(Matrix4f mat, float[] vec)
+    private void transform(Matrix4d mat, float[] vec)
     {
-        wkVec.set(vec);
-        mat.transform(wkVec);
-        wkVec.get(vec);
+        wkVec.set(vec[0], vec[1], vec[2], vec[3]);
+        mat.transform(wkVec, wkVec);
+        vec[0] = (float)wkVec.x;
+        vec[1] = (float)wkVec.y;
+        vec[2] = (float)wkVec.z;
+        vec[3] = (float)wkVec.w;
     }
 
     /**
@@ -12531,11 +12536,13 @@ class DefaultPickingHandler
      * @param mat The matrix to do the transformation with
      * @param vec The vector to be changed
      */
-    private void transformNormal(Matrix4f mat, float[] vec)
+    private void transformNormal(Matrix4d mat, float[] vec)
     {
-        wkNormal.set(vec);
-        mat.transform(wkNormal);
-        wkNormal.get(vec);
+        wkNormal.set(vec[0], vec[1], vec[2]);
+        mat.transformNormal(wkNormal, wkNormal);
+        vec[0] = (float)wkNormal.x;
+        vec[1] = (float)wkNormal.y;
+        vec[2] = (float)wkNormal.z;
     }
 
     /**
@@ -12554,7 +12561,7 @@ class DefaultPickingHandler
             if(!validTransform[i])
                 continue;
 
-            vworldMatrix.mul(transformPath[i]);
+            vworldMatrix.mul(vworldMatrix, transformPath[i]);
         }
 
         matrixUtils.inverse(vworldMatrix, invertedMatrix);

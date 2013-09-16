@@ -32,7 +32,7 @@ package org.j3d.aviatrix3d.rendering;
  * @author Justin Couch
  * @version $Revision: 2.2 $
  */
-public interface Renderable<T> extends Comparable
+public interface Renderable<T> extends Comparable<T>
 {
     /**
      * Compare this object for equality to the given object. This provides a

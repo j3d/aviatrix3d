@@ -13,12 +13,10 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Matrix4d;
-
-import javax.media.opengl.GL;
+// None
 
 // Local imports
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.MatrixUtils;
 
 import org.j3d.aviatrix3d.rendering.TransformCullable;
@@ -44,20 +42,20 @@ public class TransformGroup extends Group
     private static final MatrixUtils matrixUtils = new MatrixUtils();
 
     /** Local transformation added to the parent transforms */
-    private Matrix4f localTransform;
+    private Matrix4d localTransform;
 
     /** Inverse of the transformation */
-    private Matrix4f inverseTransform;
+    private Matrix4d inverseTransform;
 
     /**
      * The default constructor
      */
     public TransformGroup()
     {
-        localTransform = new Matrix4f();
+        localTransform = new Matrix4d();
         localTransform.setIdentity();
 
-        inverseTransform = new Matrix4f();
+        inverseTransform = new Matrix4d();
         inverseTransform.setIdentity();
     }
 
@@ -66,25 +64,11 @@ public class TransformGroup extends Group
      *
      * @param trans The matrix to use for transformation
      */
-    public TransformGroup(Matrix4f trans)
+    public TransformGroup(Matrix4d trans)
     {
         this();
 
         setTransform(trans);
-    }
-
-    //---------------------------------------------------------------
-    // Methods defined by TransformCullable
-    //---------------------------------------------------------------
-
-    /**
-     * Get the current local transformation value.
-     *
-     * @param mat The matrix to copy the transform data to
-     */
-    public void getTransform(Matrix4f mat)
-    {
-        mat.set(localTransform);
     }
 
     //---------------------------------------------------------------
@@ -548,7 +532,7 @@ public class TransformGroup extends Group
      *
      * @param mat The matrix to copy the transform data to
      */
-    public void getInverseTransform(Matrix4f mat)
+    public void getInverseTransform(Matrix4d mat)
     {
         mat.set(inverseTransform);
     }
@@ -564,7 +548,7 @@ public class TransformGroup extends Group
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener data changed callback method
      */
-    public void setTransform(Matrix4f trans)
+    public void setTransform(Matrix4d trans)
         throws InvalidWriteTimingException
     {
         if(isLive() && updateHandler != null &&
@@ -592,9 +576,9 @@ public class TransformGroup extends Group
      */
     private void transform()
     {
-        float x = wkVec1[0];
-        float y = wkVec1[1];
-        float z = wkVec1[2];
+        double x = wkVec1[0];
+        double y = wkVec1[1];
+        double z = wkVec1[2];
 
         wkVec2[0] = x * localTransform.m00 +
                     y * localTransform.m01 +

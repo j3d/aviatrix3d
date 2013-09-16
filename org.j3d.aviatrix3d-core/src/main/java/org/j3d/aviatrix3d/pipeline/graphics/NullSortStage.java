@@ -16,8 +16,7 @@ package org.j3d.aviatrix3d.pipeline.graphics;
 import java.text.MessageFormat;
 import java.util.Locale;
 
-import javax.vecmath.Matrix4f;
-
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -148,7 +147,7 @@ public class NullSortStage extends BaseSortStage
             if(nodes[i].renderable instanceof ShapeRenderable)
             {
                 ShapeRenderable shape = (ShapeRenderable)nodes[i].renderable;
-                Matrix4f tx = nodes[i].transform;
+                Matrix4d tx = nodes[i].transform;
 
                 if(!shape.is2D())
                 {
@@ -240,7 +239,7 @@ public class NullSortStage extends BaseSortStage
                 instr.renderList[idx].renderable = nodes[i].renderable;
                 instr.renderList[idx].instructions = nodes[i].customData;
 
-                Matrix4f tx = nodes[i].transform;
+                Matrix4d tx = nodes[i].transform;
 
                 instr.renderList[idx].transform[0] = tx.m00;
                 instr.renderList[idx].transform[1] = tx.m10;
@@ -365,7 +364,7 @@ public class NullSortStage extends BaseSortStage
                 // For this simple one, just use the basic render command.
                 // Something more complex would pull the shape apart and do
                 // state/depth/transparency sorting in this section.
-                Matrix4f tx = nodes[i].transform;
+                Matrix4d tx = nodes[i].transform;
 
                 instr.renderList[idx].transform[0] = tx.m00;
                 instr.renderList[idx].transform[1] = tx.m10;
@@ -400,7 +399,7 @@ public class NullSortStage extends BaseSortStage
                 instr.renderList[idx].renderable = nodes[i].renderable;
                 instr.renderList[idx].instructions = nodes[i].customData;
 
-                Matrix4f tx = nodes[i].transform;
+                Matrix4d tx = nodes[i].transform;
 
                 instr.renderList[idx].transform[0] = tx.m00;
                 instr.renderList[idx].transform[1] = tx.m10;

@@ -18,9 +18,8 @@ import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
 import org.j3d.util.I18nManager;
 import org.j3d.util.MatrixUtils;
 
@@ -81,7 +80,7 @@ public class TransparencyDepthSortStage extends BaseSortStage
     private GraphicsCullOutputDetails[] unsortedTransparentList;
 
     /** Temporary array for holding the transparent object depths */
-    private float[] depthList1;
+    private double[] depthList1;
 
     /** Temporary array for holding the quantized depths */
     private int[] depthList2;
@@ -90,13 +89,13 @@ public class TransparencyDepthSortStage extends BaseSortStage
     private int[] countList;
 
     /** Temp matrix used to hold the local to vworld values */
-    private Matrix4f modelMatrix;
+    private Matrix4d modelMatrix;
 
     /** Temp matrix used to hold inverted camera matrix */
-    private Matrix4f cameraMatrix;
+    private Matrix4d cameraMatrix;
 
     /** Temporary point location while working out the camera-space depth */
-    private Point3f wkPoint;
+    private Point3d wkPoint;
 
     /** Temporary array for fetching the center position */
     private float[] center;
@@ -172,13 +171,13 @@ public class TransparencyDepthSortStage extends BaseSortStage
 
         transparentList = new GraphicsCullOutputDetails[TRANSPARENT_LIST_SIZE];
         unsortedTransparentList = new GraphicsCullOutputDetails[TRANSPARENT_LIST_SIZE];
-        depthList1 = new float[TRANSPARENT_LIST_SIZE];
+        depthList1 = new double[TRANSPARENT_LIST_SIZE];
         depthList2 = new int[TRANSPARENT_LIST_SIZE];
         countList = new int[depthAccuracy];
 
-        wkPoint = new Point3f();
-        modelMatrix = new Matrix4f();
-        cameraMatrix = new Matrix4f();
+        wkPoint = new Point3d();
+        modelMatrix = new Matrix4d();
+        cameraMatrix = new Matrix4d();
         center = new float[3];
 
         matrixUtils = new MatrixUtils();
@@ -213,11 +212,11 @@ public class TransparencyDepthSortStage extends BaseSortStage
         {
             transparentList = new GraphicsCullOutputDetails[req_size];
             unsortedTransparentList = new GraphicsCullOutputDetails[req_size];
-            depthList1 = new float[req_size];
+            depthList1 = new double[req_size];
             depthList2 = new int[req_size];
         }
 
-        Matrix4f camera = data.viewTransform;
+        Matrix4d camera = data.viewTransform;
         int idx = instrCount;
         int trans = 0;
 
@@ -310,8 +309,8 @@ public class TransparencyDepthSortStage extends BaseSortStage
         }
 
         // Time to work out the distance values.
-        float max_depth = Float.NEGATIVE_INFINITY;
-        float min_depth = Float.POSITIVE_INFINITY;
+        double max_depth = Double.NEGATIVE_INFINITY;
+        double min_depth = Double.POSITIVE_INFINITY;
 
         matrixUtils.inverse(camera, cameraMatrix);
 
@@ -327,8 +326,8 @@ public class TransparencyDepthSortStage extends BaseSortStage
             wkPoint.y = center[1];
             wkPoint.z = center[2];
 
-            modelMatrix.transform(wkPoint);
-            cameraMatrix.transform(wkPoint);
+            modelMatrix.transform(wkPoint, wkPoint);
+            cameraMatrix.transform(wkPoint, wkPoint);
 
             depthList1[i] = wkPoint.z;
 
@@ -344,8 +343,8 @@ public class TransparencyDepthSortStage extends BaseSortStage
         // to the given accuracy. Take 1 from the depth accuracy so that the max
         // depth will always end up at one less than the final array size - to
         // avoid AAOB exceptions.
-        float depth_range = max_depth - min_depth;
-        float quanta = (depthAccuracy - 1)/ depth_range;
+        double depth_range = max_depth - min_depth;
+        double quanta = (depthAccuracy - 1)/ depth_range;
 
         // Change all the values from floats to quantised ints
         for(int i = 0; i < trans; i++)
@@ -584,7 +583,7 @@ public class TransparencyDepthSortStage extends BaseSortStage
      * resize as needed. However, each resize is costly, so the closer this can
      * be to estimating the real size, the better for performance.
      *
-     * @param scene The scene bucket to use for the source
+     * @param nodes The scene bucket to use for the source
      * @return A greater than zero value
      */
     private int estimateInstructionSize(GraphicsCullOutputDetails[] nodes,
@@ -668,7 +667,7 @@ public class TransparencyDepthSortStage extends BaseSortStage
         if(node.renderable instanceof ShapeRenderable)
         {
             ShapeRenderable shape = (ShapeRenderable)node.renderable;
-            Matrix4f tx = node.transform;
+            Matrix4d tx = node.transform;
 
             if(!shape.is2D())
             {
@@ -748,7 +747,7 @@ public class TransparencyDepthSortStage extends BaseSortStage
             instr.renderList[idx].renderable = node.renderable;
             instr.renderList[idx].instructions = node.customData;
 
-            Matrix4f tx = node.transform;
+            Matrix4d tx = node.transform;
 
             instr.renderList[idx].transform[0] = tx.m00;
             instr.renderList[idx].transform[1] = tx.m10;

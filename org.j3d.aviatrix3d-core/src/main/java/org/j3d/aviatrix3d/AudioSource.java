@@ -16,7 +16,9 @@ package org.j3d.aviatrix3d;
 // None
 
 // Local imports
-import net.java.games.joal.AL;
+// None
+
+import com.jogamp.openal.AL;
 
 /**
  * Marker interface representing a class that provides source data for a

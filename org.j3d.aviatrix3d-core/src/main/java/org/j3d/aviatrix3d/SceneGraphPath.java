@@ -13,8 +13,7 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import javax.vecmath.Matrix4f;
-
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -63,10 +62,10 @@ public class SceneGraphPath
     private Node[] items;
 
     /** The root to local transformation matrix */
-    private float[] txMatrix;
+    private double[] txMatrix;
 
     /** The local to root transformation matrix */
-    private float[] invTxMatrix;
+    private double[] invTxMatrix;
 
     /**
      * Create a new path instance with a pre-allocated set of storage
@@ -95,8 +94,8 @@ public class SceneGraphPath
 
         numItems = 0;
         items = new Node[initialSize];
-        txMatrix = new float[16];
-        invTxMatrix = new float[16];
+        txMatrix = new double[16];
+        invTxMatrix = new double[16];
     }
 
     /**
@@ -109,7 +108,7 @@ public class SceneGraphPath
      * @param iMat The transformation matrix from the local node to the root
      * @throws IllegalArgumentException The last node is not a Leaf
      */
-    public SceneGraphPath(Node[] nodes, int num, Matrix4f mat, Matrix4f iMat)
+    public SceneGraphPath(Node[] nodes, int num, Matrix4d mat, Matrix4d iMat)
         throws IllegalArgumentException
     {
         this(num);
@@ -128,7 +127,7 @@ public class SceneGraphPath
      * @param mat The transformation matrix from the root to the local node
      * @param iMat The transformation matrix from the local node to the root
      */
-    public void updatePath(Node[] nodes, int num, Matrix4f mat, Matrix4f iMat)
+    public void updatePath(Node[] nodes, int num, Matrix4d mat, Matrix4d iMat)
     {
         if(items.length < num)
             items = new Node[num];
@@ -195,7 +194,7 @@ public class SceneGraphPath
      * @param mat The transformation matrix from the root to the local node
      * @param iMat The transformation matrix from the local node to the root
      */
-    public void updatePath(PickTarget[] picks, int num, Matrix4f mat, Matrix4f iMat)
+    public void updatePath(PickTarget[] picks, int num, Matrix4d mat, Matrix4d iMat)
     {
         if(items.length < num)
             items = new Node[num];
@@ -312,7 +311,7 @@ public class SceneGraphPath
      *
      * @param mat The matrix to copy the values into
      */
-    public void getTransform(Matrix4f mat)
+    public void getTransform(Matrix4d mat)
     {
         mat.m00 = txMatrix[0];
         mat.m01 = txMatrix[1];
@@ -342,7 +341,7 @@ public class SceneGraphPath
      *
      * @param mat The matrix to copy the values into
      */
-    public void getInverseTransform(Matrix4f mat)
+    public void getInverseTransform(Matrix4d mat)
     {
         mat.m00 = invTxMatrix[0];
         mat.m01 = invTxMatrix[1];

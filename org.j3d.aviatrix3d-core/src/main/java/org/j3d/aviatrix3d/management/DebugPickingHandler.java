@@ -19,11 +19,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ArrayList;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
-
+import org.j3d.maths.vector.*;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -79,7 +75,7 @@ public class DebugPickingHandler
     private PickTarget[] pickPath;
 
     /** Path of transforms from the root of the scene to the current place */
-    private Matrix4f[] transformPath;
+    private Matrix4d[] transformPath;
 
     /** Flags to say with of the transforms are currently valid */
     private boolean[] validTransform;
@@ -100,19 +96,19 @@ public class DebugPickingHandler
     private float[] vertexPickData;
 
     /** The matrix to set everything in and then invert it. */
-    private Matrix4f vworldMatrix;
+    private Matrix4d vworldMatrix;
 
     /** The matrix containing the local inverted form. */
-    private Matrix4f invertedMatrix;
+    private Matrix4d invertedMatrix;
 
     /** Working vector for interacting with the world matrix */
-    private Vector4f wkVec;
+    private Vector4d wkVec;
 
     /** Working vector for interacting with the world matrix */
-    private Vector3f wkNormal;
+    private Vector3d wkNormal;
 
     /** Temp value for holding the frustum planes */
-    private Vector4f[] frustumPlanes;
+    private Vector4d[] frustumPlanes;
 
     /** Matrix utility code for doing inversions */
     private MatrixUtils matrixUtils;
@@ -144,23 +140,23 @@ public class DebugPickingHandler
 
         vertexPickData = new float[3];
         pickPath = new PickTarget[LIST_START_SIZE];
-        transformPath = new Matrix4f[LIST_START_SIZE];
+        transformPath = new Matrix4d[LIST_START_SIZE];
         validTransform = new boolean[LIST_START_SIZE];
 
         for(int i = 0; i < LIST_START_SIZE; i++)
-            transformPath[i] = new Matrix4f();
+            transformPath[i] = new Matrix4d();
 
-        vworldMatrix = new Matrix4f();
-        invertedMatrix = new Matrix4f();
-        wkVec = new Vector4f();
+        vworldMatrix = new Matrix4d();
+        invertedMatrix = new Matrix4d();
+        wkVec = new Vector4d();
         wkVec.w = 1;
 
-        wkNormal = new Vector3f();
+        wkNormal = new Vector3d();
 
-        frustumPlanes = new Vector4f[]
+        frustumPlanes = new Vector4d[]
         {
-            new Vector4f(), new Vector4f(), new Vector4f(),
-            new Vector4f(), new Vector4f(), new Vector4f()
+            new Vector4d(), new Vector4d(), new Vector4d(),
+            new Vector4d(), new Vector4d(), new Vector4d()
         };
 
         matrixUtils = new MatrixUtils();
@@ -303,7 +299,7 @@ public class DebugPickingHandler
 
         if(dumpNow)
             System.out.println("Pick mask check root has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -671,7 +667,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param loc The location of the point to pick with in local coords
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
@@ -684,7 +680,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single point -> single) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -743,7 +739,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      */
     private boolean pickSinglePoint(GroupPickTarget root,
                                     PickRequest req,
@@ -753,7 +749,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single point -> group) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -838,7 +834,7 @@ public class DebugPickingHandler
 
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -914,7 +910,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point from a
      * custom pickable.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      */
     private boolean pickSinglePoint(CustomPickTarget root,
                                     PickRequest req,
@@ -924,7 +920,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single point -> custom) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -1077,7 +1073,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param path A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -1090,7 +1086,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single point -> leaf) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(leaf.checkPickMask(req.pickType))
@@ -1203,7 +1199,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -1306,7 +1302,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      */
     private int pickAllPoint(GroupPickTarget root,
                              PickRequest req,
@@ -1317,7 +1313,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all point -> group) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -1393,7 +1389,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -1476,7 +1472,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param loc The location of the point to pick with in local coords
      * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
@@ -1490,7 +1486,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (a point -> single) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -1554,7 +1550,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      */
     private int pickAllPoint(CustomPickTarget root,
                              PickRequest req,
@@ -1565,7 +1561,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all point -> custom) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -1720,7 +1716,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -1734,7 +1730,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all point -> leaf) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -1908,7 +1904,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -2018,7 +2014,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single line segment.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -2037,7 +2033,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single line -> group) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -2127,7 +2123,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -2221,7 +2217,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path The place to put the results in
@@ -2239,7 +2235,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single line -> single) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -2309,7 +2305,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single line segment.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -2328,7 +2324,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single line -> custom) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -2499,7 +2495,7 @@ public class DebugPickingHandler
      * segment.
      *
      * @param geom The geom we are picking against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -2521,8 +2517,8 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single line -> leaf) has 0x" +
-                                root.getPickMask() + " request has 0x" +
-                                req.pickType);
+                               geom.checkPickMask(req.pickType) + " request has 0x" +
+                               req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
             return false;
@@ -2658,7 +2654,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -2774,7 +2770,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -2795,7 +2791,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all line -> group) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -2881,7 +2877,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -2979,7 +2975,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -2999,7 +2995,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all line -> single) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -3073,7 +3069,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -3094,7 +3090,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all line -> custom) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -3273,7 +3269,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -3290,7 +3286,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all line -> leaf) has 0x" +
-                                root.getPickMask() + " request has 0x" +
+                                geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -3445,7 +3441,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -3559,7 +3555,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path The place to put the results in
@@ -3577,7 +3573,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (sorted single line -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -3648,7 +3644,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -3667,7 +3663,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (sorted single line -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -3749,7 +3745,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -3840,7 +3836,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -3859,7 +3855,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (sorted single line -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -4164,7 +4160,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[lastPathIndex];
+                        Matrix4d tx = transformPath[lastPathIndex];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -4276,7 +4272,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path The place to put the results in
@@ -4294,7 +4290,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single ray -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -4366,7 +4362,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single line segment.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -4385,7 +4381,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single ray -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -4467,7 +4463,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -4558,7 +4554,7 @@ public class DebugPickingHandler
      * segment.
      *
      * @param geom The geom we are picking against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -4580,7 +4576,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single ray -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -4643,7 +4639,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single line segment.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -4662,7 +4658,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single ray -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -4907,7 +4903,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -5022,7 +5018,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -5043,7 +5039,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all ray -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -5130,7 +5126,7 @@ public class DebugPickingHandler
             resizePath();
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -5228,7 +5224,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -5248,7 +5244,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all ray -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -5323,7 +5319,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param paths Array of paths place to set the results in
@@ -5344,7 +5340,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all ray -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -5513,7 +5509,7 @@ public class DebugPickingHandler
      *
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -5532,7 +5528,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all ray -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -5690,7 +5686,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -5799,7 +5795,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -5818,7 +5814,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (sorted single ray -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -5900,7 +5896,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -5995,7 +5991,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path The place to put the results in
@@ -6013,7 +6009,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (sorted single ray -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -6085,7 +6081,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The now that is acting as the local root to work through
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param p1 The first point of the segment
      * @param p2 The second point of the segment
      * @param path A place to set the results in
@@ -6104,7 +6100,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (sorted single ray -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -6413,7 +6409,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -6531,7 +6527,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -6548,7 +6544,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single cylinder -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -6635,7 +6631,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -6726,7 +6722,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -6741,7 +6737,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single cylinder -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -6816,7 +6812,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -6833,7 +6829,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single cylinder -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -7007,7 +7003,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path A place to set the results in
@@ -7025,7 +7021,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single cylinder -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -7146,7 +7142,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -7274,7 +7270,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -7292,7 +7288,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all cylinder -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -7369,7 +7365,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -7462,7 +7458,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -7480,7 +7476,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all cylinder -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -7545,7 +7541,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -7563,7 +7559,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all cylinder -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -7728,7 +7724,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param paths A place to set the results in
@@ -7747,7 +7743,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all cylinder -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -7919,7 +7915,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -8028,7 +8024,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -8044,7 +8040,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single cone -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -8117,7 +8113,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -8199,7 +8195,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -8215,7 +8211,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single cone -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -8273,7 +8269,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -8289,7 +8285,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single cone -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -8439,7 +8435,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path A place to set the results in
@@ -8456,7 +8452,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single cone -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -8570,7 +8566,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -8689,7 +8685,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -8706,7 +8702,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all cone -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -8791,7 +8787,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -8889,7 +8885,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -8906,7 +8902,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all cone -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -8980,7 +8976,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -8997,7 +8993,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all cone -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -9175,7 +9171,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
      * @param paths A place to set the results in
@@ -9193,7 +9189,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all cone -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -9362,7 +9358,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -9464,7 +9460,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -9479,7 +9475,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single box -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -9549,7 +9545,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -9628,7 +9624,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -9643,7 +9639,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single box -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -9696,7 +9692,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -9711,7 +9707,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single box -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -9856,7 +9852,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path A place to set the results in
@@ -9872,7 +9868,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single box -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -9983,7 +9979,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -10094,7 +10090,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -10110,7 +10106,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all box -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -10181,7 +10177,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -10263,7 +10259,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -10279,7 +10275,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all box -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -10337,7 +10333,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
@@ -10353,7 +10349,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all box -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -10501,7 +10497,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
      * @param paths A place to set the results in
@@ -10518,7 +10514,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all box -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -10718,7 +10714,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[lastPathIndex];
+                        Matrix4d tx = transformPath[lastPathIndex];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -10806,7 +10802,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -10817,7 +10813,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single frustum -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -10827,7 +10823,7 @@ public class DebugPickingHandler
         validTransform[lastPathIndex] = false;
         pickPath[lastPathIndex] = root;
 
-        Matrix4f tx = transformPath[lastPathIndex - 1];
+        Matrix4d tx = transformPath[lastPathIndex - 1];
         transformPath[lastPathIndex].set(tx);
 
         lastPathIndex++;
@@ -10878,7 +10874,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -10889,7 +10885,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single frustum -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -10954,7 +10950,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -10964,7 +10960,7 @@ public class DebugPickingHandler
             }
             else
             {
-                Matrix4f tx = transformPath[lastPathIndex - 1];
+                Matrix4d tx = transformPath[lastPathIndex - 1];
                 transformPath[lastPathIndex].set(tx);
                 validTransform[lastPathIndex] = false;
             }
@@ -11021,7 +11017,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -11032,7 +11028,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single frustum -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -11097,7 +11093,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(pickInstructions.hasTransform)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 tx.set(pickInstructions.localTransform);
                 tx.mul(transformPath[lastPathIndex - 1], tx);
@@ -11106,7 +11102,7 @@ public class DebugPickingHandler
             }
             else
             {
-                Matrix4f tx = transformPath[lastPathIndex - 1];
+                Matrix4d tx = transformPath[lastPathIndex - 1];
                 transformPath[lastPathIndex].set(tx);
                 validTransform[lastPathIndex] = false;
             }
@@ -11173,7 +11169,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single frustum -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -11309,7 +11305,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -11406,7 +11402,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths Array of paths place to set the results in
      * @param currentPath Active index in the paths array
      * @param needTransform true if we should calc vworld information
@@ -11419,7 +11415,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all frustum -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -11429,7 +11425,7 @@ public class DebugPickingHandler
         validTransform[lastPathIndex] = false;
         pickPath[lastPathIndex] = root;
 
-        Matrix4f tx = transformPath[lastPathIndex - 1];
+        Matrix4d tx = transformPath[lastPathIndex - 1];
         transformPath[lastPathIndex].set(tx);
 
         lastPathIndex++;
@@ -11484,7 +11480,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -11496,7 +11492,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all frustum -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -11566,7 +11562,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -11575,7 +11571,7 @@ public class DebugPickingHandler
             }
             else
             {
-                Matrix4f tx = transformPath[lastPathIndex - 1];
+                Matrix4d tx = transformPath[lastPathIndex - 1];
                 transformPath[lastPathIndex].set(tx);
                 validTransform[lastPathIndex] = false;
             }
@@ -11637,7 +11633,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -11649,7 +11645,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all frustum -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -11718,14 +11714,14 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(pickInstructions.hasTransform)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
                 tx.set(pickInstructions.localTransform);
                 tx.mul(transformPath[lastPathIndex - 1], tx);
                 validTransform[lastPathIndex] = true;
             }
             else
             {
-                Matrix4f tx = transformPath[lastPathIndex - 1];
+                Matrix4d tx = transformPath[lastPathIndex - 1];
                 transformPath[lastPathIndex].set(tx);
                 validTransform[lastPathIndex] = false;
             }
@@ -11786,7 +11782,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param paths Array of paths place to set the results in
      * @param currentPath Active index in the paths array
      * @param needTransform True if the local to v-world transform needs
@@ -11800,7 +11796,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all frustum -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -11969,7 +11965,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -12075,7 +12071,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path The place to put the results in
@@ -12090,7 +12086,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single sphere -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -12145,7 +12141,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path The place to put the results in
@@ -12160,7 +12156,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single sphere -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -12237,7 +12233,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -12323,7 +12319,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and recurse into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path The place to put the results in
@@ -12338,7 +12334,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single sphere -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -12499,7 +12495,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path A place to set the results in
@@ -12515,7 +12511,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single sphere -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -12622,7 +12618,7 @@ public class DebugPickingHandler
                     // reset the transform at the top of the stack
                     if(root instanceof TransformPickTarget)
                     {
-                        Matrix4f tx = transformPath[0];
+                        Matrix4d tx = transformPath[0];
 
                         TransformPickTarget tg = (TransformPickTarget)root;
                         tg.getTransform(tx);
@@ -12734,7 +12730,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path The place to put the results in
@@ -12750,7 +12746,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all sphere -> group) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -12829,7 +12825,7 @@ public class DebugPickingHandler
             // reset the transform at the top of the stack
             if(root instanceof TransformPickTarget)
             {
-                Matrix4f tx = transformPath[lastPathIndex];
+                Matrix4d tx = transformPath[lastPathIndex];
 
                 TransformPickTarget tg = (TransformPickTarget)root;
                 tg.getTransform(tx);
@@ -12920,7 +12916,7 @@ public class DebugPickingHandler
      * child node to test against.
      *
      * @param root The shared node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path The place to put the results in
@@ -12936,7 +12932,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all sphere -> single) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -13006,7 +13002,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The group node to test against and descend into
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param path The place to put the results in
@@ -13022,7 +13018,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all sphere -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!root.checkPickMask(req.pickType))
@@ -13188,7 +13184,7 @@ public class DebugPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param root The geom node to test against
-     * @param pickType flags to compare against for picking
+     * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
      * @param paths A place to set the results in
@@ -13205,7 +13201,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all sphere -> leaf) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
+                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -13255,15 +13251,15 @@ public class DebugPickingHandler
      * pickInstructions for the individual methods to process.
      *
      * @param node The target node to test against
-     * @param req The current picking request
+     * @param request The current picking request
      * @return true if this target has valid children returned
      */
     private boolean pickCustom(CustomPickTarget node, PickRequest request)
     {
         if(dumpNow)
             System.out.println("Pick mask check (custom -> custom) " +
-                                "has 0x" + root.getPickMask() + " request has 0x" +
-                                req.pickType);
+                                "has 0x" + node.checkPickMask(request.pickType) + " request has 0x" +
+                                request.pickType);
 
         if(!node.checkPickMask(request.pickType))
             return false;
@@ -13293,12 +13289,12 @@ public class DebugPickingHandler
 
             pickPath = tmp_nodes;
 
-            Matrix4f[] tmp_tx = new Matrix4f[new_size];
+            Matrix4d[] tmp_tx = new Matrix4d[new_size];
             System.arraycopy(transformPath, 0, tmp_tx, 0, old_size);
             transformPath = tmp_tx;
 
             for(int i = old_size; i < new_size; i++)
-                transformPath[i] = new Matrix4f();
+                transformPath[i] = new Matrix4d();
 
             boolean[] tmp_flags = new boolean[new_size];
             System.arraycopy(validTransform, 0, tmp_flags, 0, old_size);
@@ -13312,11 +13308,14 @@ public class DebugPickingHandler
      * @param mat The matrix to do the transformation with
      * @param vec The vector to be changed
      */
-    private void transform(Matrix4f mat, float[] vec)
+    private void transform(Matrix4d mat, float[] vec)
     {
-        wkVec.set(vec);
-        mat.transform(wkVec);
-        wkVec.get(vec);
+        wkVec.set(vec[0], vec[1], vec[2], vec[3]);
+        mat.transform(wkVec, wkVec);
+        vec[0] = (float)wkVec.x;
+        vec[1] = (float)wkVec.y;
+        vec[2] = (float)wkVec.z;
+        vec[3] = (float)wkVec.w;
     }
 
     /**
@@ -13325,11 +13324,13 @@ public class DebugPickingHandler
      * @param mat The matrix to do the transformation with
      * @param vec The vector to be changed
      */
-    private void transformNormal(Matrix4f mat, float[] vec)
+    private void transformNormal(Matrix4d mat, float[] vec)
     {
-        wkNormal.set(vec);
-        mat.transform(wkNormal);
-        wkNormal.get(vec);
+        wkNormal.set(vec[0], vec[1], vec[2]);
+        mat.transformNormal(wkNormal, wkNormal);
+        vec[0] = (float)wkNormal.x;
+        vec[1] = (float)wkNormal.y;
+        vec[2] = (float)wkNormal.z;
     }
 
     /**
@@ -13348,7 +13349,7 @@ public class DebugPickingHandler
             if(!validTransform[i])
                 continue;
 
-            vworldMatrix.mul(transformPath[i]);
+            vworldMatrix.mul(vworldMatrix, transformPath[i]);
         }
 
         matrixUtils.inverse(vworldMatrix, invertedMatrix);

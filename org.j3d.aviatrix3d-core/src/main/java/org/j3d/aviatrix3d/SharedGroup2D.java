@@ -13,10 +13,6 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import javax.vecmath.Matrix4f;
-
-import javax.media.opengl.GL;
-
 import org.j3d.util.I18nManager;
 
 // Local imports

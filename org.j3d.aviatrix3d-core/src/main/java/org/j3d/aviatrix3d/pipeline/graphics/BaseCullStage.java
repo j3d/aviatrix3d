@@ -936,13 +936,13 @@ public abstract class BaseCullStage implements GraphicsCullStage
             TransformCullable c =
                 (TransformCullable)currentViewpointPath.get(i);
             c.getTransform(viewMatrix1);
-            viewMatrix2.mul(viewMatrix1);
+            viewMatrix2.mul(viewMatrix2, viewMatrix1);
         }
 
         currentViewpointPath.clear();
 
         if(useOrientation)
-            viewMatrix2.mul(orientationMatrix);
+            viewMatrix2.mul(viewMatrix2, orientationMatrix);
 
         envData.viewTransform.set(viewMatrix2);
 
@@ -1015,7 +1015,7 @@ public abstract class BaseCullStage implements GraphicsCullStage
                 TransformCullable c =
                     (TransformCullable)currentViewpointPath.get(i);
                 c.getTransform(viewMatrix1);
-                viewMatrix2.mul(viewMatrix1);
+                viewMatrix2.mul(viewMatrix2, viewMatrix1);
             }
 
             currentViewpointPath.clear();
@@ -1152,13 +1152,13 @@ public abstract class BaseCullStage implements GraphicsCullStage
             TransformCullable c =
                 (TransformCullable)currentViewpointPath.get(i);
             c.getTransform(viewMatrix1);
-            viewMatrix2.mul(viewMatrix1);
+            viewMatrix2.mul(viewMatrix2, viewMatrix1);
         }
 
         currentViewpointPath.clear();
 
         if(useOrientation)
-            viewMatrix2.mul(orientationMatrix);
+            viewMatrix2.mul(viewMatrix2, orientationMatrix);
 
         envData.viewTransform.set(viewMatrix2);
 
