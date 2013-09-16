@@ -19,8 +19,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-import java.awt.Canvas;
-
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
 
 import org.j3d.device.input.Tracker;

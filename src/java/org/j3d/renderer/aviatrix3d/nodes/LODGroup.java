@@ -524,7 +524,7 @@ public class LODGroup extends BaseGroup
      * Remove the child at the specified index from the group.
      *
      * @param idx The index of the child to remove
-     * @throws IndexOfBoundsException When the idx is invalid
+     * @throws IndexOutOfBoundsException When the idx is invalid
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener bounds changed callback method
      */

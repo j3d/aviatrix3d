@@ -14,7 +14,6 @@ import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.Map;
 
 import org.j3d.util.I18nManager;
 

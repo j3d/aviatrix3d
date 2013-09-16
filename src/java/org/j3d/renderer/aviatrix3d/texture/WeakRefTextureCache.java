@@ -13,9 +13,6 @@
 package org.j3d.renderer.aviatrix3d.texture;
 
 // External imports
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageProducer;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.io.IOException;

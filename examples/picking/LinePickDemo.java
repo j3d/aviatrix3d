@@ -3,11 +3,6 @@
 import java.awt.*;
 import java.awt.event.*;
 
-import java.io.File;
-import java.net.MalformedURLException;
-
-import java.net.URL;
-
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 

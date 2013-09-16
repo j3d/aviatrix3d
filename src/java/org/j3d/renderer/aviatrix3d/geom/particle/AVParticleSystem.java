@@ -10,7 +10,6 @@
 package org.j3d.renderer.aviatrix3d.geom.particle;
 
 // External imports
-import java.util.Map;
 
 // Local imports
 import org.j3d.aviatrix3d.Geometry;

@@ -8,9 +8,9 @@
  * This software comes with the standard NO WARRANTY disclaimer for any
  * purpose. Use it at your own risk. If there's a problem you get to fix it.
  *
- ****************************************************************************/
+ ****************************************************************************/
+
 // External imports
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.WindowEvent;
@@ -19,16 +19,16 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+
 import javax.imageio.ImageIO;
 import javax.media.opengl.GLCapabilities;
-import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JFrame;
-import javax.vecmath.*;
-import org.j3d.util.*;
+import javax.vecmath.*;
+
+import org.j3d.util.*;
+
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
@@ -39,10 +39,13 @@ import org.j3d.aviatrix3d.pipeline.graphics.FrustumCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.StateAndTransparencyDepthSortStage;
-import org.j3d.renderer.aviatrix3d.geom.*;
+import org.j3d.aviatrix3d.pipeline.graphics.StateAndTransparencyDepthSortStage;
+
+import org.j3d.renderer.aviatrix3d.geom.*;
+
 // Internal imports
-// None
+// None
+
 /**
  * Main class that creates a hard shadowing scene using shadow mapping technique.
  * <p>
@@ -93,18 +96,22 @@ import org.j3d.renderer.aviatrix3d.geom.*;
  * @version $Revision: 1.8 $
  */
 public class ShadowMappingDemo extends JFrame
-							   implements WindowListener {
+							   implements WindowListener {
+
 	/**
 	 * Panel that consists of aviatrix3d scene on the left side
 	 * and java panel on the right side
 	 */
-	private JPanel mainPanel;
+	private JPanel mainPanel;
+
 	/** Panel that contains editable GUIs */
-	private JPanel editorPanel;
+	private JPanel editorPanel;
+
 	// Before putting the pipeline into run mode, put the canvas on
     // screen first.
 	/** Surface containing aviatrx3d scene */
-    protected Component sceneSurfaceComp;
+    protected Component sceneSurfaceComp;
+
 	// Color settings
 	// ----------------------------------------------------
     
@@ -113,19 +120,22 @@ public class ShadowMappingDemo extends JFrame
     /** Light's specular color */
 	private static final float[] lightSpecular = new float[] { 0.2f, 0.2f, 0.2f, 0.0f };
     /** Light's ambient color */
-	private static final float[] lightAmbient = new float[] { 0.7f, 0.7f, 0.7f, 0.0f };
+	private static final float[] lightAmbient = new float[] { 0.7f, 0.7f, 0.7f, 0.0f };
+
     /** Torus's diffuse color */
 	private static final float[] torusDiffuse = new float[] {0.25f, 0.25f, 1.0f, 0.0f};
     /** Torus's specular color */
 	private static final float[] torusSpecular = new float[] {0.25f, 0.25f, 0.25f, 0.0f};
     /** Torus's ambient color */
-	private static final float[] torusAmbient = new float[] {0.25f, 0.25f, 0.25f, 0.0f};
+	private static final float[] torusAmbient = new float[] {0.25f, 0.25f, 0.25f, 0.0f};
+
     /** Floor's diffuse color */
 	private static final float[] floorDiffuse = new float[] {0.7f, 0.7f, 1.0f, 0.0f};
     /** Floor's specular color */
 	private static final float[] floorSpecular = new float[] {0.25f, 0.25f, 0.25f, 0.0f};
     /** Floor's ambient color */
-	private static final float[] floorAmbient = new float[] {0.6f, 0.6f, 0.8f, 0.0f};
+	private static final float[] floorAmbient = new float[] {0.6f, 0.6f, 0.8f, 0.0f};
+
 	// Light settings
 	// ----------------------------------------------------
 	
@@ -160,9 +170,11 @@ public class ShadowMappingDemo extends JFrame
 	private Matrix4f spotlightTransform;
 	
 	/** Inverse spotlight transformation */
-	private Matrix4f spotlightInverseTransform;
+	private Matrix4f spotlightInverseTransform;
+
 	/** Position of the camera */
-	private Vector3f cameraPosition;    
+	private Vector3f cameraPosition;
+    
 	/** Torus transformation matrix */
 	private Matrix4f torusTransform;
 	
@@ -198,36 +210,49 @@ public class ShadowMappingDemo extends JFrame
 	// Aviatrix
 	// ----------------------------------------------------
     /** Manager for the scene graph handling */
-    private SingleThreadRenderManager sceneManager;
+    private SingleThreadRenderManager sceneManager;
+
     /** Manager for the layers etc */
-    private SingleDisplayCollection displayManager;
+    private SingleDisplayCollection displayManager;
+
     /** Our drawing surface */
-    private GraphicsOutputDevice surface;
+    private GraphicsOutputDevice surface;
+
 	/**
 	 * Constructor
 	 */
-	public ShadowMappingDemo() {
-		super("Shadow Mapping Demo");
-		mainPanel = new JPanel();
+	public ShadowMappingDemo() {
+
+		super("Shadow Mapping Demo");
+
+		mainPanel = new JPanel();
+
         setSize(640, 480);
-        setLocation(40, 40);
+        setLocation(40, 40);
+
         sceneSurfaceComp = setupAviatrix();
-        sceneSurfaceComp.setPreferredSize(new Dimension(640, 480));
-        setupSceneGraph();
+        sceneSurfaceComp.setPreferredSize(new Dimension(640, 480));
+
+        setupSceneGraph();
+
         //mainPanel.add(sceneSurfaceComp, BorderLayout.WEST);
-        //mainPanel.add(editorPanel, BorderLayout.EAST);
-        add(sceneSurfaceComp);
+        //mainPanel.add(editorPanel, BorderLayout.EAST);
+
+        add(sceneSurfaceComp);
+
         // Need to set visible first before starting the rendering thread due
         // to a bug in JOGL. See JOGL Issue #54 for more information on this.
         // http://jogl.dev.java.net
-        setVisible(true);
+        setVisible(true);
+
         addWindowListener(this);
         setResizable(false);
 	}
 	
     //---------------------------------------------------------------
     // Methods defined by BaseExampleFrame
-    //---------------------------------------------------------------
+    //---------------------------------------------------------------
+
     /**
      * Setup the avaiatrix pipeline here
      */
@@ -237,45 +262,57 @@ public class ShadowMappingDemo extends JFrame
         GLCapabilities caps = new GLCapabilities();
         caps.setDoubleBuffered(true);
         caps.setHardwareAccelerated(true);
-        caps.setDepthBits(24);
+        caps.setDepthBits(24);
+
         GraphicsCullStage culler = new FrustumCullStage();
-        culler.setOffscreenCheckEnabled(true);
+        culler.setOffscreenCheckEnabled(true);
+
         GraphicsSortStage sorter = new StateAndTransparencyDepthSortStage();
         surface = new SimpleAWTSurface(caps);
         
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
         pipeline.setCuller(culler);
         pipeline.setSorter(sorter);
-        pipeline.setGraphicsOutputDevice(surface);
+        pipeline.setGraphicsOutputDevice(surface);
+
         displayManager = new SingleDisplayCollection();
-        displayManager.addPipeline(pipeline);
+        displayManager.addPipeline(pipeline);
+
         // Render manager
         sceneManager = new SingleThreadRenderManager();
         sceneManager.addDisplay(displayManager);
-        sceneManager.setMinimumFrameInterval(0);
+        sceneManager.setMinimumFrameInterval(0);
+
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
-        Component comp = (Component)surface.getSurfaceObject();
+        Component comp = (Component)surface.getSurfaceObject();
+
         return comp;
-    }
+    }
+
 	/**
 	 * Setups the editor panel
 	 * 
 	 * @return JPanel containing GUI objects.
 	 */
 	protected JPanel setupEditorGUI() {
-		return null;	}
+		return null;
+	}
+
     /**
      * Setup the basic scene which consists of a quad and a viewpoint
      */
-    protected void setupSceneGraph() {
+    protected void setupSceneGraph() {
+
     	setupViewSettings();
     	
         SimpleViewport viewport = new SimpleViewport();
         viewport.setDimensions(0, 0, 640, 480);
-        viewport.setScene(setupFinalPassScene());
+        viewport.setScene(setupFinalPassScene());
+
         SimpleLayer layer = new SimpleLayer();
-        layer.setViewport(viewport);
+        layer.setViewport(viewport);
+
         Layer[] layers = { layer };
         displayManager.setLayers(layers, 1);
     }
@@ -397,14 +434,17 @@ public class ShadowMappingDemo extends JFrame
      * @return SimpleScene containing a scene that is rendered
 	 * 		   from the light's point of view
      */
-    SimpleScene setupFirstPassScene() {
-    	SimpleScene pass = new SimpleScene();
+    SimpleScene setupFirstPassScene() {
+
+    	SimpleScene pass = new SimpleScene();
+
     	// Grab projection matrix from the current view environment.
         float[] projMatrixArray = new float[16];
         ViewEnvironment viewEnv =  pass.getViewEnvironment();
         viewEnv.setFieldOfView(45.0f);
         viewEnv.setAspectRatio(640.0f / 480.0f);
-        viewEnv.getProjectionMatrix(projMatrixArray);
+        viewEnv.getProjectionMatrix(projMatrixArray);
+
         // Enable front face culling.
     	PolygonAttributes polyAttrib = new PolygonAttributes();
     	polyAttrib.setCulledFace(PolygonAttributes.CULL_FRONT);
@@ -412,70 +452,90 @@ public class ShadowMappingDemo extends JFrame
     	// To eliminate the self shadowing error offset is added to the polygon
     	// attribute.
     	polyAttrib.setPolygonOffset(2.5f, 10.0f);
-    	polyAttrib.setDrawMode(true, PolygonAttributes.DRAW_FILLED);
+    	polyAttrib.setDrawMode(true, PolygonAttributes.DRAW_FILLED);
+
     	// Viewpoint from the light's point of view
-    	Viewpoint vp = new Viewpoint();
-    	lightLookAtFromLight.addChild(vp);
+    	Viewpoint vp = new Viewpoint();
+
+    	lightLookAtFromLight.addChild(vp);
+
     	// Add torus and a floor geometry to the scene.
         Material material1 = new Material();
         material1.setDiffuseColor(torusDiffuse);
         material1.setAmbientColor(torusAmbient);
-        material1.setSpecularColor(torusSpecular);
+        material1.setSpecularColor(torusSpecular);
+
         Appearance app1 = new Appearance();
         app1.setMaterial(material1);
-        app1.setPolygonAttributes(polyAttrib);
+        app1.setPolygonAttributes(polyAttrib);
+
         Material material2 = new Material();
         material2.setDiffuseColor(floorDiffuse);
         material2.setAmbientColor(floorAmbient);
-        material2.setSpecularColor(floorSpecular);
+        material2.setSpecularColor(floorSpecular);
+
         Appearance app2 = new Appearance();
         app2.setMaterial(material2);
-        app2.setPolygonAttributes(polyAttrib);
+        app2.setPolygonAttributes(polyAttrib);
+
         Torus torus = new Torus(0.15f, 0.45f);
-    	torus.setAppearance(app1);
+    	torus.setAppearance(app1);
+
     	lightPointofView.setTransform(torusTransform);
-    	lightPointofView.addChild(torus);
+    	lightPointofView.addChild(torus);
+
     	Matrix4f mat = new Matrix4f();
-    	mat.setIdentity();
+    	mat.setIdentity();
+
     	Box floor = new Box(7.5f, 0.1f, 7.5f);
-    	floor.setAppearance(app2);
+    	floor.setAppearance(app2);
+
     	TransformGroup floorGroup = new TransformGroup();
     	floorGroup.addChild(floor);
     	floorGroup.addChild(lightPointofView);
-    	floorGroup.setTransform(mat);
+    	floorGroup.setTransform(mat);
+
     	// Setup scene root
     	Group sceneRoot = new Group();
     	sceneRoot.addChild(lightLookAtFromLight);
     	sceneRoot.addChild(floorGroup);
-    	sceneRoot.addChild(lightViewSpotLight);
+    	sceneRoot.addChild(lightViewSpotLight);
+
     	pass.setRenderedGeometry(sceneRoot);
-    	pass.setActiveView(vp);
+    	pass.setActiveView(vp);
+
     	return pass;
-    }	
+    }
+	
 	/**
 	 * Creates a depth texture from a scene rendered from light's point of view
 	 * 
 	 * @return TextureUnit containing a depth texture.
 	 */	
-    TextureUnit createShadowTexture() {
+    TextureUnit createShadowTexture() {
+
     	// Grab scene graph that was set from the light's point of view.
     	SimpleScene lightPovScene = setupFirstPassScene();
     	
     	// Get projection matrix from the view environment.
     	float[] projMatrixArray = new float[16];
     	ViewEnvironment viewEnv = lightPovScene.getViewEnvironment();
-    	viewEnv.getProjectionMatrix(projMatrixArray);
-        Matrix4f projectionMatrix = new Matrix4f(projMatrixArray);
+    	viewEnv.getProjectionMatrix(projMatrixArray);
+
+        Matrix4f projectionMatrix = new Matrix4f(projMatrixArray);
+
         // Calculate the texture matrix for projection.
         // This matrix transforms from eye space to light's clip space
     	Matrix4f biasMatrix = new Matrix4f(0.5f, 0.0f, 0.0f, 0.0f,
 										   0.0f, 0.5f, 0.0f, 0.0f,
 										   0.0f, 0.0f, 0.5f, 0.0f,
-										   0.0f, 0.0f, 0.0f, 1.0f);
+										   0.0f, 0.0f, 0.0f, 1.0f);
+
     	biasMatrix.setTranslation(new Vector3f(0.5f, 0.5f, 0.5f));
     	biasMatrix.mul(projectionMatrix);
     	projMtxBias.set(biasMatrix);
-    	biasMatrix.mul(spotlightInverseTransform);
+    	biasMatrix.mul(spotlightInverseTransform);
+
     	float []sRow = new float[4];
     	biasMatrix.getRow(0, sRow);
     	float []tRow = new float[4];
@@ -483,22 +543,27 @@ public class ShadowMappingDemo extends JFrame
     	float []rRow = new float[4];
     	biasMatrix.getRow(2, rRow);
     	float []qRow = new float[4];
-    	biasMatrix.getRow(3, qRow);
+    	biasMatrix.getRow(3, qRow);
+
         GLCapabilities cap = new GLCapabilities();
         cap.setDoubleBuffered(false);
-        cap.setDepthBits(24);
+        cap.setDepthBits(24);
+
         // Create depth only offscreen texture.
     	OffscreenTexture2D positionBuffer =
     			new OffscreenTexture2D(cap,
 						    		   640,
 						    		   480,
-						    		   Texture.FORMAT_DEPTH_COMPONENT);
+						    		   Texture.FORMAT_DEPTH_COMPONENT);
+
         SimpleViewport view = new SimpleViewport();
         view.setDimensions(0, 0, 640, 480);
-        view.setScene(lightPovScene);
+        view.setScene(lightPovScene);
+
     	// Set layer
     	SimpleLayer mainLayer = new SimpleLayer();
-    	mainLayer.setViewport(view);
+    	mainLayer.setViewport(view);
+
     	Layer[] layers = { mainLayer };
     	positionBuffer.setClearColor(0, 0, 0, 0);
     	positionBuffer.setLayers(layers, 1);
@@ -508,7 +573,8 @@ public class ShadowMappingDemo extends JFrame
     	positionBuffer.setBoundaryModeS(OffscreenTexture2D.BM_CLAMP_TO_EDGE);
     	positionBuffer.setBoundaryModeT(OffscreenTexture2D.BM_CLAMP_TO_EDGE);
     	positionBuffer.setCompareMode(Texture.COMPARE_MODE_R2TEX);
-    	positionBuffer.setCompareFunction(Texture.COMPARE_FUNCTION_LEQUAL);
+    	positionBuffer.setCompareFunction(Texture.COMPARE_FUNCTION_LEQUAL);
+
     	// Setup texture coordinate generations
         coord_gen.setParameter(TexCoordGeneration.TEXTURE_S,
                                TexCoordGeneration.MODE_GENERIC,
@@ -536,28 +602,35 @@ public class ShadowMappingDemo extends JFrame
         
     	TextureUnit texUnits = new TextureUnit();
     	texUnits.setTexture(positionBuffer);
-    	texUnits.setTexCoordGeneration(coord_gen);
+    	texUnits.setTexCoordGeneration(coord_gen);
+
     	return texUnits;
-    }
+    }
+
     /**
      * The final SimpleScene that renders a scene from camera's viewpoint.
      * 
      * @return SimpleScene containing a final rendered scene.
      */
-    SimpleScene setupFinalPassScene() {
+    SimpleScene setupFinalPassScene() {
+
     	SimpleScene pass = new SimpleScene();
 
     	// View group
-    	Viewpoint vp = new Viewpoint();
+    	Viewpoint vp = new Viewpoint();
+
     	TransformGroup tx = new TransformGroup();
     	tx.addChild(vp);
-    	tx.setTransform(cameraTransform);
+    	tx.setTransform(cameraTransform);
+
         Material material1 = new Material();
         material1.setDiffuseColor(torusDiffuse);
         material1.setAmbientColor(torusAmbient);
-        material1.setSpecularColor(torusSpecular);
+        material1.setSpecularColor(torusSpecular);
+
         TextureAttributes texAttrib = new TextureAttributes();
-        texAttrib.setTextureMode(TextureAttributes.MODE_MODULATE);
+        texAttrib.setTextureMode(TextureAttributes.MODE_MODULATE);
+
         TextureComponent2D[] filter_img = loadImage("textures/colour_map.jpg");
         Texture2D filter_texture = new Texture2D();
         filter_texture.setSources(Texture.MODE_BASE_LEVEL,
@@ -569,7 +642,8 @@ public class ShadowMappingDemo extends JFrame
         TextureUnit[] texUnits = new TextureUnit[2];
         texUnits[0] = createShadowTexture();
         texUnits[0].setTextureAttributes(texAttrib);
-                texUnits[1] = new TextureUnit();
+        
+        texUnits[1] = new TextureUnit();
         
         Matrix4f identityMtx = new Matrix4f();
         identityMtx.setIdentity();
@@ -597,38 +671,50 @@ public class ShadowMappingDemo extends JFrame
         
         Appearance app1 = new Appearance();
         app1.setMaterial(material1);
-        app1.setTextureUnits(texUnits, 1);
+        app1.setTextureUnits(texUnits, 1);
+
         Material material2 = new Material();
         material2.setDiffuseColor(floorDiffuse);
         material2.setAmbientColor(floorAmbient);
-        material2.setSpecularColor(floorSpecular);
+        material2.setSpecularColor(floorSpecular);
+
         Appearance app2 = new Appearance();
         app2.setMaterial(material2);
-        app2.setTextureUnits(texUnits, 2);
+        app2.setTextureUnits(texUnits, 2);
+
         Torus torus = new Torus(0.15f, 0.45f);
-    	torus.setAppearance(app1);
+    	torus.setAppearance(app1);
+
     	Matrix4f mat2 = new Matrix4f();
     	mat2.setIdentity();
-    	mat2.setTranslation(new Vector3f(0, 1, 0));
-    	camerasPointofView.addChild(torus);
+    	mat2.setTranslation(new Vector3f(0, 1, 0));
+
+    	camerasPointofView.addChild(torus);
+
     	Matrix4f mat = new Matrix4f();
-    	mat.setIdentity();
+    	mat.setIdentity();
+
     	Box floor = new Box(7.5f, 0.1f, 7.5f);
-    	floor.setAppearance(app2);
+    	floor.setAppearance(app2);
+
     	TransformGroup floorGroup = new TransformGroup();
     	floorGroup.addChild(floor);
     	floorGroup.addChild(camerasPointofView);
-    	floorGroup.setTransform(mat);
+    	floorGroup.setTransform(mat);
+
     	// Setup scene root
     	Group sceneRoot = new Group();
     	sceneRoot.addChild(tx);
     	sceneRoot.addChild(floorGroup);
     	sceneRoot.addChild(cameraViewSpotLight);
-    	sceneRoot.addChild(lightGroup);
+    	sceneRoot.addChild(lightGroup);
+
     	pass.setRenderedGeometry(sceneRoot);
-    	pass.setActiveView(vp);
+    	pass.setActiveView(vp);
+
     	return pass;
-    }
+    }
+
     //---------------------------------------------------------------
     // Methods defined by WindowListener
     //---------------------------------------------------------------
@@ -636,43 +722,58 @@ public class ShadowMappingDemo extends JFrame
     /**
      * Ignored
      */
-    public void windowActivated(WindowEvent evt) {
-    }
+    public void windowActivated(WindowEvent evt) {
+
+    }
+
     /**
      * Ignored
      */
-    public void windowClosed(WindowEvent evt) {
-    }
+    public void windowClosed(WindowEvent evt) {
+
+    }
+
     /**
      * Exit the application
      *
      * @param evt The event that caused this method to be called.
      */
-    public void windowClosing(WindowEvent evt) {
-        sceneManager.shutdown();
+    public void windowClosing(WindowEvent evt) {
+
+        sceneManager.shutdown();
+
         System.exit(0);
-    }
+    }
+
     /**
      * Ignored
      */
-    public void windowDeactivated(WindowEvent evt) {
-    }
+    public void windowDeactivated(WindowEvent evt) {
+
+    }
+
     /**
      * Ignored
      */
-    public void windowDeiconified(WindowEvent evt) {
-    }
+    public void windowDeiconified(WindowEvent evt) {
+
+    }
+
     /**
      * Ignored
      */
-    public void windowIconified(WindowEvent evt) {
-    }
+    public void windowIconified(WindowEvent evt) {
+
+    }
+
     /**
      * When the window is opened, start everything up.
      */
-    public void windowOpened(WindowEvent evt) {
+    public void windowOpened(WindowEvent evt) {
+
         sceneManager.setEnabled(true);
-    }
+    }
+
 
     //---------------------------------------------------------------
     // Local methods

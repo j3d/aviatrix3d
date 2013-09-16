@@ -25,7 +25,6 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.widgets.Display;
 
 import org.j3d.renderer.aviatrix3d.swt.draw2d.SimpleDraw2DSurface;
-import org.j3d.renderer.aviatrix3d.swt.draw2d.DebugDraw2DSurface;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 

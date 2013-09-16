@@ -13,8 +13,6 @@
 package org.j3d.renderer.aviatrix3d.texture;
 
 // External imports
-import java.io.IOException;
-import java.net.URL;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;

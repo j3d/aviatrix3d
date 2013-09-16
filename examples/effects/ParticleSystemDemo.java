@@ -3,11 +3,6 @@
 import java.awt.*;
 import java.awt.event.*;
 
-import java.io.File;
-import java.net.MalformedURLException;
-
-import java.net.URL;
-
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 
@@ -28,8 +23,6 @@ import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.renderer.aviatrix3d.geom.particle.PointParticleSystem;
-import org.j3d.renderer.aviatrix3d.geom.particle.QuadParticleSystem;
-import org.j3d.renderer.aviatrix3d.geom.particle.TriangleFanParticleSystem;
 
 /**
  * Example application that demonstrates how to use a simple particle system.

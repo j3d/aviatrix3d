@@ -18,9 +18,6 @@ import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.rendering.BoundingVolume;
 import org.j3d.aviatrix3d.picking.PickableObject;
 
-import org.j3d.renderer.aviatrix3d.util.SceneGraphTraversalObserver;
-import org.j3d.renderer.aviatrix3d.util.SceneGraphTraverser;
-
 /**
  * Utility class that allows printing of a scene graph, with options to control
  * what is printed.

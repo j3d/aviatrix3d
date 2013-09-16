@@ -13,7 +13,6 @@
 package org.j3d.renderer.aviatrix3d.swt.output;
 
 // External imports
-import java.text.Format;
 import java.text.MessageFormat;
 import java.util.Locale;
 

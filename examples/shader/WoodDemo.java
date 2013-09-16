@@ -3,13 +3,9 @@
 import java.awt.*;
 import java.awt.event.*;
 
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
 
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;

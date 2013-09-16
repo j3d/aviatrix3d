@@ -14,16 +14,13 @@ package org.j3d.renderer.aviatrix3d.geom.hanim;
 
 // External imports
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.text.Format;
 import java.text.MessageFormat;
 import java.util.Locale;
-import java.util.HashMap;
 
 import javax.media.opengl.GL;
 

@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
-import java.net.URL;
-
 import javax.imageio.ImageIO;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;

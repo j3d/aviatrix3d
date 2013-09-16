@@ -14,15 +14,12 @@ package org.j3d.renderer.aviatrix3d.texture;
 
 // External imports
 import java.awt.Image;
-import java.awt.image.DataBuffer;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.ImageProducer;
 import java.net.URL;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileNotFoundException;
-import java.text.Format;
 import java.text.MessageFormat;
 import java.util.Locale;
 

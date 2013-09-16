@@ -10,11 +10,8 @@
 package org.j3d.renderer.aviatrix3d.util;
 
 // External imports
-import java.text.Format;
 import java.text.MessageFormat;
 import java.util.Locale;
-import java.util.Iterator;
-import java.util.List;
 
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;

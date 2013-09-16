@@ -11,8 +11,6 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 
-import java.util.Random;
-
 import javax.imageio.ImageIO;
 
 import javax.vecmath.Matrix4f;

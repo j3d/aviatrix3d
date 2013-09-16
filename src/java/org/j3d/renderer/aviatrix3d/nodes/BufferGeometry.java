@@ -13,7 +13,6 @@
 package org.j3d.renderer.aviatrix3d.nodes;
 
 // External imports
-import java.awt.image.*;
 import java.nio.*;
 
 import java.text.Format;
