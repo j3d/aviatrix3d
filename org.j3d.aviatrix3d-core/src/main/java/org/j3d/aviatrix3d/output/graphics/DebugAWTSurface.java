@@ -285,9 +285,7 @@ public class DebugAWTSurface extends BaseAWTSurface
         if(canvasContext != null)
         {
             ((GLJPanel)canvas).setAutoSwapBufferMode(false);
-            canvasContext.setSynchronized(true);
-            canvasRenderer =
-                new DebugRenderingProcessor(canvasContext, this);
+            canvasRenderer = new DebugRenderingProcessor(canvasContext, this);
             canvasDescriptor.setLocalContext(canvasContext);
             canvasRenderer.setOwnerBuffer(canvasDescriptor);
 
@@ -413,9 +411,7 @@ public class DebugAWTSurface extends BaseAWTSurface
             ((GLCanvas)canvas).setAutoSwapBufferMode(false);
 
             canvasContext = ((GLAutoDrawable)canvas).getContext();
-            canvasContext.setSynchronized(true);
-            canvasRenderer =
-                new DebugRenderingProcessor(canvasContext, this);
+            canvasRenderer = new DebugRenderingProcessor(canvasContext, this);
             canvasDescriptor.setLocalContext(canvasContext);
             canvasRenderer.setOwnerBuffer(canvasDescriptor);
         }

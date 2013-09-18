@@ -18,6 +18,7 @@ import javax.media.opengl.*;
 import java.text.MessageFormat;
 import java.util.Locale;
 
+import com.jogamp.nativewindow.awt.AWTGraphicsDevice;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -237,9 +238,12 @@ public class PbufferSurface extends BaseSurface
         if(sharedSurface != null)
             shared_context = sharedSurface.getGLContext();
 
-        GLDrawableFactory factory = GLDrawableFactory.getFactory();
+        AWTGraphicsDevice awt_device = AWTGraphicsDevice.createDefault();
+        GLProfile profile = GLProfile.get(awt_device, GLProfile.GL2);
 
-        if(!factory.canCreateGLPbuffer())
+        GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
+
+        if(!factory.canCreateGLPbuffer(awt_device, profile))
         {
             I18nManager intl_mgr = I18nManager.getManager();
             String msg = intl_mgr.getString(NOT_AVAILABLE_PROP);
@@ -247,11 +251,12 @@ public class PbufferSurface extends BaseSurface
             throw new PbufferUnavailableException(msg);
         }
 
-        canvas = factory.createGLPbuffer(caps,
-                                         chooser,
-                                         surfaceWidth,
-                                         surfaceHeight,
-                                         shared_context);
+        canvas = factory.createOffscreenAutoDrawable(awt_device,
+                                                     caps,
+                                                     chooser,
+                                                     surfaceWidth,
+                                                     surfaceHeight,
+                                                     shared_context);
 
         canvasContext = ((GLAutoDrawable)canvas).getContext();
         canvasRenderer =

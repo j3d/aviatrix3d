@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d.output.graphics;
 import javax.media.opengl.*;
 
 // Local imports
+import com.jogamp.nativewindow.awt.AWTGraphicsDevice;
 import org.j3d.aviatrix3d.rendering.BufferSetupData;
 import org.j3d.aviatrix3d.rendering.OffscreenBufferRenderable;
 
@@ -39,7 +40,7 @@ class PbufferDescriptor extends BaseBufferDescriptor
     protected static boolean avoidPbufferTextures = false;
 
     /** The Pbuffer instance that we are wrapping */
-    private GLPbuffer pbuffer;
+    private GLOffscreenAutoDrawable pbuffer;
 
     /**
      * Flag indicating whether the Pbuffer we created ended up with
@@ -107,7 +108,11 @@ class PbufferDescriptor extends BaseBufferDescriptor
         BufferSetupData setup_data = ownerRenderable.getBufferSetup();
 
         // Build up local caps as needed
-        GLCapabilities caps = new GLCapabilities();
+        AWTGraphicsDevice awt_device = AWTGraphicsDevice.createDefault();
+        GLProfile profile = GLProfile.get(awt_device, GLProfile.GL2);
+
+        GLCapabilities caps = new GLCapabilities(profile);
+        caps.setPBuffer(true);
         caps.setDepthBits(setup_data.getDepthBits());
         caps.setStencilBits(setup_data.getStencilBits());
 
@@ -121,8 +126,9 @@ class PbufferDescriptor extends BaseBufferDescriptor
         bufferWidth = ownerRenderable.getWidth();
         bufferHeight = ownerRenderable.getHeight();
 
-        GLDrawableFactory fac = GLDrawableFactory.getFactory();
-        if(!fac.canCreateGLPbuffer())
+        GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
+
+        if(!factory.canCreateGLPbuffer(awt_device, profile))
             return false;
 
         // If we're on platforms that have problems with RTT and the
@@ -134,11 +140,12 @@ class PbufferDescriptor extends BaseBufferDescriptor
             caps.setPbufferRenderToTexture(false);
         }
 
-        pbuffer = fac.createGLPbuffer(caps,
-                                      null,
-                                      bufferWidth,
-                                      bufferHeight,
-                                      parentContext);
+        pbuffer = factory.createOffscreenAutoDrawable(awt_device,
+                                                      caps,
+                                                      null,
+                                                      bufferWidth,
+                                                      bufferHeight,
+                                                      parentContext);
 
         GLCapabilitiesImmutable real_caps = pbuffer.getChosenGLCapabilities();
 
@@ -214,7 +221,7 @@ class PbufferDescriptor extends BaseBufferDescriptor
     /**
      * Finish rendering this buffer and copy it in to the destination texture.
      *
-     * @param context The GL context this buffer comes from
+     * @param parentContext The GL context this buffer uses as a parent
      */
     public void swapBuffers(GLContext parentContext)
     {

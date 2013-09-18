@@ -83,9 +83,6 @@ public class DebugPickingHandler
     /** Last index of valid items on the path */
     private int lastPathIndex;
 
-    /** Distance for the closest object found to date */
-    private float closestDistance;
-
     /** The working vector for start location or direction */
     private float[] start;
 
@@ -587,8 +584,6 @@ public class DebugPickingHandler
 
                 if(pickCustom((CustomPickTarget)target_node, req))
                 {
-                    CustomPickTarget cpt = (CustomPickTarget)target_node;
-
                     num_kids = pickInstructions.numChildren;
 
                     // reset the transform at the top of the stack
@@ -810,16 +805,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
-
-				Locale lcl = intl_mgr.getFoundLocale();
-
-				Object[] msg_args = { target_node.getClass().getName() };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				String msg = msg_fmt.format(msg_args);
-                errorReporter.warningReport(msg, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -981,7 +967,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -1086,7 +1072,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single point -> leaf) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
+                                leaf.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(leaf.checkPickMask(req.pickType))
@@ -1373,7 +1359,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -1624,7 +1610,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -2103,7 +2089,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -2386,7 +2372,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -2857,7 +2843,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -3156,7 +3142,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -3725,7 +3711,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -3917,7 +3903,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -4033,7 +4019,7 @@ public class DebugPickingHandler
     private void pickAllLineSegmentSorted(PickTarget root, PickRequest req)
     {
         if(dumpNow)
-            System.out.pritnln("pickAllLineSegmentSorted seems to be unimplemented");
+            System.out.println("pickAllLineSegmentSorted seems to be unimplemented");
     }
 
     // ----------------------- Ray Picking ------------------------------
@@ -4443,7 +4429,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -4576,7 +4562,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single ray -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -4720,7 +4706,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -5105,7 +5091,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -5406,7 +5392,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -5528,7 +5514,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all ray -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -5876,7 +5862,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -6162,7 +6148,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -6607,7 +6593,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -6809,8 +6795,6 @@ public class DebugPickingHandler
      *
      * @param root The group node to test against and recurse into
      * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -6892,7 +6876,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -6936,7 +6920,7 @@ public class DebugPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
@@ -7337,7 +7321,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -7602,7 +7586,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -7645,7 +7629,7 @@ public class DebugPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids; i++)
             {
@@ -8077,7 +8061,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -8320,7 +8304,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -8358,7 +8342,7 @@ public class DebugPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
@@ -8749,7 +8733,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -9040,7 +9024,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -9507,7 +9491,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -9739,7 +9723,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -10139,7 +10123,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -10382,7 +10366,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -10920,7 +10904,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -11063,7 +11047,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -11531,7 +11515,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -11684,7 +11668,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -11835,7 +11819,6 @@ public class DebugPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickSphere(PickTarget root, PickRequest req)
     {
@@ -12197,7 +12180,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -12375,7 +12358,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -12789,7 +12772,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -13061,7 +13044,7 @@ public class DebugPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_MSG, null);
+                generateProxyWarning(target_node);
             }
         }
 
@@ -13336,4 +13319,27 @@ public class DebugPickingHandler
 
         matrixUtils.inverse(vworldMatrix, invertedMatrix);
     }
+
+    /**
+     * Convenience method to generate a warning message when the target node in a
+     * pick traversal does not match a known option that the system can
+     * process. No error is directly generated, just a warning passed to the
+     * error reporter
+     *
+     * @param targetNode The node to isse the message about
+     */
+    private void generateProxyWarning(Node targetNode)
+    {
+        I18nManager intl_mgr = I18nManager.getManager();
+        String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+        Locale lcl = intl_mgr.getFoundLocale();
+
+        Object[] msg_args = { targetNode.getClass().getName() };
+        MessageFormat msg_fmt =
+                new MessageFormat(msg_pattern, lcl);
+        String msg = msg_fmt.format(msg_args);
+        errorReporter.warningReport(msg, null);
+    }
+
 }

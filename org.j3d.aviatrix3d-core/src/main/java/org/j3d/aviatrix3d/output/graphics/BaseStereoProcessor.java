@@ -305,7 +305,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
                     gl.glMatrixMode(GL2.GL_MODELVIEW);
                     gl.glPushMatrix();
 
-                    gl.glLoadMatrixf(data.backgroundTransform, 0);
+                    gl.glLoadMatrixd(data.backgroundTransform, 0);
 
                     data.background.render(gl);
                     data.background.postRender(gl);
@@ -363,7 +363,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
 */
         data.viewpoint.render(gl);
 
-        gl.glMultMatrixf(data.cameraTransform, 0);
+        gl.glMultMatrixd(data.cameraTransform, 0);
     }
 
     /**

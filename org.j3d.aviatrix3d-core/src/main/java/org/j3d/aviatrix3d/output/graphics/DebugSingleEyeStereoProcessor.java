@@ -1004,7 +1004,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
      * @param gl The GL context to process the requests with
      */
     @Override
-    protected void processRequestData(GL gl)
+    protected void processRequestData(GL2 gl)
     {
         if(dumpNow || PRINT_STATES)
         {

@@ -71,6 +71,7 @@ class AWTSurfaceMonitor extends ComponentAdapter
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void hierarchyChanged(HierarchyEvent evt)
     {
         if((evt.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0)
@@ -89,6 +90,7 @@ class AWTSurfaceMonitor extends ComponentAdapter
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void componentResized(ComponentEvent evt)
     {
         invalidContext = true;
@@ -103,21 +105,9 @@ class AWTSurfaceMonitor extends ComponentAdapter
      *
      * @param drawable The surface that caused this event
      */
+    @Override
     public void display(GLAutoDrawable drawable)
     {
-    }
-
-    /**
-     * Called by the drawable when the display mode or the display device
-     * associated with the GLAutoDrawable has changed.
-     *
-     * @param drawable The surface that caused this event
-     */
-    public void displayChanged(GLAutoDrawable drawable,
-                               boolean modeChanged,
-                               boolean deviceChanged)
-    {
-        invalidContext = true;
     }
 
     /**
@@ -126,7 +116,14 @@ class AWTSurfaceMonitor extends ComponentAdapter
      *
      * @param drawable The surface that caused this event
      */
+    @Override
     public void init(GLAutoDrawable drawable)
+    {
+        invalidContext = true;
+    }
+
+    @Override
+    public void dispose(GLAutoDrawable drawable)
     {
         invalidContext = true;
     }
@@ -141,6 +138,7 @@ class AWTSurfaceMonitor extends ComponentAdapter
      * @param width The width, in pixels, of the new drawable shape
      * @param height The height, in pixels, of the new drawable shape
      */
+    @Override
     public void reshape(GLAutoDrawable drawable,
                         int x,
                         int y,
@@ -162,6 +160,7 @@ class AWTSurfaceMonitor extends ComponentAdapter
      *
      * @param reporter The instance to use or null
      */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         if(reporter == null)
@@ -173,6 +172,7 @@ class AWTSurfaceMonitor extends ComponentAdapter
     /**
      * Check to see if the surface is visible.
      */
+    @Override
     public boolean isVisible()
     {
         return visible;
@@ -181,6 +181,7 @@ class AWTSurfaceMonitor extends ComponentAdapter
     /**
      * Check to see if we should generate a new context now.
      */
+    @Override
     public boolean requiresNewContext()
     {
        return invalidContext;
