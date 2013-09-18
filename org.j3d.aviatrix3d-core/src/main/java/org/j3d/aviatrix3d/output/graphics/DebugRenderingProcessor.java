@@ -19,9 +19,6 @@ import javax.media.opengl.glu.GLU;
 // Local imports
 import org.j3d.aviatrix3d.rendering.*;
 
-import org.j3d.util.IntHashMap;
-import org.j3d.util.MatrixUtils;
-
 import org.j3d.aviatrix3d.pipeline.RenderOp;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsEnvironmentData;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
@@ -54,7 +51,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
 
     /** Reusable debug GL context */
-    private TraceGL debugGL;
+    private DebugGL2 debugGL;
 
     /** Trigger to dump the next frame using the TraceGL class */
     private int dumpNextFrameCount;
@@ -133,13 +130,14 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
         if(localContext != null)
         {
-            GL gl = localContext.getGL();
+            GL base_gl = localContext.getGL();
+            GL2 gl = base_gl.getGL2();
 
             if(dumpNow)
             {
-                if(debugGL == null && !(gl instanceof TraceGL))
+                if(debugGL == null && !(gl instanceof DebugGL2))
                 {
-                    debugGL = new TraceGL(gl, System.out);
+                    debugGL = new DebugGL2(gl);
                     localContext.setGL(debugGL);
                 }
 
@@ -171,10 +169,12 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
     @Override
     public void display(GraphicsProfilingData profilingData)
     {
-        GL gl = localContext.getGL();
+        GL base_gl = localContext.getGL();
 
-        if(gl == null)
+        if(base_gl == null)
             return;
+
+        GL2 gl = base_gl.getGL2();
 
         if(dumpNow || CHECK_ERRORS)
         {
@@ -257,8 +257,8 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     // buffer when the layer is finished.
                     if(!first_layer)
                     {
-                        gl.glDrawBuffer(GL.GL_AUX0);
-                        gl.glReadBuffer(GL.GL_AUX0);
+                        gl.glDrawBuffer(GL2.GL_AUX0);
+                        gl.glReadBuffer(GL2.GL_AUX0);
 
                         setupMultipassViewport(gl, data);
                     }
@@ -284,7 +284,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                                         0,
                                         data.viewport[GraphicsEnvironmentData.VIEW_WIDTH],
                                         data.viewport[GraphicsEnvironmentData.VIEW_HEIGHT],
-                                        GL.GL_COLOR);
+                                        GL2.GL_COLOR);
                         gl.glReadBuffer(GL.GL_BACK);
                     }
                     break;
@@ -468,7 +468,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     }
 
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.render(gl);
                     break;
@@ -499,10 +499,10 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                                             Integer.toHexString(s.hashCode()));
                     }
 
-                    gl.glRasterPos2f(renderableList[i].transform[3],
+                    gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
-                    gl.glPixelZoom(renderableList[i].transform[0],
-                                   renderableList[i].transform[5]);
+                    gl.glPixelZoom((float)renderableList[i].transform[0],
+                                   (float)renderableList[i].transform[5]);
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.render(gl);
                     break;
@@ -533,7 +533,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     ((GeometryRenderable)renderableList[i].renderable).render(gl);
                     gl.glPopMatrix();
                     break;
@@ -549,10 +549,10 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     }
 
                     // load the matrix to render
-                    gl.glRasterPos2f(renderableList[i].transform[3],
+                    gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
-                    gl.glPixelZoom(renderableList[i].transform[0],
-                                   renderableList[i].transform[5]);
+                    gl.glPixelZoom((float)renderableList[i].transform[0],
+                                   (float)renderableList[i].transform[5]);
                     ((GeometryRenderable)renderableList[i].renderable).render(gl);
                     break;
 
@@ -568,7 +568,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     CustomGeometryRenderable gr =
                         (CustomGeometryRenderable)renderableList[i].renderable;
                     gr.render(gl, renderableList[i].instructions);
@@ -587,7 +587,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
 
                     CustomRenderable cr =
                         (CustomRenderable)renderableList[i].renderable;
@@ -647,7 +647,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.render(gl, l_id);
                     gl.glPopMatrix();
@@ -696,7 +696,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
 
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.render(gl, c_id);
@@ -730,7 +730,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                         if(dumpNow || PRINT_STATES)
                             errorReporter.messageReport("Start transparency first pass");
 
-                        gl.glEnable(GL.GL_ALPHA_TEST);
+                        gl.glEnable(GL2.GL_ALPHA_TEST);
                         gl.glAlphaFunc(GL.GL_GEQUAL, alpha_test);
                         transparent_start_idx = i;
                     }
@@ -760,7 +760,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                         first_pass_alpha = false;
                         i = transparent_start_idx - 1;
 
-                        gl.glDisable(GL.GL_ALPHA_TEST);
+                        gl.glDisable(GL2.GL_ALPHA_TEST);
                     }
                     else
                     {
@@ -784,7 +784,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
                     if(!fog_active)
                     {
-                        gl.glEnable(GL.GL_FOG);
+                        gl.glEnable(GL2.GL_FOG);
                         fog_active = true;
                     }
 
@@ -809,7 +809,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                         obj = (ObjectRenderable)renderableList[i].renderable;
                         obj.postRender(gl);
                         fog_active = false;
-                        gl.glDisable(GL.GL_FOG);
+                        gl.glDisable(GL2.GL_FOG);
                     }
                     break;
 
@@ -967,7 +967,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
      * @param gl The GL context to process the requests with
      */
     @Override
-    protected void processRequestData(GL gl)
+    protected void processRequestData(GL2 gl)
     {
         if(dumpNow || PRINT_STATES)
         {

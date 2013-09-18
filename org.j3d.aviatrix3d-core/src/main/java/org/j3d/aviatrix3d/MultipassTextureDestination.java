@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -74,7 +75,7 @@ public interface MultipassTextureDestination
      * @param imgNum The index of the texture source to copy to
      * @param level The mipmap level that this corresponds to
      */
-    public void updateMultipassSource(GL gl,
+    public void updateMultipassSource(GL2 gl,
                                       int x,
                                       int y,
                                       int width,

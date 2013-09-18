@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLDrawable;
 
@@ -57,9 +58,10 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
     /**
      * Called by the drawable to perform rendering by the client.
      */
+    @Override
     public void display(GraphicsProfilingData profilingData)
     {
-        GL gl = localContext.getGL();
+        GL base_gl = localContext.getGL();
 
         // NOTE:
         // Sometimes the SWT drawable wrapper can be changing the context
@@ -67,9 +69,11 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
         // but the window resize thread comes in and replaces the context
         // in the middle of this, resulting in this temporarily returning
         // null.
-        if(gl == null)
+        if(base_gl == null)
             return;
 
+        GL2 gl = base_gl.getGL2();
+        
         if(terminate)
             return;
 
@@ -131,8 +135,8 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     clear_buffer_bits = 0;
                     if(!first_layer)
                     {
-                        gl.glDrawBuffer(GL.GL_AUX0);
-                        gl.glReadBuffer(GL.GL_AUX0);
+                        gl.glDrawBuffer(GL2.GL_AUX0);
+                        gl.glReadBuffer(GL2.GL_AUX0);
 
                         setupMultipassViewport(gl, data);
                     }
@@ -152,7 +156,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                                         0,
                                         data.viewport[GraphicsEnvironmentData.VIEW_WIDTH],
                                         data.viewport[GraphicsEnvironmentData.VIEW_HEIGHT],
-                                        GL.GL_COLOR);
+                                        GL2.GL_COLOR);
                         gl.glReadBuffer(GL.GL_BACK);
                     }
                     break;
@@ -258,7 +262,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                 case RenderOp.START_RENDER:
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.render(gl);
                     break;
@@ -270,10 +274,10 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.START_RENDER_2D:
-                    gl.glRasterPos2f(renderableList[i].transform[3],
+                    gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
-                    gl.glPixelZoom(renderableList[i].transform[0],
-                                   renderableList[i].transform[5]);
+                    gl.glPixelZoom((float)renderableList[i].transform[0],
+                                   (float)renderableList[i].transform[5]);
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.render(gl);
                     break;
@@ -286,17 +290,17 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                 case RenderOp.RENDER_GEOMETRY:
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     ((GeometryRenderable)renderableList[i].renderable).render(gl);
                     gl.glPopMatrix();
                     break;
 
                 case RenderOp.RENDER_GEOMETRY_2D:
                     // load the matrix to render
-                    gl.glRasterPos2f(renderableList[i].transform[3],
+                    gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
-                    gl.glPixelZoom(renderableList[i].transform[0],
-                                   renderableList[i].transform[5]);
+                    gl.glPixelZoom((float)renderableList[i].transform[0],
+                                   (float)renderableList[i].transform[5]);
                     ((GeometryRenderable)renderableList[i].renderable).render(gl);
                     gl.glPopMatrix();
                     break;
@@ -304,7 +308,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                 case RenderOp.RENDER_CUSTOM_GEOMETRY:
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     CustomGeometryRenderable gr =
                         (CustomGeometryRenderable)renderableList[i].renderable;
                     gr.render(gl, renderableList[i].instructions);
@@ -314,7 +318,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                 case RenderOp.RENDER_CUSTOM:
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
 
                     CustomRenderable cr =
                         (CustomRenderable)renderableList[i].renderable;
@@ -347,7 +351,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.render(gl, l_id);
                     gl.glPopMatrix();
@@ -378,7 +382,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
 
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.render(gl, c_id);
@@ -400,7 +404,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                 case RenderOp.START_TRANSPARENT:
                     if(first_pass_alpha && two_pass_transparent)
                     {
-                        gl.glEnable(GL.GL_ALPHA_TEST);
+                        gl.glEnable(GL2.GL_ALPHA_TEST);
                         gl.glAlphaFunc(GL.GL_GEQUAL, alpha_test);
                         transparent_start_idx = i;
                     }
@@ -424,7 +428,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                         first_pass_alpha = false;
                         i = transparent_start_idx - 1;
 
-                        gl.glDisable(GL.GL_ALPHA_TEST);
+                        gl.glDisable(GL2.GL_ALPHA_TEST);
                     }
                     else
                     {
@@ -436,7 +440,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                 case RenderOp.START_FOG:
                     if(!fog_active)
                     {
-                        gl.glEnable(GL.GL_FOG);
+                        gl.glEnable(GL2.GL_FOG);
                         fog_active = true;
                     }
 
@@ -452,7 +456,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                         obj = (ObjectRenderable)renderableList[i].renderable;
                         obj.postRender(gl);
                         fog_active = false;
-                        gl.glDisable(GL.GL_FOG);
+                        gl.glDisable(GL2.GL_FOG);
                     }
                     break;
 

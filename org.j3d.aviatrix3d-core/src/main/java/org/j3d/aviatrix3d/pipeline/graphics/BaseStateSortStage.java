@@ -20,8 +20,8 @@ import java.util.Stack;
 
 import javax.media.opengl.GL;
 
-import org.j3d.aviatrix3d.HashSet;
 import org.j3d.maths.vector.Matrix4d;
+import org.j3d.util.HashSet;
 import org.j3d.util.I18nManager;
 
 // Local imports

@@ -14,6 +14,8 @@ package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
 import javax.media.opengl.*;
+import javax.media.opengl.awt.GLCanvas;
+import javax.media.opengl.awt.GLJPanel;
 
 import java.awt.Component;
 

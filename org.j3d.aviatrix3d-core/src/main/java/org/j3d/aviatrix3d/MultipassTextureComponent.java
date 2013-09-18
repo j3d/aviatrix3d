@@ -13,11 +13,7 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import java.nio.ByteBuffer;
-
-import javax.media.opengl.GL;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLPbuffer;
+// None
 
 // Local imports
 // None

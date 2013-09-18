@@ -13,12 +13,8 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import java.awt.image.*;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.IntBuffer;
-import java.util.HashMap;
 
 // Local imports
 // None
@@ -161,6 +157,7 @@ public class ByteTextureComponent1D extends TextureComponent1D
      * Clear local data stored in this node.  Only data needed for
      * OpenGL calls will be retained;
      */
+    @Override
     public void clearLocalData()
     {
 // Not implemented yet.
@@ -174,6 +171,7 @@ public class ByteTextureComponent1D extends TextureComponent1D
      * @param level Which image level needs to be converted
      * @return an appropriate array type - either IntBuffer or ByteBuffer
      */
+    @Override
     protected ByteBuffer convertImage(int level)
     {
         ByteBuffer ret_val = null;

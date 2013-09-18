@@ -13,15 +13,7 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import java.awt.image.*;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
-
-import java.util.HashMap;
-
-import javax.media.opengl.GL;
+// None
 
 // Local imports
 // None

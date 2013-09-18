@@ -84,6 +84,7 @@ public class SimpleLayer2D extends Layer
      *
      * @return The layer cullable at the given index or null
      */
+    @Override
     public ViewportCullable getCullableViewport(int viewportIndex)
     {
         return (viewport instanceof ViewportCullable) ?
@@ -96,6 +97,7 @@ public class SimpleLayer2D extends Layer
      *
      * @return A number greater than or equal to zero
      */
+    @Override
     public int numCullableChildren()
     {
         return viewport != null ? 1 : 0;
@@ -112,6 +114,7 @@ public class SimpleLayer2D extends Layer
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -127,6 +130,7 @@ public class SimpleLayer2D extends Layer
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state

@@ -18,6 +18,7 @@ import java.nio.*;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -110,6 +111,7 @@ public abstract class IndexedVertexGeometry extends VertexGeometry
      *
      * @return true when the geometry is visible
      */
+    @Override
     protected boolean isVisible()
     {
         return super.isVisible() && numIndices != 0;
@@ -120,6 +122,7 @@ public abstract class IndexedVertexGeometry extends VertexGeometry
      * default the bounds are a point sphere, so derived classes should
      * override this method with something better.
      */
+    @Override
     protected void recomputeBounds()
     {
         if(numIndicesUsed == 0)
@@ -208,7 +211,7 @@ public abstract class IndexedVertexGeometry extends VertexGeometry
                     if (coordinates[idx + 2] > max_z)
                         max_z = coordinates[idx + 2];
 
-// Don't do anything with the 4th coord for now.
+                // Don't do anything with the 4th coord for now.
                 }
 
                 break;
@@ -223,7 +226,8 @@ public abstract class IndexedVertexGeometry extends VertexGeometry
     // Methods defined by VertexGeometry
     //----------------------------------------------------------
 
-    protected void setVertexStateVBO(GL gl)
+    @Override
+    protected void setVertexStateVBO(GL2 gl)
     {
         Integer vbo_id = vboElementIdMap.get(gl);
 
@@ -252,8 +256,9 @@ public abstract class IndexedVertexGeometry extends VertexGeometry
      * is in <code>VertexGeometry</code>. See <code>TriangleArray</code> for
      * examples.
      */
-     protected int fillBufferData(GL gl)
-     {
+    @Override
+    protected int fillBufferData(GL2 gl)
+    {
         int offset = super.fillBufferData(gl);
 
         Integer vbo_id = vboElementIdMap.get(gl);
@@ -275,7 +280,8 @@ public abstract class IndexedVertexGeometry extends VertexGeometry
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
         super.cleanup(gl);
 

@@ -86,6 +86,7 @@ public class AppearanceOverride extends Leaf
      *
      * @return One of the _CULLABLE constants
      */
+    @Override
     public int getCullableType()
     {
         return OVERRIDE_CULLABLE;
@@ -96,6 +97,7 @@ public class AppearanceOverride extends Leaf
      *
      * @return an array of nodes
      */
+    @Override
     public Renderable getRenderable()
     {
         return this;
@@ -113,6 +115,7 @@ public class AppearanceOverride extends Leaf
      *
      * @return true if this overrides instances lower
      */
+    @Override
     public boolean overrideLower()
     {
         return overrideLowerApps;
@@ -124,6 +127,7 @@ public class AppearanceOverride extends Leaf
      *
      * @return true if we should only use the appearance node details from here
      */
+    @Override
     public boolean useLocalOnlyAppearance()
     {
         return localAppearanceOnly;
@@ -135,6 +139,7 @@ public class AppearanceOverride extends Leaf
      *
      * @return The current appearance renderable or null if none
      */
+    @Override
     public AppearanceRenderable getAppearanceRenderable()
     {
         return app;
@@ -149,6 +154,7 @@ public class AppearanceOverride extends Leaf
      *
      * @return The current state
      */
+    @Override
     public boolean isEnabled()
     {
         return enabled;
@@ -165,6 +171,7 @@ public class AppearanceOverride extends Leaf
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -189,6 +196,7 @@ public class AppearanceOverride extends Leaf
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -209,6 +217,7 @@ public class AppearanceOverride extends Leaf
      * @param parent The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
      */
+    @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws CyclicSceneGraphStructureException
     {
@@ -235,6 +244,7 @@ public class AppearanceOverride extends Leaf
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -252,6 +262,7 @@ public class AppearanceOverride extends Leaf
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof AppearanceOverride))

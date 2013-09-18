@@ -1024,7 +1024,7 @@ public abstract class BaseCullStage implements GraphicsCullStage
             viewMatrix2.m31 = 0;
             viewMatrix2.m32 = 0;
 
-            viewMatrix2.mul(envData.viewTransform);
+            viewMatrix2.mul(viewMatrix2, envData.viewTransform);
 
             envData.backgroundTransform[0] = viewMatrix2.m00;
             envData.backgroundTransform[1] = viewMatrix2.m01;

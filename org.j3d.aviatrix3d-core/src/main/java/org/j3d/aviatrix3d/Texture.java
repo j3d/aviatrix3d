@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -86,7 +87,7 @@ public abstract class Texture extends NodeComponent
     public static final int MODE_MIPMAP = 1;
 
     /** GenerateMipMap constants - Use Mip Maps */
-    public static final int GENERATE_MIPMAP = GL.GL_GENERATE_MIPMAP;
+    public static final int GENERATE_MIPMAP = GL2.GL_GENERATE_MIPMAP;
 
     /** GenerateMipMap Quality Hint */
     public static final int GENERATE_MIPMAP_HINT = GL.GL_GENERATE_MIPMAP_HINT;
@@ -105,13 +106,13 @@ public abstract class Texture extends NodeComponent
     public static final int BM_WRAP = GL.GL_REPEAT;
 
     /** Boundary mode to clamp textures */
-    public static final int BM_CLAMP = GL.GL_CLAMP;
+    public static final int BM_CLAMP = GL2.GL_CLAMP;
 
     /** Boundary mode to clamp the texture edge value without border */
     public static final int BM_CLAMP_TO_EDGE = GL.GL_CLAMP_TO_EDGE;
 
     /** Boundary mode to clamp the texture border colour */
-    public static final int BM_CLAMP_TO_BOUNDARY = GL.GL_CLAMP_TO_BORDER;
+    public static final int BM_CLAMP_TO_BOUNDARY = GL2.GL_CLAMP_TO_BORDER;
 
     /** Boundary mode to use a mirror-repeat strategy */
     public static final int BM_MIRRORED_REPEAT = GL.GL_MIRRORED_REPEAT;
@@ -173,7 +174,7 @@ public abstract class Texture extends NodeComponent
     public static final int FORMAT_ALPHA = GL.GL_ALPHA;
 
     /** Interpret the texture format as intensity only */
-    public static final int FORMAT_INTENSITY = GL.GL_INTENSITY;
+    public static final int FORMAT_INTENSITY = GL2.GL_INTENSITY;
 
     /** Interpret the texture format as luminance only */
     public static final int FORMAT_LUMINANCE = GL.GL_LUMINANCE;
@@ -196,7 +197,7 @@ public abstract class Texture extends NodeComponent
     public static final int FORMAT_RGBA = GL.GL_RGBA;
 
     /** Interpret the texture format as a depth component texture */
-    public static final int FORMAT_DEPTH_COMPONENT = GL.GL_DEPTH_COMPONENT;
+    public static final int FORMAT_DEPTH_COMPONENT = GL2.GL_DEPTH_COMPONENT;
 
     // Texture comparison constants
 
@@ -204,7 +205,7 @@ public abstract class Texture extends NodeComponent
     public static final int COMPARE_MODE_NONE = GL.GL_NONE;
 
     /** The texture comparison mode is set to GL_COMPARE_R_TO_TEXTURE */
-    public static final int COMPARE_MODE_R2TEX = GL.GL_COMPARE_R_TO_TEXTURE;
+    public static final int COMPARE_MODE_R2TEX = GL2.GL_COMPARE_R_TO_TEXTURE;
 
     /** The texture comparision function is less than or equal */
     public static final int COMPARE_FUNCTION_LEQUAL = GL.GL_LEQUAL;
@@ -374,6 +375,7 @@ public abstract class Texture extends NodeComponent
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         if(state)
@@ -400,6 +402,7 @@ public abstract class Texture extends NodeComponent
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -419,6 +422,7 @@ public abstract class Texture extends NodeComponent
      *
      * @return true if any form of non-opaque rendering is defined
      */
+    @Override
     public boolean hasTransparency()
     {
         if(numSources == 0)
@@ -449,7 +453,8 @@ public abstract class Texture extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
         Integer t_id = textureIdMap.get(gl);
         if(t_id != null)
@@ -475,6 +480,7 @@ public abstract class Texture extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -492,6 +498,7 @@ public abstract class Texture extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof Texture))
@@ -601,7 +608,7 @@ public abstract class Texture extends NodeComponent
                     break;
 
                 case TextureSource.FORMAT_BGR:
-                    tex_format = GL.GL_BGR;
+                    tex_format = GL2.GL_BGR;
                     break;
 
                 case TextureSource.FORMAT_BGRA:
@@ -617,7 +624,7 @@ public abstract class Texture extends NodeComponent
                     switch(format)
                     {
                         case FORMAT_INTENSITY:
-                            tex_format = GL.GL_INTENSITY;
+                            tex_format = GL2.GL_INTENSITY;
                             break;
 
                         case FORMAT_LUMINANCE:

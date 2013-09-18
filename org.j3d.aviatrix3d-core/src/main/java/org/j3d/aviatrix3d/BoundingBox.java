@@ -119,13 +119,13 @@ public class BoundingBox extends BoundingVolume
      */
     public void getExtents(float[] min, float[] max)
     {
-        min[0] = this.min.x;
-        min[1] = this.min.y;
-        min[2] = this.min.z;
+        min[0] = (float)this.min.x;
+        min[1] = (float)this.min.y;
+        min[2] = (float)this.min.z;
         
-        max[0] = this.max.x;
-        max[1] = this.max.y;
-        max[2] = this.max.z;
+        max[0] = (float)this.max.x;
+        max[1] = (float)this.max.y;
+        max[2] = (float)this.max.z;
     }
     
     /**
@@ -657,9 +657,9 @@ public class BoundingBox extends BoundingVolume
             y = vert[i][1];
             z = vert[i][2];
             
-            xvert[i][0] = mat.m00 * x + mat.m01 * y + mat.m02 * z + mat.m03;
-            xvert[i][1] = mat.m10 * x + mat.m11 * y + mat.m12 * z + mat.m13;
-            xvert[i][2] = mat.m20 * x + mat.m21 * y + mat.m22 * z + mat.m23;
+            xvert[i][0] = (float)(mat.m00 * x + mat.m01 * y + mat.m02 * z + mat.m03);
+            xvert[i][1] = (float)(mat.m10 * x + mat.m11 * y + mat.m12 * z + mat.m13);
+            xvert[i][2] = (float)(mat.m20 * x + mat.m21 * y + mat.m22 * z + mat.m23);
         }
         
         int cnt;
@@ -850,9 +850,9 @@ public class BoundingBox extends BoundingVolume
      */
     public void getMinimum(float[] pos)
     {
-        pos[0] = min.x;
-        pos[1] = min.y;
-        pos[2] = min.z;
+        pos[0] = (float)min.x;
+        pos[1] = (float)min.y;
+        pos[2] = (float)min.z;
     }
     
     /**
@@ -892,9 +892,9 @@ public class BoundingBox extends BoundingVolume
      */
     public void getMaximum(float[] pos)
     {
-        pos[0] = max.x;
-        pos[1] = max.y;
-        pos[2] = max.z;
+        pos[0] = (float)max.x;
+        pos[1] = (float)max.y;
+        pos[2] = (float)max.z;
     }
     
     /**
@@ -927,12 +927,12 @@ public class BoundingBox extends BoundingVolume
      */
     private void recalcExtents()
     {
-        center[0] = (max.x + min.x) * 0.5f;
-        center[1] = (max.y + min.y) * 0.5f;
-        center[2] = (max.z + min.z) * 0.5f;
-        size[0] = (max.x - min.x) * 0.5f;
-        size[1] = (max.y - min.y) * 0.5f;
-        size[2] = (max.z - min.z) * 0.5f;
+        center[0] = (float)(max.x + min.x) * 0.5f;
+        center[1] = (float)(max.y + min.y) * 0.5f;
+        center[2] = (float)(max.z + min.z) * 0.5f;
+        size[0] = (float)(max.x - min.x) * 0.5f;
+        size[1] = (float)(max.y - min.y) * 0.5f;
+        size[2] = (float)(max.z - min.z) * 0.5f;
         
         if(size[0] < 0)
             size[0] = -size[0];
@@ -943,14 +943,14 @@ public class BoundingBox extends BoundingVolume
         if(size[2] < 0)
             size[2] = -size[2];
         
-        vert[0][0] = max.x; vert[0][1] = max.y; vert[0][2] = max.z;
-        vert[1][0] = max.x; vert[1][1] = max.y; vert[1][2] = min.z;
-        vert[2][0] = max.x; vert[2][1] = min.y; vert[2][2] = max.z;
-        vert[3][0] = max.x; vert[3][1] = min.y; vert[3][2] = min.z;
-        vert[4][0] = min.x; vert[4][1] = max.y; vert[4][2] = max.z;
-        vert[5][0] = min.x; vert[5][1] = max.y; vert[5][2] = min.z;
-        vert[6][0] = min.x; vert[6][1] = min.y; vert[6][2] = max.z;
-        vert[7][0] = min.x; vert[7][1] = min.y; vert[7][2] = min.z;
+        vert[0][0] = (float)max.x; vert[0][1] = (float)max.y; vert[0][2] = (float)max.z;
+        vert[1][0] = (float)max.x; vert[1][1] = (float)max.y; vert[1][2] = (float)min.z;
+        vert[2][0] = (float)max.x; vert[2][1] = (float)min.y; vert[2][2] = (float)max.z;
+        vert[3][0] = (float)max.x; vert[3][1] = (float)min.y; vert[3][2] = (float)min.z;
+        vert[4][0] = (float)min.x; vert[4][1] = (float)max.y; vert[4][2] = (float)max.z;
+        vert[5][0] = (float)min.x; vert[5][1] = (float)max.y; vert[5][2] = (float)min.z;
+        vert[6][0] = (float)min.x; vert[6][1] = (float)min.y; vert[6][2] = (float)max.z;
+        vert[7][0] = (float)min.x; vert[7][1] = (float)min.y; vert[7][2] = (float)min.z;
     }
 
     /**

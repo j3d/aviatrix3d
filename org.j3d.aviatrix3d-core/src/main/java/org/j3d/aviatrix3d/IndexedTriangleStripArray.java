@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -92,7 +93,8 @@ public class IndexedTriangleStripArray extends IndexedVertexGeometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // No coordinates, do nothing.
         if(((numStrips == 0) || (numIndices == 0) ||
@@ -160,6 +162,7 @@ Instead we use the form below this one to actually work.
      *
      * @return true when the geometry is visible
      */
+    @Override
     protected boolean isVisible()
     {
         return super.isVisible() && numStrips != 0;
@@ -182,6 +185,7 @@ Instead we use the form below this one to actually work.
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
                                    boolean findAny,
@@ -337,6 +341,7 @@ Instead we use the form below this one to actually work.
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
                                boolean findAny,

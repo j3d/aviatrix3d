@@ -15,6 +15,7 @@ package org.j3d.aviatrix3d;
 // External imports
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.ShaderComponentRenderable;
@@ -102,6 +103,7 @@ public class VertexShader extends GL14ShaderProgram
      *
      * @return One of the _SHADER constants
      */
+    @Override
     public int getComponentType()
     {
         return VERTEX_SHADER;
@@ -116,7 +118,8 @@ public class VertexShader extends GL14ShaderProgram
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(programString == null)
             return;
@@ -132,9 +135,9 @@ public class VertexShader extends GL14ShaderProgram
                 gl.glGenProgramsARB(1, prog_tmp, 0);
                 int program_id = prog_tmp[0];
 
-                gl.glBindProgramARB(GL.GL_VERTEX_PROGRAM_ARB, program_id);
-                gl.glProgramStringARB(GL.GL_VERTEX_PROGRAM_ARB,
-                                      GL.GL_PROGRAM_FORMAT_ASCII_ARB,
+                gl.glBindProgramARB(GL2.GL_VERTEX_PROGRAM_ARB, program_id);
+                gl.glProgramStringARB(GL2.GL_VERTEX_PROGRAM_ARB,
+                                      GL2.GL_PROGRAM_FORMAT_ASCII_ARB,
                                       programString.length(),
                                       programString);
                 // TODO: This won't work in a multiscreen/context environment.
@@ -144,21 +147,21 @@ public class VertexShader extends GL14ShaderProgram
                 return;
         }
         else
-            gl.glBindProgramARB(GL.GL_FRAGMENT_PROGRAM_ARB, p_id.intValue());
+            gl.glBindProgramARB(GL2.GL_FRAGMENT_PROGRAM_ARB, p_id.intValue());
 
         for(int i = 0; i < numValidEnvironments; i++)
-            gl.glProgramEnvParameter4fvARB(GL.GL_VERTEX_PROGRAM_ARB,
+            gl.glProgramEnvParameter4fvARB(GL2.GL_VERTEX_PROGRAM_ARB,
                                            validEnvironments[i],
                                            envParameters[validEnvironments[i]],
                                            0);
 
         for(int i = 0; i < numValidLocals; i++)
-            gl.glProgramEnvParameter4fvARB(GL.GL_VERTEX_PROGRAM_ARB,
+            gl.glProgramEnvParameter4fvARB(GL2.GL_VERTEX_PROGRAM_ARB,
                                            validLocals[i],
                                            localParameters[validLocals[i]],
                                            0);
 
-        gl.glEnable(GL.GL_VERTEX_PROGRAM_ARB);
+        gl.glEnable(GL2.GL_VERTEX_PROGRAM_ARB);
     }
 
     /*
@@ -167,9 +170,10 @@ public class VertexShader extends GL14ShaderProgram
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
-        gl.glDisable(GL.GL_VERTEX_PROGRAM_ARB);
+        gl.glDisable(GL2.GL_VERTEX_PROGRAM_ARB);
     }
 
     //---------------------------------------------------------------
@@ -186,6 +190,7 @@ public class VertexShader extends GL14ShaderProgram
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -203,6 +208,7 @@ public class VertexShader extends GL14ShaderProgram
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof VertexShader))

@@ -78,6 +78,7 @@ public abstract class Layer extends SceneGraphObject
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof Layer))

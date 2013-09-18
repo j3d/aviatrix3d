@@ -14,6 +14,8 @@ package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
 import javax.media.opengl.*;
+import javax.media.opengl.awt.GLCanvas;
+import javax.media.opengl.awt.GLJPanel;
 
 import java.awt.Component;
 import java.text.Format;
@@ -624,7 +626,7 @@ public class StereoAWTSurface extends BaseAWTSurface
     public boolean completeCanvasInitialisation(GL gl)
     {
         byte[] params = new byte[1];
-        gl.glGetBooleanv(GL.GL_STEREO, params, 0);
+        gl.glGetBooleanv(GL2.GL_STEREO, params, 0);
 
         quadBuffersAvailable = (params[0] == GL.GL_TRUE);
 

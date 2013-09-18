@@ -15,7 +15,7 @@ package org.j3d.aviatrix3d;
 // External imports
 import java.nio.ByteBuffer;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -128,7 +128,8 @@ public class BitmapRaster extends Raster
      *
      * @param gl The GL context to render with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         gl.glBitmap(pixelWidth,
                     pixelHeight,

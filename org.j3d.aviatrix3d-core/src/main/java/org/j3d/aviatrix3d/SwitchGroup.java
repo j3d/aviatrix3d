@@ -73,6 +73,7 @@ public class SwitchGroup extends Group
      * @param idx The index to replace.  Must be greater than 0 and less then numChildren
      * @throws IndexOutOfBoundsException When the idx is invalid
      */
+    @Override
     public void setChild(Node newChild, int idx)
         throws InvalidWriteTimingException
     {
@@ -93,6 +94,7 @@ public class SwitchGroup extends Group
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void removeChild(int idx)
         throws InvalidWriteTimingException
     {
@@ -115,6 +117,7 @@ public class SwitchGroup extends Group
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void removeAllChildren()
         throws InvalidWriteTimingException
     {
@@ -135,6 +138,7 @@ public class SwitchGroup extends Group
      *
      * @return an array of nodes
      */
+    @Override
     public Cullable[] getCullableChildren()
     {
         return cullList;
@@ -146,6 +150,7 @@ public class SwitchGroup extends Group
      *
      * @return A number greater than or equal to zero or -1
      */
+    @Override
     public int numCullableChildren()
     {
         return selectedChild < 0 ? 0 : 1;
@@ -161,6 +166,7 @@ public class SwitchGroup extends Group
      * default the bounds are a point sphere, so derived classes should
      * override this method with something better.
      */
+    @Override
     protected void recomputeBounds()
     {
         if((selectedChild == -1) || (childList[selectedChild] == null))
@@ -197,6 +203,7 @@ public class SwitchGroup extends Group
      *
      * @return A number greater than or equal to zero or -1
      */
+    @Override
     public int numPickableChildren()
     {
         return (pickChild[0] != null) ? 1 : 0;
@@ -214,6 +221,7 @@ public class SwitchGroup extends Group
      *
      * @return An array of pick targets
      */
+    @Override
     public PickTarget[] getPickableChildren()
     {
         return pickChild;
@@ -226,6 +234,7 @@ public class SwitchGroup extends Group
      * @param idx The index of the child to get
      * @return The target object at the given index.
      */
+    @Override
     public PickTarget getPickableChild(int idx)
     {
         return pickChild[0];

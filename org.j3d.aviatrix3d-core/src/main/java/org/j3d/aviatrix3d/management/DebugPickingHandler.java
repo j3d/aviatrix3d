@@ -774,7 +774,7 @@ public class DebugPickingHandler
             Node target_node = bg.getProxyGeometry();
 
             if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
+                System.out.println("Substituting proxy bounds " + target_node);
 
             if(target_node instanceof GroupPickTarget)
             {
@@ -6277,7 +6277,6 @@ public class DebugPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickCylinder(PickTarget root, PickRequest req)
     {
@@ -6321,7 +6320,6 @@ public class DebugPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickSingleCylinder(PickTarget root, PickRequest req)
     {
@@ -6528,8 +6526,6 @@ public class DebugPickingHandler
      *
      * @param root The group node to test against and recurse into
      * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -7002,10 +6998,8 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
      * @param path A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -7021,7 +7015,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single cylinder -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -7271,9 +7265,7 @@ public class DebugPickingHandler
      *
      * @param root The group node to test against and descend into
      * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCylinder(GroupPickTarget root,
@@ -7459,9 +7451,6 @@ public class DebugPickingHandler
      *
      * @param root The shared node to test against
      * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCylinder(SinglePickTarget root,
@@ -7542,9 +7531,6 @@ public class DebugPickingHandler
      *
      * @param root The group node to test against and descend into
      * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCylinder(CustomPickTarget root,
@@ -7723,10 +7709,8 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
      * @param paths A place to set the results in
      * @param needTransform True if the minal to v-world transform needs
      *    calculating
@@ -7743,7 +7727,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all cylinder -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -8196,8 +8180,6 @@ public class DebugPickingHandler
      *
      * @param root The shared node to test against
      * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -8434,7 +8416,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
@@ -8452,7 +8434,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single cone -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -8688,7 +8670,7 @@ public class DebugPickingHandler
      * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCone(GroupPickTarget root,
@@ -8888,7 +8870,7 @@ public class DebugPickingHandler
      * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCone(SinglePickTarget root,
@@ -8979,7 +8961,7 @@ public class DebugPickingHandler
      * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCone(CustomPickTarget root,
@@ -9170,7 +9152,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
@@ -9189,7 +9171,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all cone -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -9851,7 +9833,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
@@ -9868,7 +9850,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single box -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -10093,7 +10075,7 @@ public class DebugPickingHandler
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllBox(GroupPickTarget root,
@@ -10262,7 +10244,7 @@ public class DebugPickingHandler
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllBox(SinglePickTarget root,
@@ -10336,7 +10318,7 @@ public class DebugPickingHandler
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllBox(CustomPickTarget root,
@@ -10496,7 +10478,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
@@ -10514,7 +10496,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all box -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -11169,7 +11151,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single frustum -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -11796,7 +11778,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all frustum -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -12494,7 +12476,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
@@ -12511,7 +12493,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (single sphere -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -12733,7 +12715,7 @@ public class DebugPickingHandler
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllSphere(GroupPickTarget root,
@@ -12919,7 +12901,7 @@ public class DebugPickingHandler
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllSphere(SinglePickTarget root,
@@ -13005,7 +12987,7 @@ public class DebugPickingHandler
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllSphere(CustomPickTarget root,
@@ -13183,7 +13165,7 @@ public class DebugPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
@@ -13201,7 +13183,7 @@ public class DebugPickingHandler
     {
         if(dumpNow)
             System.out.println("Pick mask check (all sphere -> leaf) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
+                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
                                 req.pickType);
 
         if(!geom.checkPickMask(req.pickType))
@@ -13276,7 +13258,7 @@ public class DebugPickingHandler
      * Resize the list if needed. Marked as final in order to encourage the
      * compiler to inline the code for faster execution
      */
-    private final void resizePath()
+    private void resizePath()
     {
         if(lastPathIndex == pickPath.length)
         {

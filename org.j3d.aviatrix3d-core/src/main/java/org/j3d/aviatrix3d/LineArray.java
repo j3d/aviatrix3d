@@ -15,6 +15,7 @@ package org.j3d.aviatrix3d;
 // External imports
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -75,6 +76,7 @@ public class LineArray extends VertexGeometry
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void setValidVertexCount(int count)
         throws IllegalArgumentException, InvalidWriteTimingException
     {
@@ -98,6 +100,7 @@ public class LineArray extends VertexGeometry
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void setVertices(int type, float[] vertices, int numValid)
         throws IllegalArgumentException, InvalidWriteTimingException
     {
@@ -114,7 +117,8 @@ public class LineArray extends VertexGeometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // No coordinates, do nothing.
         if((vertexFormat & COORDINATE_MASK) == 0)
@@ -141,6 +145,7 @@ public class LineArray extends VertexGeometry
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -158,6 +163,7 @@ public class LineArray extends VertexGeometry
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof LineArray))

@@ -82,6 +82,7 @@ class FBODescriptor extends BaseBufferDescriptor
      *    false if it was not possible or had an error when creating this
      *    buffer type.
      */
+    @Override
     public boolean initialise(GLContext parentContext)
     {
         localContext = parentContext;
@@ -96,6 +97,7 @@ class FBODescriptor extends BaseBufferDescriptor
     /**
      * Reinitialise this descriptor because the GL context has changed.
      */
+    @Override
     public void reinitialize()
     {
         createFBO(localContext, true);
@@ -107,6 +109,7 @@ class FBODescriptor extends BaseBufferDescriptor
      *
      * @return The context for the buffer, or null
      */
+    @Override
     public GLContext getLocalContext()
     {
         return localContext;
@@ -122,6 +125,7 @@ class FBODescriptor extends BaseBufferDescriptor
      * @throws GLException Exception when something at the low-level went
      *    wrong.
      */
+    @Override
     public EnableState enable(GLContext context)
         throws GLException
     {
@@ -157,10 +161,12 @@ class FBODescriptor extends BaseBufferDescriptor
 
         if((ret_val == EnableState.ENABLE_OK) && (bufferId != 0))
         {
-            GL gl = localContext.getGL();
+            GL base_gl = localContext.getGL();
+            GL2 gl = base_gl.getGL2();
+
             gl.glBindTexture(GL.GL_TEXTURE_2D, 0);
-            gl.glBindFramebufferEXT(GL.GL_FRAMEBUFFER_EXT, bufferId);
-            gl.glPushAttrib(GL.GL_VIEWPORT_BIT);
+            gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, bufferId);
+            gl.glPushAttrib(GL2.GL_VIEWPORT_BIT);
         }
 
         return ret_val;
@@ -173,14 +179,17 @@ class FBODescriptor extends BaseBufferDescriptor
      * @throws GLException Exception when something at the low-level went
      *    wrong.
      */
+    @Override
     public void disable(GLContext context)
         throws GLException
     {
         if(bufferId != 0)
         {
-            GL gl = localContext.getGL();
+            GL base_gl = localContext.getGL();
+            GL2 gl = base_gl.getGL2();
+
             gl.glPopAttrib();
-            gl.glBindFramebufferEXT(GL.GL_FRAMEBUFFER_EXT, 0);
+            gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
         }
     }
 
@@ -252,21 +261,22 @@ class FBODescriptor extends BaseBufferDescriptor
         if(bufferId == 0)
             return;
 
-        GL gl = context.getGL();
+        GL base_gl = context.getGL();
+        GL2 gl = base_gl.getGL2();
 
         int[] tmp = { bufferId };
-        gl.glDeleteFramebuffersEXT(1, tmp, 0);
+        gl.glDeleteFramebuffers(1, tmp, 0);
 
         if(depthBufferId != 0)
         {
             tmp[0] = depthBufferId;
-            gl.glDeleteRenderbuffersEXT(1, tmp, 0);
+            gl.glDeleteRenderbuffers(1, tmp, 0);
         }
 
         if(stencilBufferId != 0)
         {
             tmp[0] = stencilBufferId;
-            gl.glDeleteRenderbuffersEXT(1, tmp, 0);
+            gl.glDeleteRenderbuffers(1, tmp, 0);
         }
 
         if(depthTextureId != 0)
@@ -332,7 +342,8 @@ class FBODescriptor extends BaseBufferDescriptor
         if(!update)
             childDescriptors = new FBORenderTargetDescriptor[num_targets];
 
-        GL gl = localContext.getGL();
+        GL base_gl = localContext.getGL();
+        GL2 gl = base_gl.getGL2();
 
         int width = ownerRenderable.getWidth();
         int height = ownerRenderable.getHeight();
@@ -350,11 +361,11 @@ class FBODescriptor extends BaseBufferDescriptor
         gl.glGetIntegerv(GL.GL_DEPTH_BITS, depth_bits, 0);
 
         if(depth_bits[0] == 16)
-            depth_format = GL.GL_DEPTH_COMPONENT16_ARB;
+            depth_format = GL.GL_DEPTH_COMPONENT16;
         else
-            depth_format = GL.GL_DEPTH_COMPONENT24_ARB;
+            depth_format = GL.GL_DEPTH_COMPONENT24;
 
-        if(ext_format == GL.GL_DEPTH_COMPONENT)
+        if(ext_format == GL2.GL_DEPTH_COMPONENT)
         {
             int_format = depth_format;
             byte_format = GL.GL_UNSIGNED_INT;
@@ -367,7 +378,7 @@ class FBODescriptor extends BaseBufferDescriptor
         if(caps.useFloatingPointColorBuffer())
         {
             if(depth_bits[0] == 16)
-                byte_format = GL.GL_HALF_FLOAT_ARB;
+                byte_format = GL.GL_HALF_FLOAT;
             else
                 byte_format = GL.GL_FLOAT;
         }
@@ -394,14 +405,14 @@ class FBODescriptor extends BaseBufferDescriptor
         if(is_depth_only_texture)
         {
             gl.glTexParameteri(GL.GL_TEXTURE_2D,
-                               GL.GL_DEPTH_TEXTURE_MODE,
+                               GL2.GL_DEPTH_TEXTURE_MODE,
                                GL.GL_LUMINANCE);
             gl.glTexParameteri(GL.GL_TEXTURE_2D,
-                               GL.GL_TEXTURE_COMPARE_FUNC,
+                               GL2.GL_TEXTURE_COMPARE_FUNC,
                                GL.GL_LEQUAL);
             gl.glTexParameteri(GL.GL_TEXTURE_2D,
-                               GL.GL_TEXTURE_COMPARE_MODE,
-                               GL.GL_COMPARE_R_TO_TEXTURE);
+                               GL2.GL_TEXTURE_COMPARE_MODE,
+                               GL2.GL_COMPARE_R_TO_TEXTURE);
         }
 
         gl.glTexImage2D(GL.GL_TEXTURE_2D,
@@ -472,15 +483,15 @@ class FBODescriptor extends BaseBufferDescriptor
                                    GL.GL_NEAREST);
 
                 gl.glTexParameteri(GL.GL_TEXTURE_2D,
-                                   GL.GL_DEPTH_TEXTURE_MODE,
+                                   GL2.GL_DEPTH_TEXTURE_MODE,
                                    GL.GL_LUMINANCE);
 
                 gl.glTexParameteri(GL.GL_TEXTURE_2D,
-                                   GL.GL_TEXTURE_COMPARE_FUNC,
+                                   GL2.GL_TEXTURE_COMPARE_FUNC,
                                    GL.GL_LEQUAL);
                 gl.glTexParameteri(GL.GL_TEXTURE_2D,
-                                   GL.GL_TEXTURE_COMPARE_MODE,
-                                   GL.GL_COMPARE_R_TO_TEXTURE);
+                                   GL2.GL_TEXTURE_COMPARE_MODE,
+                                   GL2.GL_COMPARE_R_TO_TEXTURE);
 
                 // Some tutorials seem to prefer GL_NONE for this.
                 // Doesn't seem to make any difference
@@ -492,7 +503,7 @@ class FBODescriptor extends BaseBufferDescriptor
                                 width,
                                 height,
                                 0,
-                                GL.GL_DEPTH_COMPONENT,
+                                GL2.GL_DEPTH_COMPONENT,
                                 byte_format,
                                 null);
 
@@ -514,29 +525,29 @@ class FBODescriptor extends BaseBufferDescriptor
         if(!separate_depth && caps.getDepthBits() != 0)
         {
             int[] depth_id = new int[1];
-            gl.glGenRenderbuffersEXT(1, depth_id, 0);
+            gl.glGenRenderbuffers(1, depth_id, 0);
             depthBufferId = depth_id[0];
 
-            gl.glBindRenderbufferEXT(GL.GL_RENDERBUFFER_EXT, depthBufferId);
-            gl.glRenderbufferStorageEXT(GL.GL_RENDERBUFFER_EXT,
+            gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, depthBufferId);
+            gl.glRenderbufferStorage(GL.GL_RENDERBUFFER,
                                         depth_format,
                                         width,
                                         height);
         }
 
         int[] tmp_id = new int[1];
-        gl.glGenFramebuffersEXT(1, tmp_id, 0);
+        gl.glGenFramebuffers(1, tmp_id, 0);
         bufferId = tmp_id[0];
 
-        gl.glBindFramebufferEXT(GL.GL_FRAMEBUFFER_EXT, bufferId);
+        gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, bufferId);
 
         if(is_depth_only_texture)
         {
-            gl.glFramebufferTexture2DEXT(GL.GL_FRAMEBUFFER_EXT,
-                                         GL.GL_DEPTH_ATTACHMENT_EXT,
-                                         GL.GL_TEXTURE_2D,
-                                         mrtTextureIdMap[0],
-                                         0);
+            gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER,
+                                      GL.GL_DEPTH_ATTACHMENT,
+                                      GL.GL_TEXTURE_2D,
+                                      mrtTextureIdMap[0],
+                                      0);
             gl.glDrawBuffer(GL.GL_NONE);
             gl.glReadBuffer(GL.GL_NONE);
         }
@@ -553,28 +564,28 @@ class FBODescriptor extends BaseBufferDescriptor
                 if(!separate_depth && depthBufferId == 0)
                 {
                     int[] stencil_id = new int[1];
-                    gl.glGenRenderbuffersEXT(1, stencil_id, 0);
+                    gl.glGenRenderbuffers(1, stencil_id, 0);
                     depthBufferId = stencil_id[0];
 
-                    gl.glBindRenderbufferEXT(GL.GL_RENDERBUFFER_EXT,
+                    gl.glBindRenderbuffer(GL.GL_RENDERBUFFER,
                                              depthBufferId);
                 }
 
-                gl.glRenderbufferStorageEXT(GL.GL_RENDERBUFFER_EXT,
-                                            GL.GL_DEPTH_STENCIL_EXT,
-                                            width,
-                                            height);
+                gl.glRenderbufferStorage(GL.GL_RENDERBUFFER,
+                                         GL.GL_DEPTH_STENCIL,
+                                         width,
+                                         height);
 
-                gl.glFramebufferRenderbufferEXT(GL.GL_FRAMEBUFFER_EXT,
-                                                GL.GL_STENCIL_ATTACHMENT_EXT,
-                                                GL.GL_RENDERBUFFER_EXT,
-                                                depthBufferId);
+                gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER,
+                                             GL.GL_STENCIL_ATTACHMENT,
+                                             GL.GL_RENDERBUFFER,
+                                             depthBufferId);
             }
 
             for(int i = 0; i < num_targets; i++)
             {
-                gl.glFramebufferTexture2DEXT(GL.GL_FRAMEBUFFER_EXT,
-                                             GL.GL_COLOR_ATTACHMENT0_EXT + i,
+                gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER,
+                                             GL.GL_COLOR_ATTACHMENT0 + i,
                                              GL.GL_TEXTURE_2D,
                                              mrtTextureIdMap[i],
                                              0);
@@ -583,27 +594,27 @@ class FBODescriptor extends BaseBufferDescriptor
 
             if(separate_depth)
             {
-                gl.glFramebufferTexture2DEXT(GL.GL_FRAMEBUFFER_EXT,
-                                             GL.GL_DEPTH_ATTACHMENT_EXT,
-                                             GL.GL_TEXTURE_2D,
-                                             depthTextureId,
-                                             0);
+                gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER,
+                                          GL.GL_DEPTH_ATTACHMENT,
+                                          GL.GL_TEXTURE_2D,
+                                          depthTextureId,
+                                          0);
             }
             else if(depthBufferId != 0)
             {
-                gl.glFramebufferRenderbufferEXT(GL.GL_FRAMEBUFFER_EXT,
-                                                GL.GL_DEPTH_ATTACHMENT_EXT,
-                                                GL.GL_RENDERBUFFER_EXT,
-                                                depthBufferId);
+                gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER,
+                                             GL.GL_DEPTH_ATTACHMENT,
+                                             GL.GL_RENDERBUFFER,
+                                             depthBufferId);
             }
         }
 
-        int ok = gl.glCheckFramebufferStatusEXT(GL.GL_FRAMEBUFFER_EXT);
+        int ok = gl.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER);
 
-        if(gl instanceof TraceGL)
+        if(gl instanceof DebugGL2)
             checkFBOStatus(ok);
 
-        boolean ret_val = (ok == GL.GL_FRAMEBUFFER_COMPLETE_EXT);
+        boolean ret_val = (ok == GL.GL_FRAMEBUFFER_COMPLETE);
 
         // If something failed along the way, just kill it all now
         if(!ret_val)
@@ -615,18 +626,18 @@ class FBODescriptor extends BaseBufferDescriptor
                 int[] buffers = new int[num_targets];
 
                 for(int i = 0; i < num_targets; i++)
-                    buffers[i] = GL.GL_COLOR_ATTACHMENT0_EXT + i;
+                    buffers[i] = GL.GL_COLOR_ATTACHMENT0 + i;
 
                 gl.glDrawBuffers(num_targets, buffers, 0);
             }
 
             if(caps.useFloatingPointColorBuffer() && caps.useUnclampedColorBuffer())
             {
-                gl.glClampColorARB(GL.GL_CLAMP_VERTEX_COLOR_ARB, GL.GL_FALSE);
-                gl.glClampColorARB(GL.GL_CLAMP_FRAGMENT_COLOR_ARB, GL.GL_FALSE);
+                gl.glClampColor(GL2.GL_CLAMP_VERTEX_COLOR, GL.GL_FALSE);
+                gl.glClampColor(GL2.GL_CLAMP_FRAGMENT_COLOR, GL.GL_FALSE);
             }
 
-            gl.glBindFramebufferEXT(GL.GL_FRAMEBUFFER_EXT, 0);
+            gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
         }
 
         return ret_val;
@@ -644,27 +655,27 @@ class FBODescriptor extends BaseBufferDescriptor
 
         switch(statusCode)
         {
-            case GL.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+            case GL.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
                 bldr.append("incomplete attachment");
                 break;
 
-            case GL.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+            case GL.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
                 bldr.append("missing attachment");
                 break;
 
-            case GL.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+            case GL.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
                 bldr.append("incomplete dimensions");
                 break;
 
-            case GL.GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+            case GL.GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
                 bldr.append("incomplete formats");
                 break;
 
-            case GL.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+            case GL2.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
                 bldr.append("incomplete draw buffer");
                 break;
 
-            case GL.GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+            case GL.GL_FRAMEBUFFER_UNSUPPORTED:
                 bldr.append("unsupported format(s)");
                 break;
 

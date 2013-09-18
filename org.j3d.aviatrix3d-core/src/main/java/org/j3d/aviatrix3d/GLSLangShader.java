@@ -15,6 +15,7 @@ package org.j3d.aviatrix3d;
 // External imports
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.ComponentRenderable;
@@ -111,7 +112,8 @@ public class GLSLangShader extends Shader
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(program == null || !program.isValid(gl))
             return;
@@ -139,7 +141,7 @@ public class GLSLangShader extends Shader
 
             int[] bool = new int[1];
             gl.glGetObjectParameterivARB(id,
-                                         GL.GL_OBJECT_VALIDATE_STATUS_ARB,
+                                         GL2.GL_OBJECT_VALIDATE_STATUS_ARB,
                                          bool,
                                          0);
             programIsValid = (bool[0] == 1);
@@ -151,7 +153,8 @@ public class GLSLangShader extends Shader
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(program == null || !program.isValid(gl))
             return;
@@ -177,6 +180,7 @@ public class GLSLangShader extends Shader
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         if(handler == updateHandler)
@@ -198,6 +202,7 @@ public class GLSLangShader extends Shader
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         if(state)
@@ -231,6 +236,7 @@ public class GLSLangShader extends Shader
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -248,6 +254,7 @@ public class GLSLangShader extends Shader
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof GLSLangShader))

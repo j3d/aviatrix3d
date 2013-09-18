@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -120,6 +121,7 @@ public class DepthAttributes extends NodeComponent
      *
      * @return One of the _ATTRIBUTE constants
      */
+    @Override
     public int getAttributeType()
     {
         return DEPTH_ATTRIBUTE;
@@ -134,7 +136,8 @@ public class DepthAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(depthTest)
             gl.glEnable(GL.GL_DEPTH_TEST);
@@ -152,7 +155,8 @@ public class DepthAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(!depthTest)
             gl.glEnable(GL.GL_DEPTH_TEST);
@@ -176,6 +180,7 @@ public class DepthAttributes extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -193,6 +198,7 @@ public class DepthAttributes extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof DepthAttributes))

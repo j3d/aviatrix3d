@@ -105,6 +105,7 @@ public class PointSound extends Sound
      * @param al The al context to render with
      * @param transform The transformation stack to this node
      */
+    @Override
     public void render(AL al, Matrix4d transform)
     {
         transform.transform(position,tmpPoint);
@@ -217,6 +218,7 @@ public class PointSound extends Sound
      *
      * @param al The al context to draw with
      */
+    @Override
     public void postRender(AL al)
     {
     }
@@ -235,6 +237,7 @@ public class PointSound extends Sound
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -252,6 +255,7 @@ public class PointSound extends Sound
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof PointSound))

@@ -80,6 +80,7 @@ public class TransformGroup extends Group
      * Overrides the group version to take into account the transform
      * stack applied to each child.
      */
+    @Override
     protected void recomputeBounds()
     {
         if(!implicitBounds)
@@ -532,9 +533,21 @@ public class TransformGroup extends Group
      *
      * @param mat The matrix to copy the transform data to
      */
+    @Override
     public void getInverseTransform(Matrix4d mat)
     {
         mat.set(inverseTransform);
+    }
+
+    /**
+     * Get the current local transformation value.
+     *
+     * @param mat The matrix to copy the transform data to
+     */
+    @Override
+    public void getTransform(Matrix4d mat)
+    {
+        mat.set(localTransform);
     }
 
     //---------------------------------------------------------------
@@ -561,16 +574,6 @@ public class TransformGroup extends Group
     }
 
     /**
-     * Get the current local transformation value.
-     *
-     * @param mat The matrix to copy the transform data to
-     */
-    public void getTransform(Matrix4d mat)
-    {
-        mat.set(localTransform);
-    }
-
-    /**
      * Transform the values in wkVec1 to the local coordinate system and
      * place it in wkVec2.
      */
@@ -580,20 +583,20 @@ public class TransformGroup extends Group
         double y = wkVec1[1];
         double z = wkVec1[2];
 
-        wkVec2[0] = x * localTransform.m00 +
+        wkVec2[0] = (float)(x * localTransform.m00 +
                     y * localTransform.m01 +
                     z * localTransform.m02 +
-                        localTransform.m03;
+                        localTransform.m03);
 
-        wkVec2[1] = x * localTransform.m10 +
+        wkVec2[1] = (float)(x * localTransform.m10 +
                     y * localTransform.m11 +
                     z * localTransform.m12 +
-                        localTransform.m13;
+                        localTransform.m13);
 
-        wkVec2[2] = x * localTransform.m20 +
+        wkVec2[2] = (float)(x * localTransform.m20 +
                     y * localTransform.m21 +
                     z * localTransform.m22 +
-                        localTransform.m23;
+                        localTransform.m23);
 
     }
 }

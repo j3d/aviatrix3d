@@ -169,7 +169,7 @@ public abstract class BufferState extends SceneGraphObject
      * Resize the list if needed. Marked as final in order to encourage the
      * compiler to inline the code for faster execution
      */
-    private final void resizeList()
+    private void resizeList()
     {
         if((lastParent + 1) == parentList.length)
         {

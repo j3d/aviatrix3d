@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -84,13 +85,13 @@ public class PolygonAttributes extends NodeComponent
     public static final int CULL_BOTH = GL.GL_FRONT_AND_BACK;
 
     /** Draw the face as the points of the vertices only */
-    public static final int DRAW_POINT = GL.GL_POINT;
+    public static final int DRAW_POINT = GL2.GL_POINT;
 
     /** Draw the face as outline lines only */
-    public static final int DRAW_LINE = GL.GL_LINE;
+    public static final int DRAW_LINE = GL2.GL_LINE;
 
     /** Draw the face filled as a solid object */
-    public static final int DRAW_FILLED = GL.GL_FILL;
+    public static final int DRAW_FILLED = GL2.GL_FILL;
 
     /** The rendering draw mode for the front face */
     private int frontDrawMode;
@@ -166,6 +167,7 @@ public class PolygonAttributes extends NodeComponent
      *
      * @return One of the _ATTRIBUTE constants
      */
+    @Override
     public int getAttributeType()
     {
         return POLYGON_ATTRIBUTE;
@@ -180,7 +182,8 @@ public class PolygonAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // If we have changed state, then clear the old display lists
         if(stateChanged)
@@ -213,10 +216,10 @@ public class PolygonAttributes extends NodeComponent
         {
             listName = new Integer(gl.glGenLists(1));
 
-            gl.glNewList(listName.intValue(), GL.GL_COMPILE);
+            gl.glNewList(listName.intValue(), GL2.GL_COMPILE);
 
             if(antialias)
-                gl.glEnable(GL.GL_POLYGON_SMOOTH);
+                gl.glEnable(GL2.GL_POLYGON_SMOOTH);
 
             if(!isCCW)
                 gl.glFrontFace(GL.GL_CW);
@@ -228,14 +231,14 @@ public class PolygonAttributes extends NodeComponent
                 gl.glCullFace(cullFace);
 
             if(useTwoSidedLighting)
-                gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE);
+                gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE);
 
             if(useSeparateSpecular)
-                gl.glLightModeli(GL.GL_LIGHT_MODEL_COLOR_CONTROL,
-                                 GL.GL_SEPARATE_SPECULAR_COLOR);
+                gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL,
+                                 GL2.GL_SEPARATE_SPECULAR_COLOR);
 
             if(useFlatShading)
-                gl.glShadeModel(GL.GL_FLAT);
+                gl.glShadeModel(GL2.GL_FLAT);
 
             // Using polygon offsets requires that the polygon mode be
             // explicitly set, but we don't want to set it if we don't
@@ -259,7 +262,7 @@ public class PolygonAttributes extends NodeComponent
 
             if(stipple != null)
             {
-                gl.glEnable(GL.GL_POLYGON_STIPPLE);
+                gl.glEnable(GL2.GL_POLYGON_STIPPLE);
                 gl.glPixelStorei(GL.GL_UNSIGNED_BYTE, 1);
                 gl.glPolygonStipple(stipple, 0);
             }
@@ -276,42 +279,43 @@ public class PolygonAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
-        Integer listName = (Integer)clearDisplayListMap.get(gl);
+        Integer listName = clearDisplayListMap.get(gl);
 
         if(listName == null)
         {
             listName = new Integer(gl.glGenLists(1));
 
-            gl.glNewList(listName.intValue(), GL.GL_COMPILE);
+            gl.glNewList(listName.intValue(), GL2.GL_COMPILE);
 
             if(antialias)
-                gl.glDisable(GL.GL_POLYGON_SMOOTH);
+                gl.glDisable(GL2.GL_POLYGON_SMOOTH);
 
             if(polyOffsetFactor != 0)
                 gl.glDisable(GL.GL_POLYGON_OFFSET_FILL);
             else
             {
                 if(frontDrawMode != DRAW_FILLED)
-                    gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+                    gl.glPolygonMode(GL.GL_FRONT, GL2.GL_FILL);
 
                 if(backDrawMode != DRAW_FILLED)
-                    gl.glPolygonMode(GL.GL_BACK, GL.GL_FILL);
+                    gl.glPolygonMode(GL.GL_BACK, GL2.GL_FILL);
             }
 
             if(stipple != null)
-                gl.glDisable(GL.GL_POLYGON_STIPPLE);
+                gl.glDisable(GL2.GL_POLYGON_STIPPLE);
 
             if(useTwoSidedLighting)
-                gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_FALSE);
+                gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_FALSE);
 
             if(useSeparateSpecular)
-                gl.glLightModeli(GL.GL_LIGHT_MODEL_COLOR_CONTROL,
-                                 GL.GL_SINGLE_COLOR);
+                gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL,
+                                 GL2.GL_SINGLE_COLOR);
 
             if(useFlatShading)
-                gl.glShadeModel(GL.GL_SMOOTH);
+                gl.glShadeModel(GL2.GL_SMOOTH);
 
             if(!isCCW)
                 gl.glFrontFace(GL.GL_CCW);
@@ -342,6 +346,7 @@ public class PolygonAttributes extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -359,6 +364,7 @@ public class PolygonAttributes extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof PolygonAttributes))
@@ -379,6 +385,7 @@ public class PolygonAttributes extends NodeComponent
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         super.setLive(state);
@@ -396,7 +403,8 @@ public class PolygonAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
 		if(setDisplayListMap.size() != 0)
         {

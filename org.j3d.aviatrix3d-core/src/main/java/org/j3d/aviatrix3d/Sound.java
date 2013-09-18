@@ -106,6 +106,7 @@ public abstract class Sound extends Leaf
      * Mark this node as having dirty bounds due to one of it's children having
      * their bounds changed.
      */
+    @Override
     protected void markBoundsDirty()
     {
     }
@@ -115,6 +116,7 @@ public abstract class Sound extends Leaf
      * default the bounds are a point sphere, so derived classes should
      * override this method with something better.
      */
+    @Override
     protected void recomputeBounds()
     {
     }
@@ -126,6 +128,7 @@ public abstract class Sound extends Leaf
      *
      * @return The current bounds of this object
      */
+    @Override
     public BoundingVolume getBounds()
     {
         return INVALID_BOUNDS;
@@ -144,6 +147,7 @@ public abstract class Sound extends Leaf
      * @param seq The sample seq.  Seq 0 means complete file.
      *            Streamed sources start at 1
      */
+    @Override
     public void audioUpdated(int format, int frequency, int seq)
     {
 
@@ -162,6 +166,7 @@ public abstract class Sound extends Leaf
      * @param loop Whether to loop this sample
      * @param pitch The pitch to play at.
      */
+    @Override
     public void paramsUpdated(boolean loop, float pitch)
     {
         this.pitch = pitch;
@@ -179,6 +184,7 @@ public abstract class Sound extends Leaf
      *
      * @return One of the _CULLABLE constants
      */
+    @Override
     public int getCullableType()
     {
         return AUDIO_CULLABLE;
@@ -189,6 +195,7 @@ public abstract class Sound extends Leaf
      *
      * @return an array of nodes
      */
+    @Override
     public Renderable getRenderable()
     {
         return this;
@@ -204,6 +211,7 @@ public abstract class Sound extends Leaf
      *
      * @return true if the sound has something to render
      */
+    @Override
     public boolean isEnabled()
     {
         return enabled;
@@ -219,6 +227,7 @@ public abstract class Sound extends Leaf
      *
      * @return true always unless overrriden
      */
+    @Override
     public boolean isSpatialised()
     {
         return true;

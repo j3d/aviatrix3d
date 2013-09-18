@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.nio.ByteBuffer;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -61,7 +62,7 @@ public class Texture3D extends Texture
      */
     public Texture3D()
     {
-        super(GL.GL_TEXTURE_3D, 1);
+        super(GL2.GL_TEXTURE_3D, 1);
         height = -1;
         depth = -1;
 
@@ -74,7 +75,7 @@ public class Texture3D extends Texture
      */
     public Texture3D(int format, TextureComponent3D singleImage)
     {
-        super(GL.GL_TEXTURE_3D, 1);
+        super(GL2.GL_TEXTURE_3D, 1);
 
         this.format = format;
         sources = new TextureSource[1];
@@ -103,6 +104,7 @@ public class Texture3D extends Texture
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void setSources(int mipMapMode,
                            int format,
                            TextureSource[] texSources,
@@ -155,6 +157,7 @@ public class Texture3D extends Texture
      * @param tex The texture instance to be compared
      * @return -1, 0 or 1 depending on order
      */
+    @Override
     public int compareTo(Texture tex)
     {
         int res = super.compareTo(tex);
@@ -187,6 +190,7 @@ public class Texture3D extends Texture
      * @param tex The texture instance to be compared
      * @return true if the objects represent identical values
      */
+    @Override
     public boolean equals(Texture tex)
     {
         if(!super.equals(tex))
@@ -216,7 +220,8 @@ public class Texture3D extends Texture
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(numSources == 0)
             return;
@@ -245,20 +250,20 @@ public class Texture3D extends Texture
             stateChanged.put(gl, false);
 
             gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1);
-            gl.glTexParameteri(GL.GL_TEXTURE_3D,
+            gl.glTexParameteri(GL2.GL_TEXTURE_3D,
                                GL.GL_TEXTURE_WRAP_S,
                                boundaryModeS);
 
-            gl.glTexParameteri(GL.GL_TEXTURE_3D,
+            gl.glTexParameteri(GL2.GL_TEXTURE_3D,
                                GL.GL_TEXTURE_WRAP_T,
                                boundaryModeT);
 
-            gl.glTexParameteri(GL.GL_TEXTURE_3D,
-                               GL.GL_TEXTURE_WRAP_R,
+            gl.glTexParameteri(GL2.GL_TEXTURE_3D,
+                               GL2.GL_TEXTURE_WRAP_R,
                                boundaryModeR);
 
             gl.glTexParameteri(GL.GL_TEXTURE_2D,
-                               GL.GL_GENERATE_MIPMAP,
+                               GL2.GL_GENERATE_MIPMAP,
                                generateMipMap);
 
             gl.glHint(GL.GL_GENERATE_MIPMAP_HINT, generateMipMapHint);
@@ -278,7 +283,7 @@ public class Texture3D extends Texture
                     break;
             }
 
-            gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_MAG_FILTER, mode);
+            gl.glTexParameteri(GL2.GL_TEXTURE_3D, GL.GL_TEXTURE_MAG_FILTER, mode);
 
             switch(minFilter)
             {
@@ -304,44 +309,44 @@ public class Texture3D extends Texture
                     break;
             }
 
-            gl.glTexParameteri(GL.GL_TEXTURE_3D,
+            gl.glTexParameteri(GL2.GL_TEXTURE_3D,
                                GL.GL_TEXTURE_MIN_FILTER,
                                mode);
 
             if(anisotropicMode != ANISOTROPIC_MODE_NONE)
             {
-                gl.glTexParameterf(GL.GL_TEXTURE_3D,
+                gl.glTexParameterf(GL2.GL_TEXTURE_3D,
                                    GL.GL_TEXTURE_MAX_ANISOTROPY_EXT,
                                    anisotropicDegree);
             }
 
             if(priority >= 0)
             {
-                gl.glTexParameterf(GL.GL_TEXTURE_3D,
-                                   GL.GL_TEXTURE_PRIORITY,
+                gl.glTexParameterf(GL2.GL_TEXTURE_3D,
+                                   GL2.GL_TEXTURE_PRIORITY,
                                    priority);
             }
 
             if(borderColor != null)
             {
-                gl.glTexParameterfv(GL.GL_TEXTURE_3D,
-                                    GL.GL_TEXTURE_BORDER_COLOR,
+                gl.glTexParameterfv(GL2.GL_TEXTURE_3D,
+                                    GL2.GL_TEXTURE_BORDER_COLOR,
                                     borderColor,
                                     0);
             }
 
             if(format == FORMAT_DEPTH_COMPONENT)
             {
-                gl.glTexParameterf(GL.GL_TEXTURE_3D,
-                                   GL.GL_DEPTH_TEXTURE_MODE,
+                gl.glTexParameterf(GL2.GL_TEXTURE_3D,
+                                   GL2.GL_DEPTH_TEXTURE_MODE,
                                    depthComponentMode);
 
-                gl.glTexParameterf(GL.GL_TEXTURE_3D,
-                                   GL.GL_TEXTURE_COMPARE_MODE,
+                gl.glTexParameterf(GL2.GL_TEXTURE_3D,
+                                   GL2.GL_TEXTURE_COMPARE_MODE,
                                    compareMode);
 
-                gl.glTexParameterf(GL.GL_TEXTURE_3D,
-                                   GL.GL_TEXTURE_COMPARE_FUNC,
+                gl.glTexParameterf(GL2.GL_TEXTURE_3D,
+                                   GL2.GL_TEXTURE_COMPARE_FUNC,
                                    compareFunction);
             }
         }
@@ -379,8 +384,8 @@ public class Texture3D extends Texture
                         break;
 
                     case TextureComponent.FORMAT_BGR:
-                        int_format = GL.GL_BGR;
-                        ext_format = GL.GL_BGR;
+                        int_format = GL2.GL_BGR;
+                        ext_format = GL2.GL_BGR;
                         break;
 
                     case TextureComponent.FORMAT_BGRA:
@@ -397,7 +402,7 @@ public class Texture3D extends Texture
                         switch(format)
                         {
                             case FORMAT_INTENSITY:
-                                int_format = GL.GL_INTENSITY;
+                                int_format = GL2.GL_INTENSITY;
                                 ext_format = GL.GL_LUMINANCE;
                                 break;
 
@@ -413,7 +418,7 @@ public class Texture3D extends Texture
                         break;
                 }
 
-                gl.glTexImage3D(GL.GL_TEXTURE_3D,
+                gl.glTexImage3D(GL2.GL_TEXTURE_3D,
                                 i,
                                 int_format,
                                 width,
@@ -450,7 +455,7 @@ public class Texture3D extends Texture
             for(int i = 0; i < num_updates; i++)
             {
                 tud[i].pixels.rewind();
-                gl.glTexSubImage3D(GL.GL_TEXTURE_3D,
+                gl.glTexSubImage3D(GL2.GL_TEXTURE_3D,
                                    tud[i].level,
                                    tud[i].x,
                                    tud[i].y,
@@ -470,7 +475,8 @@ public class Texture3D extends Texture
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
     }
 
@@ -587,7 +593,7 @@ public class Texture3D extends Texture
                     break;
 
                 case TextureComponent.FORMAT_BGR:
-                    tex_format = GL.GL_BGR;
+                    tex_format = GL2.GL_BGR;
                     break;
 
                 case TextureComponent.FORMAT_BGRA:
@@ -602,7 +608,7 @@ public class Texture3D extends Texture
                     switch(format)
                     {
                         case FORMAT_INTENSITY:
-                            tex_format = GL.GL_INTENSITY;
+                            tex_format = GL2.GL_INTENSITY;
                             break;
 
                         case FORMAT_LUMINANCE:

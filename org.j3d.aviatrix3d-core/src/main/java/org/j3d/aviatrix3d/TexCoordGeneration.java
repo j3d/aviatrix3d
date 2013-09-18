@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -67,77 +68,77 @@ public class TexCoordGeneration extends NodeComponent
     private static final float[] EMPTY_FLOAT_4 = {0, 0, 0, 0};
 
     /** Generate coordinates for a texture's S coordinate */
-    public static final int TEXTURE_S = GL.GL_S;
+    public static final int TEXTURE_S = GL2.GL_S;
 
     /** Generate coordinates for a texture's T coordinate  */
-    public static final int TEXTURE_T = GL.GL_T;
+    public static final int TEXTURE_T = GL2.GL_T;
 
     /** Generate coordinates for a texture's R coordinate */
-    public static final int TEXTURE_R = GL.GL_R;
+    public static final int TEXTURE_R = GL2.GL_R;
 
     /** Generate coordinates for a texture's Q coordinate  */
-    public static final int TEXTURE_Q = GL.GL_Q;
+    public static final int TEXTURE_Q = GL2.GL_Q;
 
     /**
      * Coordinate reference plane is user defined. Additional information
      * in the form of extra parameters (The MAP_* values) will need to be
      * provided.
      */
-    public static final int MODE_GENERIC = GL.GL_TEXTURE_GEN_MODE;
+    public static final int MODE_GENERIC = GL2.GL_TEXTURE_GEN_MODE;
 
     /**
      * Generate coordinates for a reference plane that is relative to the
      * object for the given axis. No value needs to be specified for the param
      * or value arguments.
      */
-    public static final int MODE_OBJECT_PLANE = GL.GL_OBJECT_PLANE;
+    public static final int MODE_OBJECT_PLANE = GL2.GL_OBJECT_PLANE;
 
     /**
      * Generate coordinates for a reference plane that is relative to the
      * user's eye position for the given axis. No value needs to be specified
      * for the param or value arguments.
      */
-    public static final int MODE_EYE_PLANE = GL.GL_EYE_PLANE;
+    public static final int MODE_EYE_PLANE = GL2.GL_EYE_PLANE;
 
     /**
      * When the mode is set to MODE_GENERIC, generate coordinates for the
      * given coordinate relative to a plane specified in the object's
      * coordinate system.
      */
-    public static final int MAP_OBJECT_LINEAR = GL.GL_OBJECT_LINEAR;
+    public static final int MAP_OBJECT_LINEAR = GL2.GL_OBJECT_LINEAR;
 
     /**
      * When the mode is set to MODE_GENERIC, generate coordinates for the
      * given coordinate relative to a plane specified in the user's eye
      * position coordinate system.
      */
-    public static final int MAP_EYE_LINEAR = GL.GL_EYE_LINEAR;
+    public static final int MAP_EYE_LINEAR = GL2.GL_EYE_LINEAR;
 
     /**
      * When the mode is set to MODE_GENERIC, generate coordinates for the
      * given axis in a spherical shape for env mapping.
      */
-    public static final int MAP_SPHERICAL = GL.GL_SPHERE_MAP;
+    public static final int MAP_SPHERICAL = GL2.GL_SPHERE_MAP;
 
     /**
      * When the mode is set to MODE_GENERIC, generate coordinates using the
      * normals at the vertex. Used mostly in cubic environment mapping.
      */
-    public static final int MAP_NORMALS = GL.GL_NORMAL_MAP;
+    public static final int MAP_NORMALS = GL2.GL_NORMAL_MAP;
 
     /**
      * When the mode is set to MODE_GENERIC, generate coordinates using the
      * normals at the vertex. Used mostly in cubic environment mapping.
      */
-    public static final int MAP_REFLECTIONS = GL.GL_REFLECTION_MAP;
+    public static final int MAP_REFLECTIONS = GL2.GL_REFLECTION_MAP;
 
     /** Modes that are needed to be passed to the system for tex gen */
     private static final int[] ENABLE_MODE =
     {
-        GL.GL_TEXTURE_GEN_S,
-        GL.GL_TEXTURE_GEN_T,
-        GL.GL_TEXTURE_GEN_R,
-        GL.GL_TEXTURE_GEN_Q,
+        GL2.GL_TEXTURE_GEN_S,
+        GL2.GL_TEXTURE_GEN_T,
+        GL2.GL_TEXTURE_GEN_R,
+        GL2.GL_TEXTURE_GEN_Q,
     };
 
     /** Transformation of matrix which is applied to the auto-generated texture coordinates */
@@ -231,7 +232,8 @@ public class TexCoordGeneration extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // If we have changed state, then clear the old display lists
         if(deletedDisplayListMap.size() != 0)
@@ -248,7 +250,7 @@ public class TexCoordGeneration extends NodeComponent
         {
             listName = new Integer(gl.glGenLists(1));
 
-            gl.glNewList(listName.intValue(), GL.GL_COMPILE);
+            gl.glNewList(listName.intValue(), GL2.GL_COMPILE);
 
             gl.glPushMatrix();
 
@@ -290,7 +292,8 @@ public class TexCoordGeneration extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         for(int i = 0; i < 4; i++)
         {
@@ -315,6 +318,7 @@ public class TexCoordGeneration extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -332,6 +336,7 @@ public class TexCoordGeneration extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof TexCoordGeneration))
@@ -368,7 +373,8 @@ public class TexCoordGeneration extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
 		if(deletedDisplayListMap.size() != 0)
         {

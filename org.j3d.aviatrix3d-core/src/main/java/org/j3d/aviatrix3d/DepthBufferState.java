@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -138,6 +139,7 @@ public class DepthBufferState extends BufferState
      *
      * @return One of the _BUFFER constants
      */
+    @Override
     public int getBufferType()
     {
         return DEPTH_BUFFER;
@@ -149,6 +151,7 @@ public class DepthBufferState extends BufferState
      *
      * @return The bit state constant for Stencil Buffers
      */
+    @Override
     public int getBufferBitMask()
     {
         return GL.GL_DEPTH_BUFFER_BIT;
@@ -160,6 +163,7 @@ public class DepthBufferState extends BufferState
      *
      * @return true if the state should be cleared
      */
+    @Override
     public boolean checkClearBufferState()
     {
         return clearState;
@@ -171,7 +175,8 @@ public class DepthBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void setBufferState(GL gl)
+    @Override
+    public void setBufferState(GL2 gl)
     {
         currentDepthTestState = gl.glIsEnabled(GL.GL_DEPTH_TEST);
 
@@ -195,7 +200,8 @@ public class DepthBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void updateBufferState(GL gl)
+    @Override
+    public void updateBufferState(GL2 gl)
     {
         gl.glDepthMask(depthWrite);
         gl.glDepthFunc(function);
@@ -208,7 +214,8 @@ public class DepthBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void clearBufferState(GL gl)
+    @Override
+    public void clearBufferState(GL2 gl)
     {
         if(depthTest != currentDepthTestState)
         {
@@ -238,6 +245,7 @@ public class DepthBufferState extends BufferState
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -255,6 +263,7 @@ public class DepthBufferState extends BufferState
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof DepthBufferState))

@@ -100,6 +100,7 @@ public abstract class Node extends SceneGraphObject
      * @param child The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
      */
+    @Override
     protected void checkForCyclicParent(SceneGraphObject child)
         throws CyclicSceneGraphStructureException
     {

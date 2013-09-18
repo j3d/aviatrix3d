@@ -171,6 +171,7 @@ public abstract class Light extends Leaf
      *
      * @return One of the _CULLABLE constants
      */
+    @Override
     public int getCullableType()
     {
         return LIGHT_CULLABLE;
@@ -181,6 +182,7 @@ public abstract class Light extends Leaf
      *
      * @return an array of nodes
      */
+    @Override
     public Renderable getRenderable()
     {
         return this;
@@ -195,6 +197,7 @@ public abstract class Light extends Leaf
      *
      * @return The current state
      */
+    @Override
     public boolean isEnabled()
     {
         return enabled;
@@ -205,6 +208,7 @@ public abstract class Light extends Leaf
      *
      * @return true if for global use only, false otherwise
      */
+    @Override
     public boolean isGlobalOnly()
     {
         return globalOnly;
@@ -216,6 +220,7 @@ public abstract class Light extends Leaf
      *
      * @return A bounding volume if there is to be bounds, null for none.
      */
+    @Override
     public BoundingVolume getEffectBounds()
     {
         return effectBounds;
@@ -239,6 +244,7 @@ public abstract class Light extends Leaf
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {

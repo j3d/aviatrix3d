@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -85,6 +86,7 @@ public class Shape3D extends Leaf
      *
      * @return One of the _CULLABLE constants
      */
+    @Override
     public int getCullableType()
     {
         return GEOMETRY_CULLABLE;
@@ -95,6 +97,7 @@ public class Shape3D extends Leaf
      *
      * @return an array of nodes
      */
+    @Override
     public Renderable getRenderable()
     {
         return this;
@@ -110,6 +113,7 @@ public class Shape3D extends Leaf
      *
      * @return true if the shape has something to render
      */
+    @Override
     public boolean isVisible()
     {
         boolean app_ok = (app != null) ? app.isVisible() : true;
@@ -128,6 +132,7 @@ public class Shape3D extends Leaf
      *
      * @return True if this is 2D geometry, false if this is 3D
      */
+    @Override
     public boolean is2D()
     {
         return false;
@@ -139,6 +144,7 @@ public class Shape3D extends Leaf
      *
      * @param center The object to copy the center coordinates in to
      */
+    @Override
     public void getCenter(float[] center)
     {
         bounds.getCenter(center);
@@ -149,6 +155,7 @@ public class Shape3D extends Leaf
      *
      * @return The current geometry renderable or null if none
      */
+    @Override
     public GeometryRenderable getGeometryRenderable()
     {
         return geom;
@@ -160,6 +167,7 @@ public class Shape3D extends Leaf
      *
      * @return The current appearance renderable or null if none
      */
+    @Override
     public AppearanceRenderable getAppearanceRenderable()
     {
         // We don't have appearances right now
@@ -179,7 +187,8 @@ public class Shape3D extends Leaf
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // TODO:
         // In the future, this will need to directly fetch the renderable from
@@ -197,7 +206,8 @@ public class Shape3D extends Leaf
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(app != null)
             app.postRender(gl);
@@ -212,6 +222,7 @@ public class Shape3D extends Leaf
      * bounds. Used to propogate bounds changes from the leaves of the tree
      * to the root.
      */
+    @Override
     protected void updateBounds()
     {
         recomputeBounds();
@@ -225,6 +236,7 @@ public class Shape3D extends Leaf
      * default the bounds are a point sphere, so derived classes should
      * override this method with something better.
      */
+    @Override
     protected void recomputeBounds()
     {
         if(!implicitBounds)
@@ -267,6 +279,7 @@ public class Shape3D extends Leaf
      * the value used will be the last updated (ie from the previous frame it
      * was processed).
      */
+    @Override
     public void requestBoundsUpdate()
     {
         if(alive || !implicitBounds || (geom == null) || geom.isLive())
@@ -283,6 +296,7 @@ public class Shape3D extends Leaf
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -310,6 +324,7 @@ public class Shape3D extends Leaf
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         if(handler == updateHandler)
@@ -335,6 +350,7 @@ public class Shape3D extends Leaf
      *
      * @param parent The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
+     @Override
      */
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws CyclicSceneGraphStructureException
@@ -358,6 +374,7 @@ public class Shape3D extends Leaf
      *
      * @param state A bit mask of available options to pick for
      */
+    @Override
     public void setPickMask(int state)
     {
         pickFlags = state;
@@ -369,6 +386,7 @@ public class Shape3D extends Leaf
      *
      * @return A bit mask of available options to pick for
      */
+    @Override
     public int getPickMask()
     {
         return pickFlags;
@@ -385,6 +403,7 @@ public class Shape3D extends Leaf
      * @throws InvalidPickTimingException An attempt was made to pick outside
      *   of the ApplicationUpdateObserver callback method
      */
+    @Override
     public void pickBatch(PickRequest[] reqs, int numRequests)
         throws NotPickableException, InvalidPickTimingException
     {
@@ -417,6 +436,7 @@ public class Shape3D extends Leaf
      * @throws InvalidPickTimingException An attempt was made to pick outside
      *   of the ApplicationUpdateObserver callback method
      */
+    @Override
     public void pickSingle(PickRequest req)
         throws NotPickableException, InvalidPickTimingException
     {
@@ -449,6 +469,7 @@ public class Shape3D extends Leaf
      *
      * @return The child pickable object or null
      */
+    @Override
     public PickTarget getPickableChild()
     {
         return (geom instanceof PickTarget) ? (PickTarget)geom : null;
@@ -464,6 +485,7 @@ public class Shape3D extends Leaf
      *
      * @return One of the _PICK_TYPE constants
      */
+    @Override
     public final int getPickTargetType()
     {
         return SINGLE_PICK_TYPE;
@@ -478,6 +500,7 @@ public class Shape3D extends Leaf
      * @param mask The bit mask to check against
      * @return true if the mask has an overlapping set of bitfields
      */
+    @Override
     public boolean checkPickMask(int mask)
     {
         return ((pickFlags & mask) != 0);
@@ -489,6 +512,7 @@ public class Shape3D extends Leaf
      *
      * @return A representation of the volume representing the pickable objects
      */
+    @Override
     public BoundingVolume getPickableBounds()
     {
         return bounds;
@@ -508,6 +532,7 @@ public class Shape3D extends Leaf
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -525,6 +550,7 @@ public class Shape3D extends Leaf
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof Shape3D))

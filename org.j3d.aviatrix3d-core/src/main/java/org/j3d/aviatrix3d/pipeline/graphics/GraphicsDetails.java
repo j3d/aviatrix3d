@@ -28,13 +28,13 @@ import org.j3d.aviatrix3d.pipeline.RenderDetails;
 public class GraphicsDetails extends RenderDetails
 {
     /** The transform from the root of the scene graph to here */
-    public float[] transform;
+    public double[] transform;
 
     /**
      * Construct a default instance with nothing initialised.
      */
     public GraphicsDetails()
     {
-        transform = new float[16];
+        transform = new double[16];
     }
 }

@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // Local imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -96,6 +97,7 @@ public class ShapeBackground extends Background
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -112,6 +114,7 @@ public class ShapeBackground extends Background
      *
      * @param state true to set this to live
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -141,6 +144,7 @@ public class ShapeBackground extends Background
      *
      * @return True if this is 2D background, false if this is 3D
      */
+    @Override
     public boolean is2D()
     {
         return false;
@@ -155,7 +159,8 @@ public class ShapeBackground extends Background
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(useClearColor)
         {
@@ -178,7 +183,8 @@ public class ShapeBackground extends Background
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
     }
 
@@ -196,6 +202,7 @@ public class ShapeBackground extends Background
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -213,6 +220,7 @@ public class ShapeBackground extends Background
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof ShapeBackground))

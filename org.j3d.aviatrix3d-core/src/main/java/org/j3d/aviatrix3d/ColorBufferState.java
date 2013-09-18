@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.BufferStateRenderable;
@@ -124,7 +125,7 @@ public class ColorBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void setBufferState(GL gl)
+    public void setBufferState(GL2 gl)
     {
         gl.glClearColor(red, green, blue, alpha);
         gl.glColorMask(redEnabled, greenEnabled, blueEnabled, alphaEnabled);
@@ -136,7 +137,7 @@ public class ColorBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void updateBufferState(GL gl)
+    public void updateBufferState(GL2 gl)
     {
         gl.glClearColor(red, green, blue, alpha);
         gl.glColorMask(redEnabled, greenEnabled, blueEnabled, alphaEnabled);
@@ -147,7 +148,7 @@ public class ColorBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void clearBufferState(GL gl)
+    public void clearBufferState(GL2 gl)
     {
         gl.glClearColor(0, 0, 0, 0);
         gl.glColorMask(true, true, true, true);

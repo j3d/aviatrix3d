@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.*;
@@ -65,8 +66,6 @@ public class MRTTexture2D extends Texture
      *
      * @param width The width of the texture in pixels
      * @param height The height of the texture in pixels
-     * @param format The format to associate with this texture
-     * @param parent The owner renderable of this object
      */
     MRTTexture2D(int width, int height, int targetId)
     {
@@ -93,6 +92,7 @@ public class MRTTexture2D extends Texture
      *
      * @return true if the texture is valid for rendering
      */
+    @Override
     boolean hasValidData()
     {
         return true;
@@ -109,6 +109,7 @@ public class MRTTexture2D extends Texture
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void setSources(int mipMapMode,
                            int format,
                            TextureSource[] texSources,
@@ -126,6 +127,7 @@ public class MRTTexture2D extends Texture
      * @param tex The texture instance to be compared
      * @return -1, 0 or 1 depending on order
      */
+    @Override
     public int compareTo(Texture tex)
     {
         int res = super.compareTo(tex);
@@ -153,6 +155,7 @@ public class MRTTexture2D extends Texture
      * @param tex The texture instance to be compared
      * @return true if the objects represent identical values
      */
+    @Override
     public boolean equals(Texture tex)
     {
         if(!super.equals(tex))
@@ -181,6 +184,7 @@ public class MRTTexture2D extends Texture
      *
      * @return a number >= -1
      */
+    @Override
     public int getHeight()
     {
         return height;
@@ -192,6 +196,7 @@ public class MRTTexture2D extends Texture
      *
      * @return true if this is a child, false if the parent
      */
+    @Override
     public boolean isChildRenderTarget()
     {
         return true;
@@ -203,6 +208,7 @@ public class MRTTexture2D extends Texture
      *
      * @return The requested capabilities of the buffer that needs to be created
      */
+    @Override
     public BufferSetupData getBufferSetup()
     {
         return bufferData;
@@ -215,6 +221,7 @@ public class MRTTexture2D extends Texture
      * @param obj The key used to register the buffer with
      * @return buffer The buffer instance to use here.
      */
+    @Override
     public OffscreenBufferDescriptor getBuffer(Object obj)
     {
         return (OffscreenBufferDescriptor)displayListMap.get(obj);
@@ -226,6 +233,7 @@ public class MRTTexture2D extends Texture
      * @param obj The key used to register the buffer with
      * @param buffer The buffer instance to use here.
      */
+    @Override
     public void registerBuffer(Object obj, OffscreenBufferDescriptor buffer)
     {
         displayListMap.put(obj, buffer);
@@ -236,6 +244,7 @@ public class MRTTexture2D extends Texture
      *
      * @param obj The key used to register the buffer with
      */
+    @Override
     public void unregisterBuffer(Object obj)
     {
         displayListMap.remove(obj);
@@ -250,7 +259,8 @@ public class MRTTexture2D extends Texture
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(stateChanged.containsKey(gl) && !stateChanged.getState(gl))
             return;
@@ -325,14 +335,14 @@ public class MRTTexture2D extends Texture
         if(priority >= 0)
         {
             gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                               GL.GL_TEXTURE_PRIORITY,
+                               GL2.GL_TEXTURE_PRIORITY,
                                priority);
         }
 
         if(borderColor != null)
         {
             gl.glTexParameterfv(GL.GL_TEXTURE_2D,
-                                GL.GL_TEXTURE_BORDER_COLOR,
+                                GL2.GL_TEXTURE_BORDER_COLOR,
                                 borderColor,
                                 0);
         }
@@ -340,15 +350,15 @@ public class MRTTexture2D extends Texture
         if(format == FORMAT_DEPTH_COMPONENT)
         {
             gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                               GL.GL_DEPTH_TEXTURE_MODE,
+                               GL2.GL_DEPTH_TEXTURE_MODE,
                                depthComponentMode);
 
             gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                               GL.GL_TEXTURE_COMPARE_MODE,
+                               GL2.GL_TEXTURE_COMPARE_MODE,
                                compareMode);
 
             gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                               GL.GL_TEXTURE_COMPARE_FUNC,
+                               GL2.GL_TEXTURE_COMPARE_FUNC,
                                compareFunction);
         }
     }
@@ -358,7 +368,8 @@ public class MRTTexture2D extends Texture
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
     }
 

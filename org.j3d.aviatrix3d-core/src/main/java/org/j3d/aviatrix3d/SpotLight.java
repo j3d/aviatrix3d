@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -141,20 +142,21 @@ public class SpotLight extends Light
      * @param gl The GL context to render with
      * @param lightId the ID of the light to make GL calls with
      */
-    public void render(GL gl, Object lightId)
+    @Override
+    public void render(GL2 gl, Object lightId)
     {
         int l_id = ((Integer)lightId).intValue();
 
-        gl.glLightfv(l_id, GL.GL_AMBIENT, ambientColor, 0);
-        gl.glLightfv(l_id, GL.GL_POSITION, position, 0);
-        gl.glLightfv(l_id, GL.GL_SPOT_DIRECTION, direction, 0);
-        gl.glLightfv(l_id, GL.GL_DIFFUSE, diffuseColor, 0);
-        gl.glLightfv(l_id, GL.GL_SPECULAR, specularColor, 0);
-        gl.glLightf(l_id, GL.GL_SPOT_EXPONENT, dropOffRate);
-        gl.glLightf(l_id, GL.GL_SPOT_CUTOFF, cutOffAngle);
-        gl.glLightf(l_id, GL.GL_CONSTANT_ATTENUATION, cAttenuation);
-        gl.glLightf(l_id, GL.GL_LINEAR_ATTENUATION, lAttenuation);
-        gl.glLightf(l_id, GL.GL_QUADRATIC_ATTENUATION, qAttenuation);
+        gl.glLightfv(l_id, GL2.GL_AMBIENT, ambientColor, 0);
+        gl.glLightfv(l_id, GL2.GL_POSITION, position, 0);
+        gl.glLightfv(l_id, GL2.GL_SPOT_DIRECTION, direction, 0);
+        gl.glLightfv(l_id, GL2.GL_DIFFUSE, diffuseColor, 0);
+        gl.glLightfv(l_id, GL2.GL_SPECULAR, specularColor, 0);
+        gl.glLightf(l_id, GL2.GL_SPOT_EXPONENT, dropOffRate);
+        gl.glLightf(l_id, GL2.GL_SPOT_CUTOFF, cutOffAngle);
+        gl.glLightf(l_id, GL2.GL_CONSTANT_ATTENUATION, cAttenuation);
+        gl.glLightf(l_id, GL2.GL_LINEAR_ATTENUATION, lAttenuation);
+        gl.glLightf(l_id, GL2.GL_QUADRATIC_ATTENUATION, qAttenuation);
 
         gl.glEnable(l_id);
     }
@@ -169,11 +171,12 @@ public class SpotLight extends Light
      * @param gl The GL context to render with
      * @param lightId the ID of the light to make GL calls with
      */
-    public void postRender(GL gl, Object lightId)
+    @Override
+    public void postRender(GL2 gl, Object lightId)
     {
         int l_id = ((Integer)lightId).intValue();
 
-        gl.glLightf(l_id, GL.GL_SPOT_CUTOFF, 180.0f);
+        gl.glLightf(l_id, GL2.GL_SPOT_CUTOFF, 180.0f);
         gl.glDisable(l_id);
     }
 

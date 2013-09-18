@@ -137,6 +137,7 @@ public abstract class Geometry extends NodeComponent
      * an alpha value. For example a Raster with RGBA values or vertex geometry
      * with 4-component colours for the vertices.
      */
+    @Override
     public boolean hasTransparency()
     {
         return validAlpha;
@@ -152,6 +153,7 @@ public abstract class Geometry extends NodeComponent
      *
      * @param state A bit mask of available options to pick for
      */
+    @Override
     public void setPickMask(int state)
     {
         pickFlags = state;
@@ -163,6 +165,7 @@ public abstract class Geometry extends NodeComponent
      *
      * @return A bit mask of available options to pick for
      */
+    @Override
     public int getPickMask()
     {
         return pickFlags;
@@ -179,6 +182,7 @@ public abstract class Geometry extends NodeComponent
      * @throws InvalidPickTimingException An attempt was made to pick outside
      *   of the ApplicationUpdateObserver callback method
      */
+    @Override
     public void pickBatch(PickRequest[] reqs, int numRequests)
         throws NotPickableException, InvalidPickTimingException
     {
@@ -207,6 +211,7 @@ public abstract class Geometry extends NodeComponent
      * @throws InvalidPickTimingException An attempt was made to pick outside
      *   of the ApplicationUpdateObserver callback method
      */
+    @Override
     public void pickSingle(PickRequest req)
         throws NotPickableException, InvalidPickTimingException
     {
@@ -235,6 +240,7 @@ public abstract class Geometry extends NodeComponent
      *
      * @return One of the _PICK_TYPE constants
      */
+    @Override
     public final int getPickTargetType()
     {
         return LEAF_PICK_TYPE;
@@ -259,6 +265,7 @@ public abstract class Geometry extends NodeComponent
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
                                    boolean findAny,
@@ -295,6 +302,7 @@ public abstract class Geometry extends NodeComponent
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
                                boolean findAny,
@@ -325,6 +333,7 @@ public abstract class Geometry extends NodeComponent
      * @param mask The bit mask to check against
      * @return true if the mask has an overlapping set of bitfields
      */
+    @Override
     public boolean checkPickMask(int mask)
     {
         return ((pickFlags & mask) != 0);
@@ -336,6 +345,7 @@ public abstract class Geometry extends NodeComponent
      *
      * @return A representation of the volume representing the pickable objects
      */
+    @Override
     public BoundingVolume getPickableBounds()
     {
         return bounds;

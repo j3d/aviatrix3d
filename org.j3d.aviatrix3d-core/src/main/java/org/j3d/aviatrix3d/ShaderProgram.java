@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.DeletableRenderable;
@@ -103,6 +104,7 @@ public class ShaderProgram extends NodeComponent
      *
      * @return One of the _SHADER constants
      */
+    @Override
     public int getComponentType()
     {
         return PROGRAM_SHADER;
@@ -113,10 +115,12 @@ public class ShaderProgram extends NodeComponent
      * see if a valid program ID has already been assigned, indicating that at
      * least an internal link(gl) call has been made.
      *
+     *
      * @param gl The GL context to test for linkage against
      * @return true if there is a valid ID to work with
      */
-    public boolean isValid(GL gl)
+    @Override
+    public boolean isValid(GL2 gl)
     {
         Integer p_id = programIdMap.get(gl);
         return (p_id != null);
@@ -125,10 +129,12 @@ public class ShaderProgram extends NodeComponent
     /**
      * Fetch the ID handle for this program for the given context.
      *
+     *
      * @param gl The GL context to get the ID for
      * @return The ID value or 0 if none
      */
-    public int getProgramId(GL gl)
+    @Override
+    public int getProgramId(GL2 gl)
     {
         Integer p_id = programIdMap.get(gl);
         return (p_id == null) ? 0 : p_id.intValue();
@@ -141,7 +147,8 @@ public class ShaderProgram extends NodeComponent
      *
      * @param gl The GL context to reinitialise with
      */
-    public void reinitialize(GL gl)
+    @Override
+    public void reinitialize(GL2 gl)
     {
         int size = currentObjects.size();
         for(int i = 0; i < size; i++)
@@ -164,7 +171,8 @@ public class ShaderProgram extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         Boolean link = linked.get(gl);
 
@@ -186,7 +194,8 @@ public class ShaderProgram extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         gl.glUseProgramObjectARB(0);
     }
@@ -204,7 +213,8 @@ public class ShaderProgram extends NodeComponent
      *
      * @param gl The GL context to use to compile the code with
      */
-    public void initialize(GL gl)
+    @Override
+    public void initialize(GL2 gl)
     {
         Boolean link = linked.get(gl);
 
@@ -262,7 +272,7 @@ public class ShaderProgram extends NodeComponent
             int size = currentObjects.size();
             for(int i = 0; i < size; i++)
             {
-                ShaderObject obj = (ShaderObject)currentObjects.get(i);
+                ShaderObject obj = currentObjects.get(i);
                 if(!obj.isCompiled(gl))
                     obj.initialize(gl);
 
@@ -274,13 +284,11 @@ public class ShaderProgram extends NodeComponent
         if(attributeNames.size() != 0)
         {
             Set attribs = attributeNames.entrySet();
-            Iterator itr = attribs.iterator();
-            while(itr.hasNext())
-            {
-                Map.Entry e = (Map.Entry)itr.next();
-                gl.glBindAttribLocationARB(program_id,
-                                           ((Integer)e.getValue()).intValue(),
-                                           (String)e.getKey());
+            for (Object attrib : attribs) {
+                Map.Entry e = (Map.Entry) attrib;
+                gl.glBindAttribLocation(program_id,
+                        ((Integer) e.getValue()).intValue(),
+                        (String) e.getKey());
             }
         }
 
@@ -291,7 +299,7 @@ public class ShaderProgram extends NodeComponent
         {
             int[] bool = new int[1];
             gl.glGetObjectParameterivARB(program_id,
-                                         GL.GL_OBJECT_LINK_STATUS_ARB,
+                                         GL2.GL_OBJECT_LINK_STATUS_ARB,
                                          bool,
                                          0);
             linked.put(gl, (bool[0] == 1) ? Boolean.TRUE : Boolean.FALSE);
@@ -306,7 +314,8 @@ public class ShaderProgram extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void fetchLogInfo(GL gl)
+    @Override
+    public void fetchLogInfo(GL2 gl)
     {
         Integer p_id = programIdMap.get(gl);
         if(p_id == null)
@@ -317,7 +326,7 @@ public class ShaderProgram extends NodeComponent
         int[] length = new int[1];
 
         gl.glGetObjectParameterivARB(program_id,
-                                     GL.GL_OBJECT_INFO_LOG_LENGTH_ARB,
+                                     GL2.GL_OBJECT_INFO_LOG_LENGTH_ARB,
                                      length,
                                      0);
 
@@ -345,7 +354,8 @@ public class ShaderProgram extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
         Integer p_id = programIdMap.remove(gl);
         if(p_id == null)
@@ -369,6 +379,7 @@ public class ShaderProgram extends NodeComponent
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         if(handler == updateHandler)
@@ -398,6 +409,7 @@ public class ShaderProgram extends NodeComponent
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         if(state)
@@ -436,6 +448,7 @@ public class ShaderProgram extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -453,6 +466,7 @@ public class ShaderProgram extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof ShaderProgram))

@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d.rendering;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLCapabilities;
 
 // Local imports
@@ -59,7 +60,7 @@ public interface OffscreenBufferRenderable
     public static final int FORMAT_ALPHA = GL.GL_ALPHA;
 
     /** Interpret the texture format as intensity only */
-    public static final int FORMAT_INTENSITY = GL.GL_INTENSITY;
+    public static final int FORMAT_INTENSITY = GL2.GL_INTENSITY;
 
     /** Interpret the texture format as luminance only */
     public static final int FORMAT_LUMINANCE = GL.GL_LUMINANCE;
@@ -74,7 +75,7 @@ public interface OffscreenBufferRenderable
     public static final int FORMAT_RGBA = GL.GL_RGBA;
 
     /** Interpret the texture format as a depth component texture */
-    public static final int FORMAT_DEPTH_COMPONENT = GL.GL_DEPTH_COMPONENT;
+    public static final int FORMAT_DEPTH_COMPONENT = GL2.GL_DEPTH_COMPONENT;
 
     /**
      * Set the background colour that this surface should be cleared to before

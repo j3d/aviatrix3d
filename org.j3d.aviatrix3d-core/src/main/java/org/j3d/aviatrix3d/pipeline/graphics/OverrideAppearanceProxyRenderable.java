@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d.pipeline.graphics;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.*;
@@ -204,6 +205,7 @@ class OverrideAppearanceProxyRenderable implements AppearanceRenderable
      *
      * @return true when the geometry is visible
      */
+    @Override
     public boolean isVisible()
     {
         return visible;
@@ -216,6 +218,7 @@ class OverrideAppearanceProxyRenderable implements AppearanceRenderable
      *
      * @return true if any form of non-opaque rendering is defined
      */
+    @Override
     public boolean hasTransparency()
     {
         return transparent;
@@ -232,6 +235,7 @@ class OverrideAppearanceProxyRenderable implements AppearanceRenderable
      * @return true if We can categorically state that no transparency should
      *   be considered in this rendering
      */
+    @Override
     public boolean hasTransparencyInfo()
     {
         return (material != null) || (numTextures != 0) ||
@@ -283,6 +287,7 @@ class OverrideAppearanceProxyRenderable implements AppearanceRenderable
      *
      * @return A number between 0 and 32
      */
+    @Override
     public int numTextureRenderables()
     {
         return numTextures;
@@ -295,6 +300,7 @@ class OverrideAppearanceProxyRenderable implements AppearanceRenderable
      * @param unitNumber The number of the texture unit to fetch
      * @return The matching texture unit renderable or null if not available
      */
+    @Override
     public TextureRenderable getTextureRenderable(int unitNumber)
     {
         if(unitNumber < 0 || unitNumber >= numTextures)
@@ -334,17 +340,18 @@ class OverrideAppearanceProxyRenderable implements AppearanceRenderable
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(numTextures == 1)
         {
-            gl.glPushAttrib(GL.GL_TEXTURE_BIT);
+            gl.glPushAttrib(GL2.GL_TEXTURE_BIT);
             textureUnits[0].activateTexture(gl, SINGLE_TEXTURE);
             textureUnits[0].render(gl, SINGLE_TEXTURE);
         }
         else if(numTextures > 1)
         {
-            gl.glPushAttrib(GL.GL_TEXTURE_BIT);
+            gl.glPushAttrib(GL2.GL_TEXTURE_BIT);
             for(int i = 0; i < numTextures ; i++)
             {
                 textureUnits[i].activateTexture(gl, TEX_IDS[i]);
@@ -375,7 +382,7 @@ class OverrideAppearanceProxyRenderable implements AppearanceRenderable
 
         if(material != null)
         {
-            gl.glPushAttrib(GL.GL_LIGHTING_BIT);
+            gl.glPushAttrib(GL2.GL_LIGHTING_BIT);
             material.render(gl);
         }
 
@@ -388,7 +395,8 @@ class OverrideAppearanceProxyRenderable implements AppearanceRenderable
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(shader != null)
             shader.postRender(gl);
@@ -452,6 +460,7 @@ class OverrideAppearanceProxyRenderable implements AppearanceRenderable
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -469,6 +478,7 @@ class OverrideAppearanceProxyRenderable implements AppearanceRenderable
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof OverrideAppearanceProxyRenderable))

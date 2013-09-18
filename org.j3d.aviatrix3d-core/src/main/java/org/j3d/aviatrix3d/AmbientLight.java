@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -77,13 +78,14 @@ public class AmbientLight extends Light
      * @param gl The GL context to render with
      * @param lightId the ID of the light to make GL calls with
      */
-    public void render(GL gl, Object lightId)
+    @Override
+    public void render(GL2 gl, Object lightId)
     {
         int l_id = ((Integer)lightId).intValue();
 
-        gl.glLightfv(l_id, GL.GL_SPECULAR, specularColor, 0);
-        gl.glLightfv(l_id, GL.GL_DIFFUSE, diffuseColor, 0);
-        gl.glLightfv(l_id, GL.GL_AMBIENT, ambientColor, 0);
+        gl.glLightfv(l_id, GL2.GL_SPECULAR, specularColor, 0);
+        gl.glLightfv(l_id, GL2.GL_DIFFUSE, diffuseColor, 0);
+        gl.glLightfv(l_id, GL2.GL_AMBIENT, ambientColor, 0);
 
         gl.glEnable(l_id);
     }
@@ -98,7 +100,8 @@ public class AmbientLight extends Light
      * @param gl The GL context to render with
      * @param lightId the ID of the light to make GL calls with
      */
-    public void postRender(GL gl, Object lightId)
+    @Override
+    public void postRender(GL2 gl, Object lightId)
     {
         gl.glDisable(((Integer)lightId).intValue());
     }

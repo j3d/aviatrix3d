@@ -112,6 +112,7 @@ public abstract class TextureComponent extends NodeComponent
      *
      * @return the width.
      */
+    @Override
     public int getWidth()
     {
         return width;
@@ -122,6 +123,7 @@ public abstract class TextureComponent extends NodeComponent
      *
      * @return The number of levels.
      */
+    @Override
     public int getNumLevels()
     {
         return numLevels;
@@ -133,6 +135,7 @@ public abstract class TextureComponent extends NodeComponent
      * @param level The mipmap level to get the format for
      * @return the format.
      */
+    @Override
     public int getFormat(int level)
     {
         // force a conversion now so that format is set correctly.

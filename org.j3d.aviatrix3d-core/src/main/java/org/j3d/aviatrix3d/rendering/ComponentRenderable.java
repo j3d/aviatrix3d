@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -45,9 +45,8 @@ public interface ComponentRenderable extends Renderable
      *
      * @param gl The GL context to render with
      * @param externalData Some implementation-specific external data to
-     *   aid in the rendering
      */
-    public void render(GL gl, Object externalData);
+    public void render(GL2 gl, Object externalData);
 
     /*
      * Method to turn off the rendering state for the given ID that corresponds
@@ -57,5 +56,5 @@ public interface ComponentRenderable extends Renderable
      * @param externalData Some implementation-specific external data to
      *   aid in the rendering
      */
-    public void postRender(GL gl, Object externalData);
+    public void postRender(GL2 gl, Object externalData);
 }

@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.ShaderComponentRenderable;
@@ -27,6 +28,7 @@ import org.j3d.aviatrix3d.rendering.ShaderComponentRenderable;
  *
  * @author Justin Couch
  * @version $Revision: 1.10 $
+ * @Deprecated When moving to OpenGL 3 or later, these older shaders are not supported.
  */
 public abstract class GL14ShaderProgram extends NodeComponent
     implements ShaderComponentRenderable
@@ -58,10 +60,12 @@ public abstract class GL14ShaderProgram extends NodeComponent
      * see if a valid program ID has already been assigned, indicating that at
      * least an internal link(gl) call has been made.
      *
+     *
      * @param gl The GL context to test for linkage against
      * @return true if there is a valid ID to work with
      */
-    public boolean isValid(GL gl)
+    @Override
+    public boolean isValid(GL2 gl)
     {
         Integer p_id = programIdMap.get(gl);
         return (p_id != null);
@@ -70,10 +74,12 @@ public abstract class GL14ShaderProgram extends NodeComponent
     /**
      * Fetch the ID handle for this program for the given context.
      *
+     *
      * @param gl The GL context to get the ID for
      * @return The ID value or 0 if none
      */
-    public int getProgramId(GL gl)
+    @Override
+    public int getProgramId(GL2 gl)
     {
         Integer p_id = programIdMap.get(gl);
         return (p_id == null) ? 0 : p_id.intValue();
@@ -86,7 +92,8 @@ public abstract class GL14ShaderProgram extends NodeComponent
      *
      * @param gl The GL context to reinitialise with
      */
-    public void reinitialize(GL gl)
+    @Override
+    public void reinitialize(GL2 gl)
     {
         // Do nothing for these cases.
     }

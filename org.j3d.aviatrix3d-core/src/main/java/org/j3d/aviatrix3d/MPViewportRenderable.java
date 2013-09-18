@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.ViewportRenderable;
@@ -55,7 +56,8 @@ class MPViewportRenderable implements ViewportRenderable
      *
      * @param gl The GL context to render with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         gl.glViewport(left, top, width, height);
     }
@@ -74,6 +76,7 @@ class MPViewportRenderable implements ViewportRenderable
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -93,6 +96,7 @@ class MPViewportRenderable implements ViewportRenderable
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof MPViewportRenderable))

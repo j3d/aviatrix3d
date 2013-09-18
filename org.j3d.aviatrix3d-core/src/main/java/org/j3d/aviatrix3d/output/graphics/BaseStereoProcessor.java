@@ -19,6 +19,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLContext;
 
 import org.j3d.util.I18nManager;
@@ -113,7 +114,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
         GL gl = localContext.getGL();
 
         byte[] params = new byte[1];
-        gl.glGetBooleanv(GL.GL_STEREO, params, 0);
+        gl.glGetBooleanv(GL2.GL_STEREO, params, 0);
 
         stereoAvailability = (params[0] == GL.GL_TRUE);
     }
@@ -258,7 +259,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
      * @param data The view environment information to setup
      * @param left true if this is the left eye
      */
-    protected void preLayerEnvironmentDraw(GL gl,
+    protected void preLayerEnvironmentDraw(GL2 gl,
                                            GraphicsEnvironmentData data,
                                            boolean left)
     {
@@ -288,7 +289,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
                 }
                 else
                 {
-                    gl.glMatrixMode(GL.GL_PROJECTION);
+                    gl.glMatrixMode(GL2.GL_PROJECTION);
                     gl.glPushMatrix();
                     gl.glLoadIdentity();
 
@@ -301,7 +302,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
 
                     gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
 
-                    gl.glMatrixMode(GL.GL_MODELVIEW);
+                    gl.glMatrixMode(GL2.GL_MODELVIEW);
                     gl.glPushMatrix();
 
                     gl.glLoadMatrixf(data.backgroundTransform, 0);
@@ -311,9 +312,9 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
 
                     gl.glPopMatrix();
 
-                    gl.glMatrixMode(GL.GL_PROJECTION);
+                    gl.glMatrixMode(GL2.GL_PROJECTION);
                     gl.glPopMatrix();
-                    gl.glMatrixMode(GL.GL_MODELVIEW);
+                    gl.glMatrixMode(GL2.GL_MODELVIEW);
                 }
             }
 
@@ -331,7 +332,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
 
             if(data.fog != null)
             {
-                gl.glEnable(GL.GL_FOG);
+                gl.glEnable(GL2.GL_FOG);
                 data.fog.render(gl);
             }
         }
@@ -344,7 +345,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
      *     * @param data The view environment information to setup
      * @param left true if this is the left eye
      */
-    private void renderViewpoint(GL gl,
+    private void renderViewpoint(GL2 gl,
                                  GraphicsEnvironmentData data,
                                  boolean left)
 
@@ -372,11 +373,11 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
      * @param data Environmental information to help the rendering
      * @param isleftEye true if this is the left eye
      */
-    private void updateProjectionMatrix(GL gl,
+    private void updateProjectionMatrix(GL2 gl,
                                         GraphicsEnvironmentData data,
                                         boolean isleftEye)
     {
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glLoadIdentity();
 
         switch(data.viewProjectionType)
@@ -462,6 +463,6 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
                 errorReporter.warningReport(msg, null);
         }
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
     }
 }

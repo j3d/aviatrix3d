@@ -133,14 +133,14 @@ public class GraphicsEnvironmentData extends RenderEnvironmentData
      * projection information needed to cancel out translations and scales
      * of the viewpoint projection matrix.
      */
-    public float[] backgroundTransform;
+    public double[] backgroundTransform;
 
     /**
      * The camera transformation matrix. This is the inverse
      * of the viewTransform, and also flattened into array form for
      * passing direct to Open GL
      */
-    public float[] cameraTransform;
+    public double[] cameraTransform;
 
     /**
      * Create a new instance of this class. The variables are initialized
@@ -153,8 +153,8 @@ public class GraphicsEnvironmentData extends RenderEnvironmentData
         eyeOffset = new float[3];
         viewFrustum = new double[6];
         backgroundFrustum = new double[6];
-        backgroundTransform = new float[16];
-        cameraTransform = new float[16];
+        backgroundTransform = new double[16];
+        cameraTransform = new double[16];
     }
 
     //---------------------------------------------------------------

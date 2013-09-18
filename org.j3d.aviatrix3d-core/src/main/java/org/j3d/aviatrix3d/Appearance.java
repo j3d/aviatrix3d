@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -121,6 +122,7 @@ public class Appearance extends NodeComponent
      *
      * @return true when the geometry is visible
      */
+    @Override
     public boolean isVisible()
     {
         return visible;
@@ -133,6 +135,7 @@ public class Appearance extends NodeComponent
      *
      * @return true if any form of non-opaque rendering is defined
      */
+    @Override
     public boolean hasTransparency()
     {
         if(blendAttr != null || shader != null || alphaAttr != null)
@@ -165,6 +168,7 @@ public class Appearance extends NodeComponent
      * @return true if We can categorically state that no transparency should
      *   be considered in this rendering
      */
+    @Override
     public boolean hasTransparencyInfo()
     {
         return (material != null) || (numTextures != 0) ||
@@ -179,6 +183,7 @@ public class Appearance extends NodeComponent
      *   {@link AppearanceAttributeRenderable}
      * @return A renderable for that attribute if one is set, or null
      */
+    @Override
     public AppearanceAttributeRenderable getAttributeRenderable(int attrib)
     {
         switch(attrib)
@@ -216,6 +221,7 @@ public class Appearance extends NodeComponent
      *
      * @return A number between 0 and 32
      */
+    @Override
     public int numTextureRenderables()
     {
         return numTextures;
@@ -228,6 +234,7 @@ public class Appearance extends NodeComponent
      * @param unitNumber The number of the texture unit to fetch
      * @return The matching texture unit renderable or null if not available
      */
+    @Override
     public TextureRenderable getTextureRenderable(int unitNumber)
     {
         if(unitNumber < 0 || unitNumber >= numTextures)
@@ -242,6 +249,7 @@ public class Appearance extends NodeComponent
      *
      * @return The current shader renderable or null
      */
+    @Override
     public ShaderRenderable getShaderRenderable()
     {
         return shader;
@@ -253,6 +261,7 @@ public class Appearance extends NodeComponent
      *
      * @return The current shader renderable or null
      */
+    @Override
     public TransparentObjectRenderable getMaterialRenderable()
     {
         return material;
@@ -267,17 +276,18 @@ public class Appearance extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(numTextures == 1)
         {
-            gl.glPushAttrib(GL.GL_TEXTURE_BIT);
+            gl.glPushAttrib(GL2.GL_TEXTURE_BIT);
             textureUnits[0].activateTexture(gl, SINGLE_TEXTURE);
             textureUnits[0].render(gl, SINGLE_TEXTURE);
         }
         else if(numTextures > 1)
         {
-            gl.glPushAttrib(GL.GL_TEXTURE_BIT);
+            gl.glPushAttrib(GL2.GL_TEXTURE_BIT);
             for(int i = 0; i < numTextures ; i++)
             {
                 textureUnits[i].activateTexture(gl, TEX_IDS[i]);
@@ -308,7 +318,7 @@ public class Appearance extends NodeComponent
 
         if(material != null)
         {
-            gl.glPushAttrib(GL.GL_LIGHTING_BIT);
+            gl.glPushAttrib(GL2.GL_LIGHTING_BIT);
             material.render(gl);
         }
 
@@ -321,7 +331,8 @@ public class Appearance extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(shader != null)
             shader.postRender(gl);
@@ -382,6 +393,7 @@ public class Appearance extends NodeComponent
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -424,6 +436,7 @@ public class Appearance extends NodeComponent
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         if(state)
@@ -482,6 +495,7 @@ public class Appearance extends NodeComponent
      * @param parent The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
      */
+    @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws CyclicSceneGraphStructureException
     {
@@ -508,6 +522,7 @@ public class Appearance extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -525,6 +540,7 @@ public class Appearance extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof Appearance))

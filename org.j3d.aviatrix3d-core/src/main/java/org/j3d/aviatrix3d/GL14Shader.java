@@ -15,6 +15,7 @@ package org.j3d.aviatrix3d;
 // External imports
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.ComponentRenderable;
@@ -28,6 +29,7 @@ import org.j3d.aviatrix3d.rendering.ShaderRenderable;
  *
  * @author Justin Couch
  * @version $Revision: 1.14 $
+ * @Deprecated When moving to OpenGL 3 or later, these older shaders are not supported.
  */
 public class GL14Shader extends Shader
     implements ShaderRenderable
@@ -56,6 +58,7 @@ public class GL14Shader extends Shader
      *
      * @return An object representing any global argument lists
      */
+    @Override
     public ComponentRenderable getArgumentsRenderable()
     {
         return null;
@@ -69,6 +72,7 @@ public class GL14Shader extends Shader
      *    {@link ShaderComponentRenderable}
      * @return A matching component or null if none
      */
+    @Override
     public ShaderComponentRenderable getShaderRenderable(int type)
     {
         switch(type)
@@ -93,7 +97,8 @@ public class GL14Shader extends Shader
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(vertexShader != null)
             vertexShader.render(gl);
@@ -107,7 +112,8 @@ public class GL14Shader extends Shader
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(fragShader != null)
             fragShader.postRender(gl);
@@ -127,6 +133,7 @@ public class GL14Shader extends Shader
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         if(state)
@@ -153,6 +160,7 @@ public class GL14Shader extends Shader
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -178,6 +186,7 @@ public class GL14Shader extends Shader
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -195,6 +204,7 @@ public class GL14Shader extends Shader
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof GL14Shader))

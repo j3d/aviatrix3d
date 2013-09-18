@@ -19,7 +19,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.HashMap;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -141,7 +141,8 @@ public class ShaderArguments extends NodeComponent
      * @param gl The GL context to write the values through
      * @param programId the ID of the program to make GL calls with
      */
-    public void render(GL gl, Object programId)
+    @Override
+    public void render(GL2 gl, Object programId)
     {
         for(int i = 0; i < numVarNames; i++)
         {
@@ -291,7 +292,8 @@ public class ShaderArguments extends NodeComponent
      * @param gl The GL context to render with
      * @param programId the ID of the program to make GL calls with
      */
-    public void postRender(GL gl, Object programId)
+    @Override
+    public void postRender(GL2 gl, Object programId)
     {
         // do nothing
     }
@@ -310,6 +312,7 @@ public class ShaderArguments extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -327,6 +330,7 @@ public class ShaderArguments extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof ShaderArguments))

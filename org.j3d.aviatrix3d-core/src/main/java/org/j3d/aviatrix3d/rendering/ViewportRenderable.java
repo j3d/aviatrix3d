@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -36,5 +36,5 @@ public interface ViewportRenderable extends Renderable
      *
      * @param gl The GL context to render with
      */
-    public void render(GL gl);
+    public void render(GL2 gl);
 }

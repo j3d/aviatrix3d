@@ -15,6 +15,7 @@ package org.j3d.aviatrix3d;
 // External imports
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 
@@ -45,6 +46,7 @@ public class FragmentShader extends GL14ShaderProgram
      *
      * @return One of the _SHADER constants
      */
+    @Override
     public int getComponentType()
     {
         return FRAGMENT_SHADER;
@@ -59,7 +61,8 @@ public class FragmentShader extends GL14ShaderProgram
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(programString == null)
             return;
@@ -77,9 +80,9 @@ public class FragmentShader extends GL14ShaderProgram
 
                 programIdMap.put(gl, new Integer(program_id));
 
-                gl.glBindProgramARB(GL.GL_FRAGMENT_PROGRAM_ARB, program_id);
-                gl.glProgramStringARB(GL.GL_FRAGMENT_PROGRAM_ARB,
-                                      GL.GL_PROGRAM_FORMAT_ASCII_ARB,
+                gl.glBindProgramARB(GL2.GL_FRAGMENT_PROGRAM_ARB, program_id);
+                gl.glProgramStringARB(GL2.GL_FRAGMENT_PROGRAM_ARB,
+                                      GL2.GL_PROGRAM_FORMAT_ASCII_ARB,
                                       programString.length(),
                                       programString);
 
@@ -90,9 +93,9 @@ public class FragmentShader extends GL14ShaderProgram
                 return;
         }
         else
-            gl.glBindProgramARB(GL.GL_FRAGMENT_PROGRAM_ARB, p_id.intValue());
+            gl.glBindProgramARB(GL2.GL_FRAGMENT_PROGRAM_ARB, p_id.intValue());
 
-        gl.glEnable(GL.GL_FRAGMENT_PROGRAM_ARB);
+        gl.glEnable(GL2.GL_FRAGMENT_PROGRAM_ARB);
     }
 
     /*
@@ -101,9 +104,10 @@ public class FragmentShader extends GL14ShaderProgram
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
-        gl.glDisable(GL.GL_FRAGMENT_PROGRAM_ARB);
+        gl.glDisable(GL2.GL_FRAGMENT_PROGRAM_ARB);
     }
 
     //---------------------------------------------------------------
@@ -120,6 +124,7 @@ public class FragmentShader extends GL14ShaderProgram
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -137,6 +142,7 @@ public class FragmentShader extends GL14ShaderProgram
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof FragmentShader))

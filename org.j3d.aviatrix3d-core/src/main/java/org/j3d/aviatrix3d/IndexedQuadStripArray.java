@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -88,7 +89,8 @@ public class IndexedQuadStripArray extends IndexedVertexGeometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // No coordinates, do nothing.
         if((numStrips == 0) || ((vertexFormat & COORDINATE_MASK) == 0))
@@ -145,6 +147,7 @@ public class IndexedQuadStripArray extends IndexedVertexGeometry
      *
      * @return true when the geometry is visible
      */
+    @Override
     protected boolean isVisible()
     {
         return super.isVisible() && numStrips != 0;
@@ -167,6 +170,7 @@ public class IndexedQuadStripArray extends IndexedVertexGeometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
                                    boolean findAny,
@@ -337,6 +341,7 @@ public class IndexedQuadStripArray extends IndexedVertexGeometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
                                boolean findAny,
@@ -473,6 +478,7 @@ public class IndexedQuadStripArray extends IndexedVertexGeometry
     /**
      * Internal method to recalculate the implicit bounds of this Node.
      */
+    @Override
     protected void recomputeBounds()
     {
         numIndicesUsed = numStripIndicesUsed;
@@ -493,6 +499,7 @@ public class IndexedQuadStripArray extends IndexedVertexGeometry
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -510,6 +517,7 @@ public class IndexedQuadStripArray extends IndexedVertexGeometry
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof IndexedQuadStripArray))

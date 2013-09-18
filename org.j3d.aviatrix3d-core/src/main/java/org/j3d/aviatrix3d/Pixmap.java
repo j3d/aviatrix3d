@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -80,6 +81,7 @@ public class Pixmap extends Leaf2D
      *
      * @return One of the _CULLABLE constants
      */
+    @Override
     public int getCullableType()
     {
         return GEOMETRY_CULLABLE;
@@ -90,6 +92,7 @@ public class Pixmap extends Leaf2D
      *
      * @return an array of nodes
      */
+    @Override
     public Renderable getRenderable()
     {
         return this;
@@ -105,6 +108,7 @@ public class Pixmap extends Leaf2D
      *
      * @return true if the shape has something to render
      */
+    @Override
     public boolean isVisible()
     {
 //        boolean app_ok = (app != null) ? app.isVisible() : true;
@@ -123,6 +127,7 @@ public class Pixmap extends Leaf2D
      *
      * @return True if this is 2D geometry, false if this is 3D
      */
+    @Override
     public boolean is2D()
     {
         return true;
@@ -134,6 +139,7 @@ public class Pixmap extends Leaf2D
      *
      * @param center The object to copy the center coordinates in to
      */
+    @Override
     public void getCenter(float[] center)
     {
         bounds.getCenter(center);
@@ -144,6 +150,7 @@ public class Pixmap extends Leaf2D
      *
      * @return The current geometry renderable or null if none
      */
+    @Override
     public GeometryRenderable getGeometryRenderable()
     {
         return geom;
@@ -155,6 +162,7 @@ public class Pixmap extends Leaf2D
      *
      * @return The current appearance renderable or null if none
      */
+    @Override
     public AppearanceRenderable getAppearanceRenderable()
     {
         // We don't have appearances right now
@@ -174,7 +182,8 @@ public class Pixmap extends Leaf2D
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // TODO:
         // In the future, this will need to directly fetch the renderable from
@@ -192,7 +201,8 @@ public class Pixmap extends Leaf2D
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
 //        if(app != null)
 //            app.postRender(gl);
@@ -207,6 +217,7 @@ public class Pixmap extends Leaf2D
      * bounds. Used to propogate bounds changes from the leaves of the tree
      * to the root.
      */
+    @Override
     protected void updateBounds()
     {
         recomputeBounds();
@@ -219,6 +230,7 @@ public class Pixmap extends Leaf2D
      * Mark this node as having dirty bounds due to one of it's children having
      * their bounds changed.
      */
+    @Override
     protected void markBoundsDirty()
     {
         if(parent != null)
@@ -230,6 +242,7 @@ public class Pixmap extends Leaf2D
      * default the bounds are a point sphere, so derived classes should
      * override this method with something better.
      */
+    @Override
     protected void recomputeBounds()
     {
         if(!implicitBounds)
@@ -271,6 +284,7 @@ public class Pixmap extends Leaf2D
      * the value used will be the last updated (ie from the previous frame it
      * was processed).
      */
+    @Override
     public void requestBoundsUpdate()
     {
         if(alive || !implicitBounds || (geom == null) || geom.isLive())
@@ -287,6 +301,7 @@ public class Pixmap extends Leaf2D
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -314,6 +329,7 @@ public class Pixmap extends Leaf2D
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -337,6 +353,7 @@ public class Pixmap extends Leaf2D
      * @param parent The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
      */
+    @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws CyclicSceneGraphStructureException
     {
@@ -359,6 +376,7 @@ public class Pixmap extends Leaf2D
      *
      * @param state A bit mask of available options to pick for
      */
+    @Override
     public void setPickMask(int state)
     {
         pickFlags = state;
@@ -370,6 +388,7 @@ public class Pixmap extends Leaf2D
      *
      * @return A bit mask of available options to pick for
      */
+    @Override
     public int getPickMask()
     {
         return pickFlags;
@@ -386,6 +405,7 @@ public class Pixmap extends Leaf2D
      * @throws InvalidPickTimingException An attempt was made to pick outside
      *   of the ApplicationUpdateObserver callback method
      */
+    @Override
     public void pickBatch(PickRequest[] reqs, int numRequests)
         throws NotPickableException, InvalidPickTimingException
     {
@@ -418,6 +438,7 @@ public class Pixmap extends Leaf2D
      * @throws InvalidPickTimingException An attempt was made to pick outside
      *   of the ApplicationUpdateObserver callback method
      */
+    @Override
     public void pickSingle(PickRequest req)
         throws NotPickableException, InvalidPickTimingException
     {
@@ -450,6 +471,7 @@ public class Pixmap extends Leaf2D
      *
      * @return The child pickable object or null
      */
+    @Override
     public PickTarget getPickableChild()
     {
         return (geom instanceof PickTarget) ? (PickTarget)geom : null;
@@ -465,6 +487,7 @@ public class Pixmap extends Leaf2D
      *
      * @return One of the _PICK_TYPE constants
      */
+    @Override
     public final int getPickTargetType()
     {
         return SINGLE_PICK_TYPE;
@@ -479,6 +502,7 @@ public class Pixmap extends Leaf2D
      * @param mask The bit mask to check against
      * @return true if the mask has an overlapping set of bitfields
      */
+    @Override
     public boolean checkPickMask(int mask)
     {
         return ((pickFlags & mask) != 0);
@@ -490,6 +514,7 @@ public class Pixmap extends Leaf2D
      *
      * @return A representation of the volume representing the pickable objects
      */
+    @Override
     public BoundingVolume getPickableBounds()
     {
         return bounds;
@@ -509,6 +534,7 @@ public class Pixmap extends Leaf2D
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -526,6 +552,7 @@ public class Pixmap extends Leaf2D
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof Pixmap))

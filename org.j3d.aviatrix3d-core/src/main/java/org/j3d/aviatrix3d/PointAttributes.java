@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -140,6 +141,7 @@ public class PointAttributes extends NodeComponent
      *
      * @return One of the _ATTRIBUTE constants
      */
+    @Override
     public int getAttributeType()
     {
         return POINT_ATTRIBUTE;
@@ -154,7 +156,8 @@ public class PointAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(!queryComplete)
         {
@@ -187,39 +190,39 @@ public class PointAttributes extends NodeComponent
             }
         }
 
-        Integer listName = (Integer)displayListMap.get(gl);
+        Integer listName = displayListMap.get(gl);
 
         if(listName == null)
         {
             listName = new Integer(gl.glGenLists(1));
 
-            gl.glNewList(listName.intValue(), GL.GL_COMPILE);
+            gl.glNewList(listName.intValue(), GL2.GL_COMPILE);
 
-            gl.glPushAttrib(GL.GL_POINT_BIT);
+            gl.glPushAttrib(GL2.GL_POINT_BIT);
 
             if(antialias)
-                gl.glEnable(GL.GL_POINT_SMOOTH);
+                gl.glEnable(GL2.GL_POINT_SMOOTH);
 
             if(pointSize != 1)
                 gl.glPointSize(pointSize);
 
             if(needAttenuation)
-                gl.glPointParameterfv(GL.GL_POINT_DISTANCE_ATTENUATION,
+                gl.glPointParameterfv(GL2.GL_POINT_DISTANCE_ATTENUATION,
                                       attenuationFactors,
                                       0);
 
             if(minPointSize != 1)
-                gl.glPointParameterf(GL.GL_POINT_SIZE_MIN, minPointSize);
+                gl.glPointParameterf(GL2.GL_POINT_SIZE_MIN, minPointSize);
 
             if(maxPointSize != 1)
-                gl.glPointParameterf(GL.GL_POINT_SIZE_MAX, maxPointSize);
+                gl.glPointParameterf(GL2.GL_POINT_SIZE_MAX, maxPointSize);
 
             if(fadeThresholdSize != 1)
                 gl.glPointParameterf(GL.GL_POINT_FADE_THRESHOLD_SIZE,
                                      fadeThresholdSize);
 
             if(hasPointSpriteAPI && enablePointSprites)
-                gl.glEnable(GL.GL_POINT_SPRITE_ARB);
+                gl.glEnable(GL2.GL_POINT_SPRITE);
 
             gl.glEndList();
             displayListMap.put(gl, listName);
@@ -233,30 +236,31 @@ public class PointAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(antialias)
-            gl.glDisable(GL.GL_POINT_SMOOTH);
+            gl.glDisable(GL2.GL_POINT_SMOOTH);
 
         if(pointSize != 1)
             gl.glPointSize(1);
 
         if(needAttenuation)
-            gl.glPointParameterfv(GL.GL_POINT_DISTANCE_ATTENUATION,
+            gl.glPointParameterfv(GL2.GL_POINT_DISTANCE_ATTENUATION,
                                   DEFAULT_FACTORS,
                                   0);
 
         if(minPointSize != 1)
-            gl.glPointParameterf(GL.GL_POINT_SIZE_MIN, 1);
+            gl.glPointParameterf(GL2.GL_POINT_SIZE_MIN, 1);
 
         if(maxPointSize != 1)
-            gl.glPointParameterf(GL.GL_POINT_SIZE_MAX, 1);
+            gl.glPointParameterf(GL2.GL_POINT_SIZE_MAX, 1);
 
         if(fadeThresholdSize != 1)
             gl.glPointParameterf(GL.GL_POINT_FADE_THRESHOLD_SIZE, 1);
 
         if(hasPointSpriteAPI && enablePointSprites)
-            gl.glDisable(GL.GL_POINT_SPRITE_ARB);
+            gl.glDisable(GL2.GL_POINT_SPRITE);
 
         gl.glPopAttrib();
     }
@@ -275,6 +279,7 @@ public class PointAttributes extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -292,6 +297,7 @@ public class PointAttributes extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof PointAttributes))
@@ -312,6 +318,7 @@ public class PointAttributes extends NodeComponent
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         super.setLive(state);
@@ -329,7 +336,8 @@ public class PointAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
 		if(displayListMap.size() != 0)
         {

@@ -226,6 +226,7 @@ public class ViewEnvironment extends SceneGraphObject
      *
      * @return true if stereo rendering is to be used
      */
+    @Override
     public boolean isStereoEnabled()
     {
         return useStereo;
@@ -236,6 +237,7 @@ public class ViewEnvironment extends SceneGraphObject
      *
      * @return true if stereo rendering is to be used
      */
+    @Override
     public int getProjectionType()
     {
         return projectionType;
@@ -252,6 +254,7 @@ public class ViewEnvironment extends SceneGraphObject
      *
      * @return The current viewport size
      */
+    @Override
     public int[] getViewportDimensions()
     {
         return viewportSize;
@@ -267,6 +270,7 @@ public class ViewEnvironment extends SceneGraphObject
      *
      * @return The current viewport size
      */
+    @Override
     public int[] getScissorDimensions()
     {
         return scissorSize;
@@ -285,6 +289,7 @@ public class ViewEnvironment extends SceneGraphObject
      *
      * @param frustum An array at least 6 in length for the values generated
      */
+    @Override
     public void getViewFrustum(double[] frustum)
     {
         generateViewFrustum(frustum);
@@ -296,6 +301,7 @@ public class ViewEnvironment extends SceneGraphObject
      *
      * @return A value 0 <= x <= 180;
      */
+    @Override
     public double getFieldOfView()
     {
         return fov;
@@ -310,6 +316,7 @@ public class ViewEnvironment extends SceneGraphObject
      * @param matrix An array of length 16 to put the projection matrix in to
      *    The format is row-major
      */
+    @Override
     public void getProjectionMatrix(float[] matrix)
     {
         updateProjMatrix();

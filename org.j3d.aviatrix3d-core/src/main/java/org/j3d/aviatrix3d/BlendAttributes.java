@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -136,20 +137,20 @@ public class BlendAttributes extends NodeComponent
      * Set the blend factor to use the provided constant colour. The constant
      * colour value is provide through the setBlendColour() method.
      */
-    public static final int BLEND_CONSTANT_COLOR = GL.GL_CONSTANT_COLOR;
+    public static final int BLEND_CONSTANT_COLOR = GL2.GL_CONSTANT_COLOR;
 
     /**
      * Set the blend factor to use one minus the constant colour (1-c). The
      * constant colour value is provide through the setBlendColour() method.
      */
     public static final int BLEND_ONE_MINUS_CONSTANT_COLOR =
-        GL.GL_ONE_MINUS_CONSTANT_COLOR;
+        GL2.GL_ONE_MINUS_CONSTANT_COLOR;
 
     /**
      * Set the blend factor to use the provided constant alpha value.The
      * constant colour value is provide through the setBlendColour() method.
      */
-    public static final int BLEND_CONSTANT_ALPHA = GL.GL_CONSTANT_ALPHA;
+    public static final int BLEND_CONSTANT_ALPHA = GL2.GL_CONSTANT_ALPHA;
 
     /**
      * Set the blend factor to use one minus the constant colour alpha value
@@ -157,7 +158,7 @@ public class BlendAttributes extends NodeComponent
      * method.
      */
     public static final int BLEND_ONE_MINUS_CONSTANT_ALPHA =
-        GL.GL_ONE_MINUS_CONSTANT_ALPHA;
+        GL2.GL_ONE_MINUS_CONSTANT_ALPHA;
 
     /**
      * Set the blend function to saturage the colour value using the alpha
@@ -178,10 +179,10 @@ public class BlendAttributes extends NodeComponent
     public static final int EQ_FUNC_SUBTRACT_REVERSE = GL.GL_FUNC_REVERSE_SUBTRACT;
 
     /** Set the blending equation to be min(C<sub>d</sub>D, C<sub>s</sub>S) */
-    public static final int EQ_FUNC_MIN = GL.GL_MIN;
+    public static final int EQ_FUNC_MIN = GL2.GL_MIN;
 
     /** Set the blending equation to be max(C<sub>d</sub>D, C<sub>s</sub>S) */
-    public static final int EQ_FUNC_MAX = GL.GL_MAX;
+    public static final int EQ_FUNC_MAX = GL2.GL_MAX;
 
 
     /**
@@ -272,7 +273,8 @@ public class BlendAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(!queryComplete)
         {
@@ -310,7 +312,7 @@ public class BlendAttributes extends NodeComponent
         {
             listName = new Integer(gl.glGenLists(1));
 
-            gl.glNewList(listName.intValue(), GL.GL_COMPILE);
+            gl.glNewList(listName.intValue(), GL2.GL_COMPILE);
 
             gl.glEnable(GL.GL_BLEND);
             gl.glBlendEquation(blendEquation);
@@ -346,7 +348,8 @@ public class BlendAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         gl.glDisable(GL.GL_BLEND);
     }
@@ -365,6 +368,7 @@ public class BlendAttributes extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -382,6 +386,7 @@ public class BlendAttributes extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof BlendAttributes))
@@ -402,6 +407,7 @@ public class BlendAttributes extends NodeComponent
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         super.setLive(state);
@@ -419,7 +425,8 @@ public class BlendAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
 		if(displayListMap.size() != 0)
         {

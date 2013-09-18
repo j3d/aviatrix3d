@@ -57,7 +57,8 @@ import org.j3d.aviatrix3d.rendering.SingleCullable;
  * @version $Revision: 2.13 $
  */
 public class SharedNode2D extends Node2D
-    implements PickableObject,
+    implements MultiParentNode,
+               PickableObject,
                SinglePickTarget,
                SingleCullable
 {
@@ -125,6 +126,7 @@ public class SharedNode2D extends Node2D
      *
      * @return an array of nodes
      */
+    @Override
     public Cullable getCullableChild()
     {
         if(sharedChild instanceof Cullable)
@@ -140,6 +142,7 @@ public class SharedNode2D extends Node2D
      *
      * @return true if there are multiple parents
      */
+    @Override
     public boolean hasMultipleParents()
     {
         return true;
@@ -151,6 +154,7 @@ public class SharedNode2D extends Node2D
      *
      * @return The parent instance or null if none
      */
+    @Override
     public Cullable getCullableParent()
     {
         return null;
@@ -167,6 +171,7 @@ public class SharedNode2D extends Node2D
      * @param caller The node calling us with the state changes
      * @param state true if this should be marked as live now
      */
+    @Override
     public void setLive(Node caller, boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -219,6 +224,7 @@ public class SharedNode2D extends Node2D
      * Mark this node as having dirty bounds due to one of it's children having
      * their bounds changed.
      */
+    @Override
     protected void markBoundsDirty()
     {
         if(implicitBounds)
@@ -233,6 +239,7 @@ public class SharedNode2D extends Node2D
      * default the bounds are a point sphere, so derived classes should
      * override this method with something better.
      */
+    @Override
     protected void recomputeBounds()
     {
         if(!alive || !implicitBounds)
@@ -258,6 +265,7 @@ public class SharedNode2D extends Node2D
      * not update, and thus the value used will be the last updated (ie from the
      * previous frame it was processed).
      */
+    @Override
     public void requestBoundsUpdate()
     {
         if(alive || !implicitBounds)
@@ -275,6 +283,7 @@ public class SharedNode2D extends Node2D
      * to the root. A node implementation may decide when and where to tell
      * the parent(s)s that updates are ready.
      */
+    @Override
     protected void updateBounds()
     {
         if(!implicitBounds)
@@ -301,6 +310,7 @@ public class SharedNode2D extends Node2D
      * @throws CyclicSceneGraphStructureException Equal parent and child causing
      *   a cycle in the scene graph structure
      */
+    @Override
     protected void setParent(Node p)
         throws AlreadyParentedException,
                InvalidNodeTypeException,
@@ -329,6 +339,7 @@ public class SharedNode2D extends Node2D
      *
      * @param p The new parent instance to remove from the list
      */
+    @Override
     protected void removeParent(Node p)
     {
         // find the location, move everything down one
@@ -355,6 +366,7 @@ public class SharedNode2D extends Node2D
      *
      * @return parent[0] if there are any
      */
+    @Override
     public Node getParent()
     {
         return parentList[0];
@@ -365,6 +377,7 @@ public class SharedNode2D extends Node2D
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         throw new IllegalStateException("This method should never be called. Use setLive(Node, boolean)");
@@ -377,6 +390,7 @@ public class SharedNode2D extends Node2D
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         updateHandler = handler;
@@ -396,6 +410,7 @@ public class SharedNode2D extends Node2D
      * @param child The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
      */
+    @Override
     protected void checkForCyclicParent(SceneGraphObject child)
         throws CyclicSceneGraphStructureException
     {
@@ -416,6 +431,7 @@ public class SharedNode2D extends Node2D
      *
      * @param state A bit mask of available options to pick for
      */
+    @Override
     public void setPickMask(int state)
     {
         pickFlags = state;
@@ -427,6 +443,7 @@ public class SharedNode2D extends Node2D
      *
      * @return A bit mask of available options to pick for
      */
+    @Override
     public int getPickMask()
     {
         return pickFlags;
@@ -443,6 +460,7 @@ public class SharedNode2D extends Node2D
      * @throws InvalidPickTimingException An attempt was made to pick outside
      *   of the ApplicationUpdateObserver callback method
      */
+    @Override
     public void pickBatch(PickRequest[] reqs, int numRequests)
         throws NotPickableException, InvalidPickTimingException
     {
@@ -475,6 +493,7 @@ public class SharedNode2D extends Node2D
      * @throws InvalidPickTimingException An attempt was made to pick outside
      *   of the ApplicationUpdateObserver callback method
      */
+    @Override
     public void pickSingle(PickRequest req)
         throws NotPickableException, InvalidPickTimingException
     {
@@ -507,6 +526,7 @@ public class SharedNode2D extends Node2D
      *
      * @return The child pickable object or null
      */
+    @Override
     public PickTarget getPickableChild()
     {
         return (sharedChild instanceof PickTarget) ?
@@ -523,6 +543,7 @@ public class SharedNode2D extends Node2D
      *
      * @return One of the _PICK_TYPE constants
      */
+    @Override
     public final int getPickTargetType()
     {
         return SINGLE_PICK_TYPE;
@@ -537,6 +558,7 @@ public class SharedNode2D extends Node2D
      * @param mask The bit mask to check against
      * @return true if the mask has an overlapping set of bitfields
      */
+    @Override
     public boolean checkPickMask(int mask)
     {
         return ((pickFlags & mask) != 0);
@@ -548,6 +570,7 @@ public class SharedNode2D extends Node2D
      *
      * @return A representation of the volume representing the pickable objects
      */
+    @Override
     public BoundingVolume getPickableBounds()
     {
         return bounds;

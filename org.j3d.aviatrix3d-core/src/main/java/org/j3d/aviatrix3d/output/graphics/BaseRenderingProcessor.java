@@ -23,10 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLException;
+import javax.media.opengl.*;
 
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Point3d;
@@ -234,9 +231,6 @@ public abstract class BaseRenderingProcessor
      */
     private boolean contextIsCurrent;
 
-    /** Temporary used for fetching clear colours for multipass textures */
-    private float[] colorTmp;
-
     /** List of last found layer in the search list for mouse handling */
     private HashMap<String, GraphicsEnvironmentData> envSaveMap;
 
@@ -285,7 +279,6 @@ public abstract class BaseRenderingProcessor
         parentContext = parentCtx;
         ownerDevice = owner;
 
-        colorTmp = new float[4];
         clearColor = new float[4];
         surfaceMatrix = new Matrix4d();
         eyePoint = new float[3];
@@ -558,7 +551,9 @@ public abstract class BaseRenderingProcessor
 
             if(contextIsCurrent && !terminate)
             {
-                GL gl = localContext.getGL();
+                GL base_gl = localContext.getGL();
+                GL2 gl = base_gl.getGL2();
+
                 processRequestData(gl);
             }
 
@@ -854,7 +849,9 @@ public abstract class BaseRenderingProcessor
         if(data.viewProjectionType ==
            ViewEnvironmentCullable.PERSPECTIVE_PROJECTION)
         {
-            position.set(data.eyeOffset);
+            position.x = data.eyeOffset[0];
+            position.y = data.eyeOffset[1];
+            position.z = data.eyeOffset[2];
         }
         else if(data.viewProjectionType ==
                 ViewEnvironmentCullable.ORTHOGRAPHIC_PROJECTION)
@@ -1012,7 +1009,8 @@ public abstract class BaseRenderingProcessor
      */
     protected void init()
     {
-        GL gl = localContext.getGL();
+        GL base_gl = localContext.getGL();
+        GL2 gl = base_gl.getGL2();
 
         gl.glClearColor(clearColor[0],
                         clearColor[1],
@@ -1020,15 +1018,15 @@ public abstract class BaseRenderingProcessor
                         clearColor[3]);
 
         gl.glEnable(GL.GL_DEPTH_TEST);
-        gl.glEnable(GL.GL_NORMALIZE);
+        gl.glEnable(GL2.GL_NORMALIZE);
         gl.glEnable(GL.GL_SCISSOR_TEST);
 
         gl.glEnable(GL.GL_CULL_FACE);
         gl.glCullFace(GL.GL_BACK);
 
         gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-        gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
-        gl.glHint(GL.GL_FOG_HINT, GL.GL_NICEST);
+        gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
+        gl.glHint(GL2.GL_FOG_HINT, GL.GL_NICEST);
 
         // Find out the number of available lights and clip planes and
         // initialise the arrays to that length.
@@ -1038,22 +1036,22 @@ public abstract class BaseRenderingProcessor
 
         int[] num_id = new int[1];
 
-        gl.glGetIntegerv(GL.GL_MAX_CLIP_PLANES, num_id, 0);
+        gl.glGetIntegerv(GL2.GL_MAX_CLIP_PLANES, num_id, 0);
 
         num_clips = num_id[0];
 
         availableClips = new Integer[num_id[0]];
         for(int i = 0; i < num_id[0]; i++)
-            availableClips[i] = new Integer(GL.GL_CLIP_PLANE0 + i);
+            availableClips[i] = new Integer(GL2.GL_CLIP_PLANE0 + i);
 
-        gl.glGetIntegerv(GL.GL_MAX_LIGHTS, num_id, 0);
+        gl.glGetIntegerv(GL2.GL_MAX_LIGHTS, num_id, 0);
         num_lights = num_id[0];
 
         // GL_LIGHT0 is assumed to be used by the current viewpoint
         availableLights = new Integer[num_id[0]];
 
         for(int i = 0; i < num_id[0]; i++)
-            availableLights[i] = new Integer(GL.GL_LIGHT1 + i);
+            availableLights[i] = new Integer(GL2.GL_LIGHT1 + i);
 
         initComplete = true;
 
@@ -1073,7 +1071,7 @@ public abstract class BaseRenderingProcessor
             String gl_version = gl.glGetString(GL.GL_VERSION);
             String gl_vendor = gl.glGetString(GL.GL_VENDOR);
             String gl_renderer = gl.glGetString(GL.GL_RENDERER);
-            String shader_version = gl.glGetString(GL.GL_SHADING_LANGUAGE_VERSION);
+            String shader_version = gl.glGetString(GL2.GL_SHADING_LANGUAGE_VERSION);
             String gl_ext = gl.glGetString(GL.GL_EXTENSIONS);
 
             if (gl_ext != null)
@@ -1084,10 +1082,10 @@ public abstract class BaseRenderingProcessor
                     extensions.add(strtok.nextToken());
             }
 
-            gl.glGetIntegerv(GL.GL_MAX_TEXTURE_UNITS, num_id, 0);
+            gl.glGetIntegerv(GL2.GL_MAX_TEXTURE_UNITS, num_id, 0);
             num_textures = num_id[0];
 
-            gl.glGetIntegerv(GL.GL_MAX_DRAW_BUFFERS, num_id, 0);
+            gl.glGetIntegerv(GL2.GL_MAX_DRAW_BUFFERS, num_id, 0);
             num_mrts = num_id[0];
 
             gl.glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, num_id, 0);
@@ -1191,7 +1189,7 @@ public abstract class BaseRenderingProcessor
      *
      * @param gl The GL context to process the requests with
      */
-    protected void processRequestData(GL gl)
+    protected void processRequestData(GL2 gl)
     {
         processChildBuffers();
 
@@ -1302,7 +1300,7 @@ public abstract class BaseRenderingProcessor
      * @param gl The gl context to draw with
      * @param data The view environment information to setup
      */
-    protected void setupViewport(GL gl, GraphicsEnvironmentData data)
+    protected void setupViewport(GL2 gl, GraphicsEnvironmentData data)
     {
         gl.glViewport(data.viewport[GraphicsEnvironmentData.VIEW_X],
                       data.viewport[GraphicsEnvironmentData.VIEW_Y],
@@ -1324,7 +1322,7 @@ public abstract class BaseRenderingProcessor
      * @param gl The gl context to draw with
      * @param data The view environment information to setup
      */
-    protected void setupMultipassViewport(GL gl, GraphicsEnvironmentData data)
+    protected void setupMultipassViewport(GL2 gl, GraphicsEnvironmentData data)
     {
         gl.glViewport(0,
                       0,
@@ -1344,7 +1342,7 @@ public abstract class BaseRenderingProcessor
      * @param gl The gl context to draw with
      * @param data The view environment information to setup
      */
-    protected void preLayerEnvironmentDraw(GL gl, GraphicsEnvironmentData data)
+    protected void preLayerEnvironmentDraw(GL2 gl, GraphicsEnvironmentData data)
     {
         if(data.effectsProcessor != null)
             data.effectsProcessor.preDraw(gl, data.userData);
@@ -1366,7 +1364,7 @@ public abstract class BaseRenderingProcessor
             }
             else
             {
-                gl.glMatrixMode(GL.GL_PROJECTION);
+                gl.glMatrixMode(GL2.GL_PROJECTION);
                 gl.glPushMatrix();
                 gl.glLoadIdentity();
 
@@ -1379,19 +1377,19 @@ public abstract class BaseRenderingProcessor
 
                 gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
 
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GL2.GL_MODELVIEW);
                 gl.glPushMatrix();
 
-                gl.glLoadMatrixf(data.backgroundTransform, 0);
+                gl.glLoadMatrixd(data.backgroundTransform, 0);
 
                 data.background.render(gl);
                 data.background.postRender(gl);
 
                 gl.glPopMatrix();
 
-                gl.glMatrixMode(GL.GL_PROJECTION);
+                gl.glMatrixMode(GL2.GL_PROJECTION);
                 gl.glPopMatrix();
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GL2.GL_MODELVIEW);
             }
         }
 
@@ -1409,7 +1407,7 @@ public abstract class BaseRenderingProcessor
 
         if(data.fog != null)
         {
-            gl.glEnable(GL.GL_FOG);
+            gl.glEnable(GL2.GL_FOG);
             data.fog.render(gl);
         }
     }
@@ -1423,14 +1421,14 @@ public abstract class BaseRenderingProcessor
      * @param data The view environment information to setup
      * @param profilingData The timing and load data
      */
-    protected void postLayerEnvironmentDraw(GL gl,
+    protected void postLayerEnvironmentDraw(GL2 gl,
                                             GraphicsEnvironmentData data,
                                             GraphicsProfilingData profilingData)
     {
         if(data.fog != null)
         {
             data.fog.postRender(gl);
-            gl.glDisable(GL.GL_FOG);
+            gl.glDisable(GL2.GL_FOG);
         }
 
         if(terminate)
@@ -1454,7 +1452,7 @@ public abstract class BaseRenderingProcessor
      * @param gl The gl context to draw with
      * @param data The view environment information to setup
      */
-    protected void preMPPassEnvironmentDraw(GL gl,
+    protected void preMPPassEnvironmentDraw(GL2 gl,
                                             GraphicsEnvironmentData data)
     {
 //        if(data.effectsProcessor != null)
@@ -1464,7 +1462,7 @@ public abstract class BaseRenderingProcessor
 
         if(data.fog != null)
         {
-            gl.glEnable(GL.GL_FOG);
+            gl.glEnable(GL2.GL_FOG);
             data.fog.render(gl);
         }
     }
@@ -1477,13 +1475,13 @@ public abstract class BaseRenderingProcessor
      * @param gl The gl context to draw with
      * @param data The view environment information to setup
      */
-    protected void postMPPassEnvironmentDraw(GL gl,
+    protected void postMPPassEnvironmentDraw(GL2 gl,
                                              GraphicsEnvironmentData data)
     {
         if(data.fog != null)
         {
             data.fog.postRender(gl);
-            gl.glDisable(GL.GL_FOG);
+            gl.glDisable(GL2.GL_FOG);
         }
 
         if(terminate)
@@ -1505,7 +1503,7 @@ public abstract class BaseRenderingProcessor
      * @param gl The gl context to draw with
      * @param data The view environment information to setup
      */
-    protected void renderViewpoint(GL gl, GraphicsEnvironmentData data)
+    protected void renderViewpoint(GL2 gl, GraphicsEnvironmentData data)
     {
         // Will want to check here for the VP being non-live.
         if(data.viewpoint == null)
@@ -1516,7 +1514,7 @@ public abstract class BaseRenderingProcessor
         gl.glLoadIdentity();
 
         data.viewpoint.render(gl);
-        gl.glMultMatrixf(data.cameraTransform, 0);
+        gl.glMultMatrixd(data.cameraTransform, 0);
     }
 
     /**
@@ -1525,9 +1523,9 @@ public abstract class BaseRenderingProcessor
      * @param gl The gl context to draw with
      * @param data The view environment information to setup
      */
-    protected void updateProjectionMatrix(GL gl, GraphicsEnvironmentData data)
+    protected void updateProjectionMatrix(GL2 gl, GraphicsEnvironmentData data)
     {
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glLoadIdentity();
 
         switch(data.viewProjectionType)
@@ -1573,7 +1571,7 @@ public abstract class BaseRenderingProcessor
                 errorReporter.warningReport(msg, null);
         }
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
     }
 
     /**
@@ -1643,7 +1641,9 @@ public abstract class BaseRenderingProcessor
      */
     protected void updateContextChange()
     {
-        GL gl = localContext.getGL();
+        GL base_gl = localContext.getGL();
+        GL2 gl = base_gl.getGL2();
+
         for(int i = 0; i < numRenderables && !terminate; i++)
         {
             switch(operationList[i])

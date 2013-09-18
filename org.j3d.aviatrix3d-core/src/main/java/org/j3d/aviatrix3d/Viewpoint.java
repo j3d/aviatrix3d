@@ -19,6 +19,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -123,6 +124,7 @@ public class Viewpoint extends Leaf
      *
      * @return The parent instance
      */
+    @Override
     public Cullable getCullableParent()
     {
         return (parent instanceof Cullable) ? (Cullable)parent : null;
@@ -133,6 +135,7 @@ public class Viewpoint extends Leaf
      *
      * @return The renderable responsible for this node
      */
+    @Override
     public Renderable getRenderable()
     {
         return this;
@@ -151,25 +154,26 @@ public class Viewpoint extends Leaf
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(useHeadlight)
         {
-            gl.glEnable(GL.GL_LIGHT0);
+            gl.glEnable(GL2.GL_LIGHT0);
             if(!useDirectionalLight)
             {
-                gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION, SPOT_LOCATION, 0);
-                gl.glLightf(GL.GL_LIGHT0, GL.GL_SPOT_CUTOFF, 45);
+                gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, SPOT_LOCATION, 0);
+                gl.glLightf(GL2.GL_LIGHT0, GL2.GL_SPOT_CUTOFF, 45);
             }
             else
-                gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION, DIR_LOCATION, 0);
+                gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, DIR_LOCATION, 0);
         }
         else {
             gl.glDisable(gl.GL_LIGHT0);
         }
 
         if(useGlobalAmbient)
-            gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, globalColor, 0);
+            gl.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, globalColor, 0);
     }
 
     /*
@@ -178,15 +182,16 @@ public class Viewpoint extends Leaf
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(useHeadlight)
-            gl.glDisable(gl.GL_LIGHT0);
+            gl.glDisable(GL2.GL_LIGHT0);
         else
-            gl.glEnable(gl.GL_LIGHT0);
+            gl.glEnable(GL2.GL_LIGHT0);
 
         if(useGlobalAmbient)
-            gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, DEFAULT_AMBIENT, 0);
+            gl.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, DEFAULT_AMBIENT, 0);
     }
 
     //----------------------------------------------------------
@@ -197,6 +202,7 @@ public class Viewpoint extends Leaf
      * Mark this node as having dirty bounds due to one of it's children having
      * their bounds changed.
      */
+    @Override
     protected void markBoundsDirty()
     {
         // Ignored as the bounds of a viewpoint are not valid. It is considered
@@ -217,6 +223,7 @@ public class Viewpoint extends Leaf
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -234,6 +241,7 @@ public class Viewpoint extends Leaf
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof Viewpoint))

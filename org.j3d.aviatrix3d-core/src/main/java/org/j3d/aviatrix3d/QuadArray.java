@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -103,7 +104,8 @@ public class QuadArray extends VertexGeometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // No coordinates, do nothing.
         if((vertexFormat & COORDINATE_MASK) == 0)
@@ -113,18 +115,18 @@ public class QuadArray extends VertexGeometry
 
         if((vertexFormat & EDGES) != 0)
         {
-            gl.glEnableClientState(GL.GL_EDGE_FLAG_ARRAY);
+            gl.glEnableClientState(GL2.GL_EDGE_FLAG_ARRAY);
             if (vboAvailable && useVbo)
                 gl.glEdgeFlagPointer(0, edgeOffset);
             else
                 gl.glEdgeFlagPointer(0, edgeBuffer);
         }
 
-        gl.glDrawArrays(GL.GL_QUADS, 0, numCoords);
+        gl.glDrawArrays(GL2.GL_QUADS, 0, numCoords);
 
         if((vertexFormat & EDGES) != 0)
         {
-            gl.glDisableClientState(GL.GL_EDGE_FLAG_ARRAY);
+            gl.glDisableClientState(GL2.GL_EDGE_FLAG_ARRAY);
             gl.glEdgeFlag(true);
         }
 
@@ -147,6 +149,7 @@ public class QuadArray extends VertexGeometry
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void setValidVertexCount(int count)
         throws IllegalArgumentException, InvalidWriteTimingException
     {
@@ -170,6 +173,7 @@ public class QuadArray extends VertexGeometry
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void setVertices(int type, float[] vertices, int numValid)
         throws IllegalArgumentException, InvalidWriteTimingException
     {
@@ -185,6 +189,7 @@ public class QuadArray extends VertexGeometry
      * is in <code>VertexGeometry</code>. See <code>TriangleArray</code> for
      * examples.
      */
+    @Override
     protected int computeBufferSize()
     {
         int buf_size = super.computeBufferSize();
@@ -204,7 +209,8 @@ public class QuadArray extends VertexGeometry
      * is in <code>VertexGeometry</code>. See <code>TriangleArray</code> for
      * examples.
      */
-     protected int fillBufferData(GL gl)
+    @Override
+    protected int fillBufferData(GL2 gl)
      {
         int offset = super.fillBufferData(gl);
         if((vertexFormat & EDGES) != 0)
@@ -237,6 +243,7 @@ public class QuadArray extends VertexGeometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
                                    boolean findAny,
@@ -386,6 +393,7 @@ public class QuadArray extends VertexGeometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
                                boolean findAny,
@@ -510,6 +518,7 @@ public class QuadArray extends VertexGeometry
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -527,6 +536,7 @@ public class QuadArray extends VertexGeometry
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof QuadArray))

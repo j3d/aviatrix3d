@@ -101,6 +101,7 @@ public class PixelTransform extends Group
      * Overrides the group version to take into account the transform
      * stack applied to each child.
      */
+    @Override
     protected void recomputeBounds()
     {
         if(!implicitBounds)
@@ -548,6 +549,7 @@ public class PixelTransform extends Group
      *
      * @param mat The matrix to copy the transform data to
      */
+    @Override
     public void getTransform(Matrix4d mat)
     {
         mat.set(localTransform);
@@ -559,6 +561,7 @@ public class PixelTransform extends Group
      *
      * @param mat The matrix to copy the transform data to
      */
+    @Override
     public void getInverseTransform(Matrix4d mat)
     {
         mat.set(inverseTransform);

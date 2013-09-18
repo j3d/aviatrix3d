@@ -13,10 +13,10 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import org.j3d.util.I18nManager;
+// None
 
 // Local imports
-
+// None
 
 /**
  * Marker interface used to allow group nodes to work out when a child is

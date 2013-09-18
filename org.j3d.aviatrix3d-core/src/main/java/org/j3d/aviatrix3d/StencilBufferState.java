@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -162,6 +163,7 @@ public class StencilBufferState extends BufferState
      *
      * @return One of the _BUFFER constants
      */
+    @Override
     public int getBufferType()
     {
         return STENCIL_BUFFER;
@@ -173,6 +175,7 @@ public class StencilBufferState extends BufferState
      *
      * @return The bit state constant for Stencil Buffers
      */
+    @Override
     public int getBufferBitMask()
     {
         return GL.GL_STENCIL_BUFFER_BIT;
@@ -184,6 +187,7 @@ public class StencilBufferState extends BufferState
      *
      * @return true if the state should be cleared
      */
+    @Override
     public boolean checkClearBufferState()
     {
         return clearState;
@@ -195,7 +199,8 @@ public class StencilBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void setBufferState(GL gl)
+    @Override
+    public void setBufferState(GL2 gl)
     {
         gl.glClearStencil(clearMask);
         gl.glEnable(GL.GL_STENCIL_TEST);
@@ -210,7 +215,8 @@ public class StencilBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void updateBufferState(GL gl)
+    @Override
+    public void updateBufferState(GL2 gl)
     {
         gl.glClearStencil(clearMask);
         gl.glStencilFunc(function, referenceValue, compareMask);
@@ -223,7 +229,8 @@ public class StencilBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void clearBufferState(GL gl)
+    @Override
+    public void clearBufferState(GL2 gl)
     {
         gl.glDisable(GL.GL_STENCIL_TEST);
 
@@ -247,6 +254,7 @@ public class StencilBufferState extends BufferState
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -264,6 +272,7 @@ public class StencilBufferState extends BufferState
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof StencilBufferState))

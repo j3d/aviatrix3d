@@ -13,8 +13,8 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -70,6 +70,7 @@ public class ColorBackground extends Background
      *
      * @return True if this is 2D background, false if this is 3D
      */
+    @Override
     public boolean is2D()
     {
         return true;
@@ -84,7 +85,8 @@ public class ColorBackground extends Background
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(useClearColor)
         {
@@ -98,7 +100,8 @@ public class ColorBackground extends Background
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
     }
 
@@ -116,6 +119,7 @@ public class ColorBackground extends Background
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -133,6 +137,7 @@ public class ColorBackground extends Background
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof ColorBackground))

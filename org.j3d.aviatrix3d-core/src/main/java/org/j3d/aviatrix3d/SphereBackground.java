@@ -20,6 +20,7 @@ import java.nio.FloatBuffer;
 import java.nio.ByteOrder;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // External imports
 import org.j3d.aviatrix3d.rendering.DeletableRenderable;
@@ -125,7 +126,8 @@ public class SphereBackground extends Background
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
         Integer t_id = (Integer)textureIdMap.get(gl);
         if(t_id != null)
@@ -148,6 +150,7 @@ public class SphereBackground extends Background
      *
      * @return True if this is 2D background, false if this is 3D
      */
+    @Override
     public boolean is2D()
     {
         return false;
@@ -162,7 +165,8 @@ public class SphereBackground extends Background
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(useClearColor)
         {
@@ -185,7 +189,7 @@ public class SphereBackground extends Background
 
         gl.glEnable(GL.GL_TEXTURE_2D);
         gl.glActiveTexture(GL.GL_TEXTURE0);
-        gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
+        gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
 
         Integer t_id = textureIdMap.get(gl);
         if(t_id != null)
@@ -241,8 +245,8 @@ public class SphereBackground extends Background
                     break;
 
                 case TextureComponent.FORMAT_BGR:
-                    int_format = GL.GL_BGR;
-                    ext_format = GL.GL_BGR;
+                    int_format = GL2.GL_BGR;
+                    ext_format = GL2.GL_BGR;
                     break;
 
                 case TextureComponent.FORMAT_BGRA:
@@ -276,9 +280,9 @@ public class SphereBackground extends Background
 
         }
 
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
-        gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+        gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, vertexBuffer);
         gl.glNormalPointer(GL.GL_FLOAT, 0, normalBuffer);
         gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, textureBuffer);
@@ -293,9 +297,9 @@ public class SphereBackground extends Background
             strip_offset += stripLength;
         }
 
-        gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
-        gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
-        gl.glDisableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+        gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
     }
 
     /**
@@ -303,7 +307,8 @@ public class SphereBackground extends Background
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(texture == null)
             return;
@@ -325,6 +330,7 @@ public class SphereBackground extends Background
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -342,6 +348,7 @@ public class SphereBackground extends Background
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof SphereBackground))

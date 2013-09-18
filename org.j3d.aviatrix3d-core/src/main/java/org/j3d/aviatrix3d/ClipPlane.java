@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -168,7 +168,7 @@ public class ClipPlane extends Leaf
      * @param gl The GL context to render with
      * @param planeId the ID of the plane to make GL calls with
      */
-    public void render(GL gl, Object planeId)
+    public void render(GL2 gl, Object planeId)
     {
         gl.glClipPlane(((Integer)planeId).intValue(), planeEquation, 0);
         gl.glEnable(((Integer)planeId).intValue());
@@ -184,7 +184,7 @@ public class ClipPlane extends Leaf
      * @param gl The GL context to render with
      * @param planeId the ID of the plane to make GL calls with
      */
-    public void postRender(GL gl, Object planeId)
+    public void postRender(GL2 gl, Object planeId)
     {
         gl.glDisable(((Integer)planeId).intValue());
     }

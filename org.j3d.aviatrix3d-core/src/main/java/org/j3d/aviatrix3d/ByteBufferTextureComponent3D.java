@@ -13,7 +13,6 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -73,7 +72,8 @@ public class ByteBufferTextureComponent3D extends TextureComponent3D
      * Ignored. Clear local data stored in this node.  Only data needed for
      * OpenGL calls will be retained;
      */
-    public void clearLocalData( )
+    @Override
+    public void clearLocalData()
     {
     }
 
@@ -83,6 +83,7 @@ public class ByteBufferTextureComponent3D extends TextureComponent3D
      * @param level The image level required
      * @return a ByteBuffer
      */
+    @Override
     protected ByteBuffer convertImage(int level)
     {
         int num_comp = bytesPerPixel( );

@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.nio.ByteBuffer;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.iutil.TextureUpdateData;
@@ -142,6 +143,7 @@ public class TextureCubicEnvironmentMap extends Texture
      *
      * @return The number of defined sources >= 0
      */
+    @Override
     public int numMultipassSources()
     {
         return mpNumSources;
@@ -156,6 +158,7 @@ public class TextureCubicEnvironmentMap extends Texture
      * @param sources An array to copy the current sources into
      * @param images The indices of each of the source images
      */
+    @Override
     public void getMultipassSources(MultipassTextureSource[] sources,
                                     int[] images)
     {
@@ -181,7 +184,8 @@ public class TextureCubicEnvironmentMap extends Texture
      * @param imgNum The index of the texture source to copy to
      * @param level The mipmap level that this corresponds to
      */
-    public void updateMultipassSource(GL gl,
+    @Override
+    public void updateMultipassSource(GL2 gl,
                                       int x,
                                       int y,
                                       int width,
@@ -215,7 +219,7 @@ public class TextureCubicEnvironmentMap extends Texture
                     break;
 
                 case TextureComponent.FORMAT_BGR:
-                    int_format = GL.GL_BGR;
+                    int_format = GL2.GL_BGR;
                     break;
 
                 case TextureComponent.FORMAT_BGRA:
@@ -274,6 +278,7 @@ public class TextureCubicEnvironmentMap extends Texture
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener data changed callback method
      */
+    @Override
     public void setReadBuffer(int imgNum, int buffer)
         throws InvalidWriteTimingException
     {
@@ -291,6 +296,7 @@ public class TextureCubicEnvironmentMap extends Texture
      * @param imgNum The index of the image that this offset applies to
      * @return One of the buffer indicies.
      */
+    @Override
     public int getReadBuffer(int imgNum)
     {
         return mpReadBuffer[imgNum];
@@ -307,6 +313,7 @@ public class TextureCubicEnvironmentMap extends Texture
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener data changed callback method
      */
+    @Override
     public void setCopyOffset(int imgNum, int level, int xoffset, int yoffset)
         throws InvalidWriteTimingException
     {
@@ -326,6 +333,7 @@ public class TextureCubicEnvironmentMap extends Texture
      * @param level The mipmap level that this corresponds to
      * @param offsets An array to copy the values into
      */
+    @Override
     public void getCopyOffset(int imgNum, int level, int[] offsets)
     {
         offsets[0] = mpOffsets[imgNum][level][0];
@@ -346,6 +354,7 @@ public class TextureCubicEnvironmentMap extends Texture
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void setSources(int mipMapMode,
                            int format,
                            TextureSource[] texSources,
@@ -374,7 +383,8 @@ public class TextureCubicEnvironmentMap extends Texture
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(numSources == 0)
             return;
@@ -460,31 +470,31 @@ public class TextureCubicEnvironmentMap extends Texture
 
             if(priority >= 0)
             {
-                gl.glTexParameterf(GL.GL_TEXTURE_3D,
-                                   GL.GL_TEXTURE_PRIORITY,
+                gl.glTexParameterf(GL2.GL_TEXTURE_3D,
+                                   GL2.GL_TEXTURE_PRIORITY,
                                    priority);
             }
 
             if(borderColor != null)
             {
-                gl.glTexParameterfv(GL.GL_TEXTURE_3D,
-                                    GL.GL_TEXTURE_BORDER_COLOR,
+                gl.glTexParameterfv(GL2.GL_TEXTURE_3D,
+                                    GL2.GL_TEXTURE_BORDER_COLOR,
                                     borderColor,
                                     0);
             }
 
             if(format == FORMAT_DEPTH_COMPONENT)
             {
-                gl.glTexParameterf(GL.GL_TEXTURE_3D,
-                                   GL.GL_DEPTH_TEXTURE_MODE,
+                gl.glTexParameterf(GL2.GL_TEXTURE_3D,
+                                   GL2.GL_DEPTH_TEXTURE_MODE,
                                    depthComponentMode);
 
-                gl.glTexParameterf(GL.GL_TEXTURE_3D,
-                                   GL.GL_TEXTURE_COMPARE_MODE,
+                gl.glTexParameterf(GL2.GL_TEXTURE_3D,
+                                   GL2.GL_TEXTURE_COMPARE_MODE,
                                    compareMode);
 
-                gl.glTexParameterf(GL.GL_TEXTURE_3D,
-                                   GL.GL_TEXTURE_COMPARE_FUNC,
+                gl.glTexParameterf(GL2.GL_TEXTURE_3D,
+                                   GL2.GL_TEXTURE_COMPARE_FUNC,
                                    compareFunction);
             }
         }
@@ -525,8 +535,8 @@ public class TextureCubicEnvironmentMap extends Texture
                             break;
 
                         case TextureComponent.FORMAT_BGR:
-                            int_format = GL.GL_BGR;
-                            ext_format = GL.GL_BGR;
+                            int_format = GL2.GL_BGR;
+                            ext_format = GL2.GL_BGR;
                             break;
 
                         case TextureComponent.FORMAT_BGRA:
@@ -610,7 +620,8 @@ public class TextureCubicEnvironmentMap extends Texture
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
     }
 
@@ -702,7 +713,7 @@ public class TextureCubicEnvironmentMap extends Texture
                             break;
 
                         case TextureComponent.FORMAT_BGR:
-                            tex_format = GL.GL_BGR;
+                            tex_format = GL2.GL_BGR;
                             break;
 
                         case TextureComponent.FORMAT_BGRA:

@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -144,6 +145,7 @@ public class AlphaAttributes extends NodeComponent
      *
      * @return One of the _ATTRIBUTE constants
      */
+    @Override
     public int getAttributeType()
     {
         return ALPHA_ATTRIBUTE;
@@ -158,15 +160,16 @@ public class AlphaAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
-        savedEnable = gl.glIsEnabled(GL.GL_ALPHA_TEST);
+        savedEnable = gl.glIsEnabled(GL2.GL_ALPHA_TEST);
 
         if(!savedEnable)
-            gl.glEnable(GL.GL_ALPHA_TEST);
+            gl.glEnable(GL2.GL_ALPHA_TEST);
 
-        gl.glGetIntegerv(GL.GL_ALPHA_TEST_FUNC, tmpInt, 0);
-        gl.glGetFloatv(GL.GL_ALPHA_TEST_REF, tmpFloat, 0);
+        gl.glGetIntegerv(GL2.GL_ALPHA_TEST_FUNC, tmpInt, 0);
+        gl.glGetFloatv(GL2.GL_ALPHA_TEST_REF, tmpFloat, 0);
 
         savedFunction = tmpInt[0];
         savedTestValue = tmpFloat[0];
@@ -180,10 +183,11 @@ public class AlphaAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(!savedEnable)
-            gl.glDisable(GL.GL_ALPHA_TEST);
+            gl.glDisable(GL2.GL_ALPHA_TEST);
 
         gl.glAlphaFunc(savedFunction, savedTestValue);
 

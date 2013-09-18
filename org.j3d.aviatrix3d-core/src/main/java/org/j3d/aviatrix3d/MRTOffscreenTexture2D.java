@@ -443,6 +443,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @return true when the texture requires re-drawing
      */
+    @Override
     public boolean isRepaintRequired()
     {
         return repaintNeeded;
@@ -453,6 +454,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @return The layer cullable at the given index or null
      */
+    @Override
     public LayerCullable getCullableLayer(int layerIndex)
     {
         if(layerIndex < 0 || layerIndex >= numLayers)
@@ -473,6 +475,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @return A number greater than or equal to zero or -1
      */
+    @Override
     public int numCullableChildren()
     {
         return numLayers;
@@ -484,6 +487,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @return The renderable instance that we deposit pixels to
      */
+    @Override
     public OffscreenBufferRenderable getOffscreenRenderable()
     {
        return this;
@@ -499,6 +503,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @param col An array of at least length 4 to copy values into
      */
+    @Override
     public void getClearColor(float[] col)
     {
         col[0] = clearColor[0];
@@ -513,21 +518,10 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      * @return The defined capabilities setup for the texture
      * @deprecated Use {@link #getBufferSetup()} Always returns null
      */
+    @Override
     public GLCapabilities getGLSetup()
     {
         return null;
-    }
-
-    /**
-     * Get the format for this texture. As this is a single pBuffer texture,
-     * there is only ever one level, so the argument is ignored.
-     *
-     * @param level The mipmap level to get the format for
-     * @return The format.
-     */
-    public int getFormat(int level)
-    {
-        return format;
     }
 
     /**
@@ -536,6 +530,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @return A value greater than zero
      */
+    @Override
     public int getNumRenderTargets()
     {
         return numRenderTargets;
@@ -548,6 +543,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      * @param index The index of the target to fetch
      * @return The render target at the given index
      */
+    @Override
     public OffscreenRenderTargetRenderable getRenderTargetRenderable(int index)
     {
         return renderTargetMap.get(index);
@@ -560,6 +556,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @return True if a separate depth texture is wanted
      */
+    @Override
     public boolean hasSeparateDepthRenderable()
     {
         return depthTarget != null;
@@ -571,6 +568,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @return The depth target renderable or null
      */
+    @Override
     public OffscreenRenderTargetRenderable getDepthRenderable()
     {
         return depthTarget;
@@ -584,6 +582,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      * @return true if the buffer has resized, requiring reallocation of the
      *   underlying buffer objects
      */
+    @Override
     public boolean hasBufferResized()
     {
         boolean ret_val = bufferResized;
@@ -602,6 +601,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @return true if this is a child, false if the parent
      */
+    @Override
     public boolean isChildRenderTarget()
     {
         return false;
@@ -620,6 +620,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      * @param tex The texture instance to be compared
      * @return -1, 0 or 1 depending on order
      */
+    @Override
     public int compareTo(Texture tex)
     {
         int res = super.compareTo(tex);
@@ -667,6 +668,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      * @param tex The texture instance to be compared
      * @return true if the objects represent identical values
      */
+    @Override
     public boolean equals(Texture tex)
     {
         if(!(tex instanceof MRTOffscreenTexture2D))
@@ -712,6 +714,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      * @param parent The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
      */
+    @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws InvalidWriteTimingException, CyclicSceneGraphStructureException
     {
@@ -732,6 +735,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         if(state)
@@ -758,6 +762,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         if(updateHandler == handler)
@@ -775,6 +780,18 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
     //---------------------------------------------------------------
     // Local methods
     //---------------------------------------------------------------
+
+    /**
+     * Get the format for this texture. As this is a single pBuffer texture,
+     * there is only ever one level, so the argument is ignored.
+     *
+     * @param level The mipmap level to get the format for
+     * @return The format.
+     */
+    public int getFormat(int level)
+    {
+        return format;
+    }
 
     /**
      * Get the numbered render target. Using an index of 0 will return a
@@ -1047,7 +1064,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
      * buffer data state class.
      *
      * @param data The data class to copy stuff in to
-     * @param cap The GLCapabilities to copy stuff out of
+     * @param caps The GLCapabilities to copy stuff out of
      * @param unclampColorRange true if we want more than [0,1] colours
      */
     private void copyCapabilities(BufferSetupData data,

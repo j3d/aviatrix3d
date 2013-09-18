@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -48,7 +49,7 @@ public interface MultipassTextureSource extends OffscreenTextureSource
     public static final int STENCIL_BUFFER = GL.GL_STENCIL_BUFFER_BIT;
 
     /** The bitmask indicating the accumulation buffer is used. */
-    public static final int ACCUMULATION_BUFFER = GL.GL_ACCUM_BUFFER_BIT;
+    public static final int ACCUMULATION_BUFFER = GL2.GL_ACCUM_BUFFER_BIT;
 
     /**
      * Get the root of the currently rendered scene. If none is set, this will

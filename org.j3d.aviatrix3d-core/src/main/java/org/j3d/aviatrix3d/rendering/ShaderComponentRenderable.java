@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -51,18 +51,20 @@ public interface ShaderComponentRenderable extends ObjectRenderable
      * see if a valid program ID has already been assigned, indicating that at
      * least an internal link(gl) call has been made.
      *
+     *
      * @param gl The GL context to test for linkage against
      * @return true if there is a valid ID to work with
      */
-    public boolean isValid(GL gl);
+    public boolean isValid(GL2 gl);
 
     /**
      * Fetch the ID handle for this program for the given context.
      *
+     *
      * @param gl The GL context to get the ID for
      * @return The ID value or 0 if none
      */
-    public int getProgramId(GL gl);
+    public int getProgramId(GL2 gl);
 
     /**
      * Re-initialise this shader because the underlying GL context has
@@ -71,5 +73,5 @@ public interface ShaderComponentRenderable extends ObjectRenderable
      *
      * @param gl The GL context to reinitialise with
      */
-    public void reinitialize(GL gl);
+    public void reinitialize(GL2 gl);
 }

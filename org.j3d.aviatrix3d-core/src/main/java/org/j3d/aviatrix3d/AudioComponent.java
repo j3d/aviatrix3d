@@ -102,6 +102,7 @@ public abstract class AudioComponent extends NodeComponent
      *
      * @return the format.
      */
+    @Override
     public int getFormat()
     {
         return format;
@@ -112,6 +113,7 @@ public abstract class AudioComponent extends NodeComponent
      *
      * @return the format
      */
+    @Override
     public int getFrequency()
     {
         return frequency;
@@ -122,6 +124,7 @@ public abstract class AudioComponent extends NodeComponent
      *
      * @return TRUE if it loops.
      */
+    @Override
     public boolean getLoop()
     {
         return loop;
@@ -132,46 +135,10 @@ public abstract class AudioComponent extends NodeComponent
      *
      * @return the pitch, (0 to 2)
      */
+    @Override
     public float getPitch()
     {
         return pitch;
-    }
-
-    /**
-     * Change whether the audio component should loop or not
-     *
-     * @param val true if the source should loop
-     * @throws InvalidWriteTimingException An attempt was made to write outside
-     *   of the NodeUpdateListener data callback method
-     */
-    public void setLoop(boolean val)
-    {
-        if(isLive() && updateHandler != null &&
-           !updateHandler.isDataWritePermitted(this))
-            throw new InvalidWriteTimingException(getDataWriteTimingMessage());
-
-        loop = val;
-        sendParamUpdate();
-    }
-
-    /**
-     * Set the pitch to play the sound at. This is a multiplier of the base
-     * time that the sound would normally play in. A value of 0.5 says the
-     * sound takes twice as long to play (and thus drops everything by an
-     * octave).
-     *
-     * @param val The pitch multiplier to now use (0 to 2)
-     * @throws InvalidWriteTimingException An attempt was made to write outside
-     *   of the NodeUpdateListener data callback method
-     */
-    public void setPitch(float val)
-    {
-        if(isLive() && updateHandler != null &&
-           !updateHandler.isDataWritePermitted(this))
-            throw new InvalidWriteTimingException(getDataWriteTimingMessage());
-
-        pitch = val;
-        sendParamUpdate();
     }
 
     /**
@@ -180,6 +147,7 @@ public abstract class AudioComponent extends NodeComponent
      * @param seq The sequence number
      * @return The bufferId.
      */
+    @Override
     public int getBufferId(AL al, int seq)
     {
         // OpenAL Docs say all contexts can share buffers, so reuse.
@@ -272,6 +240,43 @@ public abstract class AudioComponent extends NodeComponent
                 }
             }
         }
+    }
+
+    /**
+     * Change whether the audio component should loop or not
+     *
+     * @param val true if the source should loop
+     * @throws InvalidWriteTimingException An attempt was made to write outside
+     *   of the NodeUpdateListener data callback method
+     */
+    public void setLoop(boolean val)
+    {
+        if(isLive() && updateHandler != null &&
+                !updateHandler.isDataWritePermitted(this))
+            throw new InvalidWriteTimingException(getDataWriteTimingMessage());
+
+        loop = val;
+        sendParamUpdate();
+    }
+
+    /**
+     * Set the pitch to play the sound at. This is a multiplier of the base
+     * time that the sound would normally play in. A value of 0.5 says the
+     * sound takes twice as long to play (and thus drops everything by an
+     * octave).
+     *
+     * @param val The pitch multiplier to now use (0 to 2)
+     * @throws InvalidWriteTimingException An attempt was made to write outside
+     *   of the NodeUpdateListener data callback method
+     */
+    public void setPitch(float val)
+    {
+        if(isLive() && updateHandler != null &&
+                !updateHandler.isDataWritePermitted(this))
+            throw new InvalidWriteTimingException(getDataWriteTimingMessage());
+
+        pitch = val;
+        sendParamUpdate();
     }
 
     /**

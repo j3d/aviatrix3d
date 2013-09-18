@@ -140,7 +140,7 @@ class PbufferDescriptor extends BaseBufferDescriptor
                                       bufferHeight,
                                       parentContext);
 
-        GLCapabilities real_caps = pbuffer.getChosenGLCapabilities();
+        GLCapabilitiesImmutable real_caps = pbuffer.getChosenGLCapabilities();
 
         if(real_caps == null)
             delayedPbufferInitActive = true;
@@ -308,15 +308,15 @@ class PbufferDescriptor extends BaseBufferDescriptor
             switch(ownerRenderable.getFormat())
             {
                 case OffscreenBufferRenderable.FORMAT_DEPTH_COMPONENT:
-                    ext_format = GL.GL_DEPTH_COMPONENT;
+                    ext_format = GL2.GL_DEPTH_COMPONENT;
 
                     int[] depth_bits = new int[1];
                     gl.glGetIntegerv(GL.GL_DEPTH_BITS, depth_bits, 0);
 
                     if(depth_bits[0] == 16)
-                        int_format = GL.GL_DEPTH_COMPONENT16_ARB;
+                        int_format = GL2.GL_DEPTH_COMPONENT16;
                     else
-                        int_format = GL.GL_DEPTH_COMPONENT24_ARB;
+                        int_format = GL2.GL_DEPTH_COMPONENT24;
                     break;
 
                 default:
@@ -388,7 +388,7 @@ class PbufferDescriptor extends BaseBufferDescriptor
      */
     private boolean checkIfPbufferInitComplete()
     {
-        GLCapabilities real_caps = pbuffer.getChosenGLCapabilities();
+        GLCapabilitiesImmutable real_caps = pbuffer.getChosenGLCapabilities();
 
         if(real_caps == null)
             return false;

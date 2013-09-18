@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -96,16 +97,16 @@ public class Material extends NodeComponent
     implements TransparentObjectRenderable, DeletableRenderable
 {
     /** Set the color material target as the ambient light component */
-    public static final int AMBIENT_TARGET = GL.GL_AMBIENT;
+    public static final int AMBIENT_TARGET = GL2.GL_AMBIENT;
 
     /** Set the color material target as the diffuse light component */
-    public static final int DIFFUSE_TARGET = GL.GL_DIFFUSE;
+    public static final int DIFFUSE_TARGET = GL2.GL_DIFFUSE;
 
     /** Set the color material target as the specular light component */
-    public static final int SPECULAR_TARGET = GL.GL_SPECULAR;
+    public static final int SPECULAR_TARGET = GL2.GL_SPECULAR;
 
     /** Set the color material target as the emissive light component */
-    public static final int EMISSIVE_TARGET = GL.GL_EMISSION;
+    public static final int EMISSIVE_TARGET = GL2.GL_EMISSION;
 
     /**
      * Set the color material target as the ambient and diffuse light
@@ -113,7 +114,7 @@ public class Material extends NodeComponent
      * set by the user.
      */
     public static final int AMBIENT_AND_DIFFUSE_TARGET =
-        GL.GL_AMBIENT_AND_DIFFUSE;
+        GL2.GL_AMBIENT_AND_DIFFUSE;
 
     /** When the user passes in an invalid material target */
     private static final String COLOR_MATERIAL_TARGET_PROP =
@@ -337,6 +338,7 @@ public class Material extends NodeComponent
      *
      * @return true if any form of non-opaque rendering is defined
      */
+    @Override
     public boolean hasTransparency()
     {
         return getTransparency() != 1;
@@ -351,7 +353,8 @@ public class Material extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(!queryComplete)
         {
@@ -375,16 +378,16 @@ public class Material extends NodeComponent
 
             listName = new Integer(gl.glGenLists(1));
 			
-            gl.glNewList(listName.intValue(), GL.GL_COMPILE);
+            gl.glNewList(listName.intValue(), GL2.GL_COMPILE);
 
             if(useLighting)
-                gl.glEnable(GL.GL_LIGHTING);
+                gl.glEnable(GL2.GL_LIGHTING);
             else
-                gl.glDisable(GL.GL_LIGHTING);
+                gl.glDisable(GL2.GL_LIGHTING);
 
             if(useColorMaterial)
             {
-                gl.glEnable(GL.GL_COLOR_MATERIAL);
+                gl.glEnable(GL2.GL_COLOR_MATERIAL);
                 if(separatedBackFace)
                 {
                     gl.glColorMaterial(GL.GL_FRONT, colorTarget);
@@ -401,7 +404,7 @@ public class Material extends NodeComponent
                     {
                         gl.glBlendColor(0, 0, 0, diffuseColor[3]);
                         gl.glBlendFunc(GL.GL_SRC_ALPHA,
-                                       GL.GL_ONE_MINUS_CONSTANT_ALPHA);
+                                       GL2.GL_ONE_MINUS_CONSTANT_ALPHA);
                     }
                     else
                     {
@@ -412,43 +415,43 @@ public class Material extends NodeComponent
             }
             else
             {
-                gl.glDisable(GL.GL_COLOR_MATERIAL);
+                gl.glDisable(GL2.GL_COLOR_MATERIAL);
             }
 
             if(separatedBackFace)
             {
-                gl.glMaterialfv(GL.GL_FRONT, GL.GL_DIFFUSE, diffuseColor, 0);
-                gl.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT, ambientColor, 0);
-                gl.glMaterialfv(GL.GL_FRONT, GL.GL_SPECULAR, specularColor, 0);
-                gl.glMaterialfv(GL.GL_FRONT, GL.GL_EMISSION, emissiveColor, 0);
-                gl.glMaterialf(GL.GL_FRONT, GL.GL_SHININESS, shininess);
+                gl.glMaterialfv(GL.GL_FRONT, GL2.GL_DIFFUSE, diffuseColor, 0);
+                gl.glMaterialfv(GL.GL_FRONT, GL2.GL_AMBIENT, ambientColor, 0);
+                gl.glMaterialfv(GL.GL_FRONT, GL2.GL_SPECULAR, specularColor, 0);
+                gl.glMaterialfv(GL.GL_FRONT, GL2.GL_EMISSION, emissiveColor, 0);
+                gl.glMaterialf(GL.GL_FRONT, GL2.GL_SHININESS, shininess);
 
-                gl.glMaterialfv(GL.GL_BACK, GL.GL_DIFFUSE, backDiffuseColor, 0);
-                gl.glMaterialfv(GL.GL_BACK, GL.GL_AMBIENT, backAmbientColor, 0);
-                gl.glMaterialfv(GL.GL_BACK, GL.GL_SPECULAR, backSpecularColor, 0);
-                gl.glMaterialfv(GL.GL_BACK, GL.GL_EMISSION, backEmissiveColor, 0);
-                gl.glMaterialf(GL.GL_BACK, GL.GL_SHININESS, backShininess);
+                gl.glMaterialfv(GL.GL_BACK, GL2.GL_DIFFUSE, backDiffuseColor, 0);
+                gl.glMaterialfv(GL.GL_BACK, GL2.GL_AMBIENT, backAmbientColor, 0);
+                gl.glMaterialfv(GL.GL_BACK, GL2.GL_SPECULAR, backSpecularColor, 0);
+                gl.glMaterialfv(GL.GL_BACK, GL2.GL_EMISSION, backEmissiveColor, 0);
+                gl.glMaterialf(GL.GL_BACK, GL2.GL_SHININESS, backShininess);
             }
             else
             {
                 gl.glMaterialfv(GL.GL_FRONT_AND_BACK,
-                                GL.GL_DIFFUSE,
+                                GL2.GL_DIFFUSE,
                                 diffuseColor,
                                 0);
                 gl.glMaterialfv(GL.GL_FRONT_AND_BACK,
-                                GL.GL_AMBIENT,
+                                GL2.GL_AMBIENT,
                                 ambientColor,
                                 0);
                 gl.glMaterialfv(GL.GL_FRONT_AND_BACK,
-                                GL.GL_SPECULAR,
+                                GL2.GL_SPECULAR,
                                 specularColor,
                                 0);
                 gl.glMaterialfv(GL.GL_FRONT_AND_BACK,
-                                GL.GL_EMISSION,
+                                GL2.GL_EMISSION,
                                 emissiveColor,
                                 0);
                 gl.glMaterialf(GL.GL_FRONT_AND_BACK,
-                                GL.GL_SHININESS,
+                                GL2.GL_SHININESS,
                                 shininess);
             }
 
@@ -464,13 +467,14 @@ public class Material extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(useLighting)
-            gl.glDisable(GL.GL_LIGHTING);
+            gl.glDisable(GL2.GL_LIGHTING);
 
         if(useColorMaterial)
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
+            gl.glDisable(GL2.GL_COLOR_MATERIAL);
     }
 
     //---------------------------------------------------------------
@@ -487,6 +491,7 @@ public class Material extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -504,6 +509,7 @@ public class Material extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof Material))
@@ -523,6 +529,7 @@ public class Material extends NodeComponent
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         super.setLive(state);
@@ -540,7 +547,8 @@ public class Material extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
 		if(deletedDisplayListMap.size() != 0)
         {

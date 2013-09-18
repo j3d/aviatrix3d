@@ -80,6 +80,7 @@ public class SimpleScene extends Scene
      *
      * @return true always
      */
+    @Override
     public boolean isEnabled()
     {
         return true;
@@ -90,6 +91,7 @@ public class SimpleScene extends Scene
      *
      * @return true if this is a multipass cullable
      */
+    @Override
     public boolean isMultipassScene()
     {
         return false;
@@ -105,6 +107,7 @@ public class SimpleScene extends Scene
      * @return true if this is the source that should be rendered this
      *   this frame.
      */
+    @Override
     public boolean isAudioSource()
     {
         return false;
@@ -117,6 +120,7 @@ public class SimpleScene extends Scene
      * scene, the frustum information is ignored as each pass applies
      * separately.
      */
+    @Override
     public ViewEnvironmentCullable getViewCullable()
     {
         return viewEnvironment;
@@ -131,6 +135,7 @@ public class SimpleScene extends Scene
      * @param passIndex The index of the pass to fetch
      * @return The layer cullable at the given index or null
      */
+    @Override
     public RenderPassCullable getCullablePass(int passIndex)
     {
         return this;
@@ -142,6 +147,7 @@ public class SimpleScene extends Scene
      *
      * @return A number greater than or equal to zero
      */
+    @Override
     public int numCullableChildren()
     {
         return 1;
@@ -158,6 +164,7 @@ public class SimpleScene extends Scene
      *
      * @return true if this is a 2D scene rather than a 3D version
      */
+    @Override
     public boolean is2D()
     {
         return false;
@@ -169,6 +176,7 @@ public class SimpleScene extends Scene
      *
      * @return The viewpoint renderable to use
      */
+    @Override
     public EnvironmentCullable getViewpointCullable()
     {
         return currentViewpoint;
@@ -180,6 +188,7 @@ public class SimpleScene extends Scene
      *
      * @return The background renderable to use
      */
+    @Override
     public EnvironmentCullable getBackgroundCullable()
     {
         return currentBackground;
@@ -193,6 +202,7 @@ public class SimpleScene extends Scene
      *
      * @return The fog renderable to use
      */
+    @Override
     public LeafCullable getFogCullable()
     {
         return currentFog;
@@ -202,6 +212,7 @@ public class SimpleScene extends Scene
      * Get the primary cullable that represents the root of the scene graph.
      * If this is a multipass cullable, this should return null.
      */
+    @Override
     public Cullable getRootCullable()
     {
         return renderableObjects;
@@ -214,6 +225,7 @@ public class SimpleScene extends Scene
      * @return A renderable instance if custom viewport handling is need
      *   or null if not
      */
+    @Override
     public ViewportRenderable getViewportRenderable()
     {
         return null;
@@ -225,6 +237,7 @@ public class SimpleScene extends Scene
      *
      * @return The state representation for the general buffer
      */
+    @Override
     public BufferStateRenderable getGeneralBufferRenderable()
     {
         return null;
@@ -236,6 +249,7 @@ public class SimpleScene extends Scene
      *
      * @return Null always as this is a single pass scene
      */
+    @Override
     public BufferStateRenderable getColorBufferRenderable()
     {
         return null;
@@ -247,6 +261,7 @@ public class SimpleScene extends Scene
      *
      * @return Null always as this is a single pass scene
      */
+    @Override
     public BufferStateRenderable getDepthBufferRenderable()
     {
         return null;
@@ -258,6 +273,7 @@ public class SimpleScene extends Scene
      *
      * @return Null always as this is a single pass scene
      */
+    @Override
     public BufferStateRenderable getStencilBufferRenderable()
     {
         return null;
@@ -269,6 +285,7 @@ public class SimpleScene extends Scene
      *
      * @return Null always as this is a single pass scene
      */
+    @Override
     public BufferStateRenderable getAccumBufferRenderable()
     {
         return null;
@@ -285,6 +302,7 @@ public class SimpleScene extends Scene
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -304,6 +322,7 @@ public class SimpleScene extends Scene
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);

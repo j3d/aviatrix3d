@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -37,5 +37,5 @@ public interface DeletableRenderable extends Renderable
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl);
+    public void cleanup(GL2 gl);
 }

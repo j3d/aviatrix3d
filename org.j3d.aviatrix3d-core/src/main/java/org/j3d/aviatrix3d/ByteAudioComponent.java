@@ -13,11 +13,7 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import java.awt.image.*;
-
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.HashMap;
 
 // Local imports
 // None
@@ -82,6 +78,7 @@ public class ByteAudioComponent extends AudioComponent
     /**
      * Clear the data backing for this Component.
      */
+    @Override
     public void clearLocalData()
     {
         // TODO: Can this clear the byte buffer?

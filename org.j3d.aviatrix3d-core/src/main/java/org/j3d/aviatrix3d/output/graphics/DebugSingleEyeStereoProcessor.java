@@ -57,7 +57,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
 
 
     /** Reusable debug GL context */
-    private TraceGL debugGL;
+    private DebugGL2 debugGL;
 
     /** Trigger to dump the next frame using the TraceGL class */
     private int dumpNextFrameCount;
@@ -145,9 +145,9 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
 
             if(dumpNow)
             {
-                if(debugGL == null && !(gl instanceof TraceGL))
+                if(debugGL == null && !(gl instanceof DebugGL2))
                 {
-                    debugGL = new TraceGL(gl, System.out);
+                    debugGL = new DebugGL2(gl.getGL2());
                     localContext.setGL(debugGL);
                 }
 
@@ -179,10 +179,12 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
     @Override
     public void display(GraphicsProfilingData profilingData)
     {
-        GL gl = localContext.getGL();
+        GL base_gl = localContext.getGL();
 
-        if(gl == null)
+        if(base_gl == null)
             return;
+
+        GL2 gl = base_gl.getGL2();
 
         if(dumpNow || CHECK_ERRORS)
         {
@@ -205,8 +207,8 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
             return;
 
         // Draw the left eye first, then right
-        gl.glMatrixMode(GL.GL_MODELVIEW);
-        gl.glDrawBuffer(GL.GL_BACK_LEFT);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glDrawBuffer(GL2.GL_BACK_LEFT);
 
         if(terminate)
             return;
@@ -232,11 +234,10 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
      * Perform the rendering loop for one of the two buffers, indicated by
      * the provided parameter.
      *
-     * @param drawable The display context to render to
      * @param gl The gl context to draw with
      *     * @param left true if this is the left eye
      */
-    private void render(GL gl, boolean left, GraphicsProfilingData profilingData)
+    private void render(GL2 gl, boolean left, GraphicsProfilingData profilingData)
     {
         // TODO:
         // May want to put some optimisations here for systems that can clear
@@ -309,8 +310,8 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
                     // buffer when the layer is finished.
                     if(!first_layer)
                     {
-                        gl.glDrawBuffer(GL.GL_AUX0);
-                        gl.glReadBuffer(GL.GL_AUX0);
+                        gl.glDrawBuffer(GL2.GL_AUX0);
+                        gl.glReadBuffer(GL2.GL_AUX0);
 
                         setupMultipassViewport(gl, data);
                     }
@@ -336,7 +337,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
                                         0,
                                         data.viewport[GraphicsEnvironmentData.VIEW_WIDTH],
                                         data.viewport[GraphicsEnvironmentData.VIEW_HEIGHT],
-                                        GL.GL_COLOR);
+                                        GL2.GL_COLOR);
                         gl.glReadBuffer(GL.GL_BACK);
                     }
                     break;
@@ -519,7 +520,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
                     }
 
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.render(gl);
                     break;
@@ -550,10 +551,10 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
                                             Integer.toHexString(s.hashCode()));
                     }
 
-                    gl.glRasterPos2f(renderableList[i].transform[3],
+                    gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
-                    gl.glPixelZoom(renderableList[i].transform[0],
-                                   renderableList[i].transform[5]);
+                    gl.glPixelZoom((float)renderableList[i].transform[0],
+                                   (float)renderableList[i].transform[5]);
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.render(gl);
                     break;
@@ -584,7 +585,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     ((GeometryRenderable)renderableList[i].renderable).render(gl);
                     gl.glPopMatrix();
                     break;
@@ -600,10 +601,10 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
                     }
 
                     // load the matrix to render
-                    gl.glRasterPos2f(renderableList[i].transform[3],
+                    gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
-                    gl.glPixelZoom(renderableList[i].transform[0],
-                                   renderableList[i].transform[5]);
+                    gl.glPixelZoom((float)renderableList[i].transform[0],
+                                   (float)renderableList[i].transform[5]);
                     ((GeometryRenderable)renderableList[i].renderable).render(gl);
                     break;
 
@@ -619,7 +620,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     CustomGeometryRenderable gr =
                         (CustomGeometryRenderable)renderableList[i].renderable;
                     gr.render(gl, renderableList[i].instructions);
@@ -638,7 +639,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
 
                     CustomRenderable cr =
                         (CustomRenderable)renderableList[i].renderable;
@@ -694,7 +695,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.render(gl, l_id);
                     gl.glPopMatrix();
@@ -740,7 +741,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
 
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.render(gl, c_id);
@@ -774,7 +775,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
                         if(dumpNow || PRINT_STATES)
                             errorReporter.messageReport("Start transparency first pass");
 
-                        gl.glEnable(GL.GL_ALPHA_TEST);
+                        gl.glEnable(GL2.GL_ALPHA_TEST);
                         gl.glAlphaFunc(GL.GL_GEQUAL, alpha_test);
                         transparent_start_idx = i;
                     }
@@ -803,7 +804,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
                         first_pass_alpha = false;
                         i = transparent_start_idx - 1;
 
-                        gl.glDisable(GL.GL_ALPHA_TEST);
+                        gl.glDisable(GL2.GL_ALPHA_TEST);
                     }
                     else
                     {
@@ -827,7 +828,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
 
                     if(!fog_active)
                     {
-                        gl.glEnable(GL.GL_FOG);
+                        gl.glEnable(GL2.GL_FOG);
                         fog_active = true;
                     }
 
@@ -852,7 +853,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
                         obj = (ObjectRenderable)renderableList[i].renderable;
                         obj.postRender(gl);
                         fog_active = false;
-                        gl.glDisable(GL.GL_FOG);
+                        gl.glDisable(GL2.GL_FOG);
                     }
                     break;
 

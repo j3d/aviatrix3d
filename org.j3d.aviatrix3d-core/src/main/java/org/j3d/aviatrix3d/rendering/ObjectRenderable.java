@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -63,7 +63,7 @@ public interface ObjectRenderable extends Renderable
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl);
+    public void render(GL2 gl);
 
     /*
      * This method is called after an object has been rendered and should clean
@@ -71,5 +71,5 @@ public interface ObjectRenderable extends Renderable
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl);
+    public void postRender(GL2 gl);
 }

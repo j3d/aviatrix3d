@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -232,7 +233,7 @@ public abstract class VertexGeometry extends Geometry
         "org.j3d.aviatrix3d.VertexGeometry.color4SizeMsg";
 
     /** VBO Hint for Streamed geometry */
-    public static final int VBO_HINT_STREAM = GL.GL_STREAM_DRAW;
+    public static final int VBO_HINT_STREAM = GL2.GL_STREAM_DRAW;
 
     /** VBO Hint for Static geometry */
     public static final int VBO_HINT_STATIC = GL.GL_STATIC_DRAW;
@@ -526,6 +527,7 @@ public abstract class VertexGeometry extends Geometry
      *
      * @return true when the geometry is visible
      */
+    @Override
     protected boolean isVisible()
     {
         return numCoords != 0;
@@ -541,6 +543,7 @@ public abstract class VertexGeometry extends Geometry
      *
      * @return True if this is 2D geometry, false if this is 3D
      */
+    @Override
     public boolean is2D()
     {
         return ((vertexFormat & COORDINATE_2) != 0);
@@ -552,6 +555,7 @@ public abstract class VertexGeometry extends Geometry
      * to the root. A node implementation may decide when and where to tell
      * the parent(s)s that updates are ready.
      */
+    @Override
     protected void updateBounds()
     {
         if(numRequiredCoords != 0)
@@ -563,6 +567,7 @@ public abstract class VertexGeometry extends Geometry
      * default the bounds are a point sphere, so derived classes should
      * override this method with something better.
      */
+    @Override
     protected void recomputeBounds()
     {
         if(numRequiredCoords == 0)
@@ -655,7 +660,7 @@ public abstract class VertexGeometry extends Geometry
                     if (coordinates[cnt + 2] > max_z)
                         max_z = coordinates[cnt + 2];
 
-// Don't do anything with the 4th coord for now.
+                    // Don't do anything with the 4th coord for now.
 
                     cnt = cnt + 4;
                 }
@@ -679,6 +684,7 @@ public abstract class VertexGeometry extends Geometry
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -705,7 +711,8 @@ public abstract class VertexGeometry extends Geometry
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
         if (vboAvailable && useVbo)
         {
@@ -2134,7 +2141,7 @@ public abstract class VertexGeometry extends Geometry
 
         val.size = size;
         val.normalise = normalise;
-        val.dataType = GL.GL_DOUBLE;
+        val.dataType = GL2.GL_DOUBLE;
 
         if((val.data instanceof DoubleBuffer) &&
            (numRequiredCoords * size < val.data.capacity()))
@@ -2225,7 +2232,7 @@ public abstract class VertexGeometry extends Geometry
 
         val.size = size;
         val.normalise = normalise;
-        val.dataType = signed ? GL.GL_INT : GL.GL_UNSIGNED_INT;
+        val.dataType = signed ? GL2.GL_INT : GL.GL_UNSIGNED_INT;
 
         if((val.data instanceof IntBuffer) &&
            (numRequiredCoords * size < val.data.capacity()))
@@ -2540,7 +2547,7 @@ public abstract class VertexGeometry extends Geometry
      * is in <code>VertexGeometry</code>. See <code>TriangleArray</code> for
      * examples.
      */
-    protected int fillBufferData(GL gl)
+    protected int fillBufferData(GL2 gl)
     {
         int vtx_size = vertexFormat & 0x07;
         int offset = 0;
@@ -2692,7 +2699,7 @@ public abstract class VertexGeometry extends Geometry
      * Handles state setting when VBOs are used. Called from
      * <code>setVertexState(GL gl)</code> only!
      */
-    protected void setVertexStateVBO(GL gl)
+    protected void setVertexStateVBO(GL2 gl)
     {
         Integer vbo_id = vboIdMap.get(gl);
         if(vbo_id == null)
@@ -2728,13 +2735,13 @@ public abstract class VertexGeometry extends Geometry
         // Set buffer offsets
         int vtx_size = vertexFormat & 0x07;
         long offset = 0;
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
         gl.glVertexPointer(vtx_size, GL.GL_FLOAT, 0, offset);
         offset += numRequiredCoords * vtx_size * 4;
 
         if((vertexFormat & NORMALS) != 0)
         {
-            gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+            gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
             gl.glNormalPointer(GL.GL_FLOAT, 0, offset);
             offset += numRequiredCoords * 3 * 4;
         }
@@ -2748,7 +2755,7 @@ public abstract class VertexGeometry extends Geometry
                 {
                     int set_id = textureSets[i];
                     gl.glClientActiveTexture(GL.GL_TEXTURE0 + i);
-                    gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                     gl.glTexCoordPointer(textureTypes[set_id],
                                          GL.GL_FLOAT,
                                          0,
@@ -2776,7 +2783,7 @@ public abstract class VertexGeometry extends Geometry
             }
             else
             {
-                gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                 gl.glTexCoordPointer(textureTypes[0],
                                      GL.GL_FLOAT,
                                      0,
@@ -2813,7 +2820,7 @@ public abstract class VertexGeometry extends Geometry
             }
             else
             {
-                gl.glEnableClientState(GL.GL_COLOR_ARRAY);
+                gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
                 int size = ((vertexFormat & COLOR_3) != 0) ? 3 : 4;
                 gl.glColorPointer(size, GL.GL_FLOAT, 0, offset);
                 offset += numRequiredCoords * size * 4;
@@ -2822,15 +2829,15 @@ public abstract class VertexGeometry extends Geometry
 
         if((vertexFormat & COLOR2_MASK) != 0)
         {
-            gl.glEnableClientState(GL.GL_SECONDARY_COLOR_ARRAY);
+            gl.glEnableClientState(GL2.GL_SECONDARY_COLOR_ARRAY);
             gl.glSecondaryColorPointer(3, GL.GL_FLOAT, 0, offset);
             offset += numRequiredCoords * 3 * 4;
         }
 
         if((vertexFormat & FOG_MASK) != 0)
         {
-            gl.glFogi(GL.GL_FOG_COORDINATE_SOURCE, GL.GL_FOG_COORDINATE);
-            gl.glEnableClientState(GL.GL_FOG_COORDINATE_ARRAY);
+            gl.glFogi(GL2.GL_FOG_COORDINATE_SOURCE, GL2.GL_FOG_COORDINATE);
+            gl.glEnableClientState(GL2.GL_FOG_COORDINATE_ARRAY);
             gl.glFogCoordPointer(GL.GL_FLOAT, 0, offset);
             offset += numRequiredCoords * 4;
         }
@@ -2866,7 +2873,7 @@ public abstract class VertexGeometry extends Geometry
      *
      * @param gl The gl context to draw with
      */
-    protected final void setVertexState(GL gl)
+    protected final void setVertexState(GL2 gl)
     {
         // Test for multi texturing
         if((vertexFormat & TEXTURE_MASK) != 0 && numTextureSets != 1 && !queryComplete)
@@ -2874,7 +2881,7 @@ public abstract class VertexGeometry extends Geometry
             hasMultiTextureAPI = gl.isFunctionAvailable("glClientActiveTexture");
 
             int[] tmp = new int[1];
-            gl.glGetIntegerv(GL.GL_MAX_TEXTURE_UNITS, tmp, 0);
+            gl.glGetIntegerv(GL2.GL_MAX_TEXTURE_UNITS, tmp, 0);
             maxTextureUnits = tmp[0];
 
             numRenderedTextureSets = (numTextureSets < maxTextureUnits) ?
@@ -2919,7 +2926,7 @@ public abstract class VertexGeometry extends Geometry
         //  State enable first
         if((vertexFormat & NORMALS) != 0)
         {
-            gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+            gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
             gl.glNormalPointer(GL.GL_FLOAT, 0, normalBuffer);
         }
 
@@ -2928,7 +2935,7 @@ public abstract class VertexGeometry extends Geometry
             // single texturing or multi-texturing
             if(numTextureSets == 1)
             {
-                gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                 gl.glTexCoordPointer(textureTypes[0],
                                      GL.GL_FLOAT,
                                      0,
@@ -2942,7 +2949,7 @@ public abstract class VertexGeometry extends Geometry
                     {
                         int set_id = textureSets[i];
                         gl.glClientActiveTexture(GL.GL_TEXTURE0 + i);
-                        gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                        gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                         gl.glTexCoordPointer(textureTypes[set_id],
                                              GL.GL_FLOAT,
                                              0,
@@ -2951,7 +2958,7 @@ public abstract class VertexGeometry extends Geometry
                 }
                 else
                 {
-                    gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                     gl.glTexCoordPointer(textureTypes[0],
                                          GL.GL_FLOAT,
                                          0,
@@ -2971,7 +2978,7 @@ public abstract class VertexGeometry extends Geometry
             }
             else
             {
-                gl.glEnableClientState(GL.GL_COLOR_ARRAY);
+                gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
                 int size = ((vertexFormat & COLOR_3) != 0) ? 3 : 4;
                 gl.glColorPointer(size, GL.GL_FLOAT, 0, colorBuffer);
             }
@@ -2979,14 +2986,14 @@ public abstract class VertexGeometry extends Geometry
 
         if((vertexFormat & COLOR2_MASK) != 0)
         {
-            gl.glEnableClientState(GL.GL_SECONDARY_COLOR_ARRAY);
+            gl.glEnableClientState(GL2.GL_SECONDARY_COLOR_ARRAY);
             gl.glSecondaryColorPointer(3, GL.GL_FLOAT, 0, color2Buffer);
         }
 
         if((vertexFormat & FOG_MASK) != 0)
         {
-            gl.glFogi(GL.GL_FOG_COORDINATE_SOURCE, GL.GL_FOG_COORDINATE);
-            gl.glEnableClientState(GL.GL_FOG_COORDINATE_ARRAY);
+            gl.glFogi(GL2.GL_FOG_COORDINATE_SOURCE, GL2.GL_FOG_COORDINATE);
+            gl.glEnableClientState(GL2.GL_FOG_COORDINATE_ARRAY);
             gl.glFogCoordPointer(GL.GL_FLOAT, 0, fogBuffer);
         }
 
@@ -3011,7 +3018,7 @@ public abstract class VertexGeometry extends Geometry
         }
 
         int vtx_size = vertexFormat & 0x07;
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
         gl.glVertexPointer(vtx_size, GL.GL_FLOAT, 0, vertexBuffer);
     }
 
@@ -3022,7 +3029,7 @@ public abstract class VertexGeometry extends Geometry
      *
      * @param gl The gl context to draw with
      */
-    protected final void clearVertexState(GL gl)
+    protected final void clearVertexState(GL2 gl)
     {
         if((vertexFormat & ATTRIBS) != 0)
         {
@@ -3034,20 +3041,20 @@ public abstract class VertexGeometry extends Geometry
 
         if((vertexFormat & FOG_MASK) != 0)
         {
-            gl.glDisableClientState(GL.GL_FOG_COORDINATE_ARRAY);
-            gl.glFogi(GL.GL_FOG_COORDINATE_SOURCE, GL.GL_FRAGMENT_DEPTH);
+            gl.glDisableClientState(GL2.GL_FOG_COORDINATE_ARRAY);
+            gl.glFogi(GL2.GL_FOG_COORDINATE_SOURCE, GL2.GL_FRAGMENT_DEPTH);
         }
 
         if((vertexFormat & COLOR2_MASK) != 0)
         {
-            gl.glDisableClientState(GL.GL_SECONDARY_COLOR_ARRAY);
+            gl.glDisableClientState(GL2.GL_SECONDARY_COLOR_ARRAY);
             gl.glSecondaryColor3f(1f,1f,1f);
         }
 
         if((vertexFormat & COLOR_MASK) != 0)
         {
             if((vertexFormat & COLOR_SINGLE) == 0)
-                gl.glDisableClientState(GL.GL_COLOR_ARRAY);
+                gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
 
             gl.glColor4f(1f,1f,1f,1f);
         }
@@ -3058,7 +3065,7 @@ public abstract class VertexGeometry extends Geometry
             // single texturing or multi-texturing
             if(numTextureSets == 1)
             {
-                gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
             }
             else
             {
@@ -3067,20 +3074,20 @@ public abstract class VertexGeometry extends Geometry
                     for(int i = numRenderedTextureSets - 1; i >= 0; i--)
                     {
                         gl.glClientActiveTexture(GL.GL_TEXTURE0 + i);
-                        gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                        gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                     }
                 }
                 else
                 {
-                    gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                    gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                 }
             }
         }
 
         if((vertexFormat & NORMALS) != 0)
-            gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+            gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
 
-        gl.glDisableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
 
         if (vboAvailable && useVbo)
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
@@ -3697,7 +3704,7 @@ public abstract class VertexGeometry extends Geometry
      * exception.
      *
      * @param coords The set of coordinates to check on
-     * @param dimesion The number of dimensions to check against
+     * @param dimensions The number of dimensions to check against
      * @throws IllegalArgumentException The number of coordinates wasn't enough
      */
     private void checkTexCoordSize(float[] coords, int dimensions)
@@ -3736,7 +3743,7 @@ public abstract class VertexGeometry extends Geometry
      *
      * @param index The array index this came from, for message purposes
      * @param coords The set of coordinates to check on
-     * @param dimesion The number of dimensions to check against
+     * @param dimensions The number of dimensions to check against
      * @throws IllegalArgumentException The number of coordinates wasn't enough
      */
     private void checkTexCoordSize(int index, float[] coords, int dimensions)

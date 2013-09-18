@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.nio.ByteBuffer;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -153,7 +154,8 @@ public class ByteRaster extends Raster
      *
      * @param gl The GL context to render with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         gl.glDrawPixels(pixelWidth,
                         pixelHeight,
@@ -185,6 +187,7 @@ public class ByteRaster extends Raster
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
                                    boolean findAny,
@@ -216,6 +219,7 @@ public class ByteRaster extends Raster
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
                                boolean findAny,
@@ -238,6 +242,7 @@ public class ByteRaster extends Raster
      * to the root. A node implementation may decide when and where to tell
      * the parent(s)s that updates are ready.
      */
+    @Override
     protected void updateBounds()
     {
         if(pixels != null)
@@ -249,6 +254,7 @@ public class ByteRaster extends Raster
      * default the bounds are a point sphere, so derived classes should
      * override this method with something better.
      */
+    @Override
     protected void recomputeBounds()
     {
         if(pixels != null)
@@ -277,6 +283,7 @@ public class ByteRaster extends Raster
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -305,6 +312,7 @@ public class ByteRaster extends Raster
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -322,6 +330,7 @@ public class ByteRaster extends Raster
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof ByteRaster))
@@ -563,7 +572,7 @@ public class ByteRaster extends Raster
                 break;
 
             case FORMAT_BGR:
-                ret_val = GL.GL_BGR;
+                ret_val = GL2.GL_BGR;
                 break;
 
             case FORMAT_BGRA:

@@ -126,6 +126,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @return true if this is valid to process
      */
+    @Override
     public boolean isEnabled()
     {
         return enabled;
@@ -138,6 +139,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @return true if this is a 2D scene rather than a 3D version
      */
+    @Override
     public boolean is2D()
     {
         return false;
@@ -151,6 +153,7 @@ public class RenderPass extends SceneGraphObject
      * @return true if this is the source that should be rendered this
      *   this frame.
      */
+    @Override
     public boolean isAudioSource()
     {
         return activeSoundLayer;
@@ -163,6 +166,7 @@ public class RenderPass extends SceneGraphObject
      * @return A renderable instance if custom viewport handling is need
      *   or null if not
      */
+    @Override
     public ViewportRenderable getViewportRenderable()
     {
         return viewport;
@@ -171,6 +175,7 @@ public class RenderPass extends SceneGraphObject
     /**
      * Get the primary view environment.
      */
+    @Override
     public ViewEnvironmentCullable getViewCullable()
     {
         return viewEnvironment;
@@ -182,6 +187,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @return The viewpoint renderable to use
      */
+    @Override
     public EnvironmentCullable getViewpointCullable()
     {
         return currentViewpoint;
@@ -193,6 +199,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @return The background renderable to use
      */
+    @Override
     public EnvironmentCullable getBackgroundCullable()
     {
         return null;
@@ -206,6 +213,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @return The fog renderable to use
      */
+    @Override
     public LeafCullable getFogCullable()
     {
         return currentFog;
@@ -215,6 +223,7 @@ public class RenderPass extends SceneGraphObject
      * Get the primary cullable that represents the root of the scene graph.
      * If this is a multipass cullable, this should return null.
      */
+    @Override
     public Cullable getRootCullable()
     {
         return renderableObjects;
@@ -226,6 +235,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @return The state representation for the general buffer
      */
+    @Override
     public BufferStateRenderable getGeneralBufferRenderable()
     {
         return generalState;
@@ -237,6 +247,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @return The state representation for the colour buffer
      */
+    @Override
     public BufferStateRenderable getColorBufferRenderable()
     {
         return colorState;
@@ -248,6 +259,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @return The state representation for the depth buffer
      */
+    @Override
     public BufferStateRenderable getDepthBufferRenderable()
     {
         return depthState;
@@ -259,6 +271,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @return The state representation for the stencil buffer
      */
+    @Override
     public BufferStateRenderable getStencilBufferRenderable()
     {
         return stencilState;
@@ -270,6 +283,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @return The state representation for the accumulation buffer
      */
+    @Override
     public BufferStateRenderable getAccumBufferRenderable()
     {
         return accumState;
@@ -286,6 +300,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -322,6 +337,7 @@ public class RenderPass extends SceneGraphObject
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);

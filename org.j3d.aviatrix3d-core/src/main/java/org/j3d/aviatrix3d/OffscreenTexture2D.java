@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLContext;
 
@@ -270,6 +271,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return true when the texture requires re-drawing
      */
+    @Override
     public boolean isRepaintRequired()
     {
         return repaintNeeded;
@@ -280,6 +282,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return The layer cullable at the given index or null
      */
+    @Override
     public LayerCullable getCullableLayer(int layerIndex)
     {
         if(layerIndex < 0 || layerIndex >= numLayers)
@@ -300,6 +303,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return A number greater than or equal to zero or -1
      */
+    @Override
     public int numCullableChildren()
     {
         return numLayers;
@@ -311,6 +315,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return The renderable instance that we deposit pixels to
      */
+    @Override
     public OffscreenBufferRenderable getOffscreenRenderable()
     {
        return this;
@@ -327,6 +332,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return true if the texture is valid for rendering
      */
+    @Override
     boolean hasValidData()
     {
         return true;
@@ -343,6 +349,7 @@ public class OffscreenTexture2D extends Texture
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void setSources(int mipMapMode,
                            int format,
                            TextureSource[] texSources,
@@ -358,6 +365,7 @@ public class OffscreenTexture2D extends Texture
      * @param tex The texture instance to be compared
      * @return true if the objects represent identical values
      */
+    @Override
     public boolean equals(Texture tex)
     {
         if(!super.equals(tex))
@@ -400,6 +408,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return a number >= -1
      */
+    @Override
     public int getHeight()
     {
         return height;
@@ -411,6 +420,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @param col An array of at least length 4 to copy values into
      */
+    @Override
     public void getClearColor(float[] col)
     {
         col[0] = clearColor[0];
@@ -424,6 +434,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return The defined capabilities setup for the texture
      */
+    @Override
     public GLCapabilities getGLSetup()
     {
         // Deprecated, so does nothing now
@@ -448,6 +459,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return A value greater than zero
      */
+    @Override
     public int getNumRenderTargets()
     {
         return 1;
@@ -460,6 +472,7 @@ public class OffscreenTexture2D extends Texture
      * @param index The index of the target to fetch
      * @return The render target at the given index
      */
+    @Override
     public OffscreenRenderTargetRenderable getRenderTargetRenderable(int index)
     {
         return index == 1 ? this : null;
@@ -472,6 +485,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return True if a separate depth texture is wanted
      */
+    @Override
     public boolean hasSeparateDepthRenderable()
     {
         return false;
@@ -483,6 +497,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return The depth target renderable or null
      */
+    @Override
     public OffscreenRenderTargetRenderable getDepthRenderable()
     {
         return null;
@@ -496,6 +511,7 @@ public class OffscreenTexture2D extends Texture
      * @return true if the buffer has resized, requiring reallocation of the
      *   underlying buffer objects
      */
+    @Override
     public boolean hasBufferResized()
     {
         return false;
@@ -511,6 +527,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return The requested capabilities of the buffer that needs to be created
      */
+    @Override
     public BufferSetupData getBufferSetup()
     {
         return bufferData;
@@ -524,6 +541,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @return false always
      */
+    @Override
     public boolean isChildRenderTarget()
     {
         return false;
@@ -547,6 +565,7 @@ public class OffscreenTexture2D extends Texture
      * @param obj The key used to register the buffer with
      * @return buffer The buffer instance to use here.
      */
+    @Override
     public OffscreenBufferDescriptor getBuffer(Object obj)
     {
         return (OffscreenBufferDescriptor)displayListMap.get(obj);
@@ -558,6 +577,7 @@ public class OffscreenTexture2D extends Texture
      * @param obj The key used to register the buffer with
      * @param buffer The buffer instance to use here.
      */
+    @Override
     public void registerBuffer(Object obj, OffscreenBufferDescriptor buffer)
     {
         displayListMap.put(obj, buffer);
@@ -568,6 +588,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @param obj The key used to register the buffer with
      */
+    @Override
     public void unregisterBuffer(Object obj)
     {
         displayListMap.remove(obj);
@@ -582,7 +603,8 @@ public class OffscreenTexture2D extends Texture
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(stateChanged.containsKey(gl) && !stateChanged.getState(gl))
             return;
@@ -657,14 +679,14 @@ public class OffscreenTexture2D extends Texture
         if(priority >= 0)
         {
             gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                               GL.GL_TEXTURE_PRIORITY,
+                               GL2.GL_TEXTURE_PRIORITY,
                                priority);
         }
 
         if(borderColor != null)
         {
             gl.glTexParameterfv(GL.GL_TEXTURE_2D,
-                                GL.GL_TEXTURE_BORDER_COLOR,
+                                GL2.GL_TEXTURE_BORDER_COLOR,
                                 borderColor,
                                 0);
         }
@@ -672,15 +694,15 @@ public class OffscreenTexture2D extends Texture
         if(format == Texture.FORMAT_DEPTH_COMPONENT)
         {
             gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                               GL.GL_DEPTH_TEXTURE_MODE,
+                               GL2.GL_DEPTH_TEXTURE_MODE,
                                depthComponentMode);
 
             gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                               GL.GL_TEXTURE_COMPARE_MODE,
+                               GL2.GL_TEXTURE_COMPARE_MODE,
                                compareMode);
 
             gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                               GL.GL_TEXTURE_COMPARE_FUNC,
+                               GL2.GL_TEXTURE_COMPARE_FUNC,
                                compareFunction);
         }
     }
@@ -690,7 +712,8 @@ public class OffscreenTexture2D extends Texture
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
     }
 
@@ -710,6 +733,7 @@ public class OffscreenTexture2D extends Texture
      * @param parent The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
      */
+    @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws InvalidWriteTimingException, CyclicSceneGraphStructureException
     {
@@ -730,6 +754,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         if(state)
@@ -756,6 +781,7 @@ public class OffscreenTexture2D extends Texture
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);

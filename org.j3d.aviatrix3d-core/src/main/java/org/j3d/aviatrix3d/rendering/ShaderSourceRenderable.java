@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d.rendering;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -38,7 +39,7 @@ public interface ShaderSourceRenderable extends Renderable
      *
      * @param gl The gl context to draw with
      */
-    public void initialize(GL gl);
+    public void initialize(GL2 gl);
 
     /**
      * The user requested log information about the shader object, so now is
@@ -46,5 +47,5 @@ public interface ShaderSourceRenderable extends Renderable
      *
      * @param gl The gl context to draw with
      */
-    public void fetchLogInfo(GL gl);
+    public void fetchLogInfo(GL2 gl);
 }

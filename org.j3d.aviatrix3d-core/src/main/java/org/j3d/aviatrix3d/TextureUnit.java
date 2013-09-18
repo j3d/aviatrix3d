@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLContext;
 
 import org.j3d.maths.vector.Matrix4d;
@@ -357,7 +358,7 @@ public class TextureUnit extends NodeComponent
      * @param stageId The ID of the texture stage we're reading
      */
     @Override
-    public void render(GL gl, Object stageId)
+    public void render(GL2 gl, Object stageId)
     {
         if(!queryComplete)
         {
@@ -384,8 +385,8 @@ public class TextureUnit extends NodeComponent
             if(tatts != null)
                 tatts.render(gl);
             else
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                             GL.GL_TEXTURE_ENV_MODE,
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                             GL2.GL_TEXTURE_ENV_MODE,
                              GL.GL_REPLACE);
 
             if(validMatrix)
@@ -394,7 +395,7 @@ public class TextureUnit extends NodeComponent
                 gl.glPushMatrix();
 
                 gl.glMultMatrixf(texTransform, 0);
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GL2.GL_MODELVIEW);
             }
 
             // Setup Texture state
@@ -409,8 +410,8 @@ public class TextureUnit extends NodeComponent
             if(tatts != null)
                 tatts.render(gl);
             else
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                             GL.GL_TEXTURE_ENV_MODE,
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                             GL2.GL_TEXTURE_ENV_MODE,
                              GL.GL_REPLACE);
 
             if(validMatrix)
@@ -418,7 +419,7 @@ public class TextureUnit extends NodeComponent
                 gl.glMatrixMode(GL.GL_TEXTURE);
                 gl.glPushMatrix();
                 gl.glMultMatrixf(texTransform, 0);
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GL2.GL_MODELVIEW);
             }
 
             if(coordGen != null)
@@ -434,7 +435,7 @@ public class TextureUnit extends NodeComponent
      * @param gl The gl context to draw with
      * @param stageId The ID of the texture stage we're reading
      */
-    public void postRender(GL gl, Object stageId)
+    public void postRender(GL2 gl, Object stageId)
     {
         if(texture == null)
             return;
@@ -459,7 +460,7 @@ public class TextureUnit extends NodeComponent
         {
             gl.glMatrixMode(GL.GL_TEXTURE);
             gl.glPopMatrix();
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GL2.GL_MODELVIEW);
         }
 
         texture.postRender(gl);
@@ -668,25 +669,25 @@ public class TextureUnit extends NodeComponent
             validMatrix = true;
 
             // Transpose while copying.
-            texTransform[0] = mat.m00;
-            texTransform[4] = mat.m01;
-            texTransform[8] = mat.m02;
-            texTransform[12] = mat.m03;
+            texTransform[0] = (float)mat.m00;
+            texTransform[4] = (float)mat.m01;
+            texTransform[8] = (float)mat.m02;
+            texTransform[12] = (float)mat.m03;
 
-            texTransform[1] = mat.m10;
-            texTransform[5] = mat.m11;
-            texTransform[9] = mat.m12;
-            texTransform[13] = mat.m13;
+            texTransform[1] = (float)mat.m10;
+            texTransform[5] = (float)mat.m11;
+            texTransform[9] = (float)mat.m12;
+            texTransform[13] = (float)mat.m13;
 
-            texTransform[2] = mat.m20;
-            texTransform[6] = mat.m21;
-            texTransform[10] = mat.m22;
-            texTransform[14] = mat.m23;
+            texTransform[2] = (float)mat.m20;
+            texTransform[6] = (float)mat.m21;
+            texTransform[10] = (float)mat.m22;
+            texTransform[14] = (float)mat.m23;
 
-            texTransform[3] = mat.m30;
-            texTransform[7] = mat.m31;
-            texTransform[11] = mat.m32;
-            texTransform[15] = mat.m33;
+            texTransform[3] = (float)mat.m30;
+            texTransform[7] = (float)mat.m31;
+            texTransform[11] = (float)mat.m32;
+            texTransform[15] = (float)mat.m33;
         }
     }
 

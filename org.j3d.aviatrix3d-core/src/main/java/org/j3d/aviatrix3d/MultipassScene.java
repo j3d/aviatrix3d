@@ -88,6 +88,7 @@ public class MultipassScene extends Scene
      *
      * @return true if this is a multipass cullable
      */
+    @Override
     public boolean isMultipassScene()
     {
         return true;
@@ -99,6 +100,7 @@ public class MultipassScene extends Scene
      * scene, the frustum information is ignored as each pass applies
      * separately.
      */
+    @Override
     public ViewEnvironmentCullable getViewCullable()
     {
         return viewEnvironment;
@@ -113,6 +115,7 @@ public class MultipassScene extends Scene
      * @param passIndex The index of the pass to fetch
      * @return The layer cullable at the given index or null
      */
+    @Override
     public RenderPassCullable getCullablePass(int passIndex)
     {
         if(passIndex < 0 || passIndex >= renderPasses.size())
@@ -127,6 +130,7 @@ public class MultipassScene extends Scene
      *
      * @return A number greater than or equal to zero
      */
+    @Override
     public int numCullableChildren()
     {
         return renderPasses.size();
@@ -145,6 +149,7 @@ public class MultipassScene extends Scene
      * @param width The width of the viewport in pixels
      * @param height The height of the viewport in pixels
      */
+    @Override
     void setViewportDimensions(int x, int y, int width, int height)
     {
         super.setViewportDimensions(x, y, width, height);
@@ -167,6 +172,7 @@ public class MultipassScene extends Scene
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -189,6 +195,7 @@ public class MultipassScene extends Scene
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);

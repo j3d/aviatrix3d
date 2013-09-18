@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.nio.ByteBuffer;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.iutil.TextureUpdateData;
@@ -102,6 +103,7 @@ public class Texture2D extends Texture
      *
      * @return The number of defined sources >= 0
      */
+    @Override
     public int numMultipassSources()
     {
         return mpNumSources;
@@ -116,6 +118,7 @@ public class Texture2D extends Texture
      * @param sources An array to copy the current sources into
      * @param images The indices of each of the source images
      */
+    @Override
     public void getMultipassSources(MultipassTextureSource[] sources,
                                     int[] images)
     {
@@ -138,7 +141,8 @@ public class Texture2D extends Texture
      * @param imgNum The index of the texture source to copy to
      * @param level The mipmap level that this corresponds to
      */
-    public void updateMultipassSource(GL gl,
+    @Override
+    public void updateMultipassSource(GL2 gl,
                                       int x,
                                       int y,
                                       int width,
@@ -172,7 +176,7 @@ public class Texture2D extends Texture
                     break;
 
                 case TextureComponent.FORMAT_BGR:
-                    int_format = GL.GL_BGR;
+                    int_format = GL2.GL_BGR;
                     break;
 
                 case TextureComponent.FORMAT_BGRA:
@@ -231,6 +235,7 @@ public class Texture2D extends Texture
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener data changed callback method
      */
+    @Override
     public void setReadBuffer(int imgNum, int buffer)
         throws InvalidWriteTimingException
     {
@@ -248,6 +253,7 @@ public class Texture2D extends Texture
      * @param imgNum The index of the image that this offset applies to
      * @return One of the buffer indicies.
      */
+    @Override
     public int getReadBuffer(int imgNum)
     {
         return mpReadBuffer;
@@ -264,6 +270,7 @@ public class Texture2D extends Texture
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void setCopyOffset(int imgNum, int level, int xoffset, int yoffset)
         throws InvalidWriteTimingException
     {
@@ -280,6 +287,7 @@ public class Texture2D extends Texture
      * @param level The mipmap level that this corresponds to
      * @param offsets An array to copy the values into
      */
+    @Override
     public void getCopyOffset(int imgNum, int level, int[] offsets)
     {
         offsets[0] = mpOffsets[level][0];
@@ -300,6 +308,7 @@ public class Texture2D extends Texture
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the NodeUpdateListener callback method
      */
+    @Override
     public void setSources(int mipMapMode,
                            int format,
                            TextureSource[] texSources,
@@ -331,7 +340,8 @@ public class Texture2D extends Texture
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(numSources == 0)
             return;
@@ -377,7 +387,7 @@ public class Texture2D extends Texture
                                boundaryModeT);
 
             gl.glTexParameteri(GL.GL_TEXTURE_2D,
-                               GL.GL_GENERATE_MIPMAP,
+                               GL2.GL_GENERATE_MIPMAP,
                                generateMipMap);
 
             gl.glHint(GL.GL_GENERATE_MIPMAP_HINT, generateMipMapHint);
@@ -440,14 +450,14 @@ public class Texture2D extends Texture
             if(priority >= 0)
             {
                 gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                                   GL.GL_TEXTURE_PRIORITY,
+                                   GL2.GL_TEXTURE_PRIORITY,
                                    priority);
             }
 
             if(borderColor != null)
             {
                 gl.glTexParameterfv(GL.GL_TEXTURE_2D,
-                                    GL.GL_TEXTURE_BORDER_COLOR,
+                                    GL2.GL_TEXTURE_BORDER_COLOR,
                                     borderColor,
                                     0);
             }
@@ -455,15 +465,15 @@ public class Texture2D extends Texture
             if(format == FORMAT_DEPTH_COMPONENT)
             {
                 gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                                   GL.GL_DEPTH_TEXTURE_MODE,
+                                   GL2.GL_DEPTH_TEXTURE_MODE,
                                    depthComponentMode);
 
                 gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                                   GL.GL_TEXTURE_COMPARE_MODE,
+                                   GL2.GL_TEXTURE_COMPARE_MODE,
                                    compareMode);
 
                 gl.glTexParameterf(GL.GL_TEXTURE_2D,
-                                   GL.GL_TEXTURE_COMPARE_FUNC,
+                                   GL2.GL_TEXTURE_COMPARE_FUNC,
                                    compareFunction);
             }
         }
@@ -505,8 +515,8 @@ public class Texture2D extends Texture
                         break;
 
                     case TextureComponent.FORMAT_BGR:
-                        int_format = GL.GL_BGR;
-                        ext_format = GL.GL_BGR;
+                        int_format = GL2.GL_BGR;
+                        ext_format = GL2.GL_BGR;
                         num_comps = 3;
                         break;
 
@@ -528,7 +538,7 @@ public class Texture2D extends Texture
                         switch(format)
                         {
                             case FORMAT_INTENSITY:
-                                int_format = GL.GL_INTENSITY;
+                                int_format = GL2.GL_INTENSITY;
                                 ext_format = GL.GL_LUMINANCE;
                                 num_comps = 1;
                                 break;
@@ -605,7 +615,8 @@ public class Texture2D extends Texture
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
     }
 
@@ -622,6 +633,7 @@ public class Texture2D extends Texture
      * @param tex The texture instance to be compared
      * @return -1, 0 or 1 depending on order
      */
+    @Override
     public int compareTo(Texture tex)
     {
         int res = super.compareTo(tex);
@@ -648,6 +660,7 @@ public class Texture2D extends Texture
      * @param tex The texture instance to be compared
      * @return true if the objects represent identical values
      */
+    @Override
     public boolean equals(Texture tex)
     {
         if(!super.equals(tex))
@@ -746,7 +759,7 @@ public class Texture2D extends Texture
                         break;
 
                     case TextureComponent.FORMAT_BGR:
-                        tex_format = GL.GL_BGR;
+                        tex_format = GL2.GL_BGR;
                         break;
 
                     case TextureComponent.FORMAT_BGRA:
@@ -761,7 +774,7 @@ public class Texture2D extends Texture
                         switch(format)
                         {
                             case FORMAT_INTENSITY:
-                                tex_format = GL.GL_INTENSITY;
+                                tex_format = GL2.GL_INTENSITY;
                                 break;
 
                             case FORMAT_LUMINANCE:

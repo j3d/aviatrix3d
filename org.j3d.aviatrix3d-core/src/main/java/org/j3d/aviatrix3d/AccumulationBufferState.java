@@ -17,7 +17,7 @@ import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -65,19 +65,19 @@ public class AccumulationBufferState extends BufferState
      * Take the current buffer colours multiply them by value and then add
      * with the accumulation buffer.
      */
-    public static final int FUNCTION_ACCUMULATE = GL.GL_ACCUM;
+    public static final int FUNCTION_ACCUMULATE = GL2.GL_ACCUM;
 
     /** Replace the values in the accumulation buffer with the current colours */
-    public static final int FUNCTION_LOAD = GL.GL_LOAD;
+    public static final int FUNCTION_LOAD = GL2.GL_LOAD;
 
     /** Add the value to the current accumulation buffer values. */
-    public static final int FUNCTION_ADD = GL.GL_ADD;
+    public static final int FUNCTION_ADD = GL2.GL_ADD;
 
     /**
      * Multiply the contents of the current buffer by the value. Note that for
      * this function, the value is clamped to [-1, 1] by OpenGL.
      * */
-    public static final int FUNCTION_MULTIPLY = GL.GL_MULT;
+    public static final int FUNCTION_MULTIPLY = GL2.GL_MULT;
 
     /** Save the contents of the current accumulation buffer back to the colour buffer */
 //    public static final int FUNCTION_RETURN = GL.GL_RETURN;
@@ -127,6 +127,7 @@ public class AccumulationBufferState extends BufferState
      *
      * @return One of the _BUFFER constants
      */
+    @Override
     public int getBufferType()
     {
         return ACCUMULATION_BUFFER;
@@ -138,9 +139,10 @@ public class AccumulationBufferState extends BufferState
      *
      * @return The bit state constant for Stencil Buffers
      */
+    @Override
     public int getBufferBitMask()
     {
-        return GL.GL_ACCUM_BUFFER_BIT;
+        return GL2.GL_ACCUM_BUFFER_BIT;
     }
 
     /**
@@ -149,6 +151,7 @@ public class AccumulationBufferState extends BufferState
      *
      * @return true if the state should be cleared
      */
+    @Override
     public boolean checkClearBufferState()
     {
         return clearState;
@@ -160,7 +163,8 @@ public class AccumulationBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void setBufferState(GL gl)
+    @Override
+    public void setBufferState(GL2 gl)
     {
         gl.glClearAccum(red, green, blue, alpha);
     }
@@ -171,7 +175,8 @@ public class AccumulationBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void updateBufferState(GL gl)
+    @Override
+    public void updateBufferState(GL2 gl)
     {
         gl.glAccum(function, value);
     }
@@ -182,9 +187,10 @@ public class AccumulationBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void clearBufferState(GL gl)
+    @Override
+    public void clearBufferState(GL2 gl)
     {
-        gl.glAccum(GL.GL_RETURN, 1.0f);
+        gl.glAccum(GL2.GL_RETURN, 1.0f);
     }
 
     //---------------------------------------------------------------
@@ -201,6 +207,7 @@ public class AccumulationBufferState extends BufferState
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -218,6 +225,7 @@ public class AccumulationBufferState extends BufferState
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof AccumulationBufferState))

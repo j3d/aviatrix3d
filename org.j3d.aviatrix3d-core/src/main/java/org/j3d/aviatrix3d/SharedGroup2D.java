@@ -39,6 +39,7 @@ import org.j3d.aviatrix3d.rendering.Cullable;
  * @version $Revision: 2.6 $
  */
 public class SharedGroup2D extends Group2D
+    implements MultiParentNode
 {
     /** Message when the setParent does not receive a group */
     private static final String NOT_GROUP_PROP =
@@ -88,6 +89,7 @@ public class SharedGroup2D extends Group2D
      *
      * @return true if there are multiple parents
      */
+    @Override
     public boolean hasMultipleParents()
     {
         return true;
@@ -99,6 +101,7 @@ public class SharedGroup2D extends Group2D
      *
      * @return The parent instance or null if none
      */
+    @Override
     public Cullable getCullableParent()
     {
         return null;
@@ -115,6 +118,7 @@ public class SharedGroup2D extends Group2D
      * @param caller The node calling us with the state changes
      * @param state true if this should be marked as live now
      */
+    @Override
     public void setLive(Node caller, boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -152,6 +156,7 @@ public class SharedGroup2D extends Group2D
      * Mark this node as having dirty bounds due to one of it's children having
      * their bounds changed.
      */
+    @Override
     protected void markBoundsDirty()
     {
         // Sanity check to make sure we can't have more things marked dirty
@@ -172,6 +177,7 @@ public class SharedGroup2D extends Group2D
      * to the root. A node implementation may decide when and where to tell
      * the parent(s)s that updates are ready.
      */
+    @Override
     protected void updateBounds()
     {
         if(dirtyBoundsCount > 1)
@@ -209,6 +215,7 @@ public class SharedGroup2D extends Group2D
      * @throws AlreadyParentedException There is a valid parent already set
      * @throws InvalidNodeTypeException Not a group node
      */
+    @Override
     protected void setParent(Node p)
         throws AlreadyParentedException, InvalidNodeTypeException
     {
@@ -235,6 +242,7 @@ public class SharedGroup2D extends Group2D
      *
      * @param p The new parent instance to remove from the list
      */
+    @Override
     protected void removeParent(Node p)
     {
         // find the location, move everything down one
@@ -260,6 +268,7 @@ public class SharedGroup2D extends Group2D
      *
      * @return parent[0] if there are any
      */
+    @Override
     public Node getParent()
     {
         return parentList[0];
@@ -270,6 +279,7 @@ public class SharedGroup2D extends Group2D
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         throw new IllegalStateException("This method should never be called. Use setLive(Node, boolean)");
@@ -286,6 +296,7 @@ public class SharedGroup2D extends Group2D
      * @param child The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
      */
+    @Override
     protected void checkForCyclicParent(SceneGraphObject child)
         throws CyclicSceneGraphStructureException
     {

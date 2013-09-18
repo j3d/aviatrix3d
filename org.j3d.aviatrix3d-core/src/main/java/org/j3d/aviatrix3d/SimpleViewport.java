@@ -87,6 +87,7 @@ public class SimpleViewport extends Viewport
      *
      * @return The layer cullable at the given index or null
      */
+    @Override
     public ViewportLayerCullable getCullableLayer(int viewportIndex)
     {
         return this;
@@ -102,6 +103,7 @@ public class SimpleViewport extends Viewport
      * @return true if this is the source that should be rendered this
      *   this frame.
      */
+    @Override
     public boolean isAudioSource()
     {
         return activeSoundLayer;
@@ -113,6 +115,7 @@ public class SimpleViewport extends Viewport
      *
      * @return A number greater than or equal to zero
      */
+    @Override
     public int numCullableChildren()
     {
         return scene != null ? 1 : 0;
@@ -127,6 +130,7 @@ public class SimpleViewport extends Viewport
      *
      * @return true if this is a multipass cullable
      */
+    @Override
     public boolean isMultipassViewport()
     {
         return false;
@@ -137,6 +141,7 @@ public class SimpleViewport extends Viewport
      *
      * @return The layer cullable at the given index or null
      */
+    @Override
     public SceneCullable getCullableScene()
     {
         return (scene instanceof SceneCullable) ?
@@ -158,6 +163,7 @@ public class SimpleViewport extends Viewport
      * @throws InvalidWriteTimingException An attempt was made to write outside
      *   of the ApplicationUpdateObserver callback method
      */
+    @Override
     public void setDimensions(int x, int y, int width, int height)
         throws InvalidWriteTimingException
     {
@@ -178,6 +184,7 @@ public class SimpleViewport extends Viewport
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -193,6 +200,7 @@ public class SimpleViewport extends Viewport
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state

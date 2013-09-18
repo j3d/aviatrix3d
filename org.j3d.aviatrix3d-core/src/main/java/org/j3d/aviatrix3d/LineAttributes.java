@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -153,6 +154,7 @@ public class LineAttributes extends NodeComponent
      *
      * @return One of the _ATTRIBUTE constants
      */
+    @Override
     public int getAttributeType()
     {
         return LINE_ATTRIBUTE;
@@ -167,7 +169,8 @@ public class LineAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // If we have changed state, then clear the old display lists
         if(stateChanged)
@@ -192,9 +195,9 @@ public class LineAttributes extends NodeComponent
         {
             listName = new Integer(gl.glGenLists(1));
 
-            gl.glNewList(listName.intValue(), GL.GL_COMPILE);
+            gl.glNewList(listName.intValue(), GL2.GL_COMPILE);
 
-            gl.glPushAttrib(GL.GL_LINE_BIT);
+            gl.glPushAttrib(GL2.GL_LINE_BIT);
 
             if(antialias)
                 gl.glEnable(GL.GL_LINE_SMOOTH);
@@ -204,7 +207,7 @@ public class LineAttributes extends NodeComponent
 
             if(stipplePattern != 0)
             {
-                gl.glEnable(GL.GL_LINE_STIPPLE);
+                gl.glEnable(GL2.GL_LINE_STIPPLE);
                 gl.glLineStipple(stippleScale, stipplePattern);
             }
 
@@ -220,7 +223,8 @@ public class LineAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(antialias)
             gl.glDisable(GL.GL_LINE_SMOOTH);
@@ -229,7 +233,7 @@ public class LineAttributes extends NodeComponent
             gl.glLineWidth(1);
 
         if(stipplePattern != 0)
-            gl.glDisable(GL.GL_LINE_STIPPLE);
+            gl.glDisable(GL2.GL_LINE_STIPPLE);
 
         gl.glPopAttrib();
     }
@@ -248,6 +252,7 @@ public class LineAttributes extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -265,6 +270,7 @@ public class LineAttributes extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof LineAttributes))
@@ -285,6 +291,7 @@ public class LineAttributes extends NodeComponent
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         super.setLive(state);
@@ -302,7 +309,8 @@ public class LineAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
 		if(displayListMap.size() != 0)
         {

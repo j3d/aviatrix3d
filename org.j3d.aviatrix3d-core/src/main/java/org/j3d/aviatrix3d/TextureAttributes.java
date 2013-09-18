@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -99,43 +100,43 @@ public class TextureAttributes extends NodeComponent
     public static final int MODE_REPLACE = GL.GL_REPLACE;
 
     /** Set the mode for applying textures to objects to GL_MODULATE */
-    public static final int MODE_MODULATE = GL.GL_MODULATE;
+    public static final int MODE_MODULATE = GL2.GL_MODULATE;
 
     /** Set the mode for applying textures to objects to GL_BLEND */
     public static final int MODE_BLEND = GL.GL_BLEND;
 
     /** Set the mode for applying textures to objects to GL_DECAL */
-    public static final int MODE_DECAL = GL.GL_DECAL;
+    public static final int MODE_DECAL = GL2.GL_DECAL;
 
     /** Set the mode for applying textures to objects to GL_ADD */
-    public static final int MODE_ADD = GL.GL_ADD;
+    public static final int MODE_ADD = GL2.GL_ADD;
 
     /** Set the mode for applying textures to objects to GL_COMBINE */
-    public static final int MODE_COMBINE = GL.GL_COMBINE;
+    public static final int MODE_COMBINE = GL2.GL_COMBINE;
 
     /** Set combine mode for applying textures to objects to GL_REPLACE */
     public static final int COMBINE_REPLACE = GL.GL_REPLACE;
 
     /** Set combine mode for applying textures to objects to GL_MODULATE */
-    public static final int COMBINE_MODULATE = GL.GL_MODULATE;
+    public static final int COMBINE_MODULATE = GL2.GL_MODULATE;
 
     /** Set combine mode for applying textures to objects to GL_ADD */
-    public static final int COMBINE_ADD = GL.GL_ADD;
+    public static final int COMBINE_ADD = GL2.GL_ADD;
 
     /** Set combine mode for applying textures to objects to GL_ADD_SIGNED */
-    public static final int COMBINE_ADD_SIGNED = GL.GL_ADD_SIGNED;
+    public static final int COMBINE_ADD_SIGNED = GL2.GL_ADD_SIGNED;
 
     /** Set combine mode for applying textures to objects to GL_INTERPOLATE */
-    public static final int COMBINE_INTERPOLATE = GL.GL_INTERPOLATE;
+    public static final int COMBINE_INTERPOLATE = GL2.GL_INTERPOLATE;
 
     /** Set combine mode for applying textures to objects to GL_SUBTRACT */
-    public static final int COMBINE_SUBTRACT = GL.GL_SUBTRACT;
+    public static final int COMBINE_SUBTRACT = GL2.GL_SUBTRACT;
 
     /** Set combine mode for applying textures to objects to GL_DOT3_RGB */
-    public static final int COMBINE_DOT3_RGB = GL.GL_DOT3_RGB;
+    public static final int COMBINE_DOT3_RGB = GL2.GL_DOT3_RGB;
 
     /** Set combine mode for applying textures to objects to GL_DOT3_RGBA */
-    public static final int COMBINE_DOT3_RGBA = GL.GL_DOT3_RGBA;
+    public static final int COMBINE_DOT3_RGBA = GL2.GL_DOT3_RGBA;
 
     /** The source is the current texture stage */
     public static final int SOURCE_CURRENT_TEXTURE = GL.GL_TEXTURE;
@@ -165,16 +166,16 @@ public class TextureAttributes extends NodeComponent
     public static final int SOURCE_TEXTURE_7 = GL.GL_TEXTURE7;
 
     /** The source is the provided texture blend colour */
-    public static final int SOURCE_CONSTANT_COLOR = GL.GL_CONSTANT;
+    public static final int SOURCE_CONSTANT_COLOR = GL2.GL_CONSTANT;
 
     /**
      * The source is the base colour of the object before texturing has
      * been applied.
      */
-    public static final int SOURCE_BASE_COLOR = GL.GL_PRIMARY_COLOR;
+    public static final int SOURCE_BASE_COLOR = GL2.GL_PRIMARY_COLOR;
 
     /** The source is the output of the previous texture unit */
-    public static final int SOURCE_PREVIOUS_UNIT = GL.GL_PREVIOUS;
+    public static final int SOURCE_PREVIOUS_UNIT = GL2.GL_PREVIOUS;
 
     /** Use the source colour for the incoming operation */
     public static final int SRC_COLOR = GL.GL_SRC_COLOR;
@@ -275,7 +276,7 @@ public class TextureAttributes extends NodeComponent
     {
         // Sang:
         // By default opengl uses modulate mode.
-        texMode = GL.GL_MODULATE;
+        texMode = GL2.GL_MODULATE;
         needBlendColor = false;
         enablePointSprites = false;
 
@@ -311,7 +312,8 @@ public class TextureAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(!queryComplete)
         {
@@ -326,36 +328,36 @@ public class TextureAttributes extends NodeComponent
             }
         }
 
-        gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, texMode);
+        gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, texMode);
 
         if(hasPointSpriteAPI && enablePointSprites)
-            gl.glTexEnvf(GL.GL_POINT_SPRITE_ARB,
-                         GL.GL_COORD_REPLACE_ARB,
+            gl.glTexEnvf(GL2.GL_POINT_SPRITE,
+                         GL2.GL_COORD_REPLACE,
                          GL.GL_TRUE);
 
         if(needBlendColor && blendColor != null)
         {
-            gl.glTexEnvfv(GL.GL_TEXTURE_ENV,
-                          GL.GL_TEXTURE_ENV_COLOR,
+            gl.glTexEnvfv(GL2.GL_TEXTURE_ENV,
+                          GL2.GL_TEXTURE_ENV_COLOR,
                           blendColor,
                           0);
         }
 
         if(texMode == MODE_COMBINE)
         {
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                         GL.GL_COMBINE_RGB,
+            gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                         GL2.GL_COMBINE_RGB,
                          rgbCombineMode);
 
             // RGB first.
             switch(rgbCombineMode)
             {
                 case COMBINE_REPLACE:
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE0_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE0_RGB,
                                  rgbSource0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND0_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND0_RGB,
                                  rgbOperand0);
                     break;
 
@@ -364,72 +366,72 @@ public class TextureAttributes extends NodeComponent
                 case COMBINE_ADD_SIGNED:
                 case COMBINE_SUBTRACT:
 
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE0_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE0_RGB,
                                  rgbSource0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND0_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND0_RGB,
                                  rgbOperand0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE1_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE1_RGB,
                                  rgbSource1);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND1_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND1_RGB,
                                  rgbOperand1);
                     break;
 
                 case COMBINE_INTERPOLATE:
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE0_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE0_RGB,
                                  rgbSource0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND0_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND0_RGB,
                                  rgbOperand0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE1_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE1_RGB,
                                  rgbSource1);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND1_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND1_RGB,
                                  rgbOperand1);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE2_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE2_RGB,
                                  rgbSource2);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND2_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND2_RGB,
                                  rgbOperand2);
                     break;
 
                 case COMBINE_DOT3_RGB:
                 case COMBINE_DOT3_RGBA:
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE0_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE0_RGB,
                                  rgbSource0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND0_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND0_RGB,
                                  rgbOperand0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE1_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE1_RGB,
                                  rgbSource1);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND1_RGB,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND1_RGB,
                                  rgbOperand1);
                     break;
 
             }
 
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                         GL.GL_COMBINE_ALPHA,
+            gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                         GL2.GL_COMBINE_ALPHA,
                          alphaCombineMode);
 
             // Now alpha.
             switch(alphaCombineMode)
             {
                 case COMBINE_REPLACE:
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE0_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE0_ALPHA,
                                  alphaSource0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND0_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND0_ALPHA,
                                  alphaOperand0);
                     break;
 
@@ -437,44 +439,44 @@ public class TextureAttributes extends NodeComponent
                 case COMBINE_ADD:
                 case COMBINE_ADD_SIGNED:
                 case COMBINE_SUBTRACT:
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE0_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE0_ALPHA,
                                  alphaSource0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND0_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND0_ALPHA,
                                  alphaOperand0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE1_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE1_ALPHA,
                                  alphaSource1);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND1_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND1_ALPHA,
                                  alphaOperand1);
                     break;
 
                 case COMBINE_INTERPOLATE:
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE0_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE0_ALPHA,
                                  alphaSource0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND0_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND0_ALPHA,
                                  alphaOperand0);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE1_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE1_ALPHA,
                                  alphaSource1);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND1_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND1_ALPHA,
                                  alphaOperand1);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_SOURCE1_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_SOURCE1_ALPHA,
                                  alphaSource2);
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV,
-                                 GL.GL_OPERAND2_ALPHA,
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV,
+                                 GL2.GL_OPERAND2_ALPHA,
                                  alphaOperand2);
                     break;
             }
 
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_RGB_SCALE, rgbScale);
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_ALPHA_SCALE, alphaScale);
+            gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_RGB_SCALE, rgbScale);
+            gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_ALPHA_SCALE, alphaScale);
         }
     }
 
@@ -483,12 +485,13 @@ public class TextureAttributes extends NodeComponent
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         // State restoration will be handled by the TextureUnit
         if(hasPointSpriteAPI && enablePointSprites)
-            gl.glTexEnvf(GL.GL_POINT_SPRITE_ARB,
-                         GL.GL_COORD_REPLACE_ARB,
+            gl.glTexEnvf(GL2.GL_POINT_SPRITE,
+                         GL2.GL_COORD_REPLACE,
                          GL.GL_FALSE);
 
     }
@@ -507,6 +510,7 @@ public class TextureAttributes extends NodeComponent
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -524,6 +528,7 @@ public class TextureAttributes extends NodeComponent
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof TextureAttributes))

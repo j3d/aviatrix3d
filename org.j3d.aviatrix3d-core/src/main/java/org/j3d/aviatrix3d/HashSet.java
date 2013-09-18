@@ -69,7 +69,6 @@ public class HashSet
          * Create a new entry with the given values.
          *
          * @param hash The code used to hash the object with
-         * @param key The key used to enter this in the table
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */

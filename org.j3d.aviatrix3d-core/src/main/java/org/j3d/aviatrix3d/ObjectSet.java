@@ -94,6 +94,7 @@ public abstract class ObjectSet extends SceneGraphObject
      * @param parent The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
      */
+    @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws CyclicSceneGraphStructureException
     {
@@ -113,6 +114,7 @@ public abstract class ObjectSet extends SceneGraphObject
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -127,6 +129,7 @@ public abstract class ObjectSet extends SceneGraphObject
     /**
      * Notification that this object is live now.
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state

@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -112,20 +113,20 @@ public class GeneralBufferState extends BufferState
      * Set the blend factor to use the provided constant colour. The constant
      * colour value is provide through the setBlendColour() method.
      */
-    public static final int BLEND_CONSTANT_COLOR = GL.GL_CONSTANT_COLOR;
+    public static final int BLEND_CONSTANT_COLOR = GL2.GL_CONSTANT_COLOR;
 
     /**
      * Set the blend factor to use one minus the constant colour (1-c). The
      * constant colour value is provide through the setBlendColour() method.
      */
     public static final int BLEND_ONE_MINUS_CONSTANT_COLOR =
-        GL.GL_ONE_MINUS_CONSTANT_COLOR;
+        GL2.GL_ONE_MINUS_CONSTANT_COLOR;
 
     /**
      * Set the blend factor to use the provided constant alpha value.The
      * constant colour value is provide through the setBlendColour() method.
      */
-    public static final int BLEND_CONSTANT_ALPHA = GL.GL_CONSTANT_ALPHA;
+    public static final int BLEND_CONSTANT_ALPHA = GL2.GL_CONSTANT_ALPHA;
 
     /**
      * Set the blend factor to use one minus the constant colour alpha value
@@ -133,7 +134,7 @@ public class GeneralBufferState extends BufferState
      * method.
      */
     public static final int BLEND_ONE_MINUS_CONSTANT_ALPHA =
-        GL.GL_ONE_MINUS_CONSTANT_ALPHA;
+        GL2.GL_ONE_MINUS_CONSTANT_ALPHA;
 
     /**
      * Set the blend function to saturage the colour value using the alpha
@@ -154,10 +155,10 @@ public class GeneralBufferState extends BufferState
     public static final int EQ_FUNC_SUBTRACT_REVERSE = GL.GL_FUNC_REVERSE_SUBTRACT;
 
     /** Set the blending equation to be min(C<sub>d</sub>D, C<sub>s</sub>S) */
-    public static final int EQ_FUNC_MIN = GL.GL_MIN;
+    public static final int EQ_FUNC_MIN = GL2.GL_MIN;
 
     /** Set the blending equation to be max(C<sub>d</sub>D, C<sub>s</sub>S) */
-    public static final int EQ_FUNC_MAX = GL.GL_MAX;
+    public static final int EQ_FUNC_MAX = GL2.GL_MAX;
 
 
     /** Flag describing the blend state */
@@ -210,6 +211,7 @@ public class GeneralBufferState extends BufferState
      *
      * @return One of the _BUFFER constants
      */
+    @Override
     public int getBufferType()
     {
         return GENERAL_BUFFER;
@@ -221,6 +223,7 @@ public class GeneralBufferState extends BufferState
      *
      * @return The bit state constant for Stencil Buffers
      */
+    @Override
     public int getBufferBitMask()
     {
         return 0;
@@ -232,6 +235,7 @@ public class GeneralBufferState extends BufferState
      *
      * @return true if the state should be cleared
      */
+    @Override
     public boolean checkClearBufferState()
     {
         return false;
@@ -243,7 +247,8 @@ public class GeneralBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void setBufferState(GL gl)
+    @Override
+    public void setBufferState(GL2 gl)
     {
         currentBlendState = gl.glIsEnabled(GL.GL_BLEND);
 
@@ -276,7 +281,8 @@ public class GeneralBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void updateBufferState(GL gl)
+    @Override
+    public void updateBufferState(GL2 gl)
     {
         if(enableBlend)
             gl.glEnable(GL.GL_BLEND);
@@ -303,7 +309,8 @@ public class GeneralBufferState extends BufferState
      *
      * @param gl The gl context to draw with
      */
-    public void clearBufferState(GL gl)
+    @Override
+    public void clearBufferState(GL2 gl)
     {
         gl.glEnable(GL.GL_BLEND);
         gl.glBlendEquation(EQ_FUNC_ADD);
@@ -335,6 +342,7 @@ public class GeneralBufferState extends BufferState
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -352,6 +360,7 @@ public class GeneralBufferState extends BufferState
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof GeneralBufferState))

@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d.rendering;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -79,7 +80,7 @@ public interface BufferStateRenderable extends Renderable
      *
      * @param gl The gl context to draw with
      */
-    public void setBufferState(GL gl);
+    public void setBufferState(GL2 gl);
 
     /**
      * Issue ogl commands needed for this component to change the state,
@@ -87,12 +88,12 @@ public interface BufferStateRenderable extends Renderable
      *
      * @param gl The gl context to draw with
      */
-    public void updateBufferState(GL gl);
+    public void updateBufferState(GL2 gl);
 
     /**
      * Restore all state to the default values.
      *
      * @param gl The gl context to draw with
      */
-    public void clearBufferState(GL gl);
+    public void clearBufferState(GL2 gl);
 }

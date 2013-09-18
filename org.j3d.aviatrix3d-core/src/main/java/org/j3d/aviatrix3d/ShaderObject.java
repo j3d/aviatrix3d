@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d;
 import java.util.HashMap;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.ShaderSourceRenderable;
@@ -78,6 +79,7 @@ public class ShaderObject extends SceneGraphObject
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -100,7 +102,8 @@ public class ShaderObject extends SceneGraphObject
      *
      * @param gl The gl context to draw with
      */
-    public void initialize(GL gl)
+    @Override
+    public void initialize(GL2 gl)
     {
         Boolean comp = compiled.get(gl);
         if((comp != null && comp.booleanValue()) || sourceStrings == null)
@@ -113,8 +116,8 @@ public class ShaderObject extends SceneGraphObject
         if(o_id == null)
         {
             int type = vertexSource ?
-                       GL.GL_VERTEX_SHADER_ARB :
-                       GL.GL_FRAGMENT_SHADER_ARB;
+                       GL2.GL_VERTEX_SHADER :
+                       GL2.GL_FRAGMENT_SHADER;
 
             object_id = gl.glCreateShaderObjectARB(type);
             objectIdMap.put(gl, new Integer(object_id));
@@ -134,7 +137,7 @@ public class ShaderObject extends SceneGraphObject
         {
             int[] bool = new int[1];
             gl.glGetObjectParameterivARB(object_id,
-                                         GL.GL_OBJECT_COMPILE_STATUS_ARB,
+                                         GL2.GL_OBJECT_COMPILE_STATUS_ARB,
                                          bool,
                                          0);
             compiled.put(gl, (bool[0] == 1) ? Boolean.TRUE : Boolean.FALSE);
@@ -149,7 +152,8 @@ public class ShaderObject extends SceneGraphObject
      *
      * @param gl The gl context to draw with
      */
-    public void fetchLogInfo(GL gl)
+    @Override
+    public void fetchLogInfo(GL2 gl)
     {
         Integer o_id = objectIdMap.get(gl);
         if(o_id == null)
@@ -160,7 +164,7 @@ public class ShaderObject extends SceneGraphObject
         int[] length = new int[1];
 
         gl.glGetObjectParameterivARB(object_id,
-                                     GL.GL_OBJECT_INFO_LOG_LENGTH_ARB,
+                                     GL2.GL_OBJECT_INFO_LOG_LENGTH_ARB,
                                      length,
                                      0);
 
@@ -193,6 +197,7 @@ public class ShaderObject extends SceneGraphObject
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -210,6 +215,7 @@ public class ShaderObject extends SceneGraphObject
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof ShaderObject))
@@ -432,7 +438,7 @@ public class ShaderObject extends SceneGraphObject
      *
      * @param gl The GL context to reinitialise with
      */
-    void reinitialize(GL gl)
+    void reinitialize(GL2 gl)
     {
         initialize(gl);
     }

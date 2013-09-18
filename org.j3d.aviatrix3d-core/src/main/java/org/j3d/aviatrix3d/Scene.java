@@ -64,6 +64,7 @@ public abstract class Scene extends SceneGraphObject
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -82,6 +83,7 @@ public abstract class Scene extends SceneGraphObject
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);

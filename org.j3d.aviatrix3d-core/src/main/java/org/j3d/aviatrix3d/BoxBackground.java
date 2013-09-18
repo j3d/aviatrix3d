@@ -20,6 +20,7 @@ import java.nio.FloatBuffer;
 import java.nio.ByteOrder;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // External imports
 import org.j3d.aviatrix3d.rendering.DeletableRenderable;
@@ -226,7 +227,8 @@ public class BoxBackground extends Background
      *
      * @param gl The gl context to draw with
      */
-    public void cleanup(GL gl)
+    @Override
+    public void cleanup(GL2 gl)
     {
         for(int i = 0; i < 6; i++)
         {
@@ -251,6 +253,7 @@ public class BoxBackground extends Background
      *
      * @return True if this is 2D background, false if this is 3D
      */
+    @Override
     public boolean is2D()
     {
         return false;
@@ -265,7 +268,8 @@ public class BoxBackground extends Background
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(useClearColor)
         {
@@ -289,7 +293,7 @@ public class BoxBackground extends Background
 
         gl.glEnable(GL.GL_TEXTURE_2D);
         gl.glActiveTexture(GL.GL_TEXTURE0);
-        gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
+        gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
 
         for(int i = 0; i < 6; i++)
             renderGeom(gl, i);
@@ -300,7 +304,8 @@ public class BoxBackground extends Background
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         gl.glDisable(GL.GL_TEXTURE_2D);
     }
@@ -319,6 +324,7 @@ public class BoxBackground extends Background
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -336,6 +342,7 @@ public class BoxBackground extends Background
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof BoxBackground))
@@ -381,8 +388,6 @@ public class BoxBackground extends Background
 
     /**
      * Generate the data needed for the skysphere.
-     *
-     * @param facetCount Number of faces around the circumferance
      */
     private void generateBoxGeom()
     {
@@ -448,7 +453,7 @@ public class BoxBackground extends Background
      * @param side Which side of the box to render
      * @param gl The gl context to draw with
      */
-    private void renderGeom(GL gl, int side)
+    private void renderGeom(GL2 gl, int side)
     {
         if(texture[side] == null)
             return;
@@ -508,8 +513,8 @@ public class BoxBackground extends Background
                     break;
 
                 case TextureComponent.FORMAT_BGR:
-                    int_format = GL.GL_BGR;
-                    ext_format = GL.GL_BGR;
+                    int_format = GL2.GL_BGR;
+                    ext_format = GL2.GL_BGR;
                     break;
 
                 case TextureComponent.FORMAT_BGRA:
@@ -542,18 +547,18 @@ public class BoxBackground extends Background
 
         }
 
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
-        gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+        gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, vertexBuffer[side]);
         gl.glNormalPointer(GL.GL_FLOAT, 0, normalBuffer[side]);
         gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, textureBuffer);
 
-        gl.glDrawArrays(GL.GL_QUADS, 0, 4);
+        gl.glDrawArrays(GL2.GL_QUADS, 0, 4);
 
-        gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
-        gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
-        gl.glDisableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+        gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
     }
 
     /**

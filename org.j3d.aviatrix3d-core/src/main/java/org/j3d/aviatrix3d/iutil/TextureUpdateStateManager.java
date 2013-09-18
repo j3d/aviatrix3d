@@ -23,6 +23,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -733,7 +734,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
         switch(format)
         {
             case GL.GL_RGB:
-            case GL.GL_BGR:
+            case GL2.GL_BGR:
                 ret_val = 3;
                 break;
 
@@ -748,7 +749,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
 
             case GL.GL_LUMINANCE:
             case GL.GL_ALPHA:
-            case GL.GL_INTENSITY:
+            case GL2.GL_INTENSITY:
                 ret_val = 1;
         }
 

@@ -15,6 +15,7 @@ package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLDrawable;
 
@@ -67,10 +68,12 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
     @Override
     public void display(GraphicsProfilingData profilingData)
     {
-        GL gl = localContext.getGL();
+        GL base_gl = localContext.getGL();
 
-        if(gl == null)
+        if(base_gl == null)
             return;
+
+        GL2 gl = base_gl.getGL2();
 
         processRequestData(gl);
 
@@ -78,8 +81,8 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
             return;
 
         // Draw the left eye first, then right
-        gl.glMatrixMode(GL.GL_MODELVIEW);
-        gl.glDrawBuffer(GL.GL_BACK_LEFT);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glDrawBuffer(GL2.GL_BACK_LEFT);
 
         if(terminate)
             return;
@@ -90,8 +93,8 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
             return;
 
         // Draw the left eye first, then right
-        gl.glMatrixMode(GL.GL_MODELVIEW);
-        gl.glDrawBuffer(GL.GL_BACK_RIGHT);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glDrawBuffer(GL2.GL_BACK_RIGHT);
 
         if(terminate)
             return;
@@ -109,7 +112,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
      * @param data The view environment information to setup
      */
     @Override
-    protected void setupViewport(GL gl, GraphicsEnvironmentData data)
+    protected void setupViewport(GL2 gl, GraphicsEnvironmentData data)
     {
         if(!data.useStereo)
         {
@@ -135,7 +138,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
      * @param gl The gl context to draw with
      * @param left true if this is the left eye
      */
-    private void render(GL gl, boolean left, GraphicsProfilingData profilingData)
+    private void render(GL2 gl, boolean left, GraphicsProfilingData profilingData)
     {
         // TODO:
         // May want to put some optimisations here for systems that can clear
@@ -193,8 +196,8 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                     clear_buffer_bits = 0;
                     if(!first_layer)
                     {
-                        gl.glDrawBuffer(GL.GL_AUX0);
-                        gl.glReadBuffer(GL.GL_AUX0);
+                        gl.glDrawBuffer(GL2.GL_AUX0);
+                        gl.glReadBuffer(GL2.GL_AUX0);
 
                         setupMultipassViewport(gl, data);
                     }
@@ -214,7 +217,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                                         0,
                                         data.viewport[GraphicsEnvironmentData.VIEW_WIDTH],
                                         data.viewport[GraphicsEnvironmentData.VIEW_HEIGHT],
-                                        GL.GL_COLOR);
+                                        GL2.GL_COLOR);
                         gl.glReadBuffer(GL.GL_BACK);
                     }
                     break;
@@ -311,7 +314,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                 case RenderOp.START_RENDER:
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.render(gl);
                     break;
@@ -325,17 +328,17 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                 case RenderOp.RENDER_GEOMETRY:
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     ((GeometryRenderable)renderableList[i].renderable).render(gl);
                     gl.glPopMatrix();
                     break;
 
                 case RenderOp.RENDER_GEOMETRY_2D:
                     // load the matrix to render
-                    gl.glRasterPos2f(renderableList[i].transform[3],
+                    gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
-                    gl.glPixelZoom(renderableList[i].transform[0],
-                                   renderableList[i].transform[5]);
+                    gl.glPixelZoom((float)renderableList[i].transform[0],
+                                   (float)renderableList[i].transform[5]);
                     ((GeometryRenderable)renderableList[i].renderable).render(gl);
                     gl.glPopMatrix();
                     break;
@@ -343,7 +346,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                 case RenderOp.RENDER_CUSTOM_GEOMETRY:
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     CustomGeometryRenderable gr =
                         (CustomGeometryRenderable)renderableList[i].renderable;
                     gr.render(gl, renderableList[i].instructions);
@@ -353,7 +356,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                 case RenderOp.RENDER_CUSTOM:
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
 
                     CustomRenderable cr =
                         (CustomRenderable)renderableList[i].renderable;
@@ -381,7 +384,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.render(gl, l_id);
                     gl.glPopMatrix();
@@ -408,7 +411,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
 
                     // load the matrix to render
                     gl.glPushMatrix();
-                    gl.glMultMatrixf(renderableList[i].transform, 0);
+                    gl.glMultMatrixd(renderableList[i].transform, 0);
 
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.render(gl, c_id);
@@ -430,7 +433,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                 case RenderOp.START_TRANSPARENT:
                     if(first_pass_alpha && two_pass_transparent)
                     {
-                        gl.glEnable(GL.GL_ALPHA_TEST);
+                        gl.glEnable(GL2.GL_ALPHA_TEST);
                         gl.glAlphaFunc(GL.GL_GEQUAL, alpha_test);
                         transparent_start_idx = i;
                     }
@@ -453,7 +456,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                         first_pass_alpha = false;
                         i = transparent_start_idx - 1;
 
-                        gl.glDisable(GL.GL_ALPHA_TEST);
+                        gl.glDisable(GL2.GL_ALPHA_TEST);
                     }
                     else
                     {
@@ -465,7 +468,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                 case RenderOp.START_FOG:
                     if(!fog_active)
                     {
-                        gl.glEnable(GL.GL_FOG);
+                        gl.glEnable(GL2.GL_FOG);
                         fog_active = true;
                     }
 
@@ -481,7 +484,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                         obj = (ObjectRenderable)renderableList[i].renderable;
                         obj.postRender(gl);
                         fog_active = false;
-                        gl.glDisable(GL.GL_FOG);
+                        gl.glDisable(GL2.GL_FOG);
                     }
                     break;
 

@@ -91,6 +91,7 @@ public class SimpleViewportLayer extends ViewportLayer
      *
      * @return true if this is a multipass cullable
      */
+    @Override
     public boolean isMultipassViewport()
     {
         return false;
@@ -106,6 +107,7 @@ public class SimpleViewportLayer extends ViewportLayer
      * @return true if this is the source that should be rendered this
      *   this frame.
      */
+    @Override
     public boolean isAudioSource()
     {
         return activeSoundLayer;
@@ -116,6 +118,7 @@ public class SimpleViewportLayer extends ViewportLayer
      *
      * @return The layer cullable at the given index or null
      */
+    @Override
     public SceneCullable getCullableScene()
     {
         return (scene instanceof SceneCullable) ?
@@ -135,6 +138,7 @@ public class SimpleViewportLayer extends ViewportLayer
      * @param width The width of the viewport in pixels
      * @param height The height of the viewport in pixels
      */
+    @Override
     void setViewportDimensions(int x, int y, int width, int height)
     {
         super.setViewportDimensions(x, y, width, height);
@@ -154,6 +158,7 @@ public class SimpleViewportLayer extends ViewportLayer
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -169,6 +174,7 @@ public class SimpleViewportLayer extends ViewportLayer
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state

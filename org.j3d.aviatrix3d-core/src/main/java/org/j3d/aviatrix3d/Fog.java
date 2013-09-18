@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -69,10 +70,10 @@ public class Fog extends Leaf
         "org.j3d.aviatrix3d.Fog.invertedRangeMsg";
 
     /** Set the fog mode to exponential curve */
-    public static final int EXPONENTIAL = GL.GL_EXP;
+    public static final int EXPONENTIAL = GL2.GL_EXP;
 
     /** Set the fog mode to exponential-squared curve */
-    public static final int EXPONENTIAL_2 = GL.GL_EXP2;
+    public static final int EXPONENTIAL_2 = GL2.GL_EXP2;
 
     /** Set the fog mode to linear */
     public static final int LINEAR = GL.GL_LINEAR;
@@ -214,6 +215,7 @@ public class Fog extends Leaf
      *
      * @return One of the _CULLABLE constants
      */
+    @Override
     public int getCullableType()
     {
         return FOG_CULLABLE;
@@ -224,6 +226,7 @@ public class Fog extends Leaf
      *
      * @return an array of nodes
      */
+    @Override
     public Renderable getRenderable()
     {
         return this;
@@ -238,6 +241,7 @@ public class Fog extends Leaf
      *
      * @return The current state
      */
+    @Override
     public boolean isEnabled()
     {
         return enabled;
@@ -248,6 +252,7 @@ public class Fog extends Leaf
      *
      * @return true if for global use only, false otherwise
      */
+    @Override
     public boolean isGlobalOnly()
     {
         return globalOnly;
@@ -259,6 +264,7 @@ public class Fog extends Leaf
      *
      * @return A bounding volume if there is to be bounds, null for none.
      */
+    @Override
     public BoundingVolume getEffectBounds()
     {
         return effectBounds;
@@ -273,21 +279,22 @@ public class Fog extends Leaf
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
-        gl.glFogi(GL.GL_FOG_MODE, mode);
-        gl.glFogfv(GL.GL_FOG_COLOR, color, 0);
+        gl.glFogi(GL2.GL_FOG_MODE, mode);
+        gl.glFogfv(GL2.GL_FOG_COLOR, color, 0);
 
         switch(mode)
         {
             case LINEAR:
-                gl.glFogf(GL.GL_FOG_START, startDistance);
-                gl.glFogf(GL.GL_FOG_END, endDistance);
+                gl.glFogf(GL2.GL_FOG_START, startDistance);
+                gl.glFogf(GL2.GL_FOG_END, endDistance);
                 break;
 
             case EXPONENTIAL:
             case EXPONENTIAL_2:
-                gl.glFogf(GL.GL_FOG_DENSITY, density);
+                gl.glFogf(GL2.GL_FOG_DENSITY, density);
                 break;
         }
     }
@@ -297,7 +304,8 @@ public class Fog extends Leaf
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
     }
 
@@ -309,6 +317,7 @@ public class Fog extends Leaf
      * Mark this node as having dirty bounds due to one of it's children having
      * their bounds changed.
      */
+    @Override
     protected void markBoundsDirty()
     {
         // Bounds are not used by Fog.
@@ -328,6 +337,7 @@ public class Fog extends Leaf
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -345,6 +355,7 @@ public class Fog extends Leaf
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof Fog))
