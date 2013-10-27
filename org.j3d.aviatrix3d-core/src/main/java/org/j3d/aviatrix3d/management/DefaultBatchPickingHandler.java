@@ -109,9 +109,6 @@ class DefaultBatchPickingHandler
     /** Working vector for interacting with the world matrix */
     private Vector4d wkVec;
 
-    /** Working vector for interacting with the world matrix */
-    private Vector3d wkNormal;
-
     /** Temp value for holding the frustum planes */
     private Vector4d[][] frustumPlanes;
 
@@ -138,8 +135,6 @@ class DefaultBatchPickingHandler
         invertedMatrix = new Matrix4d();
         wkVec = new Vector4d();
         wkVec.w = 1;
-
-        wkNormal = new Vector3d();
 
         // Only assign activePicks because the first time through the call to
         // here we're going to reallocate everything anyway in resizeForBatch.
@@ -478,7 +473,7 @@ class DefaultBatchPickingHandler
             ((TransformPickTarget)target_node).getTransform(tx);
             ((TransformPickTarget)target_node).getInverseTransform(invertedMatrix);
 
-            float scale = invertedMatrix.getScale();
+            float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
 
             // multiply the transform matrix through to the current level.
             tx.mul(transformPath[lastPathIndex - 1], tx);

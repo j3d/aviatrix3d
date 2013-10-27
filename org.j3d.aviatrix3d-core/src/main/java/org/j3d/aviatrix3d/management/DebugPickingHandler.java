@@ -6402,7 +6402,7 @@ public class DebugPickingHandler
                         transformNormal(invertedMatrix, end);
 
                         // need to scale the radius and height as well.
-                        float scale = invertedMatrix.getScale();
+                        float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                         radius *= scale;
                         height *= scale;
                     }
@@ -6622,7 +6622,7 @@ public class DebugPickingHandler
                 transformNormal(invertedMatrix, axis);
 
                 // need to scale the radius and height as well.
-                float scale = invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                 radius *= scale;
                 height *= scale;
 
@@ -6905,7 +6905,7 @@ public class DebugPickingHandler
                 transformNormal(invertedMatrix, axis);
 
                 // need to scale the radius and height as well.
-                float scale = invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                 radius *= scale;
                 height *= scale;
 
@@ -7129,7 +7129,7 @@ public class DebugPickingHandler
                         transformNormal(invertedMatrix, end);
 
                         // need to scale the radius and height as well.
-                        float scale = invertedMatrix.getScale();
+                        float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                         radius *= scale;
                         height *= scale;
                     }
@@ -7350,7 +7350,7 @@ public class DebugPickingHandler
                 transformNormal(invertedMatrix, axis);
 
                 // need to scale the radius and height as well.
-                float scale = invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                 radius *= scale;
                 height *= scale;
 
@@ -7614,7 +7614,7 @@ public class DebugPickingHandler
                 transformNormal(invertedMatrix, axis);
 
                 // need to scale the radius and height as well.
-                float scale = invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                 radius *= scale;
                 height *= scale;
 
@@ -11936,7 +11936,7 @@ public class DebugPickingHandler
                         tg.getTransform(tx);
                         tg.getInverseTransform(invertedMatrix);
                         transform(invertedMatrix, start);
-                        radius *= invertedMatrix.getScale();
+                        radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
                     }
                     else
                         transformPath[0].setIdentity();
@@ -12206,7 +12206,7 @@ public class DebugPickingHandler
                 matrixUtils.inverse(tx, invertedMatrix);
                 transform(invertedMatrix, min);
 
-                radius *= invertedMatrix.getScale();
+                radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
 
                 validTransform[lastPathIndex] = true;
             }
@@ -12382,7 +12382,7 @@ public class DebugPickingHandler
                                     invertedMatrix);
                 transform(invertedMatrix, min);
 
-                radius *= invertedMatrix.getScale();
+                radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
 
                 validTransform[lastPathIndex] = true;
             }
@@ -12589,7 +12589,7 @@ public class DebugPickingHandler
                         tg.getTransform(tx);
                         tg.getInverseTransform(invertedMatrix);
                         transform(invertedMatrix, start);
-                        radius *= invertedMatrix.getScale();
+                        radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
                     }
                     else
                         transformPath[0].setIdentity();
@@ -12796,7 +12796,7 @@ public class DebugPickingHandler
                 tg.getTransform(tx);
                 tg.getInverseTransform(invertedMatrix);
                 transform(invertedMatrix, min);
-                radius *= invertedMatrix.getScale();
+                radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
 
                 validTransform[lastPathIndex] = true;
             }
@@ -13068,7 +13068,7 @@ public class DebugPickingHandler
                 matrixUtils.inverse(pickInstructions.localTransform,
                                     invertedMatrix);
                 transform(invertedMatrix, min);
-                radius *= invertedMatrix.getScale();
+                radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
 
                 validTransform[lastPathIndex] = true;
             }

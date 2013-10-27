@@ -32,7 +32,7 @@ package org.j3d.aviatrix3d.rendering;
  * @author Justin Couch
  * @version $Revision: 2.2 $
  */
-public interface Renderable<T> extends Comparable<T>
+public interface Renderable extends Comparable
 {
     /**
      * Compare this object for equality to the given object. This provides a
@@ -42,5 +42,5 @@ public interface Renderable<T> extends Comparable<T>
      * @param o The object to be compared
      * @return True if these represent the same values
      */
-    public boolean equals(T o);
+//    public boolean equals(T o);
 }

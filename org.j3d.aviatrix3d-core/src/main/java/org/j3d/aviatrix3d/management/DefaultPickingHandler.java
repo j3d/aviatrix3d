@@ -5987,7 +5987,7 @@ class DefaultPickingHandler
                         transformNormal(invertedMatrix, end);
 
                         // need to scale the radius and height as well.
-                        float scale = invertedMatrix.getScale();
+                        float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                         radius *= scale;
                         height *= scale;
                     }
@@ -6203,7 +6203,7 @@ class DefaultPickingHandler
                 transformNormal(invertedMatrix, axis);
 
                 // need to scale the radius and height as well.
-                float scale = invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                 radius *= scale;
                 height *= scale;
 
@@ -6477,7 +6477,7 @@ class DefaultPickingHandler
                 transformNormal(invertedMatrix, axis);
 
                 // need to scale the radius and height as well.
-                float scale = invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                 radius *= scale;
                 height *= scale;
 
@@ -6694,7 +6694,7 @@ class DefaultPickingHandler
                         transformNormal(invertedMatrix, end);
 
                         // need to scale the radius and height as well.
-                        float scale = invertedMatrix.getScale();
+                        float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                         radius *= scale;
                         height *= scale;
                     }
@@ -6910,7 +6910,7 @@ class DefaultPickingHandler
                 transformNormal(invertedMatrix, axis);
 
                 // need to scale the radius and height as well.
-                float scale = invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                 radius *= scale;
                 height *= scale;
 
@@ -7170,7 +7170,7 @@ class DefaultPickingHandler
                 transformNormal(invertedMatrix, axis);
 
                 // need to scale the radius and height as well.
-                float scale = invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
                 radius *= scale;
                 height *= scale;
 
@@ -7249,10 +7249,8 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
      * @param paths A place to set the results in
      * @param needTransform True if the minal to v-world transform needs
      *    calculating
@@ -7693,8 +7691,8 @@ class DefaultPickingHandler
      *
      * @param root The shared node to test against
      * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
+     * @param vertex The vertex position of the cone in local coordinate space
+     * @param axis The axis vector of the code in local coordinate space
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -7762,8 +7760,8 @@ class DefaultPickingHandler
      *
      * @param root The group node to test against and recurse into
      * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
+     * @param vertex The vertex position of the cone in local coordinate space
+     * @param axis The axis vector of the code in local coordinate space
      * @param path The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -7918,10 +7916,10 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
+     * @param vertex The vertex position of the cone in local coordinate space
+     * @param axis The axis vector of the code in local coordinate space
      * @param path A place to set the results in
      * @param needTransform True if the local to v-world transform needs
      *    calculating
@@ -8153,8 +8151,8 @@ class DefaultPickingHandler
      *
      * @param root The group node to test against and descend into
      * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
+     * @param vertex The vertex position of the cone in local coordinate space
+     * @param axis The axis vector of the code in local coordinate space
      * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
@@ -8345,9 +8343,9 @@ class DefaultPickingHandler
      *
      * @param root The shared node to test against
      * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param vertex The vertex position of the cone in local coordinate space
+     * @param axis The axis vector of the code in local coordinate space
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCone(SinglePickTarget root,
@@ -8431,9 +8429,9 @@ class DefaultPickingHandler
      *
      * @param root The group node to test against and descend into
      * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param vertex The vertex position of the cone in local coordinate space
+     * @param axis The axis vector of the code in local coordinate space
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllCone(CustomPickTarget root,
@@ -8616,7 +8614,7 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
      * @param vertex The verteximum extents of the box in local coordinate space
      * @param axis The axisimum extents of the box in local coordinate space
@@ -9484,7 +9482,7 @@ class DefaultPickingHandler
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllBox(GroupPickTarget root,
@@ -11251,7 +11249,8 @@ class DefaultPickingHandler
                         tg.getTransform(tx);
                         tg.getInverseTransform(invertedMatrix);
                         transform(invertedMatrix, start);
-                        radius *= invertedMatrix.getScale();
+                        float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+                        radius *= scale;
                     }
                     else
                         transformPath[0].setIdentity();
@@ -11508,7 +11507,8 @@ class DefaultPickingHandler
                 matrixUtils.inverse(tx, invertedMatrix);
                 transform(invertedMatrix, min);
 
-                radius *= invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+                radius *= scale;
 
                 validTransform[lastPathIndex] = true;
             }
@@ -11676,7 +11676,8 @@ class DefaultPickingHandler
                                     invertedMatrix);
                 transform(invertedMatrix, min);
 
-                radius *= invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+                radius *= scale;
 
                 validTransform[lastPathIndex] = true;
             }
@@ -11753,7 +11754,7 @@ class DefaultPickingHandler
     /**
      * Recurse the tree looking for intersections with a single point.
      *
-     * @param root The geom node to test against
+     * @param geom The geom node to test against
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
@@ -11867,7 +11868,8 @@ class DefaultPickingHandler
                         tg.getTransform(tx);
                         tg.getInverseTransform(invertedMatrix);
                         transform(invertedMatrix, start);
-                        radius *= invertedMatrix.getScale();
+                        float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+                        radius *= scale;
                     }
                     else
                         transformPath[0].setIdentity();
@@ -12066,7 +12068,8 @@ class DefaultPickingHandler
                 tg.getTransform(tx);
                 tg.getInverseTransform(invertedMatrix);
                 transform(invertedMatrix, min);
-                radius *= invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+                radius *= scale;
 
                 validTransform[lastPathIndex] = true;
             }
@@ -12325,7 +12328,8 @@ class DefaultPickingHandler
                 matrixUtils.inverse(pickInstructions.localTransform,
                                     invertedMatrix);
                 transform(invertedMatrix, min);
-                radius *= invertedMatrix.getScale();
+                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+                radius *= scale;
 
                 validTransform[lastPathIndex] = true;
             }
