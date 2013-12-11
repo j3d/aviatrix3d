@@ -1729,16 +1729,6 @@ public abstract class BaseRenderingProcessor
             }
         }
 
-        // Only allow Pbuffers if we have a single render target defined,
-        // No fallbacks for other render types for now.
-        if(ret_val == null && renderable.getNumRenderTargets() == 1)
-        {
-            // Bummer. No FBOs. OK, now let's try a Pbuffer
-            ret_val = new PbufferDescriptor(renderable);
-            if(!ret_val.initialise(localContext))
-                ret_val = null;
-        }
-
         // No pbuffers at all? Uh oh, we're in trouble now. Exit nicely.
         // TODO: Look at implementing some sort of multipass rendering
         // implementation that uses the normal buffers and copies them through

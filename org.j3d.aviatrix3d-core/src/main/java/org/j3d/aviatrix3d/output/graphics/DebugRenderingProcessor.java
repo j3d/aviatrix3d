@@ -111,8 +111,6 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
             if(ownerRenderable instanceof FBODescriptor)
                 buf.append("Frame Buffer Object ");
-            else if(ownerRenderable instanceof PbufferDescriptor)
-                buf.append("Pbuffer ");
             else if(ownerRenderable instanceof MainCanvasDescriptor)
                 buf.append("Main canvas ");
 
