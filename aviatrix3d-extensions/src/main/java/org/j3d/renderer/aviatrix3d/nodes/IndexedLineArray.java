@@ -14,6 +14,7 @@ package org.j3d.renderer.aviatrix3d.nodes;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 // None
@@ -46,7 +47,8 @@ public class IndexedLineArray extends IndexedBufferGeometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // No coordinates, do nothing.
         if((vertexFormat & COORDINATE_MASK) == 0)
@@ -76,6 +78,7 @@ public class IndexedLineArray extends IndexedBufferGeometry
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -93,6 +96,7 @@ public class IndexedLineArray extends IndexedBufferGeometry
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof IndexedLineArray))

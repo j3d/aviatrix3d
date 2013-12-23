@@ -19,12 +19,12 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 
 import javax.media.opengl.GL;
-
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector4f;
+import javax.media.opengl.GL2;
 
 // Local imports
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
+import org.j3d.maths.vector.Vector4d;
 import org.j3d.util.MatrixUtils;
 
 import org.j3d.aviatrix3d.rendering.CustomGeometryRenderable;
@@ -57,18 +57,18 @@ public class SortedPointArray extends BufferGeometry
     private MatrixUtils matrixUtils;
 
     /** Temp matrix used to hold inverted camera matrix */
-    private Matrix4f cameraMatrix;
+    private Matrix4d cameraMatrix;
 
     /** Temporary point location while working out the camera-space depth */
-    private Point3f wkPoint;
+    private Point3d wkPoint;
 
     /**
      * Constructs a PointArray with default values.
      */
     public SortedPointArray()
     {
-        wkPoint = new Point3f();
-        cameraMatrix = new Matrix4f();
+        wkPoint = new Point3d();
+        cameraMatrix = new Matrix4d();
         matrixUtils = new MatrixUtils();
     }
 
@@ -90,9 +90,10 @@ public class SortedPointArray extends BufferGeometry
      *    calculable from the available data.
      * @return Any information that may be useful for the rendering step
      */
-    public Object processCull(Matrix4f vworldTx,
-                              Matrix4f viewTransform,
-                              Vector4f[] viewFrustum,
+    @Override
+    public Object processCull(Matrix4d vworldTx,
+                              Matrix4d viewTransform,
+                              Vector4d[] viewFrustum,
                               float angularRes)
     {
         // Check to make sure the buffer object is big enough.
@@ -117,12 +118,12 @@ public class SortedPointArray extends BufferGeometry
             wkPoint.y = vertexBuffer.get(i * 3 + 1);
             wkPoint.z = vertexBuffer.get(i * 3 + 2);
 
-            vworldTx.transform(wkPoint);
-            cameraMatrix.transform(wkPoint);
+            vworldTx.transform(wkPoint, wkPoint);
+            cameraMatrix.transform(wkPoint, wkPoint);
 
             sortedVertices[i].distance =
-                wkPoint.x * wkPoint.x + wkPoint.y * wkPoint.y +
-                wkPoint.z * wkPoint.z;
+                (float)(wkPoint.x * wkPoint.x + wkPoint.y * wkPoint.y +
+                wkPoint.z * wkPoint.z);
 
             sortedVertices[i].index = i;
         }
@@ -148,7 +149,8 @@ public class SortedPointArray extends BufferGeometry
      * @param externalData Some implementation-specific external data to
      *   aid in the rendering that was generated in the processCull method.
      */
-    public void render(GL gl, Object externalData)
+    @Override
+    public void render(GL2 gl, Object externalData)
     {
         // No coordinates, do nothing.
         if((vertexFormat & COORDINATE_MASK) == 0)
@@ -183,7 +185,8 @@ public class SortedPointArray extends BufferGeometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // No coordinates, do nothing.
         if((vertexFormat & COORDINATE_MASK) == 0)
@@ -210,6 +213,7 @@ public class SortedPointArray extends BufferGeometry
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -227,6 +231,7 @@ public class SortedPointArray extends BufferGeometry
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof SortedPointArray))

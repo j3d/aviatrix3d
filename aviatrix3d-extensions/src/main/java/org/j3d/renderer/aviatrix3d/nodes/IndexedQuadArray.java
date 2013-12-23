@@ -20,6 +20,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -66,7 +67,8 @@ public class IndexedQuadArray extends IndexedBufferGeometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // No coordinates, do nothing.
         if((vertexFormat & COORDINATE_MASK) == 0)
@@ -76,18 +78,18 @@ public class IndexedQuadArray extends IndexedBufferGeometry
 
         if((vertexFormat & EDGES) != 0)
         {
-            gl.glEnableClientState(GL.GL_EDGE_FLAG_ARRAY);
+            gl.glEnableClientState(GL2.GL_EDGE_FLAG_ARRAY);
             gl.glEdgeFlagPointer(0, edgeBuffer);
         }
 
-        gl.glDrawElements(GL.GL_QUADS,
+        gl.glDrawElements(GL2.GL_QUADS,
                           numIndices,
                           GL.GL_UNSIGNED_INT,
                           indexBuffer);
 
         if((vertexFormat & EDGES) != 0)
         {
-            gl.glDisableClientState(GL.GL_EDGE_FLAG_ARRAY);
+            gl.glDisableClientState(GL2.GL_EDGE_FLAG_ARRAY);
             gl.glEdgeFlag(true);
         }
 
@@ -115,6 +117,7 @@ public class IndexedQuadArray extends IndexedBufferGeometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
                                    boolean findAny,
@@ -215,6 +218,7 @@ System.out.println("IndexedQuadArray.pickLineSegment() not implemented yet");
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
                                boolean findAny,
@@ -287,6 +291,7 @@ System.out.println("IndexedQuadArray.pickLineRay() not implemented yet");
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -304,6 +309,7 @@ System.out.println("IndexedQuadArray.pickLineRay() not implemented yet");
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof IndexedQuadArray))

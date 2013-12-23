@@ -14,6 +14,7 @@ package org.j3d.renderer.aviatrix3d.nodes;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -71,6 +72,7 @@ public class QuadStripArray extends BufferGeometry
      *
      * @return true when the geometry is visible
      */
+    @Override
     protected boolean isVisible()
     {
         return super.isVisible() && numStrips != 0;
@@ -93,6 +95,7 @@ public class QuadStripArray extends BufferGeometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
                                    boolean findAny,
@@ -189,6 +192,7 @@ public class QuadStripArray extends BufferGeometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
                                boolean findAny,
@@ -257,7 +261,8 @@ public class QuadStripArray extends BufferGeometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // No coordinates, do nothing.
         if((numStrips == 0) || ((vertexFormat & COORDINATE_MASK) == 0))
@@ -271,7 +276,7 @@ public class QuadStripArray extends BufferGeometry
         int strip_offset = 0;
         for(int i = 0; i < numStrips; i++)
         {
-            gl.glDrawArrays(GL.GL_QUAD_STRIP,
+            gl.glDrawArrays(GL2.GL_QUAD_STRIP,
                             strip_offset,
                             stripCounts[i]);
 
@@ -295,6 +300,7 @@ public class QuadStripArray extends BufferGeometry
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {

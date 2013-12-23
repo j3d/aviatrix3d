@@ -20,6 +20,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 
@@ -71,7 +72,8 @@ public class QuadArray extends BufferGeometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         // No coordinates, do nothing.
         if((vertexFormat & COORDINATE_MASK) == 0)
@@ -81,15 +83,15 @@ public class QuadArray extends BufferGeometry
 
         if((vertexFormat & EDGES) != 0)
         {
-            gl.glEnableClientState(GL.GL_EDGE_FLAG_ARRAY);
+            gl.glEnableClientState(GL2.GL_EDGE_FLAG_ARRAY);
             gl.glEdgeFlagPointer(0, edgeBuffer);
         }
 
-        gl.glDrawArrays(GL.GL_QUADS, 0, numCoords);
+        gl.glDrawArrays(GL2.GL_QUADS, 0, numCoords);
 
         if((vertexFormat & EDGES) != 0)
         {
-            gl.glDisableClientState(GL.GL_EDGE_FLAG_ARRAY);
+            gl.glDisableClientState(GL2.GL_EDGE_FLAG_ARRAY);
             gl.glEdgeFlag(true);
         }
 
@@ -117,6 +119,7 @@ public class QuadArray extends BufferGeometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
                                    boolean findAny,
@@ -210,6 +213,7 @@ public class QuadArray extends BufferGeometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
                                boolean findAny,
@@ -279,6 +283,7 @@ public class QuadArray extends BufferGeometry
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -296,6 +301,7 @@ public class QuadArray extends BufferGeometry
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof QuadArray))

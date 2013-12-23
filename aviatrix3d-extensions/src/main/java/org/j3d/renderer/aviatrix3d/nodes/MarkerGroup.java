@@ -15,11 +15,9 @@ package org.j3d.renderer.aviatrix3d.nodes;
 // External imports
 import java.util.ArrayList;
 
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
-
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
+import org.j3d.maths.vector.Vector4d;
 import org.j3d.util.MatrixUtils;
 
 // Local imports
@@ -52,7 +50,7 @@ public class MarkerGroup extends BaseGroup implements CustomCullable
     private Node target;
     
     /** A matrix used when calculating the scene graph path to the target */
-    private Matrix4f pathMatrix;
+    private Matrix4d pathMatrix;
 
     /** Temp var used to fetch the scene graph path */
     private ArrayList<TransformGroup> pathList;
@@ -61,16 +59,16 @@ public class MarkerGroup extends BaseGroup implements CustomCullable
     private Node[] pathNodes;
 
     /** A matrix used when calculating the target transform */
-    private Matrix4f targetMatrix;
+    private Matrix4d targetMatrix;
 
     /** The target position */
-    private Vector3f targetPosition;
+    private Vector3d targetPosition;
     
     /** The view position */
-    private Vector3f viewPosition;
+    private Vector3d viewPosition;
     
     /** A matrix used when calculating the view transform */
-    private Matrix4f viewMatrix;
+    private Matrix4d viewMatrix;
 
     /** MatrixUtils for gc free inversion */
     private MatrixUtils matrixUtils;
@@ -79,13 +77,13 @@ public class MarkerGroup extends BaseGroup implements CustomCullable
     private boolean matrixChanged;
     
     /** The matrix describing the marker transform */
-    private Matrix4f markerMatrix;
+    private Matrix4d markerMatrix;
 
     /** The marker position */
-    private Vector3f markerPosition;
+    private Vector3d markerPosition;
     
     /** The view rotation matrix */
-    private Matrix3f rotMatrix;
+    private Matrix3d rotMatrix;
 	
 	/** Enabled flag */
 	private boolean enabled;
@@ -97,20 +95,20 @@ public class MarkerGroup extends BaseGroup implements CustomCullable
     {
         matrixUtils = new MatrixUtils();
         
-        markerPosition = new Vector3f();
-        markerMatrix = new Matrix4f();
+        markerPosition = new Vector3d();
+        markerMatrix = new Matrix4d();
         
-        rotMatrix = new Matrix3f();
+        rotMatrix = new Matrix3d();
         
-        viewPosition = new Vector3f();
-        viewMatrix = new Matrix4f();
+        viewPosition = new Vector3d();
+        viewMatrix = new Matrix4d();
         
-        targetPosition = new Vector3f();
-        targetMatrix = new Matrix4f();
+        targetPosition = new Vector3d();
+        targetMatrix = new Matrix4d();
         
         pathList = new ArrayList<TransformGroup>();
         pathNodes = new Node[20];  // arbitrary initial value
-        pathMatrix = new Matrix4f();
+        pathMatrix = new Matrix4d();
 
 		enabled = true;
     }
@@ -134,9 +132,9 @@ public class MarkerGroup extends BaseGroup implements CustomCullable
      *    calculable from the available data.
      */
     public void cullChildren(CullInstructions output,
-                             Matrix4f vworldTx,
-                             Matrix4f viewTransform,
-                             Vector4f[] frustumPlanes,
+                             Matrix4d vworldTx,
+                             Matrix4d viewTransform,
+                             Vector4d[] frustumPlanes,
                              float angularRes)
     {
         if (enabled && (target != null))
@@ -228,7 +226,7 @@ public class MarkerGroup extends BaseGroup implements CustomCullable
      * @param node The end node to calculate from
      * @param mat The matrix to put the final result into
      */
-    private void getLocalToVworld(Node node, Matrix4f mat) 
+    private void getLocalToVworld(Node node, Matrix4d mat) 
 	{
 
         pathList.clear();

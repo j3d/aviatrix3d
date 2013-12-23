@@ -15,8 +15,6 @@ package org.j3d.renderer.aviatrix3d.nodes;
 // External imports
 import java.nio.*;
 
-import javax.media.opengl.GL;
-
 // Local imports
 import org.j3d.aviatrix3d.InvalidWriteTimingException;
 

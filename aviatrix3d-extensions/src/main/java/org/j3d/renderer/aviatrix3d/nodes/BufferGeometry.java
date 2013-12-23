@@ -21,6 +21,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 import org.j3d.util.IntHashMap;
@@ -1385,7 +1386,7 @@ public abstract class BufferGeometry extends Geometry
 
         val.size = size;
         val.normalise = normalise;
-        val.dataType = GL.GL_DOUBLE;
+        val.dataType = GL2.GL_DOUBLE;
         val.data = attribs;
 
         vertexFormat |= ATTRIBS;
@@ -1458,7 +1459,7 @@ public abstract class BufferGeometry extends Geometry
 
         val.size = size;
         val.normalise = normalise;
-        val.dataType = signed ? GL.GL_INT : GL.GL_UNSIGNED_INT;
+        val.dataType = signed ? GL2.GL_INT : GL.GL_UNSIGNED_INT;
         val.data = attribs;
 
         vertexFormat |= ATTRIBS;
@@ -1618,17 +1619,17 @@ public abstract class BufferGeometry extends Geometry
      *
      * @param gl The gl context to draw with
      */
-    protected void setVertexState(GL gl)
+    protected void setVertexState(GL2 gl)
     {
         //  State enable first
         int vtx_size = vertexFormat & 0x07;
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
 
         gl.glVertexPointer(vtx_size, GL.GL_FLOAT, 0, vertexBuffer);
 
         if((vertexFormat & NORMALS) != 0)
         {
-            gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+            gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
             gl.glNormalPointer(GL.GL_FLOAT, 0, normalBuffer);
         }
 
@@ -1637,7 +1638,7 @@ public abstract class BufferGeometry extends Geometry
             // single texturing or multi-texturing
             if(numTextureSets == 1)
             {
-                gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                 gl.glTexCoordPointer(textureTypes[0],
                                      GL.GL_FLOAT,
                                      0,
@@ -1649,7 +1650,7 @@ public abstract class BufferGeometry extends Geometry
                 {
                     int set_id = textureSets[i];
                     gl.glClientActiveTexture(GL.GL_TEXTURE0 + i);
-                    gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                     gl.glTexCoordPointer(textureTypes[set_id],
                                          GL.GL_FLOAT,
                                          0,
@@ -1660,21 +1661,21 @@ public abstract class BufferGeometry extends Geometry
 
         if((vertexFormat & COLOR_MASK) != 0)
         {
-            gl.glEnableClientState(GL.GL_COLOR_ARRAY);
+            gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
             int size = ((vertexFormat & COLOR_3) != 0) ? 3 : 4;
             gl.glColorPointer(size, GL.GL_FLOAT, 0, colorBuffer);
         }
 
         if((vertexFormat & COLOR2_MASK) != 0)
         {
-            gl.glEnableClientState(GL.GL_SECONDARY_COLOR_ARRAY);
+            gl.glEnableClientState(GL2.GL_SECONDARY_COLOR_ARRAY);
             gl.glSecondaryColorPointer(3, GL.GL_FLOAT, 0, color2Buffer);
         }
 
         if((vertexFormat & FOG_MASK) != 0)
         {
-            gl.glFogi(GL.GL_FOG_COORDINATE_SOURCE, GL.GL_FOG_COORDINATE);
-            gl.glEnableClientState(GL.GL_FOG_COORDINATE_ARRAY);
+            gl.glFogi(GL2.GL_FOG_COORDINATE_SOURCE, GL2.GL_FOG_COORDINATE);
+            gl.glEnableClientState(GL2.GL_FOG_COORDINATE_ARRAY);
             gl.glFogCoordPointer(GL.GL_FLOAT, 0, fogBuffer);
         }
 
@@ -1706,7 +1707,7 @@ public abstract class BufferGeometry extends Geometry
      *
      * @param gl The gl context to draw with
      */
-    protected void clearVertexState(GL gl)
+    protected void clearVertexState(GL2 gl)
     {
         if((vertexFormat & ATTRIBS) != 0)
         {
@@ -1718,19 +1719,19 @@ public abstract class BufferGeometry extends Geometry
 
         if((vertexFormat & FOG_MASK) != 0)
         {
-            gl.glDisableClientState(GL.GL_FOG_COORDINATE_ARRAY);
-            gl.glFogi(GL.GL_FOG_COORDINATE_SOURCE, GL.GL_FRAGMENT_DEPTH);
+            gl.glDisableClientState(GL2.GL_FOG_COORDINATE_ARRAY);
+            gl.glFogi(GL2.GL_FOG_COORDINATE_SOURCE, GL2.GL_FRAGMENT_DEPTH);
         }
 
         if((vertexFormat & COLOR2_MASK) != 0)
         {
-            gl.glDisableClientState(GL.GL_SECONDARY_COLOR_ARRAY);
+            gl.glDisableClientState(GL2.GL_SECONDARY_COLOR_ARRAY);
             gl.glSecondaryColor3f(1f,1f,1f);
         }
 
         if((vertexFormat & COLOR_MASK) != 0)
         {
-            gl.glDisableClientState(GL.GL_COLOR_ARRAY);
+            gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
             gl.glColor4f(1f,1f,1f,1f);
         }
 
@@ -1740,22 +1741,22 @@ public abstract class BufferGeometry extends Geometry
             // single texturing or multi-texturing
             if(numTextureSets == 1)
             {
-                gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
             }
             else
             {
                 for(int i = numTextureSets - 1; i >= 0; i--)
                 {
                     gl.glClientActiveTexture(GL.GL_TEXTURE0 + i);
-                    gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                    gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                 }
             }
         }
 
         if((vertexFormat & NORMALS) != 0)
-            gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+            gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
 
-        gl.glDisableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
     }
 
     /**
@@ -2384,7 +2385,7 @@ public abstract class BufferGeometry extends Geometry
      * exception.
      *
      * @param coords The set of coordinates to check on
-     * @param dimesion The number of dimensions to check against
+     * @param dimensions The number of dimensions to check against
      * @throws IllegalArgumentException The number of coordinates wasn't enough
      */
     private void checkTexCoordSize(FloatBuffer coords, int dimensions)
@@ -2423,7 +2424,7 @@ public abstract class BufferGeometry extends Geometry
      *
      * @param index The array index this came from, for message purposes
      * @param coords The set of coordinates to check on
-     * @param dimesion The number of dimensions to check against
+     * @param dimensions The number of dimensions to check against
      * @throws IllegalArgumentException The number of coordinates wasn't enough
      */
     private void checkTexCoordSize(int index, FloatBuffer coords, int dimensions)

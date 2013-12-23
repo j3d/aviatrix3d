@@ -13,15 +13,14 @@
 package org.j3d.renderer.aviatrix3d.util;
 
 // External imports
-import javax.vecmath.*;
-
-// Local imports
-import org.j3d.aviatrix3d.*;
+import org.j3d.maths.vector.*;
 
 import org.j3d.geom.IntersectionUtils;
 import org.j3d.geom.GeometryData;
 import org.j3d.util.MatrixUtils;
-import org.j3d.util.UserSupplementData;
+
+// Local imports
+import org.j3d.aviatrix3d.*;
 
 /**
  * An extension of the basic {@link org.j3d.geom.IntersectionUtils} class to
@@ -36,7 +35,7 @@ import org.j3d.util.UserSupplementData;
 public class AVIntersectionUtils extends IntersectionUtils
 {
     /** Place to invert the incoming transform for reverse mappings */
-    private Matrix4f reverseTx;
+    private Matrix4d reverseTx;
 
     /** Temporary points for float <-> double conversion */
     private Point3d tmpOrigin;
@@ -44,9 +43,9 @@ public class AVIntersectionUtils extends IntersectionUtils
     private Vector3d tmpDirection;
 
     /** Temporary arrays for working directly with the geometry */
-    private float[] p1;
-    private float[] p2;
-    private float[] dataOut;
+    private double[] p1;
+    private double[] p2;
+    private double[] dataOut;
 
     /** Matrix utility code for doing inversions */
     private MatrixUtils matrixUtils;
@@ -57,14 +56,14 @@ public class AVIntersectionUtils extends IntersectionUtils
      */
     public AVIntersectionUtils()
     {
-        reverseTx = new Matrix4f();
+        reverseTx = new Matrix4d();
         tmpOrigin = new Point3d();
         tmpPoint = new Point3d();
         tmpDirection = new Vector3d();
 
-        p1 = new float[3];
-        p2 = new float[3];
-        dataOut = new float[12];
+        p1 = new double[3];
+        p2 = new double[3];
+        dataOut = new double[12];
 
         matrixUtils = new MatrixUtils();
     }
@@ -86,72 +85,15 @@ public class AVIntersectionUtils extends IntersectionUtils
      *   the value is zero, it is ignored
      * @param geom The geometry to test against
      * @param point The intersection point for returning
-     * @param vworldTransform Transformation matrix to go from the root of the
-     *    world to this point
      * @param intersectOnly true if we only want to know if we have a
      *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
-    public boolean rayUnknownGeometry(Point3f origin,
-                                      Vector3f direction,
+    public boolean rayUnknownGeometry(Point3d origin,
+                                      Vector3d direction,
                                       float length,
                                       VertexGeometry geom,
-                                      Matrix4f vworldTransform,
-                                      Point3f point,
-                                      boolean intersectOnly)
-    {
-        boolean ret_val = false;
-
-        matrixUtils.inverse(vworldTransform, reverseTx);
-        transform(origin, reverseTx, pickStart);
-        transformNormal(direction, reverseTx, pickDir);
-
-        p1[0] = (float)pickStart.x;
-        p1[1] = (float)pickStart.y;
-        p1[2] = (float)pickStart.z;
-
-        p2[0] = (float)pickDir.x;
-        p2[1] = (float)pickDir.y;
-        p2[2] = (float)pickDir.z;
-
-        ret_val = geom.pickLineRay(p1, p2, intersectOnly, dataOut, 0);
-
-        point.x = dataOut[0];
-        point.y = dataOut[1];
-        point.z = dataOut[2];
-
-        if(ret_val)
-            vworldTransform.transform(point);
-
-        return ret_val;
-    }
-
-    /**
-     * Convenience method to pass in an item of geometry and ask the
-     * intersection code to find out what the real geometry type is and
-     * process it appropriately. If there is an intersection, the point will
-     * contain the exact intersection point on the geometry.
-     * <P>
-     *
-     * If the userData object for this geometry is an instance of
-     * {@link GeometryData} we will use that in preferences to the actual
-     * geometry.
-     *
-     * @param origin The origin of the ray
-     * @param direction The direction of the ray
-     * @param length An optional length for to make the ray a segment. If
-     *   the value is zero, it is ignored
-     * @param geom The geometry to test against
-     * @param point The intersection point for returning
-     * @param intersectOnly true if we only want to know if we have a
-     *    intersection and don't really care which it is
-     * @return true if there was an intersection, false if not
-     */
-    public boolean rayUnknownGeometry(Point3f origin,
-                                      Vector3f direction,
-                                      float length,
-                                      VertexGeometry geom,
-                                      Point3f point,
+                                      Point3d point,
                                       boolean intersectOnly)
     {
         boolean ret_val = false;
@@ -196,12 +138,12 @@ public class AVIntersectionUtils extends IntersectionUtils
      *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
-    public boolean rayUnknownGeometry(Point3f origin,
-                                      Vector3f direction,
+    public boolean rayUnknownGeometry(Point3d origin,
+                                      Vector3d direction,
                                       float length,
                                       GeometryData data,
-                                      Matrix4f vworldTransform,
-                                      Point3f point,
+                                      Matrix4d vworldTransform,
+                                      Point3d point,
                                       boolean intersectOnly)
     {
         tmpOrigin.x = origin.x;
@@ -255,7 +197,7 @@ public class AVIntersectionUtils extends IntersectionUtils
                                       Vector3d direction,
                                       float length,
                                       GeometryData data,
-                                      Matrix4f vworldTransform,
+                                      Matrix4d vworldTransform,
                                       Point3d point,
                                       boolean intersectOnly)
     {
@@ -386,7 +328,7 @@ public class AVIntersectionUtils extends IntersectionUtils
                                       Vector3d direction,
                                       float length,
                                       VertexGeometry geom,
-                                      Matrix4f vworldTransform,
+                                      Matrix4d vworldTransform,
                                       Point3d point,
                                       boolean intersectOnly)
     {
@@ -488,7 +430,7 @@ public class AVIntersectionUtils extends IntersectionUtils
                                     Vector3d direction,
                                     float length,
                                     TriangleArray geom,
-                                    Matrix4f vworldTransform,
+                                    Matrix4d vworldTransform,
                                     Point3d point,
                                     boolean intersectOnly)
     {
@@ -541,7 +483,7 @@ public class AVIntersectionUtils extends IntersectionUtils
                                 Vector3d direction,
                                 float length,
                                 QuadArray geom,
-                                Matrix4f vworldTransform,
+                                Matrix4d vworldTransform,
                                 Point3d point,
                                 boolean intersectOnly)
     {
@@ -593,7 +535,7 @@ public class AVIntersectionUtils extends IntersectionUtils
                                          Vector3d direction,
                                          float length,
                                          TriangleStripArray geom,
-                                         Matrix4f vworldTransform,
+                                         Matrix4d vworldTransform,
                                          Point3d point,
                                          boolean intersectOnly)
     {
@@ -651,7 +593,7 @@ public class AVIntersectionUtils extends IntersectionUtils
                                        Vector3d direction,
                                        float length,
                                        TriangleFanArray geom,
-                                       Matrix4f vworldTransform,
+                                       Matrix4d vworldTransform,
                                        Point3d point,
                                        boolean intersectOnly)
     {
@@ -711,7 +653,7 @@ public class AVIntersectionUtils extends IntersectionUtils
                                            Vector3d direction,
                                            float length,
                                            IndexedTriangleArray geom,
-                                           Matrix4f vworldTransform,
+                                           Matrix4d vworldTransform,
                                            Point3d point,
                                            boolean intersectOnly)
     {
@@ -770,7 +712,7 @@ public class AVIntersectionUtils extends IntersectionUtils
                                        Vector3d direction,
                                        float length,
                                        IndexedQuadArray geom,
-                                       Matrix4f vworldTransform,
+                                       Matrix4d vworldTransform,
                                        Point3d point,
                                        boolean intersectOnly)
     {
@@ -819,7 +761,7 @@ public class AVIntersectionUtils extends IntersectionUtils
      * @param vec The vector to be transformed
      * @param mat The matrix to do the transforming with
      */
-    private void transform(Tuple3d vec, Matrix4f mat)
+    private void transform(Tuple3d vec, Matrix4d mat)
     {
         float a = (float)vec.x;
         float b = (float)vec.y;
@@ -837,7 +779,7 @@ public class AVIntersectionUtils extends IntersectionUtils
      * @param vec The vector to be transformed
      * @param mat The matrix to do the transforming with
      */
-    private void transform(Tuple3f vec, Matrix4f mat)
+    private void transform(Tuple3d vec, Matrix4d mat)
     {
         float a = vec.x;
         float b = vec.y;
@@ -856,7 +798,7 @@ public class AVIntersectionUtils extends IntersectionUtils
      * @param mat The matrix to do the transforming with
      * @param out The vector to be put the result in
      */
-    private void transform(Tuple3d vec, Matrix4f mat, Tuple3d out)
+    private void transform(Tuple3d vec, Matrix4d mat, Tuple3d out)
     {
         float a = (float)vec.x;
         float b = (float)vec.y;
@@ -875,7 +817,7 @@ public class AVIntersectionUtils extends IntersectionUtils
      * @param mat The matrix to do the transforming with
      * @param out The vector to be put the result in
      */
-    private void transform(Tuple3f vec, Matrix4f mat, Tuple3d out)
+    private void transform(Tuple3d vec, Matrix4d mat, Tuple3d out)
     {
         float a = vec.x;
         float b = vec.y;
@@ -895,7 +837,7 @@ public class AVIntersectionUtils extends IntersectionUtils
      * @param mat The matrix to do the transforming with
      * @param out The vector to be put the result in
      */
-    private void transformNormal(Tuple3d vec, Matrix4f mat, Tuple3d out)
+    private void transformNormal(Tuple3d vec, Matrix4d mat, Tuple3d out)
     {
         float a = (float)vec.x;
         float b = (float)vec.y;
@@ -915,7 +857,7 @@ public class AVIntersectionUtils extends IntersectionUtils
      * @param mat The matrix to do the transforming with
      * @param out The vector to be put the result in
      */
-    private void transformNormal(Tuple3f vec, Matrix4f mat, Tuple3d out)
+    private void transformNormal(Tuple3d vec, Matrix4d mat, Tuple3d out)
     {
         float a = vec.x;
         float b = vec.y;

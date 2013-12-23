@@ -13,7 +13,7 @@
 package org.j3d.renderer.aviatrix3d.nodes;
 
 // External imports
-import javax.media.opengl.GL;
+// None
 
 // Local imports
 // None
@@ -26,7 +26,7 @@ import javax.media.opengl.GL;
  * @author Justin Couch
  * @version $Revision: 1.2 $
  */
-class ObjectPlacer implements Comparable {
+class ObjectPlacer implements Comparable<ObjectPlacer> {
 
     /**
      * The distance the object lies from some place - typically the
@@ -52,16 +52,15 @@ class ObjectPlacer implements Comparable {
      * negative integer, zero, or a positive integer as this object is less
      * than, equal to, or greater than the specified object.
      *
-     * @param o The object to be compared
+     * @param place The object to be compared
      * @return -1, 0 or 1 depending on order
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
-    public int compareTo(Object o)
+    @Override
+    public int compareTo(ObjectPlacer place)
         throws ClassCastException
     {
-        ObjectPlacer place = (ObjectPlacer)o;
-
          if(place.distance > distance)
             return 1;
         else if(place.distance < distance)

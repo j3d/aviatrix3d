@@ -18,9 +18,10 @@ import java.awt.event.ActionListener;
 
 import javax.swing.Timer;
 
-import javax.vecmath.*;
-
 // Local imports
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
+import org.j3d.maths.vector.Vector3d;
 import org.j3d.util.MatrixUtils;
 
 import org.j3d.aviatrix3d.TransformGroup;
@@ -69,22 +70,22 @@ public class ViewpointTransition implements ActionListener
     // <var>1 for the value at the start of transition
     // <var>2 for the value at the end of the transition
 
-    private Point3f eye  = new Point3f();
-    private Point3f eye1 = new Point3f();
-    private Point3f eye2 = new Point3f();
-    private Point3f center  = new Point3f();
-    private Point3f center1 = new Point3f();
-    private Point3f center2 = new Point3f();
-    private Vector3f up  = new Vector3f();
-    private Vector3f up1 = new Vector3f();
-    private Vector3f up2 = new Vector3f();
-    private Vector3f location1 = new Vector3f();
-    private Vector3f location2 = new Vector3f();
-    private Vector3f direction1 = new Vector3f();
-    private Vector3f direction2 = new Vector3f();
-    private Matrix4f previousFrameTx  =   new Matrix4f();
-    private Matrix4f currentTx = new Matrix4f();
-    private Matrix4f destinationTx = new Matrix4f();
+    private Point3d eye  = new Point3d();
+    private Point3d eye1 = new Point3d();
+    private Point3d eye2 = new Point3d();
+    private Point3d center  = new Point3d();
+    private Point3d center1 = new Point3d();
+    private Point3d center2 = new Point3d();
+    private Vector3d up  = new Vector3d();
+    private Vector3d up1 = new Vector3d();
+    private Vector3d up2 = new Vector3d();
+    private Vector3d location1 = new Vector3d();
+    private Vector3d location2 = new Vector3d();
+    private Vector3d direction1 = new Vector3d();
+    private Vector3d direction2 = new Vector3d();
+    private Matrix4d previousFrameTx  =   new Matrix4d();
+    private Matrix4d currentTx = new Matrix4d();
+    private Matrix4d destinationTx = new Matrix4d();
 
     /** An observer for information about updates for this transition */
     private FrameUpdateListener updateListener;
@@ -127,11 +128,12 @@ public class ViewpointTransition implements ActionListener
      *    (in miliseconds)
      */
     public void transitionTo(TransformGroup viewTg,
-                             Matrix4f endTx,
+                             Matrix4d endTx,
                              int totalTime)
     {
         this.viewTg = viewTg;
-        destinationTx = new Matrix4f(endTx);
+        destinationTx = new Matrix4d();
+        destinationTx.set(endTx);
         totalTimeMS = totalTime;
 
         epochEndTime = System.currentTimeMillis() + totalTime;
@@ -143,7 +145,7 @@ public class ViewpointTransition implements ActionListener
         currentTx.get(location1);
         eye1.set(location1);
         direction1.set(0,0,-1);
-        currentTx.transform(direction1);
+        currentTx.transform(direction1, direction1);
         center1.add(eye1,direction1);
         up1.set(0,1,0);
         currentTx.transform(up1);
@@ -152,7 +154,7 @@ public class ViewpointTransition implements ActionListener
         destinationTx.get(location2);
         eye2.set(location2);
         direction2.set(0,0,-1);
-        destinationTx.transform(direction2);
+        destinationTx.transform(direction2, direction2);
         center2.add(eye2,direction2);
         up2.set(0,1,0);
         destinationTx.transform(up2);
@@ -193,7 +195,7 @@ public class ViewpointTransition implements ActionListener
             // Setup the current transform position. Always normalise
             // otherwise it will grow non-congurent.
             matrixUtils.lookAt(eye, center, up, currentTx);
-            currentTx.invert();
+            matrixUtils.inverse(currentTx, currentTx);
 
             try
             {

@@ -18,14 +18,12 @@ import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import javax.vecmath.Matrix4f;
-
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.ui.navigation.ViewpointSelectionListener;
 import org.j3d.ui.navigation.ViewpointData;
 import org.j3d.ui.navigation.ViewpointToolbar;
 
 import org.j3d.util.I18nManager;
-import org.j3d.util.ImageLoader;
 
 
 // Local imports
@@ -80,7 +78,7 @@ public class ViewpointManager implements ViewpointSelectionListener
     private TransformGroup viewTg;
 
     /** A temp variable to copy the transition info into */
-    private Matrix4f destinationTx;
+    private Matrix4d destinationTx;
 
     /**
      * Create a new manager for the viewpoint information with no handlers or
@@ -121,7 +119,7 @@ public class ViewpointManager implements ViewpointSelectionListener
 
         transitionTime = time;
         transistor = new ViewpointTransition();
-        destinationTx = new Matrix4f();
+        destinationTx = new Matrix4d();
     }
 
     /**

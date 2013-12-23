@@ -1,5 +1,5 @@
 /**************************************************************************
- *                        Copyright j3d.org (c) 2000 - ${year}
+ *                        Copyright j3d.org (c) 2000 - 2013
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -13,22 +13,15 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import java.awt.*;
-import java.awt.event.*;
-
-import javax.media.opengl.GLCapabilities;
+// None
 
 // Local imports
-
-import org.j3d.aviatrix3d.*;
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.aviatrix3d.rendering.BoundingVolume;
 
 import org.j3d.geom.GeometryData;
-import org.j3d.geom.SphereGenerator;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
 
@@ -50,7 +43,7 @@ import org.j3d.maths.vector.Vector3d;
  * @version $Revision: 1.2 $
  */
 public class BoundsCalcTest
-    implements ApplicationUpdateObserver, WindowListener, NodeUpdateListener
+    implements ApplicationUpdateObserver, NodeUpdateListener
 {
     private static final boolean SORT = true;
     private static final boolean CULL = true;
@@ -317,64 +310,6 @@ public class BoundsCalcTest
     {
     }
 
-
-    //---------------------------------------------------------------
-    // Methods defined by WindowListener
-    //---------------------------------------------------------------
-
-    /**
-     * Ignored
-     */
-    public void windowActivated(WindowEvent evt)
-    {
-    }
-
-    /**
-     * Ignored
-     */
-    public void windowClosed(WindowEvent evt)
-    {
-    }
-
-    /**
-     * Exit the application
-     *
-     * @param evt The event that caused this method to be called.
-     */
-    public void windowClosing(WindowEvent evt)
-    {
-        sceneManager.shutdown();
-        System.exit(0);
-    }
-
-    /**
-     * Ignored
-     */
-    public void windowDeactivated(WindowEvent evt)
-    {
-    }
-
-    /**
-     * Ignored
-     */
-    public void windowDeiconified(WindowEvent evt)
-    {
-    }
-
-    /**
-     * Ignored
-     */
-    public void windowIconified(WindowEvent evt)
-    {
-    }
-
-    /**
-     * When the window is opened, start everything up.
-     */
-    public void windowOpened(WindowEvent evt)
-    {
-        sceneManager.setEnabled(true);
-    }
 
     //---------------------------------------------------------------
     // Local methods

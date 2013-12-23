@@ -13,10 +13,11 @@
 package org.j3d.renderer.aviatrix3d.navigation;
 
 // External imports
-import  javax.vecmath.Matrix4f;
+import org.j3d.maths.vector.Matrix4d;
 
 // Local imports
 // none
+
 
 /**
  * A listener interface used internally to notify of an update or change in the
@@ -33,12 +34,12 @@ public interface FrameUpdateListener
      *
      * @param t3d The transform of the new position
      */
-    public void viewerPositionUpdated(Matrix4f t3d);
+    public void viewerPositionUpdated(Matrix4d t3d);
 
     /**
      * Called when a transition from one position to another has ended.
      *
      * @param t3d The transform of the new position
      */
-    public void transitionEnded(Matrix4f t3d);
+    public void transitionEnded(Matrix4d t3d);
 }

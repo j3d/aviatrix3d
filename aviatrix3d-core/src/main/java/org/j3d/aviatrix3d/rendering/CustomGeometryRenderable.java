@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d.rendering;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector4d;
@@ -76,5 +77,5 @@ public interface CustomGeometryRenderable extends GeometryRenderable
      * @param externalData Some implementation-specific external data to
      *   aid in the rendering that was generated in the processCull method.
      */
-    public void render(GL gl, Object externalData);
+    public void render(GL2 gl, Object externalData);
 }
