@@ -43,9 +43,9 @@ public class AVIntersectionUtils extends IntersectionUtils
     private Vector3d tmpDirection;
 
     /** Temporary arrays for working directly with the geometry */
-    private double[] p1;
-    private double[] p2;
-    private double[] dataOut;
+    private float[] p1;
+    private float[] p2;
+    private float[] dataOut;
 
     /** Matrix utility code for doing inversions */
     private MatrixUtils matrixUtils;
@@ -61,9 +61,9 @@ public class AVIntersectionUtils extends IntersectionUtils
         tmpPoint = new Point3d();
         tmpDirection = new Vector3d();
 
-        p1 = new double[3];
-        p2 = new double[3];
-        dataOut = new double[12];
+        p1 = new float[3];
+        p2 = new float[3];
+        dataOut = new float[12];
 
         matrixUtils = new MatrixUtils();
     }
@@ -98,72 +98,31 @@ public class AVIntersectionUtils extends IntersectionUtils
     {
         boolean ret_val = false;
 
-        p1[0] = origin.x;
-        p1[1] = origin.y;
-        p1[2] = origin.z;
+        p1[0] = (float)origin.x;
+        p1[1] = (float)origin.y;
+        p1[2] = (float)origin.z;
 
-        p2[0] = direction.x;
-        p2[1] = direction.y;
-        p2[2] = direction.z;
+        if(length > 0)
+        {
+System.out.println("AV3DIntersectionUtils: Need to fix line segment intersections!");
+            p2[0] = (float)direction.x;
+            p2[1] = (float)direction.y;
+            p2[2] = (float)direction.z;
 
-        ret_val = geom.pickLineRay(p1, p2, intersectOnly, dataOut, 0);
+            ret_val = geom.pickLineSegment(p1, p2, intersectOnly, dataOut, 0);
+        }
+        else
+        {
+            p2[0] = (float)direction.x;
+            p2[1] = (float)direction.y;
+            p2[2] = (float)direction.z;
+
+            ret_val = geom.pickLineRay(p1, p2, intersectOnly, dataOut, 0);
+        }
 
         point.x = dataOut[0];
         point.y = dataOut[1];
         point.z = dataOut[2];
-
-        return ret_val;
-    }
-
-    /**
-     * Convenience method to process a {@link GeometryData} and ask the
-     * intersection code to find out what the real geometry type is and
-     * process it appropriately. If there is an intersection, the point will
-     * contain the exact intersection point on the geometry.
-     * <P>
-     *
-     * This code will be much more efficient than the other version because
-     * we do not need to reallocate internal arrays all the time or have the
-     * need to set capability bits, hurting performance optimisations. If the
-     * geometry array does not understand the provided geometry type, it will
-     * silently ignore the request and always return false.
-     *
-     * @param origin The origin of the ray
-     * @param direction The direction of the ray
-     * @param length An optional length for to make the ray a segment. If
-     *   the value is zero, it is ignored
-     * @param data The geometry to test against
-     * @param point The intersection point for returning
-     * @param intersectOnly true if we only want to know if we have a
-     *    intersection and don't really care which it is
-     * @return true if there was an intersection, false if not
-     */
-    public boolean rayUnknownGeometry(Point3d origin,
-                                      Vector3d direction,
-                                      float length,
-                                      GeometryData data,
-                                      Matrix4d vworldTransform,
-                                      Point3d point,
-                                      boolean intersectOnly)
-    {
-        tmpOrigin.x = origin.x;
-        tmpOrigin.y = origin.y;
-        tmpOrigin.z = origin.z;
-
-        tmpDirection.x = direction.x;
-        tmpDirection.y = direction.y;
-        tmpDirection.z = direction.z;
-
-        boolean ret_val = rayUnknownGeometry(tmpOrigin,
-                                             tmpDirection,
-                                             length,
-                                             data,
-                                             vworldTransform,
-                                             tmpPoint,
-                                             intersectOnly);
-        point.x = (float)tmpPoint.x;
-        point.y = (float)tmpPoint.y;
-        point.z = (float)tmpPoint.z;
 
         return ret_val;
     }
@@ -761,29 +720,11 @@ public class AVIntersectionUtils extends IntersectionUtils
      * @param vec The vector to be transformed
      * @param mat The matrix to do the transforming with
      */
-    private void transform(Tuple3d vec, Matrix4d mat)
+    private void transform(Point3d vec, Matrix4d mat)
     {
-        float a = (float)vec.x;
-        float b = (float)vec.y;
-        float c = (float)vec.z;
-
-        vec.x = mat.m00 * a + mat.m01 * b + mat.m02 * c + mat.m03;
-        vec.y = mat.m10 * a + mat.m11 * b + mat.m12 * c + mat.m13;
-        vec.z = mat.m20 * a + mat.m21 * b + mat.m22 * c + mat.m23;
-    }
-
-    /**
-     * Transform the provided vector by the matrix and place it back in
-     * the vector.
-     *
-     * @param vec The vector to be transformed
-     * @param mat The matrix to do the transforming with
-     */
-    private void transform(Tuple3d vec, Matrix4d mat)
-    {
-        float a = vec.x;
-        float b = vec.y;
-        float c = vec.z;
+        double a = vec.x;
+        double b = vec.y;
+        double c = vec.z;
 
         vec.x = mat.m00 * a + mat.m01 * b + mat.m02 * c + mat.m03;
         vec.y = mat.m10 * a + mat.m11 * b + mat.m12 * c + mat.m13;
@@ -798,30 +739,11 @@ public class AVIntersectionUtils extends IntersectionUtils
      * @param mat The matrix to do the transforming with
      * @param out The vector to be put the result in
      */
-    private void transform(Tuple3d vec, Matrix4d mat, Tuple3d out)
+    private void transform(Point3d vec, Matrix4d mat, Point3d out)
     {
-        float a = (float)vec.x;
-        float b = (float)vec.y;
-        float c = (float)vec.z;
-
-        out.x = mat.m00 * a + mat.m01 * b + mat.m02 * c + mat.m03;
-        out.y = mat.m10 * a + mat.m11 * b + mat.m12 * c + mat.m13;
-        out.z = mat.m20 * a + mat.m21 * b + mat.m22 * c + mat.m23;
-    }
-
-    /**
-     * Transform the provided vector by the matrix and place it back in
-     * the vector.
-     *
-     * @param vec The vector to be transformed
-     * @param mat The matrix to do the transforming with
-     * @param out The vector to be put the result in
-     */
-    private void transform(Tuple3d vec, Matrix4d mat, Tuple3d out)
-    {
-        float a = vec.x;
-        float b = vec.y;
-        float c = vec.z;
+        double a = vec.x;
+        double b = vec.y;
+        double c = vec.z;
 
         out.x = mat.m00 * a + mat.m01 * b + mat.m02 * c + mat.m03;
         out.y = mat.m10 * a + mat.m11 * b + mat.m12 * c + mat.m13;
@@ -837,31 +759,11 @@ public class AVIntersectionUtils extends IntersectionUtils
      * @param mat The matrix to do the transforming with
      * @param out The vector to be put the result in
      */
-    private void transformNormal(Tuple3d vec, Matrix4d mat, Tuple3d out)
+    private void transformNormal(Vector3d vec, Matrix4d mat, Vector3d out)
     {
-        float a = (float)vec.x;
-        float b = (float)vec.y;
-        float c = (float)vec.z;
-
-        out.x = mat.m00 * a + mat.m01 * b + mat.m02 * c;
-        out.y = mat.m10 * a + mat.m11 * b + mat.m12 * c;
-        out.z = mat.m20 * a + mat.m21 * b + mat.m22 * c;
-    }
-
-    /**
-     * Transform the provided vector by the matrix and place it back in
-     * the vector. The fourth element is assumed to be zero for normal
-     * transformations.
-     *
-     * @param vec The vector to be transformed
-     * @param mat The matrix to do the transforming with
-     * @param out The vector to be put the result in
-     */
-    private void transformNormal(Tuple3d vec, Matrix4d mat, Tuple3d out)
-    {
-        float a = vec.x;
-        float b = vec.y;
-        float c = vec.z;
+        double a = vec.x;
+        double b = vec.y;
+        double c = vec.z;
 
         out.x = mat.m00 * a + mat.m01 * b + mat.m02 * c;
         out.y = mat.m10 * a + mat.m11 * b + mat.m12 * c;

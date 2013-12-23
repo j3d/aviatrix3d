@@ -140,27 +140,27 @@ public class MarkerGroup extends BaseGroup implements CustomCullable
         if (enabled && (target != null))
         {
             getLocalToVworld(target, targetMatrix);
-            targetMatrix.get(targetPosition);
-            
+
+            targetPosition.set(targetMatrix.m03, targetMatrix.m13, targetMatrix.m23);
             viewMatrix.set(viewTransform);
-            viewMatrix.get(viewPosition);
-            
+
+            viewPosition.set(viewMatrix.m03, viewMatrix.m13, viewMatrix.m23);
             viewMatrix.get(rotMatrix);
 			
             markerPosition.set(
                 targetPosition.x - viewPosition.x,
                 targetPosition.y - viewPosition.y,
                 targetPosition.z - viewPosition.z);
-            markerPosition.normalize();
+            markerPosition.normalise();
             markerPosition.scale(2);
-            markerPosition.add(viewPosition);
+            markerPosition.add(markerPosition, viewPosition);
             
             // account for the position of this node in the scenegraph
-            vworldTx.get(viewPosition);
-            markerPosition.sub(viewPosition);
+            viewPosition.set(vworldTx.m03, vworldTx.m13, vworldTx.m23);
+            markerPosition.sub(markerPosition, viewPosition);
 			
             markerMatrix.setIdentity();
-            markerMatrix.setRotation(rotMatrix);
+            markerMatrix.set(rotMatrix);
             markerMatrix.setTranslation(markerPosition);
 			
 			if(BoundingVolume.FRUSTUM_ALLOUT ==
@@ -280,7 +280,7 @@ public class MarkerGroup extends BaseGroup implements CustomCullable
             TransformGroup tg = pathList.get(i);
             tg.getTransform(pathMatrix);
 
-            mat.mul(pathMatrix);
+            mat.mul(mat, pathMatrix);
         }
     }
 }

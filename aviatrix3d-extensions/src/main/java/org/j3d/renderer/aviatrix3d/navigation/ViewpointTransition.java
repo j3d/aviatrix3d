@@ -25,7 +25,6 @@ import org.j3d.maths.vector.Vector3d;
 import org.j3d.util.MatrixUtils;
 
 import org.j3d.aviatrix3d.TransformGroup;
-import org.j3d.aviatrix3d.Viewpoint;
 
 /**
  * This class will create smooth transitions from one viewpoint to another.
@@ -142,22 +141,22 @@ public class ViewpointTransition implements ActionListener
         // Set up our internal transforms that we will be doing the morphing
         // along.
         viewTg.getTransform(currentTx);
-        currentTx.get(location1);
-        eye1.set(location1);
+        location1.set(currentTx.m03, currentTx.m13, currentTx.m23);
+
+        eye1.set(currentTx.m03, currentTx.m13, currentTx.m23);
         direction1.set(0,0,-1);
         currentTx.transform(direction1, direction1);
         center1.add(eye1,direction1);
         up1.set(0,1,0);
-        currentTx.transform(up1);
+        currentTx.transform(up1, up1);
 
         // Make sure the destination transform is set up for the eye position
-        destinationTx.get(location2);
-        eye2.set(location2);
+        eye2.set(destinationTx.m03, destinationTx.m13, destinationTx.m23);
         direction2.set(0,0,-1);
         destinationTx.transform(direction2, direction2);
         center2.add(eye2,direction2);
         up2.set(0,1,0);
-        destinationTx.transform(up2);
+        destinationTx.transform(up2, up2);
     }
 
     /**
