@@ -1,25 +1,36 @@
+/**************************************************************************
+ *                        Copyright j3d.org (c) 2000 - ${year}
+ *                               Java Source
+ *
+ * This source is licensed under the GNU LGPL v2.1
+ * Please read docs/lgpl.txt for more information
+ *
+ * This software comes with the standard NO WARRANTY disclaimer for any
+ * purpose. Use it at your own risk. If there's a problem you get to fix it.
+ *
+ ***************************************************************************/
+
+package org.j3d.aviatrix3d;
+
 // External imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
 import javax.media.opengl.GLCapabilities;
 
 // Local imports
-import javax.media.opengl.GL;
 
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
-import org.j3d.aviatrix3d.rendering.ProfilingData;
 import org.j3d.aviatrix3d.rendering.BoundingVolume;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.SphereGenerator;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * Test of the bounds recalculation subsystem.
@@ -38,7 +49,7 @@ import org.j3d.geom.SphereGenerator;
  * @author Alan Hudson
  * @version $Revision: 1.2 $
  */
-public class BoundsCalc extends Frame
+public class BoundsCalcTest
     implements ApplicationUpdateObserver, WindowListener, NodeUpdateListener
 {
     private static final boolean SORT = true;
@@ -47,8 +58,8 @@ public class BoundsCalc extends Frame
     /** Should we make updates to the SG each frame to force a cull/sort */
     private static final boolean DYNAMIC = true;
 
-    private Vector3f vpPos = new Vector3f(0, 0, 10);
-    private Matrix4f vpMat;
+    private Vector3d vpPos;
+    private Matrix4d vpMat;
     private TransformGroup vpTx;
 
     /** Manager for the scene graph handling */
@@ -63,27 +74,19 @@ public class BoundsCalc extends Frame
     private TransformGroup shape_transform;
     private Shape3D shape;
     private Shape3D shape2;
-    private Group sceneRoot = new Group();
+    private Group sceneRoot;
 
     private int frameCount = 0;
 
-    public BoundsCalc()
+    public BoundsCalcTest()
     {
-        super("Bounds Bug Demo");
+        vpPos = new Vector3d();
+        vpPos.set(0, 0, 10);
 
-        setLayout(new BorderLayout());
-        addWindowListener(this);
+        sceneRoot = new Group();
 
         setupAviatrix();
         setupSceneGraph();
-
-        setSize(600, 600);
-        setLocation(40, 40);
-
-        // Need to set visible first before starting the rendering thread due
-        // to a bug in JOGL. See JOGL Issue #54 for more information on this.
-        // http://jogl.dev.java.net
-        setVisible(true);
     }
 
     /**
@@ -91,46 +94,10 @@ public class BoundsCalc extends Frame
      */
     private void setupAviatrix()
     {
-        // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
-
-        GraphicsCullStage culler = null;
-
-        if (CULL)
-            culler = new FrustumCullStage();
-        else
-            culler = new NullCullStage();
-        culler.setOffscreenCheckEnabled(false);
-
-        GraphicsSortStage sorter = null;
-
-        if (SORT)
-            sorter = new TransparencyDepthSortStage();
-        else
-            sorter = new NullSortStage();
-
-        surface = new SimpleAWTSurface(caps);
-        DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
-
-        pipeline.setCuller(culler);
-        pipeline.setSorter(sorter);
-        pipeline.setGraphicsOutputDevice(surface);
-
-        displayManager = new SingleDisplayCollection();
-        displayManager.addPipeline(pipeline);
-
         // Render manager
         sceneManager = new SingleThreadRenderManager();
-        sceneManager.addDisplay(displayManager);
         sceneManager.setApplicationObserver(this);
         //sceneManager.setMinimumFrameInterval(100);
-
-        // Before putting the pipeline into run mode, put the canvas on
-        // screen first.
-        Component comp = (Component)surface.getSurfaceObject();
-        add(comp, BorderLayout.CENTER);
     }
 
     /**
@@ -142,9 +109,9 @@ public class BoundsCalc extends Frame
 
         Viewpoint vp = new Viewpoint();
 
-        vpMat = new Matrix4f();
+        vpMat = new Matrix4d();
         vpMat.setIdentity();
-        vpMat.setTranslation(vpPos);
+        vpMat.set(vpPos);
 
         vpTx = new TransformGroup();
         vpTx.addChild(vp);
@@ -160,8 +127,8 @@ public class BoundsCalc extends Frame
 
         generate(data);
 
-        Matrix4f mat = new Matrix4f();
-        Vector3f trans = new Vector3f();
+        Matrix4d mat = new Matrix4d();
+        Vector3d trans = new Vector3d();
 
         TriangleArray geom = new TriangleArray();
         geom.setVertices(TriangleArray.COORDINATE_3,
@@ -174,8 +141,8 @@ public class BoundsCalc extends Frame
 
         generate2(data);
 
-        mat = new Matrix4f();
-        trans = new Vector3f();
+        mat = new Matrix4d();
+        trans = new Vector3d();
 
         geom = new TriangleArray();
         geom.setVertices(TriangleArray.COORDINATE_3,
@@ -188,7 +155,7 @@ public class BoundsCalc extends Frame
 
         trans.set(-1,0,0);
         mat.setIdentity();
-        mat.setTranslation(trans);
+        mat.set(trans);
 
         shape_transform = new TransformGroup();
         shape_transform.setTransform(mat);
@@ -464,7 +431,6 @@ public class BoundsCalc extends Frame
 
     public static void main(String[] args)
     {
-        BoundsCalc demo = new BoundsCalc();
-        demo.setVisible(true);
+        BoundsCalcTest demo = new BoundsCalcTest();
     }
 }
