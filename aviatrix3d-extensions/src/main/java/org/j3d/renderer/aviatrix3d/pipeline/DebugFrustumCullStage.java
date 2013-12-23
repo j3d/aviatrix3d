@@ -13,16 +13,13 @@
 package org.j3d.renderer.aviatrix3d.pipeline;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Point4f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
+import org.j3d.maths.vector.*;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.rendering.*;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Implementation of view frustum culling that provides visual debugging
@@ -41,16 +38,16 @@ public class DebugFrustumCullStage extends BaseCullStage
     private double[] viewFrustum;
 
     /** Working var to calculate the view matrix */
-    private Matrix4f viewMatrix;
+    private Matrix4d viewMatrix;
 
     /** The 8 bounding points of the frustum volume */
-    private Point4f[] frustumPoints;
+    private Point4d[] frustumPoints;
 
     /** The planes describing this frustum */
-    private Vector4f[] frustumPlanes;
+    private Vector4d[] frustumPlanes;
 
     /** Projection matrix used to generate the frustum planes with. */
-    private Matrix4f prjMatrix;
+    private Matrix4d prjMatrix;
 
     /** Temporary used to fetch the minimum extents of a bounds object */
     private float[] t1;
@@ -72,6 +69,9 @@ public class DebugFrustumCullStage extends BaseCullStage
 
     /** Flag to say whether to trash the viewpoint position or not */
     private boolean globalViewpoint;
+
+    /** Utility for messing about with matrix manipulation */
+    private MatrixUtils matrixUtils;
 
     /**
      * Create a basic instance of this class with the list assuming there are
@@ -100,21 +100,23 @@ public class DebugFrustumCullStage extends BaseCullStage
     {
         super(numSurfaces);
 
-        viewMatrix = new Matrix4f();
-        prjMatrix = new Matrix4f();
-        frustumPoints = new Point4f[8];
+        viewMatrix = new Matrix4d();
+        prjMatrix = new Matrix4d();
+        frustumPoints = new Point4d[8];
         for(int i=0; i < 8; i++)
-            frustumPoints[i] = new Point4f();
+            frustumPoints[i] = new Point4d();
 
-        frustumPlanes = new Vector4f[6];
+        frustumPlanes = new Vector4d[6];
         for(int i=0; i < 6; i++)
-            frustumPlanes[i] = new Vector4f();
+            frustumPlanes[i] = new Vector4d();
 
         t1 = new float[3];
         t2 = new float[3];
         c1 = new float[3];
         c2 = new float[3];
         globalViewpoint = useGlobalView;
+
+        matrixUtils = new MatrixUtils();
     }
 
     //---------------------------------------------------------------
@@ -132,6 +134,7 @@ public class DebugFrustumCullStage extends BaseCullStage
      *    ViewportCollection
      * @param layerIndex The index of the layer within the viewport
      */
+    @Override
     protected void cullScene(RenderPassCullable scene,
                              int subsceneId,
                              int layerId,
@@ -237,7 +240,7 @@ public class DebugFrustumCullStage extends BaseCullStage
 
         if(globalViewpoint)
         {
-            viewMatrix.rotX((float)(Math.PI * -0.5));
+            matrixUtils.rotateX((float)(Math.PI * -0.5), viewMatrix);
             viewMatrix.m03 = 0;
             viewMatrix.m13 = 100;
             viewMatrix.m23 = 0;
@@ -275,6 +278,7 @@ public class DebugFrustumCullStage extends BaseCullStage
      *    ViewportCollection
      * @param layerIndex The index of the layer within the viewport
      */
+    @Override
     protected void cullScene2D(RenderPassCullable scene,
                                int subsceneId,
                                int layerId,
@@ -384,6 +388,7 @@ public class DebugFrustumCullStage extends BaseCullStage
      *    ViewportCollection
      * @param layerIndex The index of the layer within the viewport
      */
+    @Override
     protected void cullRenderPass(RenderPassCullable pass,
                                   int passNumber,
                                   int subsceneId,
@@ -493,6 +498,7 @@ public class DebugFrustumCullStage extends BaseCullStage
      * @param scene The scene to take data from
      * @param envData Data instance to copy it to
      */
+    @Override
     protected void fillSingleEnvData(SceneCullable scene,
                                      GraphicsEnvironmentData envData)
     {
@@ -511,6 +517,7 @@ public class DebugFrustumCullStage extends BaseCullStage
      * @param scene The scene to take data from
      * @param envData Data instance to copy it to
      */
+    @Override
     protected void fillMultipassEnvData(SceneCullable scene,
                                         GraphicsEnvironmentData envData)
     {
@@ -530,6 +537,7 @@ public class DebugFrustumCullStage extends BaseCullStage
      * @param envData Data instance to copy it to
      * @param bufferData The object to copy the extra buffer state to
      */
+    @Override
     protected void fillRenderPassEnvData(RenderPassCullable pass,
                                          GraphicsEnvironmentData envData,
                                          BufferDetails bufferData)
@@ -573,7 +581,7 @@ public class DebugFrustumCullStage extends BaseCullStage
         else
             matIdx = lastTxStack;
 
-        Matrix4f group_mat = transformStack[matIdx];
+        Matrix4d group_mat = transformStack[matIdx];
         int ret_val = cullEndIndex;
 
         if(!allInBounds)
@@ -667,7 +675,7 @@ public class DebugFrustumCullStage extends BaseCullStage
                     resizeLightList();
                     lightList[lastLight] = effect;
 
-                    Matrix4f mat = transformStack[lastTxStack];
+                    Matrix4d mat = transformStack[lastTxStack];
 
                     // Transpose the matrix in place as it is being copied
                     lightTxList[lastLight][0] = (float)mat.m00;
@@ -789,7 +797,7 @@ public class DebugFrustumCullStage extends BaseCullStage
                         workCullList[ret_val].renderable = r;
                         workCullList[ret_val].localFog = fogStack[lastFogStack];
 
-                        Matrix4f mat = transformStack[lastTxStack];
+                        Matrix4d mat = transformStack[lastTxStack];
 
                         workCullList[ret_val].transform.set(mat);
 
@@ -958,7 +966,7 @@ public class DebugFrustumCullStage extends BaseCullStage
                     workCullList[cullEndIndex].renderable = r;
                     workCullList[ret_val].localFog = fogStack[lastFogStack];
 
-                    Matrix4f mat = transformStack[lastTxStack];
+                    Matrix4d mat = transformStack[lastTxStack];
 
                     // Transpose the matrix in place as it is being copied
                     workCullList[cullEndIndex].transform.set(mat);
@@ -1049,14 +1057,14 @@ public class DebugFrustumCullStage extends BaseCullStage
     private void updateFrustum(GraphicsEnvironmentData envData)
     {
         // Create projection matrix
-        float left = (float)viewFrustum[0];
-        float right = (float)viewFrustum[1];
-        float bottom = (float)viewFrustum[2];
-        float top = (float)viewFrustum[3];
-        float nearval = (float)viewFrustum[4];
-        float farval = (float)viewFrustum[5];
-        float x, y, z, w;
-        float a, b, c, d;
+        double left = viewFrustum[0];
+        double right = viewFrustum[1];
+        double bottom = viewFrustum[2];
+        double top = viewFrustum[3];
+        double nearval = viewFrustum[4];
+        double farval = viewFrustum[5];
+        double x, y, z, w;
+        double a, b, c, d;
 
         x = (2.0f * nearval) / (right - left);
         y = (2.0f * nearval) / (top - bottom);

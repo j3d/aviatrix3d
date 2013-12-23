@@ -47,9 +47,9 @@ class PointParticle extends AVParticle
      */
     void writeValues(int vertexOffset, int colorOffset)
     {
-        vertices[vertexOffset + X_COORD_INDEX] = position.x;
-        vertices[vertexOffset + Y_COORD_INDEX] = position.y;
-        vertices[vertexOffset + Z_COORD_INDEX] = position.z;
+        vertices[vertexOffset + X_COORD_INDEX] = (float)position.x;
+        vertices[vertexOffset + Y_COORD_INDEX] = (float)position.y;
+        vertices[vertexOffset + Z_COORD_INDEX] = (float)position.z;
 
         colors[colorOffset + RED_COLOR_INDEX] = red;
         colors[colorOffset + GREEN_COLOR_INDEX] = green;

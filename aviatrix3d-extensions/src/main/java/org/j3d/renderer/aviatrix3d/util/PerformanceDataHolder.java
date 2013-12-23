@@ -81,6 +81,7 @@ class PerformanceDataHolder implements Comparable
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -114,6 +115,7 @@ class PerformanceDataHolder implements Comparable
      * @param o The object instance to compare against this one
      * @return True if these represent the same listener instance
      */
+    @Override
     public boolean equals(Object o)
     {
         if(o instanceof PerformanceDataHolder)

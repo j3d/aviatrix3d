@@ -68,6 +68,7 @@ public class KeyboardManager implements DeviceManager
      *
      * @param reporter The instance to use or null
      */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         errorReporter = reporter;
@@ -82,6 +83,7 @@ public class KeyboardManager implements DeviceManager
      *
      * @return The number of devices.
      */
+    @Override
     public int getNumDevices()
     {
         return devices.size();
@@ -93,6 +95,7 @@ public class KeyboardManager implements DeviceManager
      *
      * @return InputDevice[] An array of discovered devices.
      */
+    @Override
     public InputDevice[] getDevices()
     {
         InputDevice[] devs = new InputDevice[devices.size()];
@@ -107,6 +110,7 @@ public class KeyboardManager implements DeviceManager
      *
      * @param l The listener.  Nulls and duplicates will be ignored.
      */
+    @Override
     public void addDeviceListener(DeviceListener l)
     {
         if(!deviceListeners.contains(l))
@@ -119,6 +123,7 @@ public class KeyboardManager implements DeviceManager
      *
      * @param l The listener.  Nulls and not found listeners will be ignored.
      */
+    @Override
     public void removeDeviceListener(DeviceListener l)
     {
         deviceListeners.remove(l);

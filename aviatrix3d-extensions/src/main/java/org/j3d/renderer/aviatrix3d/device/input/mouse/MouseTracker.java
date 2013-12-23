@@ -131,6 +131,7 @@ public class MouseTracker extends Tracker
      *
      * @return The action mask.
      */
+    @Override
     public int getActionMask()
     {
         return mask;
@@ -139,6 +140,7 @@ public class MouseTracker extends Tracker
     /**
      * Notification that tracker polling is beginning.
      */
+    @Override
     public void beginPolling()
     {
         if (currentIndex == 0)
@@ -156,6 +158,7 @@ public class MouseTracker extends Tracker
     /**
      * Notification that tracker polling is ending.
      */
+    @Override
     public void endPolling() {
         if (tstate[currentIndex].actionType != TrackerState.TYPE_NONE)
 		{
@@ -176,6 +179,7 @@ public class MouseTracker extends Tracker
      * @param layer The ID of the layer to get the state for
      * @param subLayer The ID of the sub layer within the parent layer
      */
+    @Override
     public void getState(int layer, int subLayer, TrackerState state)
     {
         state.actionMask = mask;
@@ -215,6 +219,7 @@ public class MouseTracker extends Tracker
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mousePressed(MouseEvent evt)
     {
         int mods = evt.getModifiersEx();
@@ -251,6 +256,7 @@ public class MouseTracker extends Tracker
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseReleased(MouseEvent evt)
     {
         updateMouseDetails(evt);
@@ -270,6 +276,7 @@ public class MouseTracker extends Tracker
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseClicked(MouseEvent evt)
     {
         tstate[currentIndex].shiftModifier = evt.isShiftDown();
@@ -282,6 +289,7 @@ public class MouseTracker extends Tracker
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseEntered(MouseEvent evt)
     {
         tstate[currentIndex].shiftModifier = evt.isShiftDown();
@@ -294,6 +302,7 @@ public class MouseTracker extends Tracker
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseExited(MouseEvent evt)
     {
         tstate[currentIndex].shiftModifier = evt.isShiftDown();
@@ -310,6 +319,7 @@ public class MouseTracker extends Tracker
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseDragged(MouseEvent evt)
     {
         if (tstate[currentIndex].actionType == TrackerState.TYPE_NONE ||
@@ -329,6 +339,7 @@ public class MouseTracker extends Tracker
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseMoved(MouseEvent evt)
     {
         if (tstate[currentIndex].actionType == TrackerState.TYPE_NONE ||
@@ -348,6 +359,7 @@ public class MouseTracker extends Tracker
     // Method defined by MouseWheelListener
     //------------------------------------------------------------------------
 
+    @Override
     public void mouseWheelMoved(MouseWheelEvent mwe)
     {
         tstate[currentIndex].wheelClicks = mwe.getWheelRotation( );

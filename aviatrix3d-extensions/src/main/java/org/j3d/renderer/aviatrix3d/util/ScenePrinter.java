@@ -10,7 +10,7 @@
 package org.j3d.renderer.aviatrix3d.util;
 
 // External imports
-import javax.vecmath.Matrix4f;
+import org.j3d.maths.vector.Matrix4d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
@@ -58,7 +58,7 @@ public class ScenePrinter
     private boolean printMatrix;
 
     /** Matrix for fetching the transform info */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
     /**
      * Create a new printer with all flags turned off.
@@ -91,6 +91,7 @@ public class ScenePrinter
      *    and this is beyond the first reference
      * @param depth The depth of traversal from the top of the tree.  Starts at 0 for top.
      */
+    @Override
     public void observedNode(SceneGraphObject parent,
                              SceneGraphObject child,
                              boolean shared,
@@ -310,7 +311,7 @@ public class ScenePrinter
         printMatrix = state;
 
         if(state)
-            matrix = new Matrix4f();
+            matrix = new Matrix4d();
     }
 
     /**

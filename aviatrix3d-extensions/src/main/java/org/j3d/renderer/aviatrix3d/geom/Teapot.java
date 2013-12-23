@@ -11,6 +11,7 @@ package org.j3d.renderer.aviatrix3d.geom;
 
 // External imports
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.Geometry;
@@ -180,20 +181,21 @@ public class Teapot extends Geometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         int i, j, k, l;
 
         // Find out what fill state is currently set and then tell the
         // evaluator to use that.
-        gl.glGetIntegerv(GL.GL_POLYGON_MODE, polygonMode, 0);
+        gl.glGetIntegerv(GL2.GL_POLYGON_MODE, polygonMode, 0);
         int type = polygonMode[0];
 
-        gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_EVAL_BIT);
-        gl.glEnable(GL.GL_AUTO_NORMAL);
-        gl.glEnable(GL.GL_NORMALIZE);
-        gl.glEnable(GL.GL_MAP2_VERTEX_3);
-        gl.glEnable(GL.GL_MAP2_TEXTURE_COORD_2);
+        gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_EVAL_BIT);
+        gl.glEnable(GL2.GL_AUTO_NORMAL);
+        gl.glEnable(GL2.GL_NORMALIZE);
+        gl.glEnable(GL2.GL_MAP2_VERTEX_3);
+        gl.glEnable(GL2.GL_MAP2_TEXTURE_COORD_2);
         gl.glPushMatrix();
         gl.glRotatef(270.0f, 1, 0, 0);
         gl.glScalef(0.5f * scale, 0.5f * scale, 0.5f * scale);
@@ -235,36 +237,27 @@ public class Teapot extends Geometry
                 }
             }
 
-            gl.glMap2f(GL.GL_MAP2_TEXTURE_COORD_2, 0, 1, 2, 2, 0, 1, 4, 2, tex, 0);
-            gl.glMap2f(GL.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, p, 0);
+            gl.glMap2f(GL2.GL_MAP2_TEXTURE_COORD_2, 0, 1, 2, 2, 0, 1, 4, 2, tex, 0);
+            gl.glMap2f(GL2.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, p, 0);
 
             gl.glMapGrid2f(gridSize, 0, 1, gridSize, 0, 1);
             gl.glEvalMesh2(type, 0, gridSize, 0, gridSize);
 
-            gl.glMap2f(GL.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, q, 0);
+            gl.glMap2f(GL2.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, q, 0);
             gl.glEvalMesh2(type, 0, gridSize, 0, gridSize);
 
             if(i < 6)
             {
-                gl.glMap2f(GL.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, r, 0);
+                gl.glMap2f(GL2.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, r, 0);
                 gl.glEvalMesh2(type, 0, gridSize, 0, gridSize);
 
-                gl.glMap2f(GL.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, s, 0);
+                gl.glMap2f(GL2.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, s, 0);
                 gl.glEvalMesh2(type, 0, gridSize, 0, gridSize);
             }
         }
 
         gl.glPopMatrix();
         gl.glPopAttrib();
-    }
-
-    /**
-     * Restore all openGL state.
-     *
-     * @param gl The gl context to draw with
-     */
-    public void postRender(GL gl)
-    {
     }
 
     //---------------------------------------------------------------
@@ -277,6 +270,7 @@ public class Teapot extends Geometry
      * to the root. A node implementation may decide when and where to tell
      * the parent(s)s that updates are ready.
      */
+    @Override
     protected void updateBounds()
     {
     }
@@ -286,6 +280,7 @@ public class Teapot extends Geometry
      * default the bounds are a point sphere, so derived classes should
      * override this method with something better.
      */
+    @Override
     protected void recomputeBounds()
     {
     }
@@ -294,6 +289,7 @@ public class Teapot extends Geometry
      * Mark this node as having dirty bounds due to it's geometry having
      * changed.
      */
+    @Override
     protected void markBoundsDirty()
     {
     }
@@ -312,6 +308,7 @@ public class Teapot extends Geometry
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -329,6 +326,7 @@ public class Teapot extends Geometry
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof Teapot))

@@ -24,6 +24,7 @@ import java.awt.font.LineMetrics;
 import java.util.ArrayList;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.geom.CharacterCreator;
 import org.j3d.geom.CharacterData;
@@ -211,7 +212,8 @@ public class Text2D extends Geometry
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(text == null) {
             return;
@@ -233,7 +235,7 @@ public class Text2D extends Geometry
         gl.glEnd();
 */
 
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
 
         if(horizontal)
         {
@@ -309,18 +311,7 @@ public class Text2D extends Geometry
             }
         }
 
-        gl.glDisableClientState(GL.GL_VERTEX_ARRAY);
-    }
-
-    /*
-     * This method is called after a node has been rendered.  This method
-     * must be re-entrant.
-     *
-     * @param gl The gl context to draw with
-     */
-    public void postRender(GL gl)
-    {
-        // do nothing
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
     }
 
     //---------------------------------------------------------------
@@ -337,6 +328,7 @@ public class Text2D extends Geometry
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -354,6 +346,7 @@ public class Text2D extends Geometry
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof Text2D))
@@ -373,6 +366,7 @@ public class Text2D extends Geometry
      *
      * @return true when the geometry is visible
      */
+    @Override
     protected boolean isVisible()
     {
         return (text != null) && (text.length != 0);
@@ -388,6 +382,7 @@ public class Text2D extends Geometry
      *
      * @return True if this is 2D geometry, false if this is 3D
      */
+    @Override
     public boolean is2D()
     {
         return false;
@@ -404,6 +399,7 @@ public class Text2D extends Geometry
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -423,6 +419,7 @@ public class Text2D extends Geometry
      * default the bounds are a point sphere, so derived classes should
      * override this method with something better.
      */
+    @Override
     protected void recomputeBounds()
     {
         if(text == null)
@@ -730,6 +727,7 @@ public class Text2D extends Geometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
                                    boolean findAny,
@@ -808,6 +806,7 @@ public class Text2D extends Geometry
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
                                boolean findAny,

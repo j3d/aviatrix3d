@@ -15,9 +15,8 @@ import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector4f;
-
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -120,17 +119,17 @@ public class OctTree extends BaseNode
      *    calculable from the available data.
      */
     public void cullChildren(CullInstructions output,
-                             Matrix4f vworldTx,
-                             Matrix4f viewTransform,
-                             Vector4f[] frustumPlanes,
+                             Matrix4d vworldTx,
+                             Matrix4d viewTransform,
+                             Vector4d[] frustumPlanes,
                              float angularRes)
     {
         // if the distance from the viewTransform to vworldTx is less than
         // range, then return the high-detail, otherwise return the low detail.
 
-        float x = vworldTx.m03 - viewTransform.m03;
-        float y = vworldTx.m13 - viewTransform.m13;
-        float z = vworldTx.m23 - viewTransform.m23;
+        double x = vworldTx.m03 - viewTransform.m03;
+        double y = vworldTx.m13 - viewTransform.m13;
+        double z = vworldTx.m23 - viewTransform.m23;
 
         output.hasTransform = false;
 

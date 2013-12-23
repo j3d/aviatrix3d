@@ -89,6 +89,7 @@ class QuadParticle extends AVParticle
      * @param vertexOffset The offset into the colour array for this object
      * @param colorOffset The offset into the colour array for this object
      */
+    @Override
     void writeValues(int vertexOffset, int colorOffset)
     {
         if(colors != null)
@@ -136,31 +137,31 @@ class QuadParticle extends AVParticle
         }
 
         // point 1
-        vertices[vertexOffset + COORD_POINT_1 + X_COORD_INDEX] = position.x + width;
-        vertices[vertexOffset + COORD_POINT_1 + Y_COORD_INDEX] = position.y - height;
-        vertices[vertexOffset + COORD_POINT_1 + Z_COORD_INDEX] = position.z;
+        vertices[vertexOffset + COORD_POINT_1 + X_COORD_INDEX] = (float)(position.x + width);
+        vertices[vertexOffset + COORD_POINT_1 + Y_COORD_INDEX] = (float)(position.y - height);
+        vertices[vertexOffset + COORD_POINT_1 + Z_COORD_INDEX] = (float)(position.z);
 
         // point 2
-        vertices[vertexOffset + COORD_POINT_2 + X_COORD_INDEX] = position.x + width;
-        vertices[vertexOffset + COORD_POINT_2 + Y_COORD_INDEX] = position.y + height;
-        vertices[vertexOffset + COORD_POINT_2 + Z_COORD_INDEX] = position.z;
+        vertices[vertexOffset + COORD_POINT_2 + X_COORD_INDEX] = (float)(position.x + width);
+        vertices[vertexOffset + COORD_POINT_2 + Y_COORD_INDEX] = (float)(position.y + height);
+        vertices[vertexOffset + COORD_POINT_2 + Z_COORD_INDEX] = (float)(position.z);
 
         // point 3
-        vertices[vertexOffset + COORD_POINT_3 + X_COORD_INDEX] = position.x - width;
-        vertices[vertexOffset + COORD_POINT_3 + Y_COORD_INDEX] = position.y + height;
-        vertices[vertexOffset + COORD_POINT_3 + Z_COORD_INDEX] = position.z;
+        vertices[vertexOffset + COORD_POINT_3 + X_COORD_INDEX] = (float)(position.x - width);
+        vertices[vertexOffset + COORD_POINT_3 + Y_COORD_INDEX] = (float)(position.y + height);
+        vertices[vertexOffset + COORD_POINT_3 + Z_COORD_INDEX] = (float)(position.z);
 
         // point 4
-        vertices[vertexOffset + COORD_POINT_4 + X_COORD_INDEX] = position.x - width;
-        vertices[vertexOffset + COORD_POINT_4 + Y_COORD_INDEX] = position.y - height;
-        vertices[vertexOffset + COORD_POINT_4 + Z_COORD_INDEX] = position.z;
+        vertices[vertexOffset + COORD_POINT_4 + X_COORD_INDEX] = (float)(position.x - width);
+        vertices[vertexOffset + COORD_POINT_4 + Y_COORD_INDEX] = (float)(position.y - height);
+        vertices[vertexOffset + COORD_POINT_4 + Z_COORD_INDEX] = (float)(position.z);
     }
 
     /**
      * Convenience method to set up the texture coordinates for this quad.
      *
      * @param texCoordOffset The starting index into the texture coord array
-     * @param normals The array to write values to
+     * @param texCoords The array to write values to
      */
     private void setTextureCoordinates(int texCoordOffset, float[] texCoords)
     {

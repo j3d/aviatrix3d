@@ -58,6 +58,7 @@ public class KeyboardDevice implements TrackerDevice, KeyListener
      *
      * @return The name
      */
+    @Override
     public String getName()
     {
         return name;
@@ -67,6 +68,7 @@ public class KeyboardDevice implements TrackerDevice, KeyListener
     // Methods for InputDevice interface
     //------------------------------------------------------------------------
 
+    @Override
     public Tracker[] getTrackers()
     {
         return trackers;
@@ -76,6 +78,7 @@ public class KeyboardDevice implements TrackerDevice, KeyListener
      * Get a count of the number of trackers this device has.  This cannot
      * change during the life of a device.
      */
+    @Override
     public int getTrackerCount()
     {
         return 1;
@@ -91,6 +94,7 @@ public class KeyboardDevice implements TrackerDevice, KeyListener
      *
      * @param evt The key event that caused this method to be called
      */
+    @Override
     public void keyPressed(KeyEvent evt)
     {
         trackers[0].keyPressed(evt);
@@ -102,6 +106,7 @@ public class KeyboardDevice implements TrackerDevice, KeyListener
      *
      * @param evt The key event that caused this method to be called
      */
+    @Override
     public void keyReleased(KeyEvent evt)
     {
         trackers[0].keyReleased(evt);
@@ -113,6 +118,7 @@ public class KeyboardDevice implements TrackerDevice, KeyListener
      *
      * @param evt The key event that caused this method to be called
      */
+    @Override
     public void keyTyped(KeyEvent evt)
     {
         trackers[0].keyTyped(evt);

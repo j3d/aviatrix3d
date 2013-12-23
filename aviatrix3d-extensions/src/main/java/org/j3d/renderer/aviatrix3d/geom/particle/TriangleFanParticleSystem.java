@@ -129,6 +129,7 @@ public class TriangleFanParticleSystem extends AVParticleSystem
      *
      * @return The number of coordinates this particle uses
      */
+    @Override
     public final int coordinatesPerParticle()
     {
         return 4;
@@ -140,6 +141,7 @@ public class TriangleFanParticleSystem extends AVParticleSystem
      *
      * @return The number of color components in use
      */
+    @Override
     public final int numColorComponents()
     {
         return numColors;
@@ -151,6 +153,7 @@ public class TriangleFanParticleSystem extends AVParticleSystem
      *
      * @return The number of color components in use
      */
+    @Override
     public final int numTexCoordComponents()
     {
         return 2;
@@ -161,6 +164,7 @@ public class TriangleFanParticleSystem extends AVParticleSystem
      *
      * @return The new instance created
      */
+    @Override
     public Particle createParticle()
     {
         // Register a data change listener now
@@ -184,6 +188,7 @@ public class TriangleFanParticleSystem extends AVParticleSystem
      * Notification that this particle system has been removed from the scene
      * graph and it cleanup anything needed right now. Does nothing.
      */
+    @Override
     public void onRemove()
     {
     }
@@ -198,6 +203,7 @@ public class TriangleFanParticleSystem extends AVParticleSystem
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeBoundsChanges(Object src)
     {
         TriangleFanArray geom = (TriangleFanArray)particleGeometry;
@@ -217,6 +223,7 @@ public class TriangleFanParticleSystem extends AVParticleSystem
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeDataChanges(Object src)
     {
         TriangleFanArray geom = (TriangleFanArray)particleGeometry;

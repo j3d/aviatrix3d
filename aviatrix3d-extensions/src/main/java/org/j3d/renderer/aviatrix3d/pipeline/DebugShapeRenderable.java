@@ -14,7 +14,9 @@ package org.j3d.renderer.aviatrix3d.pipeline;
 
 // External imports
 import javax.media.opengl.GL;
-import javax.vecmath.Matrix4f;
+import javax.media.opengl.GL2;
+
+import org.j3d.maths.vector.Matrix4d;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.*;
@@ -49,7 +51,7 @@ class DebugShapeRenderable
                          float[] max,
                          float[] center,
                          float[] size,
-                         Matrix4f mat)
+                         Matrix4d mat)
     {
         showParent = useParent;
         minBounds = new float[3];
@@ -73,18 +75,18 @@ class DebugShapeRenderable
             float z = center[2] - size[2];
 
             // Project the vertex into world space
-            minBox[0] = mat.m00 * x + mat.m01 * y + mat.m02 * z + mat.m03;
-            minBox[1] = mat.m10 * x + mat.m11 * y + mat.m12 * z + mat.m13;
-            minBox[2] = mat.m20 * x + mat.m21 * y + mat.m22 * z + mat.m23;
+            minBox[0] = (float)(mat.m00 * x + mat.m01 * y + mat.m02 * z + mat.m03);
+            minBox[1] = (float)(mat.m10 * x + mat.m11 * y + mat.m12 * z + mat.m13);
+            minBox[2] = (float)(mat.m20 * x + mat.m21 * y + mat.m22 * z + mat.m23);
 
             x = center[0] + size[0];
             y = center[1] + size[1];
             z = center[2] + size[2];
 
             // Project the vertex into world space
-            maxBox[0] = mat.m00 * x + mat.m01 * y + mat.m02 * z + mat.m03;
-            maxBox[1] = mat.m10 * x + mat.m11 * y + mat.m12 * z + mat.m13;
-            maxBox[2] = mat.m20 * x + mat.m21 * y + mat.m22 * z + mat.m23;
+            maxBox[0] = (float)(mat.m00 * x + mat.m01 * y + mat.m02 * z + mat.m03);
+            maxBox[1] = (float)(mat.m10 * x + mat.m11 * y + mat.m12 * z + mat.m13);
+            maxBox[2] = (float)(mat.m20 * x + mat.m21 * y + mat.m22 * z + mat.m23);
         }
     }
 
@@ -98,6 +100,7 @@ class DebugShapeRenderable
      *
      * @return true if the shape has something to render
      */
+    @Override
     public boolean isVisible()
     {
         return true;
@@ -113,6 +116,7 @@ class DebugShapeRenderable
      *
      * @return True if this is 2D geometry, false if this is 3D
      */
+    @Override
     public boolean is2D()
     {
         return false;
@@ -124,6 +128,7 @@ class DebugShapeRenderable
      *
      * @param center The object to copy the center coordinates in to
      */
+    @Override
     public void getCenter(float[] center)
     {
         center[0] = (maxBounds[0] + minBounds[0]) * 0.5f;
@@ -136,6 +141,7 @@ class DebugShapeRenderable
      *
      * @return The current geometry renderable or null if none
      */
+    @Override
     public GeometryRenderable getGeometryRenderable()
     {
         return this;
@@ -147,6 +153,7 @@ class DebugShapeRenderable
      *
      * @return The current appearance renderable or null if none
      */
+    @Override
     public AppearanceRenderable getAppearanceRenderable()
     {
         return null;
@@ -163,6 +170,7 @@ class DebugShapeRenderable
      *
      * @return true if there is any form of transparency
      */
+    @Override
     public boolean hasTransparency()
     {
         return false;
@@ -173,7 +181,8 @@ class DebugShapeRenderable
      *
      * @param gl The GL context to render with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         gl.glBegin(GL.GL_LINES);
         gl.glColor3f(0, 0, 1);

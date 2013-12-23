@@ -33,8 +33,8 @@ import org.j3d.util.DefaultErrorReporter;
  * @author Alan Hudson
  * @version $Revision: 1.1 $
  */
-public class MouseManager implements DeviceManager {
-
+public class MouseManager implements DeviceManager
+{
     /** The device list */
     private ArrayList<InputDevice> devices;
 
@@ -47,7 +47,8 @@ public class MouseManager implements DeviceManager {
     /**
      * Create a basic manager for mice.
      */
-    public MouseManager(GraphicsOutputDevice surface) {
+    public MouseManager(GraphicsOutputDevice surface)
+    {
         devices = new ArrayList<InputDevice>();
 
         deviceListeners = new ArrayList<DeviceListener>();
@@ -69,7 +70,9 @@ public class MouseManager implements DeviceManager {
      *
      * @param reporter The instance to use or null
      */
-    public void setErrorReporter(ErrorReporter reporter) {
+    @Override
+    public void setErrorReporter(ErrorReporter reporter)
+    {
         errorReporter = reporter;
 
         // Reset the default only if we are not shutting down the system.
@@ -82,7 +85,9 @@ public class MouseManager implements DeviceManager {
      *
      * @return The number of devices.
      */
-    public int getNumDevices() {
+    @Override
+    public int getNumDevices()
+    {
         return devices.size();
     }
 
@@ -92,7 +97,9 @@ public class MouseManager implements DeviceManager {
      *
      * @return InputDevice[] An array of discovered devices.
      */
-    public InputDevice[] getDevices() {
+    @Override
+    public InputDevice[] getDevices()
+    {
         InputDevice[] devs = new InputDevice[devices.size()];
 
         devices.toArray(devs);
@@ -105,7 +112,9 @@ public class MouseManager implements DeviceManager {
      *
      * @param l The listener.  Nulls and duplicates will be ignored.
      */
-    public void addDeviceListener(DeviceListener l) {
+    @Override
+    public void addDeviceListener(DeviceListener l)
+    {
         if(!deviceListeners.contains(l))
             deviceListeners.add(l);
 
@@ -116,7 +125,9 @@ public class MouseManager implements DeviceManager {
      *
      * @param l The listener.  Nulls and not found listeners will be ignored.
      */
-    public void removeDeviceListener(DeviceListener l) {
+    @Override
+    public void removeDeviceListener(DeviceListener l)
+    {
         deviceListeners.remove(l);
     }
 }

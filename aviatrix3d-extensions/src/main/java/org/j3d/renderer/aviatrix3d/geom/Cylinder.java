@@ -10,7 +10,8 @@
 package org.j3d.renderer.aviatrix3d.geom;
 
 // External imports
-// None
+import org.j3d.geom.CylinderGenerator;
+import org.j3d.geom.GeometryData;
 
 // Local imports
 import org.j3d.aviatrix3d.Appearance;
@@ -18,9 +19,6 @@ import org.j3d.aviatrix3d.NodeUpdateListener;
 import org.j3d.aviatrix3d.Shape3D;
 import org.j3d.aviatrix3d.TriangleStripArray;
 import org.j3d.aviatrix3d.VertexGeometry;
-
-import org.j3d.geom.CylinderGenerator;
-import org.j3d.geom.GeometryData;
 
 /**
  * A simple cylinder that uses triangle strips for rendering.
@@ -172,6 +170,7 @@ public class Cylinder extends Shape3D
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeBoundsChanges(Object src)
     {
         generator.generate(data);
@@ -191,6 +190,7 @@ public class Cylinder extends Shape3D
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeDataChanges(Object src)
     {
     }

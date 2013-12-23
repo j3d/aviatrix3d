@@ -13,8 +13,6 @@
 package org.j3d.renderer.aviatrix3d.device.input.keyboard;
 
 // External imports
-import java.awt.Component;
-
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -77,6 +75,7 @@ public class KeyboardTracker extends Tracker implements KeyListener
      *
      * @return The action mask.
      */
+    @Override
     public int getActionMask()
     {
         return mask;
@@ -85,6 +84,7 @@ public class KeyboardTracker extends Tracker implements KeyListener
     /**
      * Notification that tracker polling is beginning.
      */
+    @Override
     public void beginPolling()
     {
         // TODO: Should we double buffer?
@@ -93,6 +93,7 @@ public class KeyboardTracker extends Tracker implements KeyListener
     /**
      * Notification that tracker polling is ending.
      */
+    @Override
     public void endPolling()
     {
     }
@@ -104,6 +105,7 @@ public class KeyboardTracker extends Tracker implements KeyListener
      * @param subLayer The ID of the sub layer within the parent layer
      * @param state The current state
      */
+    @Override
     public void getState(int layer, int subLayer, TrackerState state)
     {
         // Layer information is ignored.
@@ -166,6 +168,7 @@ public class KeyboardTracker extends Tracker implements KeyListener
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void keyPressed(KeyEvent evt)
     {
         boolean new_active=false;
@@ -224,6 +227,7 @@ public class KeyboardTracker extends Tracker implements KeyListener
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void keyReleased(KeyEvent evt)
     {
         if (evt.isShiftDown())
@@ -261,6 +265,7 @@ public class KeyboardTracker extends Tracker implements KeyListener
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void keyTyped(KeyEvent evt)
     {
     }

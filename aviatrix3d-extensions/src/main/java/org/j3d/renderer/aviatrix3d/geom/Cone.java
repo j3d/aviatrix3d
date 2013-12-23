@@ -10,7 +10,8 @@
 package org.j3d.renderer.aviatrix3d.geom;
 
 // External imports
-// None
+import org.j3d.geom.ConeGenerator;
+import org.j3d.geom.GeometryData;
 
 // Local imports
 import org.j3d.aviatrix3d.Appearance;
@@ -19,8 +20,6 @@ import org.j3d.aviatrix3d.Shape3D;
 import org.j3d.aviatrix3d.TriangleArray;
 import org.j3d.aviatrix3d.VertexGeometry;
 
-import org.j3d.geom.ConeGenerator;
-import org.j3d.geom.GeometryData;
 
 /**
  * A simple cone that uses triangles.
@@ -171,6 +170,7 @@ public class Cone extends Shape3D
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeBoundsChanges(Object src)
     {
         generator.generate(data);
@@ -188,6 +188,7 @@ public class Cone extends Shape3D
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeDataChanges(Object src)
     {
     }

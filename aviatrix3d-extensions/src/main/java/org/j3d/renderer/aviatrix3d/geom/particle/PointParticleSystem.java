@@ -103,6 +103,7 @@ public class PointParticleSystem extends AVParticleSystem
      *
      * @return The number of coordinates this particle uses
      */
+    @Override
     public final int coordinatesPerParticle()
     {
         return 1;
@@ -114,6 +115,7 @@ public class PointParticleSystem extends AVParticleSystem
      *
      * @return The number of color components in use
      */
+    @Override
     public final int numColorComponents()
     {
         return 4;
@@ -125,6 +127,7 @@ public class PointParticleSystem extends AVParticleSystem
      *
      * @return The number of color components in use
      */
+    @Override
     public final int numTexCoordComponents()
     {
         return 0;
@@ -135,6 +138,7 @@ public class PointParticleSystem extends AVParticleSystem
      *
      * @return The new instance created
      */
+    @Override
     public Particle createParticle()
     {
         createdParticleCount++;
@@ -145,6 +149,7 @@ public class PointParticleSystem extends AVParticleSystem
      * Notification that this particle system has been removed from the scene
      * graph and it cleanup anything needed right now. Does nothing.
      */
+    @Override
     public void onRemove()
     {
     }
@@ -159,6 +164,7 @@ public class PointParticleSystem extends AVParticleSystem
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeBoundsChanges(Object src)
     {
         ((PointArray)particleGeometry).setVertices(PointArray.COORDINATE_3,
@@ -172,6 +178,7 @@ public class PointParticleSystem extends AVParticleSystem
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeDataChanges(Object src)
     {
         switch(numColors)

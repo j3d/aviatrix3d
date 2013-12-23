@@ -79,6 +79,7 @@ public abstract class AVParticleSystem extends ParticleSystem
      * change notifcation methods. Derived classes need to handle the methods
      * defined by NodeUpdateListener.
      */
+    @Override
     protected void updateGeometry()
     {
         int num_particles = particleList.size();
@@ -153,6 +154,28 @@ public abstract class AVParticleSystem extends ParticleSystem
     }
 
     /**
+     * Change the maximum number of particles that can be generated. If the
+     * number is greater than the currently set value, it will permit more to
+     * be made according to the normal creation speed. If the number is less
+     * than the current amount, then no new particles will be created until the
+     * current total has died down below the new maximum value.
+     *
+     * @param maxCount The new maximum particle count to use
+     * @throws IllegalArgumentException The particle count was negative
+     */
+    @Override
+    public void setMaxParticleCount(int maxCount)
+    {
+        super.setMaxParticleCount(maxCount);
+
+        if(maxCount * coordinatesPerParticle() > vertices.length)
+        {
+            initializeArrays();
+            sendNewArrays = true;
+        }
+    }
+
+    /**
      * Get the scene graph object that represents this particle system and can
      * be inserted into the scene graph.
      */
@@ -182,26 +205,5 @@ public abstract class AVParticleSystem extends ParticleSystem
 
         if(n_tex_coords != 0)
             texCoords = new float[1][n_tex_coords];
-    }
-
-    /**
-     * Change the maximum number of particles that can be generated. If the
-     * number is greater than the currently set value, it will permit more to
-     * be made according to the normal creation speed. If the number is less
-     * than the current amount, then no new particles will be created until the
-     * current total has died down below the new maximum value.
-     *
-     * @param maxCount The new maximum particle count to use
-     * @throws IllegalArgumentException The particle count was negative
-     */
-    public void setMaxParticleCount(int maxCount)
-    {
-        super.setMaxParticleCount(maxCount);
-
-        if(maxCount * coordinatesPerParticle() > vertices.length)
-        {
-            initializeArrays();
-            sendNewArrays = true;
-        }
     }
 }

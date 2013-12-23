@@ -15,9 +15,8 @@ import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.AxisAngle4f;
-
+import org.j3d.maths.vector.AxisAngle4d;
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 import org.j3d.geom.BoxGenerator;
@@ -27,6 +26,7 @@ import org.j3d.geom.GeometryData;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Representation of a set of axis around the coordinates.
@@ -228,19 +228,21 @@ public class Axis extends Group
         // The three axis values are all pointing up along the Y axis. Apply a
         // transform to X and Z to move them to the correct position.
 
-        Matrix4f tx = new Matrix4f();
+        Matrix4d tx = new Matrix4d();
         tx.setIdentity();
-        AxisAngle4f angle = new AxisAngle4f();
+        AxisAngle4d angle = new AxisAngle4d();
+
+        MatrixUtils matrix_utils = new MatrixUtils();
 
         // X Axis first
-        tx.rotZ(-(float)(Math.PI * 0.5f));
+        matrix_utils.rotateZ((float)(Math.PI * -0.5f), tx);
 
         TransformGroup x_tg = new TransformGroup(tx);
         x_tg.setTransform(tx);
         x_tg.addChild(x_shape1);
         x_tg.addChild(x_shape2);
 
-        tx.rotX((float)(Math.PI * 0.5f));
+        matrix_utils.rotateX((float)Math.PI * 0.5f, tx);
 
         TransformGroup z_tg = new TransformGroup(tx);
         z_tg.setTransform(tx);
