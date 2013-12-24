@@ -89,6 +89,7 @@ public class DEMLoader
      * @return A representation of the model at the URL
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(URL url) throws IOException
     {
         InputStream input = null;
@@ -122,6 +123,7 @@ public class DEMLoader
      * @return A representation of the model from the stream contents
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(InputStream stream) throws IOException
     {
         return loadInternal(stream);
@@ -134,6 +136,7 @@ public class DEMLoader
      * @return A representation of the model in the file
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(File file) throws IOException
     {
         FileInputStream fis = new FileInputStream(file);
@@ -148,6 +151,7 @@ public class DEMLoader
      *
      * @param flags The collection of flags to use
      */
+    @Override
     public void setLoadFlags(int flags)
     {
         loadFlags = flags;
@@ -158,6 +162,7 @@ public class DEMLoader
      *
      * @return A bitmask of flags that are currently set
      */
+    @Override
     public int getLoadFlags()
     {
         return loadFlags;
@@ -171,6 +176,7 @@ public class DEMLoader
      *
      * @param enable true to enable keeping the raw model, false otherwise
      */
+    @Override
     public void keepInternalModel(boolean enable)
     {
         keepModel = enable;
@@ -182,6 +188,7 @@ public class DEMLoader
      *
      * @return true when the internal model should be kept
      */
+    @Override
     public boolean isInternalModelKept()
     {
         return keepModel;
@@ -197,6 +204,7 @@ public class DEMLoader
      *
      * @return The array of heights in [row][column] order or null
      */
+    @Override
     public float[][] getHeights()
     {
         if(keepModel)
@@ -211,6 +219,7 @@ public class DEMLoader
      *
      * @return The stepping information for width and depth
      */
+    @Override
     public float[] getGridStep()
     {
         if(keepModel)
@@ -274,7 +283,7 @@ public class DEMLoader
      * Do all the parsing work for an inputstream. Convenience method
      * for all to call internally
      *
-     * @param is The inputsource for this reader
+     * @param str The inputsource for this reader
      * @return The scene description
      * @throws IOException something went wrong while reading the file
      */
@@ -292,7 +301,7 @@ public class DEMLoader
      * Do all the parsing work for a reader. Convenience method
      * for all to call internally
      *
-     * @param is The inputsource for this reader
+     * @param rdr The inputsource for this reader
      * @return The scene description
      * @throws IOException something went wrong while reading the file
      */
@@ -309,7 +318,6 @@ public class DEMLoader
     /**
      * Do all the parsing work. Convenience method for all to call internally
      *
-     * @param is The inputsource for this reader
      * @return The scene description
      * @throws IOException something went wrong while reading the file
      */

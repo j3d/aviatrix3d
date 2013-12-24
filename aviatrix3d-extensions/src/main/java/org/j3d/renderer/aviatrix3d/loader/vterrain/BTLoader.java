@@ -97,6 +97,7 @@ public class BTLoader
      * @return A representation of the model at the URL
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(URL url) throws IOException
     {
         InputStream input = null;
@@ -130,6 +131,7 @@ public class BTLoader
      * @return A representation of the model from the stream contents
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(InputStream stream) throws IOException
     {
         return loadInternal(stream);
@@ -142,6 +144,7 @@ public class BTLoader
      * @return A representation of the model in the file
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(File file) throws IOException
     {
         FileInputStream fis = new FileInputStream(file);
@@ -156,6 +159,7 @@ public class BTLoader
      *
      * @param flags The collection of flags to use
      */
+    @Override
     public void setLoadFlags(int flags)
     {
         loadFlags = flags;
@@ -166,6 +170,7 @@ public class BTLoader
      *
      * @return A bitmask of flags that are currently set
      */
+    @Override
     public int getLoadFlags()
     {
         return loadFlags;
@@ -179,6 +184,7 @@ public class BTLoader
      *
      * @param enable true to enable keeping the raw model, false otherwise
      */
+    @Override
     public void keepInternalModel(boolean enable)
     {
         keepModel = enable;
@@ -190,6 +196,7 @@ public class BTLoader
      *
      * @return true when the internal model should be kept
      */
+    @Override
     public boolean isInternalModelKept()
     {
         return keepModel;
@@ -205,6 +212,7 @@ public class BTLoader
      *
      * @return The array of heights in [row][column] order or null
      */
+    @Override
     public float[][] getHeights()
     {
         return parser.getHeights();
@@ -216,6 +224,7 @@ public class BTLoader
      *
      * @return The stepping information for width and depth
      */
+    @Override
     public float[] getGridStep()
     {
         return gridStepData;
@@ -243,11 +252,8 @@ public class BTLoader
     /**
      * Do all the parsing work. Convenience method for all to call internally
      *
-     * @param is The inputsource for this reader
+     * @param input The inputsource for this reader
      * @return The scene description
-     * @throws IncorrectFormatException The file is not one our loader
-     *    understands
-     * @throws ParsingErrorException An error parsing the file
      */
     private AVModel loadInternal(InputStream input)
         throws IOException

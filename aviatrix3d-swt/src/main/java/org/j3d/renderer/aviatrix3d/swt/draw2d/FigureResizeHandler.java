@@ -72,6 +72,7 @@ class FigureResizeHandler implements GLFigureSizeListener
      * @param width The new width of the figure in pixels
      * @param height The new height of the figure in pixels
      */
+    @Override
     public void figureSizeChanged(IFigure figure, int width, int height)
     {
         fireResizeNotification(width, height);

@@ -21,10 +21,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
+import org.j3d.maths.vector.Vector3d;
 import org.j3d.util.I18nManager;
 import org.j3d.util.MatrixUtils;
 
@@ -86,16 +85,16 @@ public class MaxLoader implements AVLoader
     private PolygonAttributes twoSidePolyAttrs;
 
     /** Common matrix used for making calcs */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
     /** Common vector for calculating the eye point for camera calcs */
-    private Point3f eyePosition;
+    private Point3d eyePosition;
 
     /** Common vector for calculating the target for camera calcs */
-    private Point3f center;
+    private Point3d center;
 
     /** Common vector for calculating local Y Up for camera calcs */
-    private Vector3f upVector;
+    private Vector3d upVector;
 
     /** Utility class for generating normals */
     private MaxUtils maxUtils;
@@ -118,7 +117,7 @@ public class MaxLoader implements AVLoader
         loadFlags = LOAD_ALL;
         keepModel = false;
 
-        matrix = new Matrix4f();
+        matrix = new Matrix4d();
         maxUtils = new MaxUtils();
     }
 
@@ -133,6 +132,7 @@ public class MaxLoader implements AVLoader
      * @return A representation of the model at the URL
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(URL url) throws IOException
     {
         URLConnection conn = url.openConnection();
@@ -162,6 +162,7 @@ public class MaxLoader implements AVLoader
      * @return A representation of the model from the stream contents
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(InputStream stream) throws IOException
     {
         ObjectMesh mesh = parse(stream);
@@ -184,6 +185,7 @@ public class MaxLoader implements AVLoader
      * @return A representation of the model in the file
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(File file) throws IOException
     {
         FileInputStream fis = new FileInputStream(file);
@@ -206,6 +208,7 @@ public class MaxLoader implements AVLoader
      *
      * @param flags The collection of flags to use
      */
+    @Override
     public void setLoadFlags(int flags)
     {
         loadFlags = flags;
@@ -216,6 +219,7 @@ public class MaxLoader implements AVLoader
      *
      * @return A bitmask of flags that are currently set
      */
+    @Override
     public int getLoadFlags()
     {
         return loadFlags;
@@ -229,6 +233,7 @@ public class MaxLoader implements AVLoader
      *
      * @param enable true to enable keeping the raw model, false otherwise
      */
+    @Override
     public void keepInternalModel(boolean enable)
     {
         keepModel = enable;
@@ -240,6 +245,7 @@ public class MaxLoader implements AVLoader
      *
      * @return true when the internal model should be kept
      */
+    @Override
     public boolean isInternalModelKept()
     {
         return keepModel;
@@ -252,7 +258,7 @@ public class MaxLoader implements AVLoader
     /**
      * Internal method to start the load process.
      *
-     * @param stream The stream ready to roll for the parsing
+     * @param is The stream ready to roll for the parsing
      * @throws IOException something went wrong while reading the file
      */
     private ObjectMesh parse(InputStream is)
@@ -282,7 +288,7 @@ public class MaxLoader implements AVLoader
         if(mesh.masterScale != 1)
         {
             matrix.setIdentity();
-            matrix.setScale(mesh.masterScale);
+            matrix.set(mesh.masterScale);
             root_node.setTransform(matrix);
         }
 
@@ -902,7 +908,7 @@ public class MaxLoader implements AVLoader
      *
      * @param model The model instance to register everything with
      * @param object The object block instance to process for geometry
-     * @param group The grouping node that the mesh was added to, so that lights
+     * @param parent The grouping node that the mesh was added to, so that lights
      *    and cameras may be placed in the same area
      */
     private void processObjectLights(MaxModel model, ObjectBlock object, Group parent)
@@ -948,7 +954,7 @@ public class MaxLoader implements AVLoader
      *
      * @param model The model instance to register everything with
      * @param object The object block instance to process for geometry
-     * @param group The grouping node that the mesh was added to, so that lights
+     * @param parent The grouping node that the mesh was added to, so that lights
      *    and cameras may be placed in the same area
      */
     private void processObjectCameras(MaxModel model, ObjectBlock object, Group parent)
@@ -959,20 +965,20 @@ public class MaxLoader implements AVLoader
         if(matrixUtils == null)
         {
             matrixUtils = new MatrixUtils();
-            eyePosition = new Point3f();
-            center = new Point3f();
-            upVector = new Vector3f();
+            eyePosition = new Point3d();
+            center = new Point3d();
+            upVector = new Vector3d();
         }
 
         if(matrix == null)
-            matrix = new Matrix4f();
+            matrix = new Matrix4d();
 
         for(int j = 0; j < object.numCameras; j++)
         {
             CameraBlock c_block = object.cameras[j];
 
-            eyePosition.set(c_block.location);
-            center.set(c_block.target);
+            eyePosition.set(c_block.location[0], c_block.location[1], c_block.location[2]);
+            center.set(c_block.target[0], c_block.target[1], c_block.target[2]);
 
             double angle = Math.toRadians(c_block.bankAngle);
             upVector.set((float)Math.sin(angle), (float)Math.cos(angle), 0);

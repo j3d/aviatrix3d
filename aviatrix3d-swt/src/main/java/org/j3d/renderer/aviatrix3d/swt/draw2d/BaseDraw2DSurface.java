@@ -94,6 +94,7 @@ public abstract class BaseDraw2DSurface extends BaseSurface
      *
      * @param reporter The instance to use or null
      */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         super.setErrorReporter(reporter);
@@ -106,6 +107,7 @@ public abstract class BaseDraw2DSurface extends BaseSurface
      *
      * @param l The new listener instance to add
      */
+    @Override
     public void addGraphicsResizeListener(GraphicsResizeListener l)
     {
         resizer.addGraphicsResizeListener(l);
@@ -117,6 +119,7 @@ public abstract class BaseDraw2DSurface extends BaseSurface
      *
      * @param l The listener instance to remove
      */
+    @Override
     public void removeGraphicsResizeListener(GraphicsResizeListener l)
     {
         resizer.removeGraphicsResizeListener(l);
@@ -126,6 +129,7 @@ public abstract class BaseDraw2DSurface extends BaseSurface
      * Swap the buffers now if the surface supports multiple buffer drawing.
      * For surfaces that don't support multiple buffers, this does nothing.
      */
+    @Override
     public void swap()
     {
         super.swap();
@@ -154,6 +158,7 @@ public abstract class BaseDraw2DSurface extends BaseSurface
      * Overrides the base class to prevent any singlethreaded optimisations
      * being performed. This instance is a no-op due to the pbuffer
      */
+    @Override
     public void enableSingleThreaded(boolean state)
     {
     }
@@ -164,6 +169,7 @@ public abstract class BaseDraw2DSurface extends BaseSurface
      *
      * @return The drawable surface representation
      */
+    @Override
     public Object getSurfaceObject()
     {
         return glFigure;

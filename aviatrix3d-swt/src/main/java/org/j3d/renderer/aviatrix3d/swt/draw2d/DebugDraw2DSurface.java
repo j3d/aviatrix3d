@@ -138,6 +138,7 @@ public class DebugDraw2DSurface extends BaseDraw2DSurface
      *
      * @param evt The key event that caused this method to be called
      */
+    @Override
     public void keyPressed(KeyEvent evt)
     {
         if(evt.character == 'd')
@@ -150,6 +151,7 @@ public class DebugDraw2DSurface extends BaseDraw2DSurface
      *
      * @param evt The key event that caused this method to be called
      */
+    @Override
     public void keyReleased(KeyEvent evt)
     {
     }
@@ -167,6 +169,7 @@ public class DebugDraw2DSurface extends BaseDraw2DSurface
      * @param chooser Custom algorithm for selecting one of the available
      *    GLCapabilities for the component;
      */
+    @Override
     private void init(Display device,
                       GLCapabilities caps,
                       GLCapabilitiesChooser chooser)

@@ -122,6 +122,45 @@ public class ViewpointManager implements ViewpointSelectionListener
         destinationTx = new Matrix4d();
     }
 
+    //------------------------------------------------------------------------
+    // Methods defined by ViewpointSelectionListener
+    //------------------------------------------------------------------------
+
+    /**
+     * A new viewpoint has been selected and this is it. Move to this viewpoint
+     * location according to the requested means.
+     *
+     * @param vp The new viewpoint to use
+     */
+    @Override
+    public void viewpointSelected(ViewpointData vp)
+    {
+        if(view == null)
+            return;
+
+        if(!(vp instanceof AVViewpointData))
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(VP_DATA_TYPE_TIME_PROP);
+
+            Locale lcl = intl_mgr.getFoundLocale();
+
+            Object[] msg_args = { vp.getClass().getName() };
+            MessageFormat msg_fmt =
+                new MessageFormat(msg_pattern, lcl);
+            String msg = msg_fmt.format(null);
+
+            throw new IllegalArgumentException(msg);
+        }
+
+        ((AVViewpointData)vp).viewTg.getTransform(destinationTx);
+        transistor.transitionTo(viewTg, destinationTx, transitionTime);
+    }
+
+    //------------------------------------------------------------------------
+    // Local Methods
+    //------------------------------------------------------------------------
+
     /**
      * Set the toolbar instance to use. Setting a value of null will clear the
      * currently set instance.
@@ -211,35 +250,5 @@ public class ViewpointManager implements ViewpointSelectionListener
     public void setFrameUpdateListener(FrameUpdateListener l)
     {
         transistor.setFrameUpdateListener(l);
-    }
-
-    /**
-     * A new viewpoint has been selected and this is it. Move to this viewpoint
-     * location according to the requested means.
-     *
-     * @param vp The new viewpoint to use
-     */
-    public void viewpointSelected(ViewpointData vp)
-    {
-        if(view == null)
-            return;
-
-        if(!(vp instanceof AVViewpointData))
-		{
-            I18nManager intl_mgr = I18nManager.getManager();
-            String msg_pattern = intl_mgr.getString(VP_DATA_TYPE_TIME_PROP);
-
-            Locale lcl = intl_mgr.getFoundLocale();
-
-            Object[] msg_args = { vp.getClass().getName() };
-            MessageFormat msg_fmt =
-                new MessageFormat(msg_pattern, lcl);
-            String msg = msg_fmt.format(null);
-
-            throw new IllegalArgumentException(msg);
-		}
-
-        ((AVViewpointData)vp).viewTg.getTransform(destinationTx);
-        transistor.transitionTo(viewTg, destinationTx, transitionTime);
     }
 }

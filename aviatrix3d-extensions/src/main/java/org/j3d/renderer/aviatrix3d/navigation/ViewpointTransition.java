@@ -78,8 +78,6 @@ public class ViewpointTransition implements ActionListener
     private Vector3d up  = new Vector3d();
     private Vector3d up1 = new Vector3d();
     private Vector3d up2 = new Vector3d();
-    private Vector3d location1 = new Vector3d();
-    private Vector3d location2 = new Vector3d();
     private Vector3d direction1 = new Vector3d();
     private Vector3d direction2 = new Vector3d();
     private Matrix4d previousFrameTx  =   new Matrix4d();
@@ -104,60 +102,9 @@ public class ViewpointTransition implements ActionListener
         matrixUtils = new MatrixUtils();
     }
 
-    /**
-     * Set the listener for frame update notifications. By setting a value of
-     * null it will clear the currently set instance
-     *
-     * @param l The listener to use for this transition
-     */
-    public void setFrameUpdateListener(FrameUpdateListener l)
-    {
-        updateListener = l;
-    }
-
-    /**
-     * Transition between two locations represented by the initial
-     * TranformGroup and the destination transform information starting
-     * immediately.
-     *
-     * @param viewTg is the transformgroup to be transitioned that holds
-     *    the view.
-     * @param endTx is the final state to be transitioned to
-     * @param totalTime The time to be spent with this transition
-     *    (in miliseconds)
-     */
-    public void transitionTo(TransformGroup viewTg,
-                             Matrix4d endTx,
-                             int totalTime)
-    {
-        this.viewTg = viewTg;
-        destinationTx = new Matrix4d();
-        destinationTx.set(endTx);
-        totalTimeMS = totalTime;
-
-        epochEndTime = System.currentTimeMillis() + totalTime;
-        timer.start();
-
-        // Set up our internal transforms that we will be doing the morphing
-        // along.
-        viewTg.getTransform(currentTx);
-        location1.set(currentTx.m03, currentTx.m13, currentTx.m23);
-
-        eye1.set(currentTx.m03, currentTx.m13, currentTx.m23);
-        direction1.set(0,0,-1);
-        currentTx.transform(direction1, direction1);
-        center1.add(eye1,direction1);
-        up1.set(0,1,0);
-        currentTx.transform(up1, up1);
-
-        // Make sure the destination transform is set up for the eye position
-        eye2.set(destinationTx.m03, destinationTx.m13, destinationTx.m23);
-        direction2.set(0,0,-1);
-        destinationTx.transform(direction2, direction2);
-        center2.add(eye2,direction2);
-        up2.set(0,1,0);
-        destinationTx.transform(up2, up2);
-    }
+    //------------------------------------------------------------------------
+    // Methods defined by ActionListener
+    //------------------------------------------------------------------------
 
     /**
      * Process an action event from the timer. This event is only for the time
@@ -166,6 +113,7 @@ public class ViewpointTransition implements ActionListener
      *
      * @param evt The event that caused this action to be called
      */
+    @Override
     public void actionPerformed(ActionEvent evt)
     {
         viewTg.getTransform(previousFrameTx);
@@ -228,5 +176,63 @@ public class ViewpointTransition implements ActionListener
             if(updateListener != null)
                 updateListener.transitionEnded(currentTx);
         }
+    }
+
+    //------------------------------------------------------------------------
+    // Local Methods
+    //------------------------------------------------------------------------
+
+    /**
+     * Set the listener for frame update notifications. By setting a value of
+     * null it will clear the currently set instance
+     *
+     * @param l The listener to use for this transition
+     */
+    public void setFrameUpdateListener(FrameUpdateListener l)
+    {
+        updateListener = l;
+    }
+
+    /**
+     * Transition between two locations represented by the initial
+     * TranformGroup and the destination transform information starting
+     * immediately.
+     *
+     * @param viewTg is the transformgroup to be transitioned that holds
+     *    the view.
+     * @param endTx is the final state to be transitioned to
+     * @param totalTime The time to be spent with this transition
+     *    (in miliseconds)
+     */
+    public void transitionTo(TransformGroup viewTg,
+                             Matrix4d endTx,
+                             int totalTime)
+    {
+        this.viewTg = viewTg;
+        destinationTx = new Matrix4d();
+        destinationTx.set(endTx);
+        totalTimeMS = totalTime;
+
+        epochEndTime = System.currentTimeMillis() + totalTime;
+        timer.start();
+
+        // Set up our internal transforms that we will be doing the morphing
+        // along.
+        viewTg.getTransform(currentTx);
+
+        eye1.set(currentTx.m03, currentTx.m13, currentTx.m23);
+        direction1.set(0,0,-1);
+        currentTx.transform(direction1, direction1);
+        center1.set(eye1.x + direction1.x, eye1.y + direction1.y, eye1.z + direction1.z);
+        up1.set(0,1,0);
+        currentTx.transform(up1, up1);
+
+        // Make sure the destination transform is set up for the eye position
+        eye2.set(destinationTx.m03, destinationTx.m13, destinationTx.m23);
+        direction2.set(0,0,-1);
+        destinationTx.transform(direction2, direction2);
+        center2.set(eye2.x + direction2.x, eye2.y + direction2.y, eye2.z + direction2.z);
+        up2.set(0,1,0);
+        destinationTx.transform(up2, up2);
     }
 }

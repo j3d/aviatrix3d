@@ -75,6 +75,7 @@ public class STLLoader implements AVLoader
      * @return A representation of the model at the URL
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(URL url) throws IOException
     {
         STLFileReader reader = new STLFileReader(url);
@@ -93,6 +94,7 @@ public class STLLoader implements AVLoader
      * @return A representation of the model from the stream contents
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(InputStream stream) throws IOException
     {
 System.out.println("STLLoader.load(InputStream) not implemented yet");
@@ -107,6 +109,7 @@ System.out.println("STLLoader.load(InputStream) not implemented yet");
      * @return A representation of the model in the file
      * @throws IOException something went wrong while reading the file
      */
+    @Override
     public AVModel load(File file) throws IOException
     {
         STLFileReader reader = new STLFileReader(file);
@@ -120,6 +123,7 @@ System.out.println("STLLoader.load(InputStream) not implemented yet");
      *
      * @param flags The collection of flags to use
      */
+    @Override
     public void setLoadFlags(int flags)
     {
         loadFlags = flags;
@@ -130,6 +134,7 @@ System.out.println("STLLoader.load(InputStream) not implemented yet");
      *
      * @return A bitmask of flags that are currently set
      */
+    @Override
     public int getLoadFlags()
     {
         return loadFlags;
@@ -143,6 +148,7 @@ System.out.println("STLLoader.load(InputStream) not implemented yet");
      *
      * @param enable true to enable keeping the raw model, false otherwise
      */
+    @Override
     public void keepInternalModel(boolean enable)
     {
         keepModel = enable;
@@ -154,6 +160,7 @@ System.out.println("STLLoader.load(InputStream) not implemented yet");
      *
      * @return true when the internal model should be kept
      */
+    @Override
     public boolean isInternalModelKept()
     {
         return keepModel;

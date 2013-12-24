@@ -239,6 +239,7 @@ public class DebugSWTSurface extends BaseSWTSurface
      *
      * @param evt The key event that caused this method to be called
      */
+    @Override
     public void keyPressed(KeyEvent evt)
     {
         if(evt.character == 'd')
@@ -262,6 +263,7 @@ public class DebugSWTSurface extends BaseSWTSurface
      *
      * @param evt The key event that caused this method to be called
      */
+    @Override
     public void keyReleased(KeyEvent evt)
     {
     }
@@ -286,6 +288,7 @@ public class DebugSWTSurface extends BaseSWTSurface
      * @param profilingData The timing and load data
      * @return true if the drawing succeeded, or false if not
      */
+    @Override
     public boolean draw(ProfilingData profilingData)
     {
         boolean dumpNow = false;
@@ -312,6 +315,7 @@ public class DebugSWTSurface extends BaseSWTSurface
      * @param context The GLContext instance to wrap for this processor
      * @return The rendering processor instance to use
      */
+    @Override
     protected RenderingProcessor createRenderingProcessor(GLContext context)
     {
         DebugRenderingProcessor proc =

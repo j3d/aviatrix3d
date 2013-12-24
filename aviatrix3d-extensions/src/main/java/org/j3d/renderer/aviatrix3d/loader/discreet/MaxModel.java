@@ -58,7 +58,7 @@ class MaxModel implements AVModel
     private ArrayList<Light> lights;
 
     /** List of viewpoints encountered in the file */
-    private ArrayList viewpoints;
+    private ArrayList<Viewpoint> viewpoints;
 
     /** List of backgrounds encountered in the file */
     private ArrayList<Background> backgrounds;
@@ -83,7 +83,7 @@ class MaxModel implements AVModel
         namedObjects = new HashMap<String, SceneGraphObject>();
         externalObjects = new HashMap<SceneGraphObject, Object>();
         lights = new ArrayList<Light>();
-        viewpoints = new ArrayList();
+        viewpoints = new ArrayList<Viewpoint>();
         backgrounds = new ArrayList<Background>();
         fogs = new ArrayList<Fog>();
         runtimes = new ArrayList<AVRuntimeComponent>();
@@ -98,6 +98,7 @@ class MaxModel implements AVModel
      *
      * @return The grouping node that represents the root of the scene graph
      */
+    @Override
     public Group getModelRoot()
     {
         return modelRoot;
@@ -111,6 +112,7 @@ class MaxModel implements AVModel
      * @return An implementation-specific object that represents the raw model
      *    format structure or null
      */
+    @Override
     public Object getRawModel()
     {
         return realMesh;
@@ -125,6 +127,7 @@ class MaxModel implements AVModel
      *
      * @return A map of strings to SceneGraphObject instances
      */
+    @Override
     public Map<String, SceneGraphObject> getNamedObjects()
     {
         return namedObjects;
@@ -140,6 +143,7 @@ class MaxModel implements AVModel
      *
      * @return a map of the objects to their requested file name(s)
      */
+    @Override
     public Map<SceneGraphObject, Object> getExternallyDefinedFiles()
     {
         return externalObjects;
@@ -154,7 +158,8 @@ class MaxModel implements AVModel
      *
      * @return A list of the viewpoint instances declared in the file
      */
-    public List getViewpoints()
+    @Override
+    public List<Viewpoint> getViewpoints()
     {
         return viewpoints;
     }
@@ -168,6 +173,7 @@ class MaxModel implements AVModel
      *
      * @return A list of the background instances declared in the file
      */
+    @Override
     public List<Background> getBackgrounds()
     {
         return backgrounds;
@@ -182,6 +188,7 @@ class MaxModel implements AVModel
      *
      * @return A list of the fog instances declared in the file
      */
+    @Override
     public List<Fog> getFogs()
     {
         return fogs;
@@ -200,6 +207,7 @@ class MaxModel implements AVModel
      * @return A list of the layer instances declared in the file
      * @since Aviatrix3D 2.0
      */
+    @Override
     public List<Layer> getLayers()
     {
         return Collections.EMPTY_LIST;
@@ -214,6 +222,7 @@ class MaxModel implements AVModel
      *
      * @return A list of the light instances declared in the file
      */
+    @Override
     public List<Light> getLights()
     {
         return lights;
@@ -221,7 +230,7 @@ class MaxModel implements AVModel
 
     /**
      * Get the list of runtime components that are contained in the file. The
-     * list will contain the {@link RuntimeComponent} instances used for
+     * list will contain the {@link AVRuntimeComponent} instances used for
      * controlling animation or any other runtime capabilities inherent to
      * the file format.If a file does not declare any runtime capabilities, or
      * the loader was requested not to load runtimes, this returns an empty
@@ -229,6 +238,7 @@ class MaxModel implements AVModel
      *
      * @return A list of the RuntimeComponent instances declared in the file
      */
+    @Override
     public List<AVRuntimeComponent> getRuntimeComponents()
     {
         return runtimes;
@@ -282,16 +292,6 @@ class MaxModel implements AVModel
     void addLight(Light l)
     {
         lights.add(l);
-    }
-
-    /**
-     * Add a viewpoint to the list for this model.
-     *
-     * @param vp The viewpoint proxy instance to add
-     */
-    void addViewpoint(TransformGroup vp)
-    {
-        viewpoints.add(vp);
     }
 
     /**

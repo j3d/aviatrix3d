@@ -92,6 +92,7 @@ public class BaseSWTSurface extends BaseSurface
      *
      * @param reporter The instance to use or null
      */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         super.setErrorReporter(reporter);
@@ -104,6 +105,7 @@ public class BaseSWTSurface extends BaseSurface
      *
      * @param l The new listener instance to add
      */
+    @Override
     public void addGraphicsResizeListener(GraphicsResizeListener l)
     {
         resizer.addGraphicsResizeListener(l);
@@ -115,6 +117,7 @@ public class BaseSWTSurface extends BaseSurface
      *
      * @param l The listener instance to remove
      */
+    @Override
     public void removeGraphicsResizeListener(GraphicsResizeListener l)
     {
         resizer.removeGraphicsResizeListener(l);
@@ -127,6 +130,7 @@ public class BaseSWTSurface extends BaseSurface
      *
      * @return The drawable surface representation
      */
+    @Override
     public Object getSurfaceObject()
     {
         return swtCanvas;

@@ -332,6 +332,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      *
      * @return true Stereo support is currently available
      */
+    @Override
     public boolean isStereoAvailable()
     {
         return true;
@@ -347,6 +348,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      *
      * @return true Stereo support is currently available
      */
+    @Override
     public boolean isQuadStereoAvailable()
     {
         return quadBuffersAvailable;
@@ -359,6 +361,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      *
      * @param sep The amount of eye separation
      */
+    @Override
     public void setStereoEyeSeparation(float sep)
     {
         eyeSeparation = (sep < 0) ? -sep : sep;
@@ -376,6 +379,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      *
      * @return sep The amount of eye separation
      */
+    @Override
     public float getStereoEyeSeparation()
     {
         return eyeSeparation;
@@ -389,6 +393,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      * @throws IllegalArgumentException The policy type is not one of the legal
      *    selections.
      */
+    @Override
     public void setStereoRenderingPolicy(int policy)
     {
         GLContext shared_context = null;

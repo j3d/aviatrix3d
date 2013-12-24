@@ -120,7 +120,7 @@ public interface AVModel
      *
      * @return A list of the viewpoint instances declared in the file
      */
-    public List getViewpoints();
+    public List<Viewpoint> getViewpoints();
 
     /**
      * Get the list of backgrounds that are contained in the file. The list

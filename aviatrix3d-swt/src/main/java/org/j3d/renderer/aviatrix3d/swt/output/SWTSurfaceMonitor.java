@@ -69,6 +69,7 @@ class SWTSurfaceMonitor implements SurfaceMonitor
      *
      * @param reporter The instance to use or null
      */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         if(reporter == null)
@@ -83,6 +84,7 @@ class SWTSurfaceMonitor implements SurfaceMonitor
      *
      * @return True when the surface is really visible
      */
+    @Override
     public boolean isVisible()
     {
         // Always return true for now until we work out if anything
@@ -95,6 +97,7 @@ class SWTSurfaceMonitor implements SurfaceMonitor
      *
      * @return true when the conditions require grabbing a new context
      */
+    @Override
     public boolean requiresNewContext()
     {
         // Always return false for now until we work out if anything

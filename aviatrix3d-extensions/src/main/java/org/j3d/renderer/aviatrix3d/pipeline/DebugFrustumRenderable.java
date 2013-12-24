@@ -14,7 +14,7 @@ package org.j3d.renderer.aviatrix3d.pipeline;
 
 // External imports
 import javax.media.opengl.GL;
-import javax.vecmath.Matrix4f;
+import javax.media.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.*;
@@ -63,6 +63,7 @@ class DebugFrustumRenderable
      *
      * @return true if the shape has something to render
      */
+    @Override
     public boolean isVisible()
     {
         return true;
@@ -78,6 +79,7 @@ class DebugFrustumRenderable
      *
      * @return True if this is 2D geometry, false if this is 3D
      */
+    @Override
     public boolean is2D()
     {
         return false;
@@ -89,6 +91,7 @@ class DebugFrustumRenderable
      *
      * @param center The object to copy the center coordinates in to
      */
+    @Override
     public void getCenter(float[] center)
     {
         // Not sure what to do about this one.
@@ -102,6 +105,7 @@ class DebugFrustumRenderable
      *
      * @return The current geometry renderable or null if none
      */
+    @Override
     public GeometryRenderable getGeometryRenderable()
     {
         return this;
@@ -113,6 +117,7 @@ class DebugFrustumRenderable
      *
      * @return The current appearance renderable or null if none
      */
+    @Override
     public AppearanceRenderable getAppearanceRenderable()
     {
         return null;
@@ -129,6 +134,7 @@ class DebugFrustumRenderable
      *
      * @return true if there is any form of transparency
      */
+    @Override
     public boolean hasTransparency()
     {
         return false;
@@ -139,7 +145,8 @@ class DebugFrustumRenderable
      *
      * @param gl The GL context to render with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         float left = frustumPoints[0];
         float right = frustumPoints[1];
@@ -223,6 +230,7 @@ class DebugFrustumRenderable
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {

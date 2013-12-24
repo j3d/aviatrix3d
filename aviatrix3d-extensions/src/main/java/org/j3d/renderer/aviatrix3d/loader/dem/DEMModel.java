@@ -50,7 +50,7 @@ class DEMModel implements AVModel
      * Create a new model instance and prepare it for work
      *
      * @param rootNode The node that forms the root of the scene
-     * @param mesh The internal format, if requested. May be null
+     * @param header The internal format, if requested. May be null
      */
     DEMModel(Group rootNode, DEMTypeARecord header)
     {
@@ -67,6 +67,7 @@ class DEMModel implements AVModel
      *
      * @return The grouping node that represents the root of the scene graph
      */
+    @Override
     public Group getModelRoot()
     {
         return modelRoot;
@@ -79,6 +80,7 @@ class DEMModel implements AVModel
      *
      * @return An instance of {@link DEMTypeARecord} or null
      */
+    @Override
     public Object getRawModel()
     {
         return realMesh;
@@ -93,6 +95,7 @@ class DEMModel implements AVModel
      *
      * @return A map of strings to SceneGraphObject instances
      */
+    @Override
     public Map<String, SceneGraphObject> getNamedObjects()
     {
         return Collections.EMPTY_MAP;
@@ -108,6 +111,7 @@ class DEMModel implements AVModel
      *
      * @return a map of the objects to their requested file name(s)
      */
+    @Override
     public Map<SceneGraphObject, Object> getExternallyDefinedFiles()
     {
         return Collections.EMPTY_MAP;
@@ -122,7 +126,8 @@ class DEMModel implements AVModel
      *
      * @return A list of the viewpoint instances declared in the file
      */
-    public List getViewpoints()
+    @Override
+    public List<Viewpoint> getViewpoints()
     {
         return Collections.EMPTY_LIST;
     }
@@ -136,6 +141,7 @@ class DEMModel implements AVModel
      *
      * @return A list of the background instances declared in the file
      */
+    @Override
     public List<Background> getBackgrounds()
     {
         return Collections.EMPTY_LIST;
@@ -150,6 +156,7 @@ class DEMModel implements AVModel
      *
      * @return A list of the fog instances declared in the file
      */
+    @Override
     public List<Fog> getFogs()
     {
         return Collections.EMPTY_LIST;
@@ -168,6 +175,7 @@ class DEMModel implements AVModel
      * @return A list of the layer instances declared in the file
      * @since Aviatrix3D 2.0
      */
+    @Override
     public List<Layer> getLayers()
     {
         return Collections.EMPTY_LIST;
@@ -182,6 +190,7 @@ class DEMModel implements AVModel
      *
      * @return A list of the light instances declared in the file
      */
+    @Override
     public List<Light> getLights()
     {
         return Collections.EMPTY_LIST;
@@ -197,6 +206,7 @@ class DEMModel implements AVModel
      *
      * @return A list of the RuntimeComponent instances declared in the file
      */
+    @Override
     public List<AVRuntimeComponent> getRuntimeComponents()
     {
         return Collections.EMPTY_LIST;

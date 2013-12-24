@@ -120,7 +120,7 @@ class BTModel implements AVModel
      *
      * @return A list of the viewpoint instances declared in the file
      */
-    public List getViewpoints()
+    public List<Viewpoint> getViewpoints()
     {
         return Collections.EMPTY_LIST;
     }
@@ -187,7 +187,7 @@ class BTModel implements AVModel
 
     /**
      * Get the list of runtime components that are contained in the file. The
-     * list will contain the {@link RuntimeComponent} instances used for
+     * list will contain the {@link AVRuntimeComponent} instances used for
      * controlling animation or any other runtime capabilities inherent to
      * the file format.If a file does not declare any runtime capabilities, or
      * the loader was requested not to load runtimes, this returns an empty

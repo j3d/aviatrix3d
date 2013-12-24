@@ -14,16 +14,11 @@ import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.ArrayList;
-import java.nio.FloatBuffer;
 
-import javax.vecmath.Matrix4f;
-
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
-import org.j3d.aviatrix3d.*;
-
 import org.j3d.geom.hanim.HAnimObject;
 
 /**
@@ -67,6 +62,7 @@ class SoftwareSpeedJoint extends SoftwareJoint
      * @param kids The collection of child objects to now use
      * @param numValid The number kids to copy from the given array
      */
+    @Override
     public void setChildren(HAnimObject[] kids, int numValid)
     {
         for(int i = 0; i < numChildren; i++)
@@ -100,6 +96,7 @@ class SoftwareSpeedJoint extends SoftwareJoint
      *
      * @param kid The new child instance to add
      */
+    @Override
     public void addChild(HAnimObject kid)
     {
         if(!(kid instanceof SoftwareSpeedJoint))
@@ -131,7 +128,8 @@ class SoftwareSpeedJoint extends SoftwareJoint
      * @param parentChanged Flag to indicate that the parent transformation
      *   matrix has changed or is still the same as last call
      */
-    protected void updateSkeleton(Matrix4f parentTransform,
+    @Override
+    protected void updateSkeleton(Matrix4d parentTransform,
                                   boolean parentChanged)
     {
         super.updateSkeleton(parentTransform, parentChanged);
@@ -155,11 +153,11 @@ class SoftwareSpeedJoint extends SoftwareJoint
                 float y = sourceCoords[index * 3 + 1];
                 float z = sourceCoords[index * 3 + 2];
 
-                float out_x = globalMatrix.m00 * x + globalMatrix.m01 * y +
+                double out_x = globalMatrix.m00 * x + globalMatrix.m01 * y +
                               globalMatrix.m02 * z + globalMatrix.m03;
-                float out_y = globalMatrix.m10 * x + globalMatrix.m11 * y +
+                double out_y = globalMatrix.m10 * x + globalMatrix.m11 * y +
                               globalMatrix.m12 * z + globalMatrix.m13;
-                float out_z = globalMatrix.m20 * x + globalMatrix.m21 * y +
+                double out_z = globalMatrix.m20 * x + globalMatrix.m21 * y +
                               globalMatrix.m22 * z + globalMatrix.m23;
 
                 c_buf[index * 3] += out_x * skinCoordWeight[i];
@@ -186,18 +184,18 @@ class SoftwareSpeedJoint extends SoftwareJoint
                 float ny = sourceNormals[index * 3 + 1];
                 float nz = sourceNormals[index * 3 + 2];
 
-                float out_cx = globalMatrix.m00 * cx + globalMatrix.m01 * cy +
+                double out_cx = globalMatrix.m00 * cx + globalMatrix.m01 * cy +
                                globalMatrix.m02 * cz + globalMatrix.m03;
-                float out_cy = globalMatrix.m10 * cx + globalMatrix.m11 * cy +
+                double out_cy = globalMatrix.m10 * cx + globalMatrix.m11 * cy +
                                globalMatrix.m12 * cz + globalMatrix.m13;
-                float out_cz = globalMatrix.m20 * cx + globalMatrix.m21 * cy +
+                double out_cz = globalMatrix.m20 * cx + globalMatrix.m21 * cy +
                                globalMatrix.m22 * cz + globalMatrix.m23;
 
-                float out_nx = globalMatrix.m00 * nx + globalMatrix.m01 * ny +
+                double out_nx = globalMatrix.m00 * nx + globalMatrix.m01 * ny +
                                globalMatrix.m02 * nz;
-                float out_ny = globalMatrix.m10 * nx + globalMatrix.m11 * ny +
+                double out_ny = globalMatrix.m10 * nx + globalMatrix.m11 * ny +
                                globalMatrix.m12 * nz;
-                float out_nz = globalMatrix.m20 * nx + globalMatrix.m21 * ny +
+                double out_nz = globalMatrix.m20 * nx + globalMatrix.m21 * ny +
                                globalMatrix.m22 * nz;
 
                 c_buf[index * 3] += out_cx * skinCoordWeight[i];

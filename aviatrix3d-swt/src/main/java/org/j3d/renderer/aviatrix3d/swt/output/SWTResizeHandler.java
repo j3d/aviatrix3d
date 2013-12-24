@@ -72,6 +72,7 @@ class SWTResizeHandler implements ControlListener
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void controlMoved(ControlEvent evt)
     {
         fireResizeNotification(evt);
@@ -83,6 +84,7 @@ class SWTResizeHandler implements ControlListener
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void controlResized(ControlEvent evt)
     {
         fireResizeNotification(evt);
