@@ -10,11 +10,10 @@
 package org.j3d.renderer.aviatrix3d.geom.hanim;
 
 // External imports
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
+// None
 
 // Local imports
-import org.j3d.aviatrix3d.*;
+// None
 
 /**
  * Common AV3D implementation of the Humanoid object that uses software
@@ -145,9 +144,6 @@ class SoftwareSpaceHumanoid extends SoftwareHumanoid
 
     /**
      * Get the converted mesh skin.
-     *
-     * @param coords An array of at least length of numSkinCoord() * 3 to copy
-     *   the values to
      */
     public Object getUpdatedSkinCoords()
     {
@@ -156,9 +152,6 @@ class SoftwareSpaceHumanoid extends SoftwareHumanoid
 
     /**
      * Get the converted mesh skin normals.
-     *
-     * @param normals An array of at least length of numSkinCoord() * 3 to copy
-     *   the values to
      */
     public Object getUpdatedSkinNormals()
     {

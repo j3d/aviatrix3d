@@ -256,10 +256,12 @@ class ShaderHumanoid extends AVHumanoid
      * generate our own internal model. When skinned mesh animation takes place,
      * the coordinates are automatically fed from this humanoid to the appropriate
      * geometry. For best performance, the geometry should make use of
-     * {@link org.j3d.renderer.aviatrix3d.geom.BufferGeometry} class.
+     * {@link org.j3d.renderer.aviatrix3d.nodes.BufferGeometry} class.
      *
-     * @param shapes List of representative shapes to use
+     * @param skins Nodes representing skins that need to be modified
+     * @param numSkins Number of valid elements in the skins array
      */
+    @Override
     public void setSkin(Node[] skins, int numSkins)
     {
         // Walk the nodes looking for geometry
@@ -314,6 +316,7 @@ class ShaderHumanoid extends AVHumanoid
      *
      * @param child Reference to the child that has changed
      */
+    @Override
     public void childAttributesChanged(HAnimObject child)
     {
         // Only care about ShaderJoint nodes here

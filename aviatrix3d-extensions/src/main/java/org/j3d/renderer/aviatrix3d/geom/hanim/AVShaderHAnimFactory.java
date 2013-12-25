@@ -30,6 +30,7 @@ public class AVShaderHAnimFactory implements HAnimFactory
      *
      * @return a new instance of the HAnimDisplacer object
      */
+    @Override
     public HAnimDisplacer createDisplacer()
     {
         return new HAnimDisplacer();
@@ -40,6 +41,7 @@ public class AVShaderHAnimFactory implements HAnimFactory
      *
      * @return a new instance of the HAnimSite object
      */
+    @Override
     public HAnimSite createSite()
     {
         return new AVSite();
@@ -50,6 +52,7 @@ public class AVShaderHAnimFactory implements HAnimFactory
      *
      * @return a new instance of the HAnimSegment object
      */
+    @Override
     public HAnimSegment createSegment()
     {
         return new AVSegment();
@@ -60,6 +63,7 @@ public class AVShaderHAnimFactory implements HAnimFactory
      *
      * @return a new instance of the HAnimJoint object
      */
+    @Override
     public HAnimJoint createJoint()
     {
         return new ShaderJoint();
@@ -70,6 +74,7 @@ public class AVShaderHAnimFactory implements HAnimFactory
      *
      * @return a new instance of the HAnimHumanoid object
      */
+    @Override
     public HAnimHumanoid createHumanoid()
     {
         return new ShaderHumanoid();
@@ -80,6 +85,7 @@ public class AVShaderHAnimFactory implements HAnimFactory
      *
      * @return a new instance of the HumanoidManager object
      */
+    @Override
     public HumanoidManager createManager()
     {
         return new HumanoidManager();

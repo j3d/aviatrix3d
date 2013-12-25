@@ -45,6 +45,7 @@ class SoftwareSpeedHumanoid extends SoftwareHumanoid
      * @param numElements The number of 3d-vectors in the array
      * @throws IllegalArgumentException The array is null or not long enough.
      */
+    @Override
     public void setSkinCoord(float[] val, int numElements)
     {
         super.setSkinCoord(val, numElements);
@@ -64,6 +65,7 @@ class SoftwareSpeedHumanoid extends SoftwareHumanoid
      * @param numElements The number of 3d-vectors in the array
      * @throws IllegalArgumentException The array is null or not long enough.
      */
+    @Override
     public void setSkinNormal(float[] val, int numElements)
     {
         super.setSkinNormal(val, numElements);
@@ -79,6 +81,7 @@ class SoftwareSpeedHumanoid extends SoftwareHumanoid
      * values now. If nothing has changed, don't bother doing any calculations
      * and return immediately.
      */
+    @Override
     public void updateSkeleton()
     {
         // If no coordinates have been set, ignore this mesh
@@ -149,6 +152,7 @@ class SoftwareSpeedHumanoid extends SoftwareHumanoid
      * @return An object that is either a float[] or FloatBuffer, depending on
      *    the internal implementation used.
      */
+    @Override
     public Object getUpdatedSkinCoords()
     {
         return coordsArray;
@@ -160,6 +164,7 @@ class SoftwareSpeedHumanoid extends SoftwareHumanoid
      * @return An object that is either a float[] or FloatBuffer, depending on
      *    the internal implementation used.
      */
+    @Override
     public Object getUpdatedSkinNormals()
     {
         return normalsArray;

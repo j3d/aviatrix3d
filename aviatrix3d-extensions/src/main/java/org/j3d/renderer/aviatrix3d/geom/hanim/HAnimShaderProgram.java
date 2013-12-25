@@ -47,6 +47,7 @@ class HAnimShaderProgram extends ShaderProgram
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -59,6 +60,7 @@ class HAnimShaderProgram extends ShaderProgram
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         super.setLive(state);

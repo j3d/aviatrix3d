@@ -10,15 +10,9 @@
 package org.j3d.renderer.aviatrix3d.geom.hanim;
 
 // External imports
-import java.util.ArrayList;
-import java.nio.FloatBuffer;
-
-import javax.vecmath.Matrix4f;
+// None
 
 // Local imports
-import org.j3d.aviatrix3d.*;
-
-import org.j3d.geom.hanim.HAnimJoint;
 import org.j3d.geom.hanim.HAnimObject;
 import org.j3d.geom.hanim.HAnimObjectParent;
 
@@ -52,6 +46,7 @@ class ShaderJoint extends AVJoint implements ShaderObjectParent
      * @param numValid The number of valid values to read from the index list
      * @throws IllegalArgumentException The array is null or not long enough.
      */
+    @Override
     public void setSkinCoordIndex(int[] val, int numValid)
     {
         super.setSkinCoordIndex(val, numValid);
@@ -68,6 +63,7 @@ class ShaderJoint extends AVJoint implements ShaderObjectParent
      * @param val The new skinCoordWeight value to use
      * @throws IllegalArgumentException The array is null or not long enough.
      */
+    @Override
     public void setSkinCoordWeight(float[] val)
     {
         super.setSkinCoordWeight(val);
@@ -88,6 +84,7 @@ class ShaderJoint extends AVJoint implements ShaderObjectParent
      * @param destCoords The array/buffer for the transformed coordinates
      * @param destNormals The array/buffer for the transformed normals
      */
+    @Override
     protected void setParent(HAnimObjectParent parent,
                              float[] srcCoords,
                              int numCoords,
@@ -119,6 +116,7 @@ class ShaderJoint extends AVJoint implements ShaderObjectParent
      *
      * @param child Reference to the child that has changed
      */
+    @Override
     public void childAttributesChanged(HAnimObject child)
     {
         if(parent != null)
@@ -135,7 +133,7 @@ class ShaderJoint extends AVJoint implements ShaderObjectParent
      * too.
      *
      * @param weights List of weights to update
-     * @param indicies The index list of bones effecting a given vertex
+     * @param indices The index list of bones effecting a given vertex
      * @param boneCount Counter of the number of bones effecting this
      *    vertex
      * @param recurse True if this should recurse into all children
@@ -180,25 +178,25 @@ class ShaderJoint extends AVJoint implements ShaderObjectParent
      */
     void updateMatrices(float[] matrices)
     {
-        matrices[objectIndex * 16]      = globalMatrix.m00;
-        matrices[objectIndex * 16 + 1]  = globalMatrix.m10;
-        matrices[objectIndex * 16 + 2]  = globalMatrix.m20;
-        matrices[objectIndex * 16 + 3]  = globalMatrix.m30;
+        matrices[objectIndex * 16]      = (float)globalMatrix.m00;
+        matrices[objectIndex * 16 + 1]  = (float)globalMatrix.m10;
+        matrices[objectIndex * 16 + 2]  = (float)globalMatrix.m20;
+        matrices[objectIndex * 16 + 3]  = (float)globalMatrix.m30;
 
-        matrices[objectIndex * 16 + 4]  = globalMatrix.m01;
-        matrices[objectIndex * 16 + 5]  = globalMatrix.m11;
-        matrices[objectIndex * 16 + 6]  = globalMatrix.m21;
-        matrices[objectIndex * 16 + 7]  = globalMatrix.m31;
+        matrices[objectIndex * 16 + 4]  = (float)globalMatrix.m01;
+        matrices[objectIndex * 16 + 5]  = (float)globalMatrix.m11;
+        matrices[objectIndex * 16 + 6]  = (float)globalMatrix.m21;
+        matrices[objectIndex * 16 + 7]  = (float)globalMatrix.m31;
 
-        matrices[objectIndex * 16 + 8]  = globalMatrix.m02;
-        matrices[objectIndex * 16 + 9]  = globalMatrix.m12;
-        matrices[objectIndex * 16 + 10] = globalMatrix.m22;
-        matrices[objectIndex * 16 + 11] = globalMatrix.m32;
+        matrices[objectIndex * 16 + 8]  = (float)globalMatrix.m02;
+        matrices[objectIndex * 16 + 9]  = (float)globalMatrix.m12;
+        matrices[objectIndex * 16 + 10] = (float)globalMatrix.m22;
+        matrices[objectIndex * 16 + 11] = (float)globalMatrix.m32;
 
-        matrices[objectIndex * 16 + 12] = globalMatrix.m03;
-        matrices[objectIndex * 16 + 13] = globalMatrix.m13;
-        matrices[objectIndex * 16 + 14] = globalMatrix.m23;
-        matrices[objectIndex * 16 + 15] = globalMatrix.m33;
+        matrices[objectIndex * 16 + 12] = (float)globalMatrix.m03;
+        matrices[objectIndex * 16 + 13] = (float)globalMatrix.m13;
+        matrices[objectIndex * 16 + 14] = (float)globalMatrix.m23;
+        matrices[objectIndex * 16 + 15] = (float)globalMatrix.m33;
 
         for(int i = 0; i < numChildren; i++)
         {

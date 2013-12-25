@@ -16,8 +16,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ArrayList;
 
-import javax.vecmath.Matrix4f;
-
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -398,7 +397,7 @@ class AVJoint extends HAnimJoint
      * @param parentChanged Flag to indicate that the parent transformation
      *   matrix has changed or is still the same as last call
      */
-    protected void updateSkeleton(Matrix4f parentTransform,
+    protected void updateSkeleton(Matrix4d parentTransform,
                                   boolean parentChanged)
     {
         if(matrixChanged) {

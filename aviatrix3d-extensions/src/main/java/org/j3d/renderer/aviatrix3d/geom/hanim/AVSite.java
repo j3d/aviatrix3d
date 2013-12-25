@@ -16,8 +16,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ArrayList;
 
-import javax.vecmath.Matrix4f;
-
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -82,6 +81,7 @@ class AVSite extends HAnimSite
      *
      * @return The scene graph object to use
      */
+    @Override
     public Node getSceneGraphObject()
     {
         return transform;
@@ -97,6 +97,7 @@ class AVSite extends HAnimSite
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeBoundsChanges(Object src)
     {
         transform.setTransform(localMatrix);
@@ -127,6 +128,7 @@ class AVSite extends HAnimSite
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeDataChanges(Object src)
     {
     }
@@ -142,6 +144,7 @@ class AVSite extends HAnimSite
      * @param kids The collection of child objects to now use
      * @param numValid The number kids to copy from the given array
      */
+    @Override
     public void setChildren(Object[] kids, int numValid)
     {
         if(transform.isLive())
@@ -219,6 +222,7 @@ class AVSite extends HAnimSite
      *
      * @param kid The new child instance to add
      */
+    @Override
     public void addChild(Object kid)
     {
         if(!(kid instanceof Node))
@@ -260,6 +264,7 @@ class AVSite extends HAnimSite
      *
      * @param kid The child instance to remove
      */
+    @Override
     public void removeChild(Object kid)
     {
         // run through the children list to see if we have it
@@ -299,7 +304,8 @@ class AVSite extends HAnimSite
      * @param parentChanged Flag to indicate that the parent transformation
      *   matrix has changed or is still the same as last call
      */
-    protected void updateLocation(Matrix4f parentTransform,
+    @Override
+    protected void updateLocation(Matrix4d parentTransform,
                                   boolean parentChanged)
     {
         if(matrixChanged)

@@ -14,16 +14,12 @@ import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.ArrayList;
 import java.nio.FloatBuffer;
 
-import javax.vecmath.Matrix4f;
-
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 // Local imports
-import org.j3d.aviatrix3d.*;
-
 import org.j3d.geom.hanim.HAnimObject;
 
 /**
@@ -130,7 +126,7 @@ class SoftwareSpaceJoint extends SoftwareJoint
      * @param parentChanged Flag to indicate that the parent transformation
      *   matrix has changed or is still the same as last call
      */
-    protected void updateSkeleton(Matrix4f parentTransform,
+    protected void updateSkeleton(Matrix4d parentTransform,
                                   boolean parentChanged)
     {
         super.updateSkeleton(parentTransform, parentChanged);
@@ -154,19 +150,19 @@ class SoftwareSpaceJoint extends SoftwareJoint
                 float y = sourceCoords[index * 3 + 1];
                 float z = sourceCoords[index * 3 + 2];
 
-                float out_x = globalMatrix.m00 * x + globalMatrix.m01 * y +
+                double out_x = globalMatrix.m00 * x + globalMatrix.m01 * y +
                               globalMatrix.m02 * z + globalMatrix.m03;
-                float out_y = globalMatrix.m10 * x + globalMatrix.m11 * y +
+                double out_y = globalMatrix.m10 * x + globalMatrix.m11 * y +
                               globalMatrix.m12 * z + globalMatrix.m13;
-                float out_z = globalMatrix.m20 * x + globalMatrix.m21 * y +
+                double out_z = globalMatrix.m20 * x + globalMatrix.m21 * y +
                               globalMatrix.m22 * z + globalMatrix.m23;
 
                 c_buf.put(index * 3,
-                          c_buf.get(index * 3) + out_x * skinCoordWeight[i]);
+                          (float)(c_buf.get(index * 3) + out_x * skinCoordWeight[i]));
                 c_buf.put(index * 3 + 1,
-                          c_buf.get(index * 3 + 1) + out_y * skinCoordWeight[i]);
+                          (float)( c_buf.get(index * 3 + 1) + out_y * skinCoordWeight[i]));
                 c_buf.put(index * 3 + 2,
-                          c_buf.get(index * 3 + 2) + out_z * skinCoordWeight[i]);
+                          (float)(c_buf.get(index * 3 + 2) + out_z * skinCoordWeight[i]));
             }
         }
         else
@@ -188,33 +184,33 @@ class SoftwareSpaceJoint extends SoftwareJoint
                 float ny = sourceNormals[index * 3 + 1];
                 float nz = sourceNormals[index * 3 + 2];
 
-                float out_cx = globalMatrix.m00 * cx + globalMatrix.m01 * cy +
+                double out_cx = globalMatrix.m00 * cx + globalMatrix.m01 * cy +
                                globalMatrix.m02 * cz + globalMatrix.m03;
-                float out_cy = globalMatrix.m10 * cx + globalMatrix.m11 * cy +
+                double out_cy = globalMatrix.m10 * cx + globalMatrix.m11 * cy +
                                globalMatrix.m12 * cz + globalMatrix.m13;
-                float out_cz = globalMatrix.m20 * cx + globalMatrix.m21 * cy +
+                double out_cz = globalMatrix.m20 * cx + globalMatrix.m21 * cy +
                                globalMatrix.m22 * cz + globalMatrix.m23;
 
-                float out_nx = globalMatrix.m00 * nx + globalMatrix.m01 * ny +
+                double out_nx = globalMatrix.m00 * nx + globalMatrix.m01 * ny +
                                globalMatrix.m02 * nz;
-                float out_ny = globalMatrix.m10 * nx + globalMatrix.m11 * ny +
+                double out_ny = globalMatrix.m10 * nx + globalMatrix.m11 * ny +
                                globalMatrix.m12 * nz;
-                float out_nz = globalMatrix.m20 * nx + globalMatrix.m21 * ny +
+                double out_nz = globalMatrix.m20 * nx + globalMatrix.m21 * ny +
                                globalMatrix.m22 * nz;
 
                 c_buf.put(index * 3,
-                          c_buf.get(index * 3) + out_cx * skinCoordWeight[i]);
+                          (float)(c_buf.get(index * 3) + out_cx * skinCoordWeight[i]));
                 c_buf.put(index * 3 + 1,
-                          c_buf.get(index * 3 + 1) + out_cy * skinCoordWeight[i]);
+                          (float)(c_buf.get(index * 3 + 1) + out_cy * skinCoordWeight[i]));
                 c_buf.put(index * 3 + 2,
-                          c_buf.get(index * 3 + 2) + out_cz * skinCoordWeight[i]);
+                          (float)(c_buf.get(index * 3 + 2) + out_cz * skinCoordWeight[i]));
 
                 n_buf.put(index * 3,
-                          n_buf.get(index * 3) + out_nx * skinCoordWeight[i]);
+                          (float)(n_buf.get(index * 3) + out_nx * skinCoordWeight[i]));
                 n_buf.put(index * 3 + 1,
-                          n_buf.get(index * 3 + 1) + out_ny * skinCoordWeight[i]);
+                          (float)(n_buf.get(index * 3 + 1) + out_ny * skinCoordWeight[i]));
                 n_buf.put(index * 3 + 2,
-                          n_buf.get(index * 3 + 2) + out_nz * skinCoordWeight[i]);
+                          (float)(n_buf.get(index * 3 + 2) + out_nz * skinCoordWeight[i]));
             }
         }
 

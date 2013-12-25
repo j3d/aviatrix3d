@@ -23,6 +23,7 @@ import java.text.MessageFormat;
 import java.util.Locale;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
@@ -269,6 +270,7 @@ class HAnimShader extends Shader
      *
      * @return An object representing any global argument lists
      */
+    @Override
     public ComponentRenderable getArgumentsRenderable()
     {
         return arguments;
@@ -279,9 +281,10 @@ class HAnimShader extends Shader
      * is not recognised by this shader, return null.
      *
      * @param type One of the _SHADER constants from
-     *    {@link RenderableShaderComponent}
+     *    {@link ShaderComponentRenderable}
      * @return A matching component or null if none
      */
+    @Override
     public ShaderComponentRenderable getShaderRenderable(int type)
     {
         return (type == ShaderComponentRenderable.PROGRAM_SHADER) ?
@@ -297,7 +300,8 @@ class HAnimShader extends Shader
      *
      * @param gl The gl context to draw with
      */
-    public void render(GL gl)
+    @Override
+    public void render(GL2 gl)
     {
         if(program == null || !program.isValid(gl))
             return;
@@ -315,14 +319,14 @@ class HAnimShader extends Shader
 
         // Now go through finding out what is currently set for the state and
         // push it through to the arguments class.
-        lightState[0] = gl.glIsEnabled(GL.GL_LIGHT0) ? 1 : 0;
-        lightState[1] = gl.glIsEnabled(GL.GL_LIGHT1) ? 1 : 0;
-        lightState[2] = gl.glIsEnabled(GL.GL_LIGHT2) ? 1 : 0;
-        lightState[3] = gl.glIsEnabled(GL.GL_LIGHT3) ? 1 : 0;
-        lightState[4] = gl.glIsEnabled(GL.GL_LIGHT4) ? 1 : 0;
-        lightState[5] = gl.glIsEnabled(GL.GL_LIGHT5) ? 1 : 0;
-        lightState[6] = gl.glIsEnabled(GL.GL_LIGHT6) ? 1 : 0;
-        lightState[7] = gl.glIsEnabled(GL.GL_LIGHT7) ? 1 : 0;
+        lightState[0] = gl.glIsEnabled(GL2.GL_LIGHT0) ? 1 : 0;
+        lightState[1] = gl.glIsEnabled(GL2.GL_LIGHT1) ? 1 : 0;
+        lightState[2] = gl.glIsEnabled(GL2.GL_LIGHT2) ? 1 : 0;
+        lightState[3] = gl.glIsEnabled(GL2.GL_LIGHT3) ? 1 : 0;
+        lightState[4] = gl.glIsEnabled(GL2.GL_LIGHT4) ? 1 : 0;
+        lightState[5] = gl.glIsEnabled(GL2.GL_LIGHT5) ? 1 : 0;
+        lightState[6] = gl.glIsEnabled(GL2.GL_LIGHT6) ? 1 : 0;
+        lightState[7] = gl.glIsEnabled(GL2.GL_LIGHT7) ? 1 : 0;
 
         lightEnabled[0] = lightState[0] + lightState[1] + lightState[2] +
                           lightState[3] + lightState[4] + lightState[5] +
@@ -336,16 +340,16 @@ class HAnimShader extends Shader
 
         arguments.setUniform("enabledLights", 1, lightState, 8);
 
-        if(gl.glIsEnabled(GL.GL_FOG))
+        if(gl.glIsEnabled(GL2.GL_FOG))
         {
-            gl.glGetIntegerv(GL.GL_FOG_COORDINATE_SOURCE, fogType, 0);
+            gl.glGetIntegerv(GL2.GL_FOG_COORDINATE_SOURCE, fogType, 0);
             switch(fogType[0])
             {
-                case GL.GL_FOG_COORDINATE:
+                case GL2.GL_FOG_COORDINATE:
                     fogType[0] = 1;
                     break;
 
-                case GL.GL_FRAGMENT_DEPTH:
+                case GL2.GL_FRAGMENT_DEPTH:
                     fogType[0] = 2;
                     break;
             }
@@ -387,7 +391,8 @@ class HAnimShader extends Shader
      *
      * @param gl The gl context to draw with
      */
-    public void postRender(GL gl)
+    @Override
+    public void postRender(GL2 gl)
     {
         if(program == null || !program.isValid(gl))
             return;
@@ -408,6 +413,7 @@ class HAnimShader extends Shader
      *
      * @param handler The instance to use as a handler
      */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -423,6 +429,7 @@ class HAnimShader extends Shader
      *
      * @param state true if this should be marked as live now
      */
+    @Override
     protected void setLive(boolean state)
     {
         if(state)
@@ -453,6 +460,7 @@ class HAnimShader extends Shader
      * @throws ClassCastException The specified object's type prevents it from
      *    being compared to this Object
      */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -470,6 +478,7 @@ class HAnimShader extends Shader
      * @param o The object to be compared
      * @return True if these represent the same values
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof HAnimShader))

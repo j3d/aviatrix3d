@@ -16,8 +16,6 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ArrayList;
 
-import javax.vecmath.Matrix4f;
-
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -90,6 +88,7 @@ class AVSegment extends HAnimSegment
      *
      * @return The scene graph object to use
      */
+    @Override
     public Node getSceneGraphObject()
     {
         return group;
@@ -105,6 +104,7 @@ class AVSegment extends HAnimSegment
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeBoundsChanges(Object src)
     {
         // How many objects changed this last round?
@@ -139,6 +139,7 @@ class AVSegment extends HAnimSegment
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeDataChanges(Object src)
     {
     }
@@ -156,6 +157,7 @@ class AVSegment extends HAnimSegment
      * @param val The new bboxCenter value to use
      * @throws IllegalArgumentException The array is null or not long enough.
      */
+    @Override
     public void setBboxCenter(float[] val)
     {
         super.setBboxCenter(val);
@@ -195,6 +197,7 @@ class AVSegment extends HAnimSegment
      * @param val The new bboxSize value to use
      * @throws IllegalArgumentException The array is null or not long enough.
      */
+    @Override
     public void setBboxSize(float[] val)
     {
         super.setBboxSize(val);
@@ -233,6 +236,7 @@ class AVSegment extends HAnimSegment
      * @param kids The collection of child objects to now use
      * @param numValid The number kids to copy from the given array
      */
+    @Override
     public void setChildren(Object[] kids, int numValid)
     {
         if(group.isLive())
@@ -310,6 +314,7 @@ class AVSegment extends HAnimSegment
      *
      * @param kid The new child instance to add
      */
+    @Override
     public void addChild(Object kid)
     {
         if(!(kid instanceof Node))
@@ -351,6 +356,7 @@ class AVSegment extends HAnimSegment
      *
      * @param kid The child instance to remove
      */
+    @Override
     public void removeChild(Object kid)
     {
         // run through the children list to see if we have it

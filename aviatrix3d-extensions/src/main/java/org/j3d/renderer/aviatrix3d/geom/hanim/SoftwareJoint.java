@@ -10,14 +10,9 @@
 package org.j3d.renderer.aviatrix3d.geom.hanim;
 
 // External imports
-import java.util.ArrayList;
-import java.nio.FloatBuffer;
-
-import javax.vecmath.Matrix4f;
+// None
 
 // Local imports
-import org.j3d.aviatrix3d.*;
-
 import org.j3d.geom.hanim.HAnimJoint;
 import org.j3d.geom.hanim.HAnimObject;
 
@@ -55,6 +50,7 @@ abstract class SoftwareJoint extends AVJoint
      * @param kids The collection of child objects to now use
      * @param numValid The number kids to copy from the given array
      */
+    @Override
     public void setChildren(HAnimObject[] kids, int numValid)
     {
         super.setChildren(kids, numValid);
@@ -72,6 +68,7 @@ abstract class SoftwareJoint extends AVJoint
      *
      * @param kid The new child instance to add
      */
+    @Override
     public void addChild(HAnimObject kid)
     {
         super.addChild(kid);
@@ -83,6 +80,7 @@ abstract class SoftwareJoint extends AVJoint
     /**
      * Send an update message to the parent, if one has not already been sent.
      */
+    @Override
     protected void sendUpdateMsg()
     {
         if(!dirty && dirtyCoordinates != null)

@@ -101,6 +101,7 @@ public abstract class SoftwareHumanoid extends AVHumanoid
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeBoundsChanges(Object src)
     {
         if(src == skinGroup)
@@ -130,6 +131,7 @@ public abstract class SoftwareHumanoid extends AVHumanoid
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeDataChanges(Object src)
     {
         if(src instanceof BufferGeometry)
@@ -158,6 +160,7 @@ public abstract class SoftwareHumanoid extends AVHumanoid
      * @param numElements The number of 3d-vectors in the array
      * @throws IllegalArgumentException The array is null or not long enough.
      */
+    @Override
     public void setSkinCoord(float[] val, int numElements)
     {
         super.setSkinCoord(val, numElements);
@@ -191,6 +194,7 @@ public abstract class SoftwareHumanoid extends AVHumanoid
      * @param numElements The number of 3d-vectors in the array
      * @throws IllegalArgumentException The array is null or not long enough.
      */
+    @Override
     public void setSkinNormal(float[] val, int numElements)
     {
         super.setSkinNormal(val, numElements);
@@ -208,6 +212,7 @@ public abstract class SoftwareHumanoid extends AVHumanoid
      * @param kids The collection of child objects to now use
      * @param numValid The number kids to copy from the given array
      */
+    @Override
     public void setSkeleton(HAnimObject[] kids, int numValid)
     {
         super.setSkeleton(kids, numValid);
@@ -221,6 +226,7 @@ public abstract class SoftwareHumanoid extends AVHumanoid
      * values now. If nothing has changed, don't bother doing any calculations
      * and return immediately.
      */
+    @Override
     public void updateSkeleton()
     {
         // keep the flag because the superclass is going to overwrite it.
@@ -286,6 +292,7 @@ public abstract class SoftwareHumanoid extends AVHumanoid
      * @param skins List of representative shapes to use
      * @param numSkins The number of valid items to use from the skins array
      */
+    @Override
     public void setSkin(Node[] skins, int numSkins)
     {
         // Walk the nodes looking for geometry

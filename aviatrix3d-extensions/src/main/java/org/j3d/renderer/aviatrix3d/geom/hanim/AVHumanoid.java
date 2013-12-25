@@ -91,6 +91,7 @@ public abstract class AVHumanoid extends HAnimHumanoid
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeBoundsChanges(Object src)
     {
         if(src == rootTransform)
@@ -128,6 +129,7 @@ public abstract class AVHumanoid extends HAnimHumanoid
      *
      * @param src The node or Node Component that is to be updated.
      */
+    @Override
     public void updateNodeDataChanges(Object src)
     {
     }
@@ -145,6 +147,7 @@ public abstract class AVHumanoid extends HAnimHumanoid
      * @param val The new bboxCenter value to use
      * @throws IllegalArgumentException The array is null or not long enough.
      */
+    @Override
     public void setBboxCenter(float[] val)
     {
         super.setBboxCenter(val);
@@ -184,6 +187,7 @@ public abstract class AVHumanoid extends HAnimHumanoid
      * @param val The new bboxSize value to use
      * @throws IllegalArgumentException The array is null or not long enough.
      */
+    @Override
     public void setBboxSize(float[] val)
     {
         super.setBboxSize(val);
@@ -223,6 +227,7 @@ public abstract class AVHumanoid extends HAnimHumanoid
      * @param vps The collection of viewpoints objects to now use
      * @param numValid The number kids to copy from the given array
      */
+    @Override
     public void setViewpoints(Object[] vps, int numValid)
     {
         if(viewpointGroup.isLive())
@@ -289,6 +294,7 @@ public abstract class AVHumanoid extends HAnimHumanoid
      * @param kids The collection of child objects to now use
      * @param numValid The number kids to copy from the given array
      */
+    @Override
     public void setSkeleton(HAnimObject[] kids, int numValid)
     {
         if(skeletonGroup.isLive())
@@ -355,6 +361,7 @@ public abstract class AVHumanoid extends HAnimHumanoid
      * values now. If nothing has changed, don't bother doing any calculations
      * and return immediately.
      */
+    @Override
     public void updateSkeleton()
     {
         if(matrixChanged) {
