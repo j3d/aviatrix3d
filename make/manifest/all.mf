@@ -1,6 +1,0 @@
-Extension-Name: j3d-org-aviatrix3d
-Specification-Vendor: Justin Couch
-Specification-Version: 2.2
-Implementation-Vendor-Id: j3d.org
-Implementation-Vendor: j3d.org
-Implementation-Version: 2.2
