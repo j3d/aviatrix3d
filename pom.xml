@@ -70,6 +70,14 @@
     </pluginRepositories>
     <repositories>
         <repository>
+            <id>eclipse</id>
+            <name>Eclipse Repository</name>
+            <url>http://repo.eclipse.org/maven2/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>central</id>
             <name>Main Repository</name>
             <url>http://repo1.maven.org/maven2/</url>
