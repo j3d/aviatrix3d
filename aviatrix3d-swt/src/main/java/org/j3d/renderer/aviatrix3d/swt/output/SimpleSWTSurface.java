@@ -17,12 +17,12 @@ import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLCapabilitiesChooser;
 import javax.media.opengl.GLContext;
 
+import com.jogamp.opengl.swt.GLCanvas;
 import org.eclipse.swt.widgets.Composite;
 
 // Local imports
 import org.j3d.aviatrix3d.output.graphics.BaseSurface;
 import org.j3d.aviatrix3d.output.graphics.StandardRenderingProcessor;
-import org.j3d.opengl.swt.GLCanvas;
 
 /**
  * Implementation of the most basic drawable surface using SWT.
@@ -246,8 +246,8 @@ public class SimpleSWTSurface extends BaseSWTSurface
         swtCanvas = new GLCanvas(parent, style, caps, chooser, shared_context);
         swtCanvas.addControlListener(resizer);
 
-        canvas = swtCanvas.getGLDrawable();
-        canvasContext = swtCanvas.getGLContext();
+        canvas = swtCanvas.getDelegatedDrawable();
+        canvasContext = swtCanvas.getContext();
 
         canvasRenderer =
             new StandardRenderingProcessor(canvasContext, this);

@@ -17,6 +17,7 @@ import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLCapabilitiesChooser;
 import javax.media.opengl.GLContext;
 
+import com.jogamp.opengl.swt.GLCanvas;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.widgets.Composite;
@@ -26,8 +27,6 @@ import org.j3d.aviatrix3d.output.graphics.BaseSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugRenderingProcessor;
 import org.j3d.aviatrix3d.output.graphics.RenderingProcessor;
 import org.j3d.aviatrix3d.rendering.ProfilingData;
-
-import org.j3d.opengl.swt.GLCanvas;
 
 /**
  * Implementation of the surface using SWT that allows for single-shot
@@ -384,8 +383,8 @@ public class DebugSWTSurface extends BaseSWTSurface
         swtCanvas.addKeyListener(this);
         swtCanvas.addControlListener(resizer);
 
-        canvas = swtCanvas.getGLDrawable();
-        canvasContext = swtCanvas.getGLContext();
+        canvas = swtCanvas.getDelegatedDrawable();
+        canvasContext = swtCanvas.getContext();
 
         canvasRenderer = new DebugRenderingProcessor(canvasContext, this);
 

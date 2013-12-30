@@ -37,12 +37,6 @@ import org.j3d.util.ErrorReporter;
  */
 class SWTSurfaceMonitor implements SurfaceMonitor
 {
-    /** Is the watched component currently visible. */
-    private boolean visible;
-
-    /** Has the current GL context been rendered invalid by surface size changes */
-    private boolean invalidContext;
-
     /** Error reporter used to send out messages */
     private ErrorReporter errorReporter;
 
@@ -52,9 +46,6 @@ class SWTSurfaceMonitor implements SurfaceMonitor
     SWTSurfaceMonitor()
     {
         errorReporter = DefaultErrorReporter.getDefaultReporter();
-
-        visible = true;
-        invalidContext = true;
     }
 
     //---------------------------------------------------------------

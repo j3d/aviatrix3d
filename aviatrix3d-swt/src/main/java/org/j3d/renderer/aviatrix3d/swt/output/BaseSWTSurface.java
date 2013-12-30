@@ -16,9 +16,8 @@ package org.j3d.renderer.aviatrix3d.swt.output;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.j3d.opengl.swt.GLCanvas;
-
 // Local imports
+import com.jogamp.opengl.swt.GLCanvas;
 import org.j3d.aviatrix3d.output.graphics.BaseSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsResizeListener;
 

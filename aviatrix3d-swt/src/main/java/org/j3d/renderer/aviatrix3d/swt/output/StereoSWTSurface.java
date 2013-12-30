@@ -20,6 +20,7 @@ import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import com.jogamp.opengl.swt.GLCanvas;
 import org.eclipse.swt.widgets.Composite;
 
 import org.j3d.util.I18nManager;
@@ -27,7 +28,6 @@ import org.j3d.util.I18nManager;
 // Local imports
 import org.j3d.aviatrix3d.output.graphics.*;
 
-import org.j3d.opengl.swt.GLCanvas;
 import org.j3d.aviatrix3d.rendering.OffscreenBufferRenderable;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsProfilingData;
 
@@ -401,15 +401,11 @@ public class StereoSWTSurface extends BaseSWTSurface
         if(sharedSurface != null)
             shared_context = sharedSurface.getGLContext();
 
-        swtCanvas = new GLCanvas(parentWidget,
-                                 swtStyle,
-                                 requestedCapabilities,
-                                 requestedChooser,
-                                 shared_context);
+        swtCanvas = new GLCanvas(parentWidget, swtStyle, requestedCapabilities, requestedChooser, shared_context);
         swtCanvas.addControlListener(resizer);
 
-        canvas = swtCanvas.getGLDrawable();
-        canvasContext = swtCanvas.getGLContext();
+        canvas = swtCanvas.getDelegatedDrawable();
+        canvasContext = swtCanvas.getContext();
 
         switch(policy)
         {
@@ -464,6 +460,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      *
      * @return One of the *_STEREO values
      */
+    @Override
     public int getStereoRenderingPolicy()
     {
         return stereoRenderType;
@@ -544,6 +541,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      *
      * @return The drawable surface representation
      */
+    @Override
     public Object getSurfaceObject()
     {
         // Since we know that the canvas is GLJPanel or GLCanvas, we can just
@@ -569,10 +567,11 @@ public class StereoSWTSurface extends BaseSWTSurface
      * @param gl An initialised, current gl context to play with
      * @return true if the initialisation succeeded, or false if not
      */
+    @Override
     public boolean completeCanvasInitialisation(GL gl)
     {
         byte[] params = new byte[1];
-        gl.glGetBooleanv(GL.GL_STEREO, params, 0);
+        gl.glGetBooleanv(GL2.GL_STEREO, params, 0);
 
         quadBuffersAvailable = (params[0] == GL.GL_TRUE);
 
