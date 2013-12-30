@@ -15,6 +15,7 @@ package org.j3d.renderer.aviatrix3d.nodes;
 // External imports
 import java.util.ArrayList;
 
+import org.j3d.maths.vector.Matrix3d;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
 import org.j3d.maths.vector.Vector4d;
@@ -145,8 +146,18 @@ public class MarkerGroup extends BaseGroup implements CustomCullable
             viewMatrix.set(viewTransform);
 
             viewPosition.set(viewMatrix.m03, viewMatrix.m13, viewMatrix.m23);
-            viewMatrix.get(rotMatrix);
-			
+            rotMatrix.m00 = viewMatrix.m00;
+            rotMatrix.m01 = viewMatrix.m01;
+            rotMatrix.m02 = viewMatrix.m02;
+
+            rotMatrix.m10 = viewMatrix.m10;
+            rotMatrix.m11 = viewMatrix.m11;
+            rotMatrix.m12 = viewMatrix.m12;
+
+            rotMatrix.m20 = viewMatrix.m20;
+            rotMatrix.m21 = viewMatrix.m21;
+            rotMatrix.m22 = viewMatrix.m22;
+
             markerPosition.set(
                 targetPosition.x - viewPosition.x,
                 targetPosition.y - viewPosition.y,
@@ -161,8 +172,10 @@ public class MarkerGroup extends BaseGroup implements CustomCullable
 			
             markerMatrix.setIdentity();
             markerMatrix.set(rotMatrix);
-            markerMatrix.setTranslation(markerPosition);
-			
+            markerMatrix.m03 = markerPosition.x;
+            markerMatrix.m13 = markerPosition.z;
+            markerMatrix.m23 = markerPosition.y;
+
 			if(BoundingVolume.FRUSTUM_ALLOUT ==
 				bounds.checkIntersectionFrustum(frustumPlanes, markerMatrix))
 			{
