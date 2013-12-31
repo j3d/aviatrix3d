@@ -72,7 +72,7 @@
         <repository>
             <id>eclipse</id>
             <name>Eclipse Repository</name>
-            <url>http://repo.eclipse.org/maven2/</url>
+            <url>http://repo.eclipse.org/</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
