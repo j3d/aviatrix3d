@@ -18,6 +18,7 @@ import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
+import org.j3d.util.MatrixUtils;
 
 public class SubSurfaceAnimator
     implements ApplicationUpdateObserver,
@@ -59,6 +60,9 @@ public class SubSurfaceAnimator
     /** The current angle of object rotation */
     private float rotation;
 
+    /** Utility for performing matrix rotations */
+    private MatrixUtils matrixUtils;
+
     /**
      *
      */
@@ -68,6 +72,7 @@ public class SubSurfaceAnimator
 
         frameCount = 0;
         matrix = new Matrix4d();
+        matrixUtils = new MatrixUtils();
     }
 
     //---------------------------------------------------------------
@@ -116,8 +121,7 @@ For debugging of shader purposes only
 //*/
         rotation = (float)((rotation + ROTATION_INC) % (2 * Math.PI));
 
-        matrix.setIdentity();
-        matrix.rotY(rotation);
+        matrixUtils.rotateY(rotation, matrix);
 
         if(mainWorldTransform.isLive())
             mainWorldTransform.boundsChanged(this);

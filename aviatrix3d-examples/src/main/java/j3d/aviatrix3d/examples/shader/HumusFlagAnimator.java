@@ -25,6 +25,7 @@ import org.j3d.geom.spring.SpringEvaluatorCallback;
 import org.j3d.geom.spring.SpringNode;
 import org.j3d.geom.spring.SpringSystem;
 import org.j3d.texture.procedural.PerlinNoiseGenerator;
+import org.j3d.util.MatrixUtils;
 
 public class HumusFlagAnimator
     implements ApplicationUpdateObserver,
@@ -156,11 +157,8 @@ public class HumusFlagAnimator
     /** A vertex for settting transform values when needed */
     private Vector3d tmpVertex;
 
-    /** A temp array for setting uniform variable values  */
-    private float[] tmpFloat;
-
-ShaderObject[] objs;
-ShaderProgram prog;
+    /** Utility for converting rotations */
+    private MatrixUtils matrixUtils;
 
     /**
      *
@@ -176,11 +174,11 @@ ShaderProgram prog;
         lightGroup = light;
         clothGroup = cloth;
 
+        matrixUtils = new MatrixUtils();
         tmpMatrix = new Matrix4d();
         tmpMatrix.setIdentity();
 
         tmpVertex = new Vector3d();
-        tmpFloat = new float[4];
 
         // Pull apart the cloth structure for the bits we need
         Shape3D shape = (Shape3D)cloth.getChild(0);
@@ -211,10 +209,10 @@ ShaderProgram prog;
         shader = (GLSLangShader)app.getShader();
         poleArgs = shader.getShaderArguments();
 
-        prog = shader.getShaderProgram();
+        ShaderProgram prog = shader.getShaderProgram();
         prog.requestInfoLog();
 
-        objs = new ShaderObject[2];
+        ShaderObject[] objs = new ShaderObject[2];
         prog.getShaderObjects(objs);
         objs[0].requestInfoLog();
         objs[1].requestInfoLog();
@@ -292,7 +290,7 @@ ShaderProgram prog;
         lastFrameTime = cur_time;
 
         lightPos[0] = 3 * C_SIZE * CLOTH_SIZE_X * perlinNoise.noise1(0.5f * time / 1000f);
-        lightPos[1] = 320 + 100 * perlinNoise.noise1(0.3d * time / 1000f + 23.37f);
+        lightPos[1] = 320 + 100 * perlinNoise.noise1(0.3f * time / 1000f + 23.37f);
         lightPos[2] = C_SIZE * CLOTH_SIZE_X * perlinNoise.noise1(12.31f - 0.5f * time / 1000f);
 
         if(time >= nextTime)
@@ -309,7 +307,7 @@ ShaderProgram prog;
                 case 3:
                     float off = 4 * (rgen.nextFloat() - 0.5f);
                     angle += off + (off >= 0 ? 1 : -1) * 0.5f;
-                    radius = rgen.nextFloat() * 0.5f + 0.3d;
+                    radius = rgen.nextFloat() * 0.5f + 0.3f;
 
 
                     windDirection[0] = radius * (float)Math.cos(angle);
@@ -421,7 +419,7 @@ ShaderProgram prog;
         }
         else if(src == lightGroup)
         {
-            tmpVertex.set(lightPos);
+            tmpVertex.set(lightPos[0], lightPos[1], lightPos[2]);
             tmpMatrix.setTranslation(tmpVertex);
 
             lightGroup.setTransform(tmpMatrix);
@@ -434,8 +432,7 @@ ShaderProgram prog;
         }
         else if(src == arrowTransform)
         {
-            tmpMatrix.setIdentity();
-            tmpMatrix.rotY(angle * 180 / (float)Math.PI);
+            matrixUtils.rotateY(angle * 180 / Math.PI, tmpMatrix);
             arrowTransform.setTransform(tmpMatrix);
         }
     }
@@ -480,15 +477,9 @@ ShaderProgram prog;
         float y = attribs[2] + node.position[node.offset + 1] * 0.00432f;
         float z = attribs[3] + node.position[node.offset + 2] * 0.00432f;
 
-//System.out.println("checking spring node " + node + " pos " + x + " " + y + " " + z);
-
         node.dir[0] += 500 * attribs[0] * perlinNoise.noise3(x, y, z);
-        node.dir[1] += 500 * attribs[0] * perlinNoise.noise3(x + 5.571f,
-                                                             y - 9.842f,
-                                                             z + 4.741f);
-        node.dir[2] += 500 * attribs[0] * perlinNoise.noise3(x - 2.3142f,
-                                                             y + 7.1423d,
-                                                             z + 3.412f);
+        node.dir[1] += 500 * attribs[0] * perlinNoise.noise3(x + 5.571f, y - 9.842f, z + 4.741f);
+        node.dir[2] += 500 * attribs[0] * perlinNoise.noise3(x - 2.3142f, y + 7.1423f, z + 3.412f);
     }
 
     //---------------------------------------------------------------
@@ -505,5 +496,4 @@ ShaderProgram prog;
     {
         return (t * t * (3 - 2 * t));
     }
-
 }

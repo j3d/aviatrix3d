@@ -38,9 +38,9 @@ public class UniformAnimation
     {
         shaderArgs = args;
         interpolator = new ColorInterpolator();
-        interpolator.addRGBKeyFrame(0, 1, 0.3d, 0.2f, 0);
-        interpolator.addRGBKeyFrame(0.5f, 0, 0.3d, 0.2f, 0);
-        interpolator.addRGBKeyFrame(1, 1, 0.3d, 0.2f, 0);
+        interpolator.addRGBKeyFrame(0, 1, 0.3f, 0.2f, 0);
+        interpolator.addRGBKeyFrame(0.5f, 0, 0.3f, 0.2f, 0);
+        interpolator.addRGBKeyFrame(1, 1, 0.3f, 0.2f, 0);
         cycleStartTime = System.currentTimeMillis();
     }
 

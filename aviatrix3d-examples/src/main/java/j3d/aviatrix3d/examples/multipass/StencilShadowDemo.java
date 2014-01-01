@@ -264,26 +264,31 @@ public class StencilShadowDemo extends Frame
 		
 		Matrix4d mat = new Matrix4d();
 
-		mat.setIdentity();
-		mat.setTranslation(new Vector3d(-roomBoxWidth / 2, 0, 0));
+        Vector3d trans = new Vector3d();
+        trans.set(-roomBoxWidth / 2, 0, 0);
+
+		mat.set(trans);
 		TransformGroup roomLeft = new TransformGroup();
 		roomLeft.setTransform(mat);
 		roomLeft.addChild(roomGeomLeft);
 
-		mat.setIdentity();
-		mat.setTranslation(new Vector3d(roomBoxWidth / 2, 0, 0));
+        trans.set(roomBoxWidth / 2, 0, 0);
+
+		mat.set(trans);
 		TransformGroup roomRight = new TransformGroup();
 		roomRight.setTransform(mat);
 		roomRight.addChild(roomGeomRight);
 
-		mat.setIdentity();
-		mat.setTranslation(new Vector3d(0, 0, -roomBoxHeight / 2));
+        trans.set(0, 0, -roomBoxHeight / 2);
+
+		mat.set(trans);
 		TransformGroup roomBack = new TransformGroup();
 		roomBack.setTransform(mat);
 		roomBack.addChild(roomGeomBack);
 
-		mat.setIdentity();
-		mat.setTranslation(new Vector3d(0, -roomBoxHeight / 2, 0));
+        trans.set(0, -roomBoxHeight / 2, 0);
+
+		mat.set(trans);
 		TransformGroup roomBottom = new TransformGroup();
 		roomBottom.setTransform(mat);
 		roomBottom.addChild(roomGeomBottom);
@@ -373,7 +378,8 @@ public class StencilShadowDemo extends Frame
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(false);
         
-        Vector3d trans = new Vector3d(0.0, 0.0, 3);
+        Vector3d trans = new Vector3d();
+        trans.set(0.0, 0.0, 3);
 		
         Matrix4d mat = new Matrix4d();
         mat.setIdentity();
@@ -432,7 +438,8 @@ public class StencilShadowDemo extends Frame
 		Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(false);
         
-        Vector3d trans = new Vector3d(0.0, 0.0, 3);
+        Vector3d trans = new Vector3d();
+        trans.set(0.0, 0.0, 3);
 		
         Matrix4d mat = new Matrix4d();
         mat.setIdentity();
@@ -490,7 +497,8 @@ public class StencilShadowDemo extends Frame
 		Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(false);
         
-        Vector3d trans = new Vector3d(0.0, 0.0, 3);
+        Vector3d trans = new Vector3d();
+        trans.set(0.0, 0.0, 3);
 		
         Matrix4d mat = new Matrix4d();
         mat.setIdentity();
@@ -551,7 +559,8 @@ public class StencilShadowDemo extends Frame
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(false);
         
-        Vector3d trans = new Vector3d(0.0, 0.0, 3);
+        Vector3d trans = new Vector3d();
+        trans.set(0.0, 0.0, 3);
 		
         Matrix4d mat = new Matrix4d();
         mat.setIdentity();

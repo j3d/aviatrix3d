@@ -123,7 +123,8 @@ public class UniformUpdateDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3d trans = new Vector3d(0, 0, 2f);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 2f);
 
         Matrix4d mat = new Matrix4d();
         mat.setIdentity();
@@ -174,9 +175,9 @@ public class UniformUpdateDemo extends Frame
         shader_prog.addShaderObject(frag_shader);
         shader_prog.link();
 
-        float[] brick_colour = { 1, 0.3d, 0.2f };
-        float[] mortar_colour = { 0.85f, 0.86f, 0.84d };
-        float[] brick_size = { 0.3d, 0.15f };
+        float[] brick_colour = { 1, 0.3f, 0.2f };
+        float[] mortar_colour = { 0.85f, 0.86f, 0.84f };
+        float[] brick_size = { 0.3f, 0.15f };
         float[] brick_pct = { 0.9f, 0.85f };
         float[] light_pos = { 0, 0, 4 };
 
@@ -295,7 +296,7 @@ public class UniformUpdateDemo extends Frame
     /**
      * Load the shader file. Find it relative to the classpath.
      *
-     * @param file THe name of the file to load
+     * @param name THe name of the file to load
      */
     private String loadFile(String name)
     {

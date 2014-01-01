@@ -102,7 +102,9 @@ public class PerPixelLightingDemo extends Frame
 		setLayout(new BorderLayout());
 		addWindowListener(this);
 		
-		rotation = new AxisAngle4d(0, 1, 0, 0);
+		rotation = new AxisAngle4d();
+        rotation.set(0, 1, 0, 0);
+
 		view_mtx = new Matrix4d();
 		translation = new Vector3d();
 		
@@ -138,8 +140,7 @@ public class PerPixelLightingDemo extends Frame
 		translation.z = (float)(ORBIT_DISTANCE * Math.cos(angle));
 		
 		rotation.angle = (float)angle;
-		view_mtx.setIdentity();
-		view_mtx.setRotation(rotation);
+		view_mtx.set(rotation);
 		view_mtx.setTranslation(translation);
 		
 		view_tx.boundsChanged(this);
@@ -251,10 +252,11 @@ public class PerPixelLightingDemo extends Frame
 		
 		TransformGroup sphere_tx_0 = getSphere();
 		
+		Vector3d t_0 = new Vector3d();
+        t_0.set(0, 2.5f, 0);
+
         Matrix4d mtx_0 = new Matrix4d();
-        mtx_0.setIdentity();
-		Vector3d t_0 = new Vector3d(0, 2.5f, 0);
-		mtx_0.setTranslation(t_0);
+        mtx_0.set(t_0);
 
         sphere_tx_0.setTransform(mtx_0);
 		scene_root.addChild(sphere_tx_0);
@@ -314,29 +316,32 @@ public class PerPixelLightingDemo extends Frame
 			Matrix4d mat2 = new Matrix4d();
 			mat2.setIdentity();
 			Vector3d t = new Vector3d();
-			AxisAngle4d r = new AxisAngle4d(0, 1, 0, 0);
-			
-			switch(i) {
-			case 0:
-				t.set(0, 0, -2.5f);
-				r.angle = 0;
-				break;
-			case 1:
-				t.set(2.5f, 0, 0);
-				r.angle = (float)Math.PI/2;
-				break;
-			case 2:
-				t.set(0, 0, 2.5f);
-				r.angle = (float)Math.PI;
-				break;
-			case 3:
-				t.set(-2.5f, 0, 0);
-				r.angle = -(float)Math.PI/2;
-				break;
+			AxisAngle4d r = new AxisAngle4d();
+            r.set(0, 1, 0, 0);
+
+            switch(i)
+            {
+                case 0:
+                    t.set(0, 0, -2.5f);
+                    r.angle = 0;
+                    break;
+                case 1:
+                    t.set(2.5f, 0, 0);
+                    r.angle = (float)Math.PI/2;
+                    break;
+                case 2:
+                    t.set(0, 0, 2.5f);
+                    r.angle = (float)Math.PI;
+                    break;
+                case 3:
+                    t.set(-2.5f, 0, 0);
+                    r.angle = -(float)Math.PI/2;
+                    break;
 			}
-			mat2.setTranslation(t);
-			mat2.setRotation(r);
-			
+
+            mat2.set(r);
+            mat2.setTranslation(t);
+
 			TransformGroup shape_tx = new TransformGroup();
 			shape_tx.addChild(shape);
 			shape_tx.setTransform(mat2);
@@ -347,10 +352,11 @@ public class PerPixelLightingDemo extends Frame
 		
 		TransformGroup sphere_tx_1 = getSphere();
 		
+		Vector3d t_1 = new Vector3d();
+        t_1.set(0, -2.5f, 0);
+
         Matrix4d mtx_1 = new Matrix4d();
-        mtx_1.setIdentity();
-		Vector3d t_1 = new Vector3d(0, -2.5f, 0);
-		mtx_1.setTranslation(t_1);
+        mtx_1.set(t_1);
 
         sphere_tx_1.setTransform(mtx_1);
 		scene_root.addChild(sphere_tx_1);
@@ -462,7 +468,7 @@ public class PerPixelLightingDemo extends Frame
 	/**
 	 * Load the shader file. Find it relative to the classpath.
 	 *
-	 * @param file THe name of the file to load
+	 * @param name THe name of the file to load
 	 */
 	private String[] loadShaderFile(String name)
 	{

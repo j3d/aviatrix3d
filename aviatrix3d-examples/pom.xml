@@ -50,8 +50,6 @@
                     <meminitial>256m</meminitial>
                     <maxmem>1024m</maxmem>
                     <excludes>
-                        <exclude>j3d/aviatrix3d/examples/multipass/*.java</exclude>
-                        <exclude>j3d/aviatrix3d/examples/shader/*.java</exclude>
                         <exclude>j3d/aviatrix3d/examples/texture/*.java</exclude>
                     </excludes>
                 </configuration>

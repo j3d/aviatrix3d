@@ -145,12 +145,13 @@ public class StencilShadowAnimator implements
     public void updateSceneGraph() {
     	
         rotation = (float)((rotation + ROTATION_INC) % (2 * Math.PI));
-        updateMatrix.setIdentity();
-        updateMatrix.set(new AxisAngle4d(0, 1, 1, rotation));
+        AxisAngle4d aa = new AxisAngle4d();
+        aa.set(0, 1, 1, rotation);
+
+        updateMatrix.set(aa);
         
         for(int j = 0; j < coordList.size(); j++) {
-        	SEdgeIndTriArray vtxArray =
-	        	(SEdgeIndTriArray)meshGeomList.get(j);
+        	SEdgeIndTriArray vtxArray = meshGeomList.get(j);
 	        
 	        vertexType = vtxArray.getVertexType();
 			
@@ -175,9 +176,9 @@ public class StencilShadowAnimator implements
 				
 		        updateMatrix.transform(inVert, outVert);
 		        
-		        geomVertexes[i+0] = outVert.x;
-		        geomVertexes[i+1] = outVert.y;
-		        geomVertexes[i+2] = outVert.z;
+		        geomVertexes[i+0] = (float)outVert.x;
+		        geomVertexes[i+1] = (float)outVert.y;
+		        geomVertexes[i+2] = (float)outVert.z;
 			}
 			
 			if(vtxArray.isLive()) {
@@ -306,23 +307,21 @@ public class StencilShadowAnimator implements
 		// For each triangles
 		for(int i = 0; i < edges.length; i++) {
 			
-			float dot1 = 
-				triangle[edges[i].triangleIndex[0]].plane.dot(lightPos);
-			float dot2 = 
-				triangle[edges[i].triangleIndex[1]].plane.dot(lightPos);
+			double dot1 = triangle[edges[i].triangleIndex[0]].plane.dot(lightPos);
+            double dot2 = triangle[edges[i].triangleIndex[1]].plane.dot(lightPos);
 			
 			if(dot2 >= 0) {
 				if(dot1 < 0) {
 					// Silhouette triangle
 					
 					// Create shadow volume geometry and add it into the scene graph
-					float v1x = (vertices[edges[i].vertexIndex[0] + 0] - lightPos.x);
-					float v1y = (vertices[edges[i].vertexIndex[0] + 1] - lightPos.y);
-					float v1z = (vertices[edges[i].vertexIndex[0] + 2] - lightPos.z);
-					
-					float v2x = (vertices[edges[i].vertexIndex[1] + 0] - lightPos.x);
-					float v2y = (vertices[edges[i].vertexIndex[1] + 1] - lightPos.y);
-					float v2z = (vertices[edges[i].vertexIndex[1] + 2] - lightPos.z);
+                    double v1x = (vertices[edges[i].vertexIndex[0] + 0] - lightPos.x);
+                    double v1y = (vertices[edges[i].vertexIndex[0] + 1] - lightPos.y);
+                    double v1z = (vertices[edges[i].vertexIndex[0] + 2] - lightPos.z);
+
+                    double v2x = (vertices[edges[i].vertexIndex[1] + 0] - lightPos.x);
+                    double v2y = (vertices[edges[i].vertexIndex[1] + 1] - lightPos.y);
+                    double v2z = (vertices[edges[i].vertexIndex[1] + 2] - lightPos.z);
 					
 					float[] coord = new float[] {
 							vertices[edges[i].vertexIndex[0] + 0],
@@ -333,13 +332,13 @@ public class StencilShadowAnimator implements
 							vertices[edges[i].vertexIndex[1] + 1],
 							vertices[edges[i].vertexIndex[1] + 2],
 							1,
-							v2x,
-							v2y,
-							v2z,
+                            (float)v2x,
+                            (float)v2y,
+                            (float)v2z,
 							0,
-							v1x,
-							v1y,
-							v1z,
+                            (float)v1x,
+                            (float)v1y,
+                            (float)v1z,
 							0};
 					
 					QuadArray triStrip = new QuadArray();
@@ -358,13 +357,13 @@ public class StencilShadowAnimator implements
 					// Silhouette triangle
 					
 					// Create shadow volume geometry and add it into the scene graph
-					float v1x = (vertices[edges[i].vertexIndex[0] + 0] - lightPos.x);
-					float v1y = (vertices[edges[i].vertexIndex[0] + 1] - lightPos.y);
-					float v1z = (vertices[edges[i].vertexIndex[0] + 2] - lightPos.z);
+					float v1x = (float)(vertices[edges[i].vertexIndex[0] + 0] - lightPos.x);
+					float v1y = (float)(vertices[edges[i].vertexIndex[0] + 1] - lightPos.y);
+					float v1z = (float)(vertices[edges[i].vertexIndex[0] + 2] - lightPos.z);
 					
-					float v2x = (vertices[edges[i].vertexIndex[1] + 0] - lightPos.x);
-					float v2y = (vertices[edges[i].vertexIndex[1] + 1] - lightPos.y);
-					float v2z = (vertices[edges[i].vertexIndex[1] + 2] - lightPos.z);
+					float v2x = (float)(vertices[edges[i].vertexIndex[1] + 0] - lightPos.x);
+					float v2y = (float)(vertices[edges[i].vertexIndex[1] + 1] - lightPos.y);
+					float v2z = (float)(vertices[edges[i].vertexIndex[1] + 2] - lightPos.z);
 					
 					float[] coord = new float[] {
 							vertices[edges[i].vertexIndex[1] + 0],

@@ -189,12 +189,14 @@ public class SubSurfaceScatteringDemo extends Frame
         light_shape.setAppearance(light_app);
         light_shape.setGeometry(light_geom);
 
-        Vector3d light_pos = new Vector3d();
+        Point3d light_pos = new Point3d();
         light_pos.set(50, 0, -50);
 
+        Vector3d light_posv = new Vector3d();
+        light_posv.set(light_pos.x, light_pos.y, light_pos.z);
+
         Matrix4d mat = new Matrix4d();
-        mat.setIdentity();
-        mat.setTranslation(light_pos);
+        mat.set(light_posv);
 
 
         TransformGroup light_group = new TransformGroup();
@@ -635,7 +637,7 @@ public class SubSurfaceScatteringDemo extends Frame
      * object from the position of the light
      */
     private OffscreenTexture2D createLightDepthMap(VertexGeometry worldGeom,
-                                                   Vector3d lightPos,
+                                                   Point3d lightPos,
                                                    float[] lightProjMatrix,
                                                    float[] depthScale,
                                                    SubSurfaceAnimator anim)
@@ -651,11 +653,11 @@ public class SubSurfaceScatteringDemo extends Frame
 
         Matrix4d vp_mat = new Matrix4d();
 
+        Vector3d up = new Vector3d();
+        up.y = 1;
+
         MatrixUtils utils = new MatrixUtils();
-        utils.lookAt(new Point3d(lightPos),
-                     new Point3d(),
-                     new Vector3d(0, 1, 0),
-                     vp_mat);
+        utils.lookAt(lightPos, new Point3d(), up, vp_mat);
 
         utils.inverse(vp_mat, vp_mat);
 
@@ -933,9 +935,11 @@ public class SubSurfaceScatteringDemo extends Frame
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(true);
 
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 10);
+
         Matrix4d mat = new Matrix4d();
-        mat.setIdentity();
-        mat.setTranslation(new Vector3d(0f, 0f, 10f));
+        mat.set(trans);
 
         TransformGroup viewpointTransform = new TransformGroup();
         viewpointTransform.addChild(vp);

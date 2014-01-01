@@ -191,7 +191,7 @@ public class MultipleRenderTargetDemo extends Frame
     /**
      * Load the shader file. Find it relative to the classpath.
      *
-     * @param file THe name of the file to load
+     * @param name THe name of the file to load
      */
     private String[] loadShaderFile(String name)
     {
@@ -261,9 +261,11 @@ public class MultipleRenderTargetDemo extends Frame
         shape_1.setGeometry(real_geom);
         shape_1.setAppearance(app_1);
 
+        Vector3d trans = new Vector3d();
+        trans.set(-1.5f, 0, 0);
+
         Matrix4d mat_1 = new Matrix4d();
-        mat_1.setIdentity();
-        mat_1.setTranslation(new Vector3d(-1.5f, 0, 0));
+        mat_1.set(trans);
 
         TransformGroup tg_1 = new TransformGroup();
         tg_1.setTransform(mat_1);
@@ -283,9 +285,11 @@ public class MultipleRenderTargetDemo extends Frame
         shape_2.setGeometry(real_geom);
         shape_2.setAppearance(app_2);
 
+        trans = new Vector3d();
+        trans.set(1.5f, 0, 0);
+
         Matrix4d mat_2 = new Matrix4d();
-        mat_2.setIdentity();
-        mat_2.setTranslation(new Vector3d(1.5f, 0, 0));
+        mat_2.set(trans);
 
         TransformGroup tg_2 = new TransformGroup();
         tg_2.setTransform(mat_2);
@@ -294,9 +298,11 @@ public class MultipleRenderTargetDemo extends Frame
 
         Viewpoint vp = new Viewpoint();
 
+        trans = new Vector3d();
+        trans.set(0, 0, 10);
+
         Matrix4d view_mat = new Matrix4d();
-        view_mat.setIdentity();
-        view_mat.setTranslation(new Vector3d(0, 0, 10f));
+        view_mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.setTransform(view_mat);
@@ -332,9 +338,11 @@ public class MultipleRenderTargetDemo extends Frame
     {
         Viewpoint vp = new Viewpoint();
 
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 10);
+
         Matrix4d view_mat = new Matrix4d();
-        view_mat.setIdentity();
-        view_mat.setTranslation(new Vector3d(0, 0, 10f));
+        view_mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.setTransform(view_mat);

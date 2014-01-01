@@ -132,11 +132,11 @@ public class OBEarth1Demo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3d trans = new Vector3d(0, 0, 2f);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 2f);
 
         Matrix4d mat = new Matrix4d();
-        mat.setIdentity();
-        mat.setTranslation(trans);
+        mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.addChild(vp);
@@ -151,7 +151,7 @@ public class OBEarth1Demo extends Frame
         data.geometryComponents = GeometryData.NORMAL_DATA|
                                   GeometryData.TEXTURE_2D_DATA;
 
-        SphereGenerator generator = new SphereGenerator(0.4d);
+        SphereGenerator generator = new SphereGenerator(0.4f);
         generator.generate(data);
 
         int[] tex_type = { VertexGeometry.TEXTURE_COORDINATE_2 };
@@ -308,7 +308,7 @@ public class OBEarth1Demo extends Frame
     /**
      * Load the shader file. Find it relative to the classpath.
      *
-     * @param file THe name of the file to load
+     * @param name THe name of the file to load
      */
     private String loadFile(String name)
     {
@@ -324,7 +324,7 @@ public class OBEarth1Demo extends Frame
         try
         {
             FileReader is = new FileReader(file);
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             char[] read_buf = new char[1024];
             int num_read = 0;
 

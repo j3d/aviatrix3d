@@ -519,7 +519,7 @@ public class DeferredShadingDemo extends Frame
         utils.inverse(view_mat, inv_view);
 
         for(int i = 0; i < 6; i++)
-            inv_view.transform(frustum_planes[i]);
+            inv_view.transform(frustum_planes[i], frustum_planes[i]);
 
         // Generate the world view coordinates for each of the corners.
         int[][] pixels =
@@ -574,7 +574,7 @@ public class DeferredShadingDemo extends Frame
             Vector4d window = new Vector4d();
             window.set(in_x, in_y, in_z, 1);
 
-            unproj_mat.transform(window);
+            unproj_mat.transform(window, window);
 
             if(window.w == 0)
                 System.out.println("bogus w");
@@ -586,13 +586,13 @@ public class DeferredShadingDemo extends Frame
             v.y = window.y * window.w;
             v.z = window.z * window.w;
 
-            v.sub(viewPos);
-            v.normalize();
-            model_mat.transform(v);
+            v.sub(v, viewPos);
+            v.normalise();
+            model_mat.transform(v, v);
 
-            view_vec[i * 3] = v.x;
-            view_vec[i * 3 + 1] = v.y;
-            view_vec[i * 3 + 2] = v.z;
+            view_vec[i * 3] = (float)v.x;
+            view_vec[i * 3 + 1] = (float)v.y;
+            view_vec[i * 3 + 2] = (float)v.z;
         }
 
         real_geom.setAttributes(5, 3, view_vec, false);
@@ -1345,10 +1345,10 @@ shader_args.setUniform("planes", 2, d_planes, 1);
             // calc distance of light from view planes. If the radius of the
             // light is completely outside the viewplane, no point doing this
             // rendering pass.
-            float d = (lightPos[0] * frustumPlanes[i].x +
-                      lightPos[1] * frustumPlanes[i].y +
-                      lightPos[2] * frustumPlanes[i].z) -
-                      frustumPlanes[i].w;
+            double d = (lightPos[0] * frustumPlanes[i].x +
+                        lightPos[1] * frustumPlanes[i].y +
+                        lightPos[2] * frustumPlanes[i].z) -
+                       frustumPlanes[i].w;
 
 
             if(d < -radius)
@@ -1431,29 +1431,29 @@ shader_args.setUniform("planes", 2, d_planes, 1);
         float e1 = 1.2f;
         float e2 = 1.2f * (float)mainSceneEnv.getAspectRatio();
 
-        float d = r2 * l2.x - (l2.x + l2.z) * (r2 - l2.z);
+        double d = r2 * l2.x - (l2.x + l2.z) * (r2 - l2.z);
 
         if(d >= 0)
         {
             d = (float)Math.sqrt(d);
 
-            float nx1 = (radius * lightPos.x + d) / (l2.x + l2.z);
-            float nx2 = (radius * lightPos.x - d) / (l2.x + l2.z);
+            double nx1 = (radius * lightPos.x + d) / (l2.x + l2.z);
+            double nx2 = (radius * lightPos.x - d) / (l2.x + l2.z);
 
-            float nz1 = (radius - nx1 * lightPos.x) / lightPos.z;
-            float nz2 = (radius - nx2 * lightPos.x) / lightPos.z;
+            double nz1 = (radius - nx1 * lightPos.x) / lightPos.z;
+            double nz2 = (radius - nx2 * lightPos.x) / lightPos.z;
 
-            float pz1 = (l2.x + l2.z - r2) /
+            double pz1 = (l2.x + l2.z - r2) /
                         (lightPos.z - (nz1 / nx1)  * lightPos.x);
-            float pz2 = (l2.x + l2.z - r2) /
+            double pz2 = (l2.x + l2.z - r2) /
                         (lightPos.z - (nz2 / nx2)  * lightPos.x);
 
             if(pz1 < 0)
             {
-                float fx = nz1 * e1 / nx1;
+                double fx = nz1 * e1 / nx1;
                 int ix = (int)((fx + 1) * sx * 0.5f);
 
-                float px = -pz1 * nz1 / nx1;
+                double px = -pz1 * nz1 / nx1;
 
                 if(px < lightPos.x)
                 {
@@ -1469,10 +1469,10 @@ shader_args.setUniform("planes", 2, d_planes, 1);
 
             if(pz2 < 0)
             {
-                float fx = nz2 * e1 / nx2;
+                double fx = nz2 * e1 / nx2;
                 int ix = (int)((fx + 1) * sx * 0.5f);
 
-                float px = -pz2 * nz2 / nx2;
+                double px = -pz2 * nz2 / nx2;
 
                 if(px < lightPos.x)
                 {
@@ -1491,25 +1491,25 @@ shader_args.setUniform("planes", 2, d_planes, 1);
 
         if(d >= 0)
         {
-            d = (float)Math.sqrt(d);
+            d = Math.sqrt(d);
 
-            float ny1 = (radius * lightPos.y + d) / (l2.y + l2.z);
-            float ny2 = (radius * lightPos.y - d) / (l2.y + l2.z);
+            double ny1 = (radius * lightPos.y + d) / (l2.y + l2.z);
+            double ny2 = (radius * lightPos.y - d) / (l2.y + l2.z);
 
-            float nz1 = (radius - ny1 * lightPos.y) / lightPos.z;
-            float nz2 = (radius - ny2 * lightPos.y) / lightPos.z;
+            double nz1 = (radius - ny1 * lightPos.y) / lightPos.z;
+            double nz2 = (radius - ny2 * lightPos.y) / lightPos.z;
 
-            float pz1 = (l2.y + l2.z - r2) /
+            double pz1 = (l2.y + l2.z - r2) /
                         (lightPos.z - (nz1 / ny1)  * lightPos.y);
-            float pz2 = (l2.y + l2.z - r2) /
+            double pz2 = (l2.y + l2.z - r2) /
                         (lightPos.z - (nz2 / ny2)  * lightPos.y);
 
             if(pz1 < 0)
             {
-                float fy = nz1 * e2 / ny1;
+                double fy = nz1 * e2 / ny1;
                 int iy = (int)((fy + 1) * sy * 0.5f);
 
-                float py = -pz1 * nz1 / ny1;
+                double py = -pz1 * nz1 / ny1;
 
                 if(py < lightPos.y)
                 {
@@ -1525,10 +1525,10 @@ shader_args.setUniform("planes", 2, d_planes, 1);
 
             if(pz2 < 0)
             {
-                float fy = nz2 * e2 / ny2;
+                double fy = nz2 * e2 / ny2;
                 int iy = (int)((fy + 1) * sy * 0.5f);
 
-                float py = -pz2 * nz2 / ny2;
+                double py = -pz2 * nz2 / ny2;
 
                 if(py < lightPos.y)
                 {
@@ -1616,25 +1616,29 @@ shader_args.setUniform("planes", 2, d_planes, 1);
         // 5 flat planes on the inside of the box for some reference walls
         // Everything repeated because each vertex has different normals
         // depending on the direction the wall faces
-        float[] wall_coords = {
+        float[] wall_coords =
+        {
             -7, -7,  7,  -7, -7, -7, -7,  7, -7,  -7,  7,  7,
              7, -7, -7,   7, -7,  7,  7,  7,  7,   7,  7, -7,
             -7, -7, -7,   7, -7, -7,  7,  7, -7,  -7,  7, -7,
             -7, -7, -7,  -7, -7,  7,  7, -7,  7,   7, -7, -7,
         };
 
-        float[] wall_normals = {
+        float[] wall_normals =
+        {
              1, 0, 0,  1, 0, 0,  1, 0, 0,  1, 0, 0,
             -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
              0, 0, 1,  0, 0, 1,  0, 0, 1,  0, 0, 1,
              0, 1, 0,  0, 1, 0,  0, 1, 0,  0, 1, 0,
         };
 
-        int[] wall_indices = {
+        int[] wall_indices =
+                {
              0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11, 12, 13, 14, 15
         };
 
-        float[][] wall_tex_coords = { {
+        float[][] wall_tex_coords =
+        { {
             0, 0,  1, 0,  1, 1,  0, 1,
             0, 0,  1, 0,  1, 1,  0, 1,
             0, 0,  1, 0,  1, 1,  0, 1,
@@ -1736,6 +1740,8 @@ shader_args.setUniform("planes", 2, d_planes, 1);
         wall_shape.setGeometry(wall_geom);
         wall_shape.setAppearance(plain_app_1);
 
+        MatrixUtils utils = new MatrixUtils();
+
         // Transform the geometry in some way
         Matrix4d geom_mat1 = new Matrix4d();
         geom_mat1.setIdentity();
@@ -1744,15 +1750,13 @@ shader_args.setUniform("planes", 2, d_planes, 1);
         geom_mat1.m23 = -1.0f;
 
         Matrix4d geom_mat2 = new Matrix4d();
-        geom_mat2.setIdentity();
-        geom_mat2.rotY(-PI_4);
+        utils.rotateY(-PI_4, geom_mat2);
         geom_mat2.m03 = 0.0f;
         geom_mat2.m13 = -4.5f;
         geom_mat2.m23 = -0.0f;
 
         Matrix4d geom_mat3 = new Matrix4d();
-        geom_mat3.setIdentity();
-        geom_mat3.rotY(PI_4 - 0.07f);
+        utils.rotateY(PI_4 - 0.07f, geom_mat2);
         geom_mat3.m03 = 1.0f;
         geom_mat3.m13 = -4.25f;
         geom_mat3.m23 = 0.0f;
@@ -1855,7 +1859,7 @@ shader_args.setUniform("planes", 2, d_planes, 1);
                 {
                     force.sub(vec, sample_sphere[j]);
 
-                    float fac = force.dot(force);
+                    double fac = force.dot(force);
 
                     if(fac != 0.0f )
                     {
@@ -1867,7 +1871,7 @@ shader_args.setUniform("planes", 2, d_planes, 1);
                 }
 
                 res.scale(0.5f);
-                sample_sphere[i].add(res);
+                sample_sphere[i].add(sample_sphere[i], res);
                 sample_sphere[i].normalise();
             }
         }
@@ -1881,9 +1885,9 @@ shader_args.setUniform("planes", 2, d_planes, 1);
 
         for(int i = 0; i < numSamples; i++)
         {
-            ret_val[i * 3] = sample_sphere[i].x;
-            ret_val[i * 3 + 1] = sample_sphere[i].y;
-            ret_val[i * 3 + 2] = sample_sphere[i].z;
+            ret_val[i * 3] = (float)sample_sphere[i].x;
+            ret_val[i * 3 + 1] = (float)sample_sphere[i].y;
+            ret_val[i * 3 + 2] = (float)sample_sphere[i].z;
         }
 
         return ret_val;

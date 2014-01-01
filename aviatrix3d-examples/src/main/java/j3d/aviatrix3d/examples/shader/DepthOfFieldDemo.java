@@ -31,6 +31,7 @@ import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
 import org.j3d.geom.SphereGenerator;
 import org.j3d.geom.TorusGenerator;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Example application demonstrating a simple depth of field renderer.
@@ -475,16 +476,17 @@ public class DepthOfFieldDemo extends Frame
         torus_shape.setGeometry(torus_geom);
         torus_shape.setAppearance(app);
 
+        MatrixUtils utils = new MatrixUtils();
+
         // Transform the geometry in some way
         Matrix4d geom_mat1 = new Matrix4d();
         geom_mat1.setIdentity();
-        geom_mat1.rotX(PI_4);
+        utils.rotateX(PI_4, geom_mat1);
 
         Matrix4d geom_mat2 = new Matrix4d();
-        geom_mat2.setIdentity();
-        geom_mat2.rotY(PI_4);
+        utils.rotateY(PI_4, geom_mat2);
 
-        geom_mat2.mul(geom_mat1);
+        geom_mat2.mul(geom_mat2, geom_mat1);
         geom_mat2.m03 = 3.0f;
 
         TransformGroup box_tx = new TransformGroup();

@@ -246,9 +246,11 @@ public class GBufferDemo extends Frame
         shape_1.setGeometry(real_geom);
         shape_1.setAppearance(app_1);
 
+        Vector3d trans = new Vector3d();
+        trans.set(-1.05f, 1.05f, 0);
+
         Matrix4d mat_1 = new Matrix4d();
-        mat_1.setIdentity();
-        mat_1.setTranslation(new Vector3d(-1.05f, 1.05f, 0));
+        mat_1.set(trans);
 
         TransformGroup normal_buffer_tx = new TransformGroup();
         normal_buffer_tx.setTransform(mat_1);
@@ -268,9 +270,11 @@ public class GBufferDemo extends Frame
         shape_2.setGeometry(real_geom);
         shape_2.setAppearance(app_2);
 
+        trans = new Vector3d();
+        trans.set(1.05f, 1.05f, 0);
+
         Matrix4d mat_2 = new Matrix4d();
-        mat_2.setIdentity();
-        mat_2.setTranslation(new Vector3d(1.05f, 1.05f, 0));
+        mat_2.set(trans);
 
         TransformGroup diffuse_buffer_tx = new TransformGroup();
         diffuse_buffer_tx.setTransform(mat_2);
@@ -290,9 +294,11 @@ public class GBufferDemo extends Frame
         shape_3.setGeometry(real_geom);
         shape_3.setAppearance(app_3);
 
+        trans = new Vector3d();
+        trans.set(-1.05f, -1.05f, 0);
+
         Matrix4d mat_3 = new Matrix4d();
-        mat_3.setIdentity();
-        mat_3.setTranslation(new Vector3d(-1.05f, -1.05f, 0));
+        mat_3.set(trans);
 
         TransformGroup specular_buffer_tx = new TransformGroup();
         specular_buffer_tx.setTransform(mat_3);
@@ -312,9 +318,11 @@ public class GBufferDemo extends Frame
         shape_4.setGeometry(real_geom);
         shape_4.setAppearance(app_4);
 
+        trans = new Vector3d();
+        trans.set(1.05f, -1.05f, 0);
+
         Matrix4d mat_4 = new Matrix4d();
-        mat_4.setIdentity();
-        mat_4.setTranslation(new Vector3d(1.05f, -1.05f, 0));
+        mat_4.set(trans);
 
         TransformGroup depth_buffer_tx = new TransformGroup();
         depth_buffer_tx.setTransform(mat_4);
@@ -323,9 +331,11 @@ public class GBufferDemo extends Frame
 
         Viewpoint vp = new Viewpoint();
 
+        trans = new Vector3d();
+        trans.set(0, 0, 6);
+
         Matrix4d view_mat = new Matrix4d();
-        view_mat.setIdentity();
-        view_mat.setTranslation(new Vector3d(0, 0, 6f));
+        view_mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.setTransform(view_mat);
@@ -361,9 +371,11 @@ public class GBufferDemo extends Frame
     {
         Viewpoint vp = new Viewpoint();
 
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 7f);
+
         Matrix4d view_mat = new Matrix4d();
-        view_mat.setIdentity();
-        view_mat.setTranslation(new Vector3d(0, 0, 7f));
+        view_mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.setTransform(view_mat);

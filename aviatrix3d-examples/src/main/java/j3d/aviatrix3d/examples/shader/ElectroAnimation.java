@@ -94,22 +94,22 @@ public class ElectroAnimation
         };
 
         texture2d[0] = 1;
-        texture2d[1] = -0.4d;
+        texture2d[1] = -0.4f;
 
         texture2d[2] = 1;
-        texture2d[3] = 0.4d;
+        texture2d[3] = 0.4f;
 
         texture2d[4] = 0;
-        texture2d[5] = -0.4d;
+        texture2d[5] = -0.4f;
 
         texture2d[6] = 0;
-        texture2d[7] = 0.4d;
+        texture2d[7] = 0.4f;
 
         texture2d[8] = -1;
-        texture2d[9] = -0.4d;
+        texture2d[9] = -0.4f;
 
         texture2d[10] = -1;
-        texture2d[11] = 0.4d;
+        texture2d[11] = 0.4f;
 
         float[][] tex_coords = { texture3d, texture2d };
 

@@ -29,6 +29,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
+import org.j3d.util.MatrixUtils;
 import org.j3d.util.TriangleUtils;
 
 /**
@@ -78,7 +79,7 @@ public class SSAODemo extends Frame
     private static final int WINDOW_SIZE = 512;
 
     /** Sample radius to make for SSAO */
-    private static final float SSAO_SAMPLE_RADIUS = 0.03d;
+    private static final float SSAO_SAMPLE_RADIUS = 0.03f;
 
     /** PI / 4 for rotations */
     private static final float PI_4 = (float)(Math.PI * 0.25f);
@@ -232,7 +233,8 @@ public class SSAODemo extends Frame
     {
         shaderCallback = new BulkShaderLoadStatusCallback();
 
-        Vector3d real_view_pos = new Vector3d(0, 0, 20.0f);
+        Vector3d real_view_pos = new Vector3d();
+        real_view_pos.set(0, 0, 20.0f);
 
         MRTOffscreenTexture2D gbuffer_tex = createGBufferTexture(real_view_pos);
 
@@ -556,6 +558,8 @@ public class SSAODemo extends Frame
         Shape3D wall_shape = new Shape3D();
         wall_shape.setGeometry(wall_geom);
 
+        MatrixUtils utils = new MatrixUtils();
+
         // Transform the geometry in some way
         Matrix4d geom_mat1 = new Matrix4d();
         geom_mat1.setIdentity();
@@ -564,15 +568,13 @@ public class SSAODemo extends Frame
         geom_mat1.m23 = -1.0f;
 
         Matrix4d geom_mat2 = new Matrix4d();
-        geom_mat2.setIdentity();
-        geom_mat2.rotY(-PI_4);
+        utils.rotateY(-PI_4, geom_mat2);
         geom_mat2.m03 = 0.0f;
         geom_mat2.m13 = -4.5f;
         geom_mat2.m23 = -0.0f;
 
         Matrix4d geom_mat3 = new Matrix4d();
-        geom_mat3.setIdentity();
-        geom_mat3.rotY(PI_4 - 0.07f);
+        utils.rotateY(PI_4 - 0.07f, geom_mat3);
         geom_mat3.m03 = 1.0f;
         geom_mat3.m13 = -4.25f;
         geom_mat3.m23 = 0.0f;
@@ -639,7 +641,7 @@ public class SSAODemo extends Frame
     /**
      * Load the shader file. Find it relative to the classpath.
      *
-     * @param file THe name of the file to load
+     * @param name THe name of the file to load
      */
     private String[] loadShaderFile(String name)
     {

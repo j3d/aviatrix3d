@@ -26,6 +26,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
 import org.j3d.geom.SphereGenerator;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Example application showing off using an offscreen buffer as a depth-only
@@ -259,16 +260,16 @@ public class DepthTextureFBODemo extends Frame
         shape.setGeometry(test_geom);
         shape.setAppearance(app);
 
+        MatrixUtils utils = new MatrixUtils();
+
         Matrix4d rot_mat  = new Matrix4d();
-        rot_mat.setIdentity();
-        rot_mat.rotY(PI_4);
+        utils.rotateY(PI_4, rot_mat);
 
         TransformGroup anim_rotation = new TransformGroup();
 //        anim_rotation.setTransform(rot_mat);
         anim_rotation.addChild(shape);
 
-        rot_mat.setIdentity();
-        rot_mat.rotX(PI_4);
+        utils.rotateX(PI_4, rot_mat);
 
         TransformGroup main_rotation = new TransformGroup();
 //        main_rotation.setTransform(rot_mat);
@@ -518,16 +519,16 @@ public class DepthTextureFBODemo extends Frame
         object.setAppearance(app);
         object.setGeometry(worldGeom);
 
+        MatrixUtils utils = new MatrixUtils();
+
         Matrix4d rot_mat  = new Matrix4d();
-        rot_mat.setIdentity();
-        rot_mat.rotY(PI_4);
+        utils.rotateY(PI_4, rot_mat);
 
         TransformGroup anim_rotation = new TransformGroup();
         anim_rotation.setTransform(rot_mat);
         anim_rotation.addChild(object);
 
-        rot_mat.setIdentity();
-        rot_mat.rotX(PI_4);
+        utils.rotateX(PI_4, rot_mat);
 
         TransformGroup main_rotation = new TransformGroup();
         main_rotation.setTransform(rot_mat);

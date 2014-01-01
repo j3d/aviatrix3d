@@ -244,7 +244,7 @@ public class BasicShaderDemo extends Frame
         Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
         mat2.setTranslation(trans);
-        mat2.setScale(0.05f);
+        mat2.set(0.05);
 
         TransformGroup shape_tx = new TransformGroup();
         shape_tx.addChild(shape);
