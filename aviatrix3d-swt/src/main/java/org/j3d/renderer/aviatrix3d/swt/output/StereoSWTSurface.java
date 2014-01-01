@@ -26,10 +26,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.j3d.util.I18nManager;
 
 // Local imports
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
 import org.j3d.aviatrix3d.output.graphics.*;
 
 import org.j3d.aviatrix3d.rendering.OffscreenBufferRenderable;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsProfilingData;
+import org.j3d.aviatrix3d.rendering.ProfilingData;
 
 /**
  * Implementation of the most drawable surface, supporting stereo rendering
@@ -113,7 +116,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      */
     public StereoSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
+                            GraphicsRenderingCapabilities caps,
                             int policy)
     {
         this(parent, style, caps, null, null, policy);
@@ -134,8 +137,8 @@ public class StereoSWTSurface extends BaseSWTSurface
      */
     public StereoSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+                            GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             int policy)
     {
         this(parent, style, caps, chooser, null, policy);
@@ -157,7 +160,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      */
     public StereoSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
+                            GraphicsRenderingCapabilities caps,
                             boolean lightweight,
                             int policy)
     {
@@ -180,8 +183,8 @@ public class StereoSWTSurface extends BaseSWTSurface
      */
     public StereoSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+                            GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             boolean lightweight,
                             int policy)
     {
@@ -207,7 +210,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      */
     public StereoSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
+                            GraphicsRenderingCapabilities caps,
                             BaseSurface sharedWith,
                             int policy)
     {
@@ -235,8 +238,8 @@ public class StereoSWTSurface extends BaseSWTSurface
      */
     public StereoSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+                            GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             BaseSurface sharedWith,
                             int policy)
     {
@@ -265,7 +268,7 @@ public class StereoSWTSurface extends BaseSWTSurface
      */
     public StereoSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
+                            GraphicsRenderingCapabilities caps,
                             BaseSurface sharedWith,
                             boolean lightweight,
                             int policy)
@@ -297,16 +300,17 @@ public class StereoSWTSurface extends BaseSWTSurface
      */
     public StereoSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+                            GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             BaseSurface sharedWith,
                             boolean lightweight,
                             int policy)
     {
         super(sharedWith);
 
-        requestedCapabilities = caps;
-        requestedChooser = chooser;
+        requestedCapabilities = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
+        requestedChooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
+
         useLightweight = lightweight;
         parentWidget = parent;
         swtStyle = style;
@@ -482,7 +486,8 @@ public class StereoSWTSurface extends BaseSWTSurface
      * @param profilingData The timing and load data
      * @return true if the drawing succeeded, or false if not
      */
-    public boolean draw(GraphicsProfilingData profilingData)
+    @Override
+    public boolean draw(ProfilingData profilingData)
     {
         // tell the draw lock that it's ok to run now, so long as it's not called
         // before the canvas has completed initialisation.
@@ -521,7 +526,7 @@ public class StereoSWTSurface extends BaseSWTSurface
 
 
                 r.setEyeToRender(renderLeftFrame);
-                canvasRenderer.render(profilingData);
+                canvasRenderer.render(gpd);
                 renderLeftFrame = !renderLeftFrame;
 //                r.setEyeToRender(false);
 //                canvas.display();

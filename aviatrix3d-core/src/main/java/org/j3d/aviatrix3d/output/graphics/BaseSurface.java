@@ -1013,39 +1013,4 @@ public abstract class BaseSurface
     {
         return  (sharedSurface != null) ? sharedSurface.getGLContext() : null;
     }
-
-    /**
-     * Utility method to take the AV3D rendering capabilities and convert it into
-     * something that JOGL uses. Allows us to hide JOGL-specific initialisation
-     * from the end user so that they don't need to directly import anything.
-     *
-     * @param input The source capabilities to test.
-     * @return A non-null converted form of the capabilities.
-     */
-    protected GLCapabilities convertCapabilities(GraphicsRenderingCapabilities input, GLProfile profile)
-    {
-        GLCapabilities retval = new GLCapabilities(profile);
-        retval.setDoubleBuffered(input.doubleBuffered);
-
-        retval.setRedBits(input.redBits);
-        retval.setGreenBits(input.greenBits);
-        retval.setBlueBits(input.blueBits);
-        retval.setAlphaBits(input.alphaBits);
-
-        retval.setDepthBits(input.depthBits);
-        retval.setStencilBits(input.stencilBits);
-
-        retval.setAccumRedBits(input.accumRedBits);
-        retval.setAccumGreenBits(input.accumGreenBits);
-        retval.setAccumBlueBits(input.accumBlueBits);
-        retval.setAccumAlphaBits(input.accumAlphaBits);
-
-        retval.setBackgroundOpaque(input.backgroundOpaque);
-        retval.setTransparentRedValue(input.transparentValueRed);
-        retval.setTransparentGreenValue(input.transparentValueGreen);
-        retval.setTransparentBlueValue(input.transparentValueBlue);
-        retval.setTransparentAlphaValue(input.transparentValueAlpha);
-
-        return retval;
-    }
 }

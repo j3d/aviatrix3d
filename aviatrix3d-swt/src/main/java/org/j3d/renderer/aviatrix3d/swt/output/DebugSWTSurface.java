@@ -16,6 +16,7 @@ package org.j3d.renderer.aviatrix3d.swt.output;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLCapabilitiesChooser;
 import javax.media.opengl.GLContext;
+import javax.media.opengl.GLProfile;
 
 import com.jogamp.opengl.swt.GLCanvas;
 import org.eclipse.swt.events.KeyListener;
@@ -23,9 +24,9 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.widgets.Composite;
 
 // Local imports
-import org.j3d.aviatrix3d.output.graphics.BaseSurface;
-import org.j3d.aviatrix3d.output.graphics.DebugRenderingProcessor;
-import org.j3d.aviatrix3d.output.graphics.RenderingProcessor;
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
+import org.j3d.aviatrix3d.output.graphics.*;
 import org.j3d.aviatrix3d.rendering.ProfilingData;
 
 /**
@@ -58,7 +59,7 @@ public class DebugSWTSurface extends BaseSWTSurface
      */
     public DebugSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps)
+                            GraphicsRenderingCapabilities caps)
     {
         this(parent, style, caps, null, null);
     }
@@ -75,8 +76,8 @@ public class DebugSWTSurface extends BaseSWTSurface
      */
     public DebugSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
-                            GLCapabilitiesChooser chooser)
+                            GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser)
     {
         this(parent, style, caps, chooser, null);
     }
@@ -94,7 +95,7 @@ public class DebugSWTSurface extends BaseSWTSurface
      */
     public DebugSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
+                            GraphicsRenderingCapabilities caps,
                             boolean lightweight)
     {
         this(parent, style, caps, null, null, lightweight);
@@ -115,8 +116,8 @@ public class DebugSWTSurface extends BaseSWTSurface
      */
     public DebugSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+                            GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             boolean lightweight)
     {
         this(parent, style, caps, chooser, null, lightweight);
@@ -138,7 +139,7 @@ public class DebugSWTSurface extends BaseSWTSurface
      */
     public DebugSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
+                            GraphicsRenderingCapabilities caps,
                             BaseSurface sharedWith)
     {
         this(parent, style, caps, null, sharedWith, false);
@@ -162,8 +163,8 @@ public class DebugSWTSurface extends BaseSWTSurface
      */
     public DebugSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+                            GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             BaseSurface sharedWith)
     {
         this(parent, style, caps, chooser, sharedWith, false);
@@ -188,7 +189,7 @@ public class DebugSWTSurface extends BaseSWTSurface
      */
     public DebugSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
+                            GraphicsRenderingCapabilities caps,
                             BaseSurface sharedWith,
                             boolean lightweight)
     {
@@ -216,8 +217,8 @@ public class DebugSWTSurface extends BaseSWTSurface
      */
     public DebugSWTSurface(Composite parent,
                             int style,
-                            GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+                            GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             BaseSurface sharedWith,
                             boolean lightweight)
     {
@@ -369,8 +370,8 @@ public class DebugSWTSurface extends BaseSWTSurface
      */
     private void init(Composite parent,
                       int style,
-                      GLCapabilities caps,
-                      GLCapabilitiesChooser chooser,
+                      GraphicsRenderingCapabilities caps,
+                      GraphicsRenderingCapabilitiesChooser chooser,
                       boolean lightweight)
     {
         GLContext shared_context = null;
@@ -378,7 +379,10 @@ public class DebugSWTSurface extends BaseSWTSurface
         if(sharedSurface != null)
             shared_context = sharedSurface.getGLContext();
 
-        swtCanvas = new GLCanvas(parent, style, caps, chooser, shared_context);
+        GLCapabilities jogl_caps = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
+        GLCapabilitiesChooser jogl_chooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
+
+        swtCanvas = new GLCanvas(parent, style, jogl_caps, jogl_chooser, shared_context);
 
         swtCanvas.addKeyListener(this);
         swtCanvas.addControlListener(resizer);
