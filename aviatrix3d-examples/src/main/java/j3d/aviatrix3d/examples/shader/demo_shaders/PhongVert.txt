@@ -1,0 +1,51 @@
+!!ARBvp1.0
+
+#Declarations
+ATTRIB in = vertex.position;
+ATTRIB nrm = vertex.normal;
+ATTRIB tex = vertex.texcoord[0];
+
+PARAM mvp[4] = { state.matrix.mvp };
+PARAM mv[4] = { state.matrix.modelview };
+PARAM light = { 0.57735, 0.57735, 0.57735, 0.0};
+PARAM const = {0.0, 0.0, 0.0, 0.2};
+
+OUTPUT out = result.position;
+OUTPUT oTex = result.texcoord[0];
+OUTPUT oNrm = result.texcoord[1];
+OUTPUT lVec = result.texcoord[2];
+OUTPUT vDir = result.texcoord[3];
+
+TEMP tmp;
+
+#Code
+
+
+#transform the positions
+DP4 out.x, in, mvp[0];
+DP4 out.y, in, mvp[1];
+DP4 out.z, in, mvp[2];
+DP4 out.w, in, mvp[3];
+
+#transform the position to eye-space
+DP4 tmp.x, in, mv[0];
+DP4 tmp.y, in, mv[1];
+DP4 tmp.z, in, mv[2];
+DP4 tmp.w, in, mv[3];
+
+#view direction
+MOV vDir, -tmp;
+
+#transfrom the normal to eye-space
+DP3 oNrm.x, mv[0], nrm;
+DP3 oNrm.y, mv[1], nrm;
+DP3 oNrm.z, mv[2], nrm;
+
+#output the light vector
+MOV lVec, light;
+
+#output the texcoords
+MOV oTex, tex;
+
+END
+

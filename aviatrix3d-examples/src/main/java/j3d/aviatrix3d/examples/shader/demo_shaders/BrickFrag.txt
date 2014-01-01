@@ -1,0 +1,52 @@
+!!ARBfp1.0
+
+#Declarations
+TEMP r0;
+TEMP r1;
+TEMP r2;
+TEMP r3;
+
+ATTRIB coord = fragment.texcoord[0];
+ATTRIB illum = fragment.color;
+
+PARAM scale = {2.0, 0.9, 1.8, 2.0};   
+PARAM half = 0.5;
+PARAM freq = {0.9, 0.9, 0.9, 0.9};  
+PARAM mortarColor = {0.8, 0.8, 0.8};  
+PARAM brickColor = {0.6, 0.0, 0.0};  
+
+OUTPUT out = result.color;
+
+#Instructions
+RCP r0.x, scale.x;
+RCP r0.y, scale.y;
+MUL r0.xy, coord, r0;
+
+#Apply the stagger
+MUL r2.w, r0.y, half;
+FRC r2.w, r2.w;
+SGE r2.w, half, r2.w;
+MAD r0.x, r2.w, half, r0.x;
+
+#determine whether it is brick or mortar
+FRC r0.xy, r0;
+SGE r2.xy, freq, r0;
+SUB r3.xy, 1.0, freq;
+SGE r0.xy, r3, r0;
+SUB r0.xy, r2, r0;
+MUL r0.w, r0.x, r0.y;
+
+#blend between brick and mortar
+LRP r0.xyz, r0.w, brickColor, mortarColor;
+
+#apply shading
+MUL r0.xyz, r0, illum;
+MAX r0.xyz, r0, 0.0;
+MIN r0.xyz, r0, 1.0;
+
+#write the result
+MOV out.xyz, r0;
+MOV out.w, 1.0;
+
+
+END

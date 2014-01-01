@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Aviatrix3D Model Viewer Example
+Bundle-Vendor: j3d.org
+Bundle-SymbolicName: org.j3d.aviatrix3d.examples.swt; singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Localization: plugin
+Export-Package: org.j3d.examples.aviatrix3d.swt
+Require-Bundle: org.j3d.opengl.swt,
+ org.j3d.aviatrix3d,
+ org.eclipse.swt, 
+ org.eclipse.core.runtime, 
+ org.eclipse.ui.workbench,
+ org.eclipse.jface

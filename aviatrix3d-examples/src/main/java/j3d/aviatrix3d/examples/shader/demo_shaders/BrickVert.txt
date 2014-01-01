@@ -1,0 +1,46 @@
+!!ARBvp1.0
+
+#Declarations
+ATTRIB in = vertex.position;
+ATTRIB inCol = vertex.color;
+ATTRIB nrm = vertex.normal;
+
+PARAM mvp[4] = { state.matrix.mvp };
+PARAM mv[4] = { state.matrix.modelview };
+PARAM light = { 0.57735, 0.57735, 0.57735, 0.0};
+PARAM const = {0.0, 0.0, 0.0, 0.2};
+
+OUTPUT out = result.position;
+OUTPUT col = result.color;
+OUTPUT tex = result.texcoord[0];
+
+TEMP eNrm;
+
+#Code
+
+#use model coords as tex coords
+MOV tex, in;
+
+#transform the positions
+DP4 out.x, in, mvp[0];
+DP4 out.y, in, mvp[1];
+DP4 out.z, in, mvp[2];
+DP4 out.w, in, mvp[3];
+
+#transfrom the normal to eye-space
+DP3 eNrm.x, mv[0], nrm;
+DP3 eNrm.y, mv[1], nrm;
+DP3 eNrm.z, mv[2], nrm;
+
+#simple intensity
+DP3 eNrm.x, eNrm, light;
+
+#kill negative illum
+MAX eNrm.x, eNrm.x, const.x;
+
+#add ambient term
+ADD col, eNrm.x, const.w;
+
+
+END
+
