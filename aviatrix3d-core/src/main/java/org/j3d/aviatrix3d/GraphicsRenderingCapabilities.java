@@ -41,12 +41,6 @@ public class GraphicsRenderingCapabilities
     /** Flag to enable double buffered rendering. Default value is true */
     public boolean doubleBuffered = true;
 
-    /**
-     * Flag for requesting implicit stereo rendering. The technique used depends on
-     * what the hardware has available. Default value is false.
-     */
-    public boolean stereo = false;
-
     /** Number of bits for the depth buffer. Default value 16 */
     public int depthBits      = 16;
 
@@ -84,18 +78,38 @@ public class GraphicsRenderingCapabilities
      */
     public int numSamples = 2;
 
-    /** Support for transparent windows containing OpenGL content */
+    /**
+     * Support for transparent windows containing OpenGL content. When this is false, the values
+     * of the transparentValues are used to determine which parts of the rendering should be considered
+     * as transparent
+     */
     public boolean backgroundOpaque = true;
 
-    /** Number of bits for the red component when non-opaque buffer. Default value 0 */
+    /**
+     * If the red value is this value, then it is part of the transparent section of the
+     * rendering when {@link #backgroundOpaque} is set to false. In order for the transparency
+     * to render, all 4 values must match. Default value 0
+     */
     public int transparentValueRed = 0;
 
-    /** Number of bits for the green component when non-opaque buffer. Default value 0 */
+    /**
+     * If the green value is this value, then it is part of the transparent section of the
+     * rendering when {@link #backgroundOpaque} is set to false. In order for the transparency
+     * to render, all 4 values must match. Default value 0
+     */
     public int transparentValueGreen = 0;
 
-    /** Number of bits for the blue component when non-opaque buffer. Default value 0 */
+    /**
+     * If the blue value is this value, then it is part of the transparent section of the
+     * rendering when {@link #backgroundOpaque} is set to false. In order for the transparency
+     * to render, all 4 values must match. Default value 0
+     */
     public int transparentValueBlue = 0;
 
-    /** Number of bits for the alpha component when non-opaque buffer. Default value 0 */
+    /**
+     * If the alpha value is this value, then it is part of the transparent section of the
+     * rendering when {@link #backgroundOpaque} is set to false. In order for the transparency
+     * to render, all 4 values must match. Default value 0
+     */
     public int transparentValueAlpha = 0;
 }

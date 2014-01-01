@@ -12238,7 +12238,7 @@ class DefaultPickingHandler
      * @param req flags to compare against for picking
      * @param min The minimum extents of the box in local coordinate space
      * @param radius The radius of the sphere
-     * @param path The place to put the results in
+     * @param paths The place to put the results in
      * @param needTransform true if we should calc vworld information
      */
     private int pickAllSphere(CustomPickTarget root,
