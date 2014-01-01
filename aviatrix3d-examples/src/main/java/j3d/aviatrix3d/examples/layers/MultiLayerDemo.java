@@ -1,17 +1,15 @@
+package j3d.aviatrix3d.examples.layers;
 
 // External imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -75,9 +73,7 @@ public class MultiLayerDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -133,8 +129,9 @@ public class MultiLayerDemo extends Frame
         shape.setGeometry(geom);
         shape.setAppearance(app);
 
-        Vector3f trans = new Vector3f(-0.1f, 0, 0);
-        Matrix4f mat2 = new Matrix4f();
+        Vector3d trans = new Vector3d();
+        trans.set(-0.1f, 0, 0);
+        Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
         mat2.setTranslation(trans);
 
@@ -144,9 +141,10 @@ public class MultiLayerDemo extends Frame
 
         Viewpoint vp1 = new Viewpoint();
         Background bg = new ColorBackground(GREY);
-        trans = new Vector3f(0, 0, 1);
+        trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -175,8 +173,9 @@ public class MultiLayerDemo extends Frame
         shape.setGeometry(geom);
         shape.setAppearance(app);
 
-        trans = new Vector3f(0, 0, 1);
-        mat2 = new Matrix4f();
+        trans = new Vector3d();
+        trans.set(0, 0, 1);
+        mat2 = new Matrix4d();
         mat2.setIdentity();
         mat2.setTranslation(trans);
 
@@ -187,7 +186,7 @@ public class MultiLayerDemo extends Frame
 
         Viewpoint vp2 = new Viewpoint();
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -215,15 +214,17 @@ public class MultiLayerDemo extends Frame
         shape.setGeometry(geom);
         shape.setAppearance(app);
 
-        trans = new Vector3f(0.1f, 0, 1);
-        mat2 = new Matrix4f();
+        trans = new Vector3d();
+        trans.set(0.1f, 0, 1);
+        mat2 = new Matrix4d();
         mat2.setIdentity();
         mat2.setTranslation(trans);
 
         Viewpoint vp3 = new Viewpoint();
 
-        trans = new Vector3f(0, 0, 1);
-        mat = new Matrix4f();
+        trans = new Vector3d();
+        trans.set(0, 0, 1);
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 

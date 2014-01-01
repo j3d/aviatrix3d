@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.shader;
 
 // External imports
 import java.awt.*;
@@ -11,23 +12,18 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
-import javax.vecmath.AxisAngle4f;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.AxisAngle4d;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
-import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
 import org.j3d.aviatrix3d.pipeline.graphics.NullCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.StateAndTransparencyDepthSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.TransparencyDepthSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
@@ -89,9 +85,9 @@ public class PerPixelLightingDemo extends Frame
 	private TransformGroup view_tx;
 	private int station;
 	
-	private AxisAngle4f rotation;
-	private Matrix4f view_mtx;
-	private Vector3f translation;
+	private AxisAngle4d rotation;
+	private Matrix4d view_mtx;
+	private Vector3d translation;
 	
 	private float[] transparency;
 	private Material[] material;
@@ -106,9 +102,9 @@ public class PerPixelLightingDemo extends Frame
 		setLayout(new BorderLayout());
 		addWindowListener(this);
 		
-		rotation = new AxisAngle4f(0, 1, 0, 0);
-		view_mtx = new Matrix4f();
-		translation = new Vector3f();
+		rotation = new AxisAngle4d(0, 1, 0, 0);
+		view_mtx = new Matrix4d();
+		translation = new Vector3d();
 		
 		transparency = new float[4];
 		material = new Material[4];
@@ -198,9 +194,7 @@ public class PerPixelLightingDemo extends Frame
 	private void setupAviatrix()
 	{
 		// Assemble a simple single-threaded pipeline.
-		GLCapabilities caps = new GLCapabilities();
-		caps.setDoubleBuffered(true);
-		caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 		
 		GraphicsCullStage culler = new NullCullStage();
 		culler.setOffscreenCheckEnabled(false);
@@ -257,9 +251,9 @@ public class PerPixelLightingDemo extends Frame
 		
 		TransformGroup sphere_tx_0 = getSphere();
 		
-        Matrix4f mtx_0 = new Matrix4f();
+        Matrix4d mtx_0 = new Matrix4d();
         mtx_0.setIdentity();
-		Vector3f t_0 = new Vector3f(0, 2.5f, 0);
+		Vector3d t_0 = new Vector3d(0, 2.5f, 0);
 		mtx_0.setTranslation(t_0);
 
         sphere_tx_0.setTransform(mtx_0);
@@ -317,10 +311,10 @@ public class PerPixelLightingDemo extends Frame
 			shape.setGeometry(ta);
 			shape.setAppearance(app);
 			
-			Matrix4f mat2 = new Matrix4f();
+			Matrix4d mat2 = new Matrix4d();
 			mat2.setIdentity();
-			Vector3f t = new Vector3f();
-			AxisAngle4f r = new AxisAngle4f(0, 1, 0, 0);
+			Vector3d t = new Vector3d();
+			AxisAngle4d r = new AxisAngle4d(0, 1, 0, 0);
 			
 			switch(i) {
 			case 0:
@@ -353,9 +347,9 @@ public class PerPixelLightingDemo extends Frame
 		
 		TransformGroup sphere_tx_1 = getSphere();
 		
-        Matrix4f mtx_1 = new Matrix4f();
+        Matrix4d mtx_1 = new Matrix4d();
         mtx_1.setIdentity();
-		Vector3f t_1 = new Vector3f(0, -2.5f, 0);
+		Vector3d t_1 = new Vector3d(0, -2.5f, 0);
 		mtx_1.setTranslation(t_1);
 
         sphere_tx_1.setTransform(mtx_1);

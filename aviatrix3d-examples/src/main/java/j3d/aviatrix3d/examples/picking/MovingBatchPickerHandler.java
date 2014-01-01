@@ -1,10 +1,8 @@
+package j3d.aviatrix3d.examples.picking;
 
 // External imports
-
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
@@ -26,16 +24,16 @@ public class MovingBatchPickerHandler
     private static final float[] RED = { 1, 0, 0 };
 
     /** Work variable to update the translation with */
-    private Vector3f translation;
+    private Vector3d translation;
 
     /** Matrix used to update the lineTransform */
-    private Matrix4f lineMatrix;
+    private Matrix4d lineMatrix;
 
     /** The scene graph node to update */
     private TransformGroup lineTransform;
 
     /** Matrix used to update the pointTransform */
-    private Matrix4f pointMatrix;
+    private Matrix4d pointMatrix;
 
     /** The scene graph node to update */
     private TransformGroup pointTransform;
@@ -69,13 +67,13 @@ public class MovingBatchPickerHandler
         lineMaterial = mat1;
         pointMaterial = mat2;
 
-        translation = new Vector3f();
+        translation = new Vector3d();
 
-        lineMatrix = new Matrix4f();
+        lineMatrix = new Matrix4d();
         lineMatrix.setIdentity();
         lineTransform = tx1;
 
-        pointMatrix = new Matrix4f();
+        pointMatrix = new Matrix4d();
         pointMatrix.setIdentity();
         pointTransform = tx2;
 
@@ -127,8 +125,8 @@ public class MovingBatchPickerHandler
 
         lineMatrix.setTranslation(translation);
 
-        translation.x = x * 0.4f;
-        translation.y = y * 0.4f;
+        translation.x = x * 0.4d;
+        translation.y = y * 0.4d;
 
         pointMatrix.setTranslation(translation);
 

@@ -1,20 +1,12 @@
+package j3d.aviatrix3d.examples.basic;
 
 // Standard imports
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.File;
-import java.net.MalformedURLException;
-
-import java.net.URL;
-
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+// None
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Simple animator to move the transform in a rotation about the Y axis.
@@ -28,7 +20,7 @@ public class FogObjectAnimation
     implements ApplicationUpdateObserver, NodeUpdateListener
 {
     /** Matrix used to update the transform */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
     /** The scene graph node to update */
     private TransformGroup transform;
@@ -36,14 +28,19 @@ public class FogObjectAnimation
     /** The current angle */
     private float angle;
 
+    /** Utils class for performing rotation */
+    private MatrixUtils matrixUtils;
+
     /**
      *
      */
     public FogObjectAnimation(TransformGroup tx)
     {
-        matrix = new Matrix4f();
+        matrix = new Matrix4d();
         matrix.setIdentity();
         transform = tx;
+
+        matrixUtils = new MatrixUtils();
     }
 
     //---------------------------------------------------------------
@@ -83,7 +80,7 @@ public class FogObjectAnimation
     {
         angle += Math.PI / 500;
 
-        matrix.rotY(angle);
+        matrixUtils.rotateY(angle, matrix);
 
         transform.setTransform(matrix);
     }

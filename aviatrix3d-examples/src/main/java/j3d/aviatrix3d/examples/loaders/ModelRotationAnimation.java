@@ -1,20 +1,11 @@
+package j3d.aviatrix3d.examples.loaders;
 
 // Standard imports
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.File;
-import java.net.MalformedURLException;
-
-import java.net.URL;
-
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Simple animator for rotating a model around the Y axis.
@@ -26,7 +17,7 @@ public class ModelRotationAnimation
     implements ApplicationUpdateObserver, NodeUpdateListener
 {
     /** Matrix used to update the transform */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
     /** The scene graph node to update */
     private TransformGroup transform;
@@ -34,14 +25,19 @@ public class ModelRotationAnimation
     /** The current angle */
     private float angle;
 
+    /** Utility for doing matrix rotations */
+    private MatrixUtils matrixUtils;
+
     /**
      *
      */
     public ModelRotationAnimation(TransformGroup tx)
     {
-        matrix = new Matrix4f();
+        matrix = new Matrix4d();
         matrix.setIdentity();
         transform = tx;
+
+        matrixUtils = new MatrixUtils();
     }
 
     //---------------------------------------------------------------
@@ -68,7 +64,7 @@ public class ModelRotationAnimation
     }
 
     //----------------------------------------------------------
-    // Methods required by the UpdateListener interface.
+    // Methods defined by UpdateListener
     //----------------------------------------------------------
 
     /**
@@ -81,7 +77,7 @@ public class ModelRotationAnimation
     {
         angle += Math.PI / 300;
 
-        matrix.rotY(angle);
+        matrixUtils.rotateY(angle, matrix);
 
         transform.setTransform(matrix);
     }

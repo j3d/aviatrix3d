@@ -1,17 +1,8 @@
+package j3d.aviatrix3d.examples.multipass;
 
 // External imports
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.File;
-import java.net.MalformedURLException;
-
-import java.net.URL;
-
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
@@ -27,10 +18,10 @@ public class MotionBlurAnimation
     implements ApplicationUpdateObserver, NodeUpdateListener
 {
     /** Matrices representing each of the blurred object positions. */
-    private Matrix4f[] matrix;
+    private Matrix4d[] matrix;
 
     /** Work variable to update the translation with */
-    private Vector3f translation;
+    private Vector3d translation;
 
     /** The current angle */
     private float angle;
@@ -43,15 +34,15 @@ public class MotionBlurAnimation
      */
     public MotionBlurAnimation(TransformGroup[] tx)
     {
-        translation = new Vector3f();
+        translation = new Vector3d();
         transform = tx;
 
         int size = tx.length;
-        matrix = new Matrix4f[size];
+        matrix = new Matrix4d[size];
 
         for(int i = 0; i < size; i++)
         {
-            matrix[i] = new Matrix4f();
+            matrix[i] = new Matrix4d();
             matrix[i].setIdentity();
         }
     }
@@ -70,7 +61,7 @@ public class MotionBlurAnimation
 
         // Calculate the new position. First shift the positions down one spot
         // and use the last item as the new matrix to fill in.
-        Matrix4f mat = matrix[transform.length - 1];
+        Matrix4d mat = matrix[transform.length - 1];
 
         System.arraycopy(matrix, 0, matrix, 1, transform.length - 1);
 

@@ -1,17 +1,15 @@
+package j3d.aviatrix3d.examples.multipass;
 
 // External imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -68,10 +66,8 @@ public class StencilDemo2 extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setStencilBits(8);
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.stencilBits = 8;
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -150,9 +146,10 @@ public class StencilDemo2 extends Frame
         vp.setHeadlightEnabled(true);
         vp.setHeadlightType(false);
 
-        Vector3f trans = new Vector3f(0, 0, 5);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 5);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -201,9 +198,10 @@ public class StencilDemo2 extends Frame
 //        Torus torus1 = new Torus(0.275f, 1.85f, yellow_app);
         Sphere torus1 = new Sphere(0.85f, yellow_app);
 
-        trans = new Vector3f(-0.3f, 0, 0);
+        trans = new Vector3d();
+        trans.set(-0.3, 0, 0);
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -214,9 +212,10 @@ public class StencilDemo2 extends Frame
 //        Torus torus2 = new Torus(0.275f, 1.85f, yellow_app);
         Sphere torus2 = new Sphere(0.45f, yellow_app);
 
-        trans = new Vector3f(0.4f, 0.2f, 0.2f);
+        trans = new Vector3d();
+        trans.set(0.4, 0.2, 0.2);
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 

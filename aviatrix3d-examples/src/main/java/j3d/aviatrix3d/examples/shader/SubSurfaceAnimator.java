@@ -10,9 +10,11 @@
  *
  ****************************************************************************/
 
+package j3d.aviatrix3d.examples.shader;
+
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
@@ -52,7 +54,7 @@ public class SubSurfaceAnimator
     private TransformGroup cameraDepthTransform;
 
     /** A utility matrix used for updating the transforms each frame */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
     /** The current angle of object rotation */
     private float rotation;
@@ -65,7 +67,7 @@ public class SubSurfaceAnimator
         lightGroup = light;
 
         frameCount = 0;
-        matrix = new Matrix4f();
+        matrix = new Matrix4d();
     }
 
     //---------------------------------------------------------------

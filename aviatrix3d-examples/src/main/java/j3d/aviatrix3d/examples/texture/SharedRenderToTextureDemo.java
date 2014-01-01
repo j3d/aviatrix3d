@@ -1,12 +1,13 @@
+package j3d.aviatrix3d.examples.texture;
 
 // Standard imports
+
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
-import javax.media.opengl.GLCapabilities;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -25,7 +26,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
  * @version $Revision: 1.8 $
  */
 public class SharedRenderToTextureDemo extends Frame
-    implements WindowListener
+        implements WindowListener
 {
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -61,9 +62,7 @@ public class SharedRenderToTextureDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(true);
@@ -86,7 +85,7 @@ public class SharedRenderToTextureDemo extends Frame
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
-        Component comp = (Component)surface.getSurfaceObject();
+        Component comp = (Component) surface.getSurfaceObject();
         add(comp, BorderLayout.CENTER);
     }
 
@@ -98,9 +97,9 @@ public class SharedRenderToTextureDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -112,34 +111,41 @@ public class SharedRenderToTextureDemo extends Frame
         scene_root.addChild(tx);
 
         // Flat panel that has the viewable object as the demo
-        float[] coord = { 0, 0, -1,     0.25f, 0, -1,     0, 0.25f, -1,
-                          0.25f, 0, -1, 0.25f, 0.25f, -1, 0, 0.25f, -1,
-                          0.25f, 0, -1, 0.5f, 0, -1,      0.25f, 0.25f, -1,
-                          0.5f, 0, -1,  0.5f, 0.25f, -1,  0.25f, 0.25f, -1 };
+        float[] coord = {
+                0, 0, -1, 0.25f, 0, -1, 0, 0.25f, -1,
+                0.25f, 0, -1, 0.25f, 0.25f, -1, 0, 0.25f, -1,
+                0.25f, 0, -1, 0.5f, 0, -1, 0.25f, 0.25f, -1,
+                0.5f, 0, -1, 0.5f, 0.25f, -1, 0.25f, 0.25f, -1
+        };
 
-        float[] normal = { 0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1};
-        float[][] tex_coord = { { 0, 0,  1, 0,  0, 1,   1, 0,  1, 1, 0, 1,
-                                  0, 0,  1, 0,  0, 1,   1, 0,  1, 1, 0, 1 } };
-        int[] tex_type = { VertexGeometry.TEXTURE_COORDINATE_2 };
+        float[] normal = {
+                0, 0, 1, 0, 0, 1, 0, 0, 1,
+                0, 0, 1, 0, 0, 1, 0, 0, 1,
+                0, 0, 1, 0, 0, 1, 0, 0, 1,
+                0, 0, 1, 0, 0, 1, 0, 0, 1
+        };
+        float[][] tex_coord = {
+                {
+                        0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1,
+                        0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1
+                }
+        };
+        int[] tex_type = {VertexGeometry.TEXTURE_COORDINATE_2};
 
         TriangleArray geom = new TriangleArray();
         geom.setVertices(TriangleArray.COORDINATE_3, coord, 6);
         geom.setTextureCoordinates(tex_type, tex_coord, 1);
 
         Material material = new Material();
-        material.setDiffuseColor(new float[] { 0, 0, 1 });
-        material.setEmissiveColor(new float[] { 0, 0, 1 });
-        material.setSpecularColor(new float[] { 1, 1, 1 });
+        material.setDiffuseColor(new float[]{0, 0, 1});
+        material.setEmissiveColor(new float[]{0, 0, 1});
+        material.setSpecularColor(new float[]{1, 1, 1});
 
 //        app.setMaterial(material);
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
 
         OffscreenTexture2D texture = new OffscreenTexture2D(caps, 600, 600);
         setupTextureSceneGraph(texture);
@@ -155,8 +161,8 @@ public class SharedRenderToTextureDemo extends Frame
         r_shape.setGeometry(geom);
         r_shape.setAppearance(r_app);
 
-        Vector3f translation = new Vector3f(0.1f, 0, 0);
-        Matrix4f obj_transform = new Matrix4f();
+        Vector3d translation = new Vector3d(0.1f, 0, 0);
+        Matrix4d obj_transform = new Matrix4d();
         obj_transform.setIdentity();
         obj_transform.setTranslation(translation);
 
@@ -176,7 +182,7 @@ public class SharedRenderToTextureDemo extends Frame
         l_shape.setGeometry(geom);
         l_shape.setAppearance(l_app);
 
-        translation.x = -0.3f;
+        translation.x = -0.3d;
         obj_transform.setTranslation(translation);
 
         tg = new TransformGroup();
@@ -196,7 +202,7 @@ public class SharedRenderToTextureDemo extends Frame
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
-        Layer[] layers = { layer };
+        Layer[] layers = {layer};
         displayManager.setLayers(layers, 1);
     }
 
@@ -205,39 +211,45 @@ public class SharedRenderToTextureDemo extends Frame
      */
     private void setupTextureSceneGraph(OffscreenTexture2D texture)
     {
-    texture.setClearColor(1, 0, 0, 1);
+        texture.setClearColor(1, 0, 0, 1);
 
         Group scene_root = new Group();
 
         TransformGroup grp = new TransformGroup();
 
-        Vector3f trans = new Vector3f(0, 0, 0);
+        Vector3d trans = new Vector3d(0, 0, 0);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setScale(10);
         mat.setTranslation(trans);
 
         // Flat panel that has the viewable object as the demo
-        float[] coord = { 0, 0, -1,     0.5f, 0, -1,     0, 0.5f, -1,
-                          0.5f, 0, -1, 0.5f, 0.5f, -1, 0, 0.5f, -1 };
+        float[] coord = {
+                0, 0, -1, 0.5f, 0, -1, 0, 0.5f, -1,
+                0.5f, 0, -1, 0.5f, 0.5f, -1, 0, 0.5f, -1
+        };
 
-        float[] color = { 0, 0, 1, 0, 1, 0, 1, 0, 0,
-                          0, 1, 1, 0, 1, 1, 1, 0, 1 };
+        float[] color = {
+                0, 0, 1, 0, 1, 0, 1, 0, 0,
+                0, 1, 1, 0, 1, 1, 1, 0, 1
+        };
 
-        float[] normal = { 0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1};
+        float[] normal = {
+                0, 0, 1, 0, 0, 1, 0, 0, 1,
+                0, 0, 1, 0, 0, 1, 0, 0, 1,
+                0, 0, 1, 0, 0, 1, 0, 0, 1,
+                0, 0, 1, 0, 0, 1, 0, 0, 1
+        };
 
         TriangleArray geom = new TriangleArray();
         geom.setVertices(TriangleArray.COORDINATE_3, coord, 6);
         geom.setColors(false, color);
 
         Material material = new Material();
-        material.setDiffuseColor(new float[] { 0, 0, 1 });
-        material.setEmissiveColor(new float[] { 0, 0, 1 });
-        material.setSpecularColor(new float[] { 1, 1, 1 });
+        material.setDiffuseColor(new float[]{0, 0, 1});
+        material.setEmissiveColor(new float[]{0, 0, 1});
+        material.setSpecularColor(new float[]{1, 1, 1});
 
         Appearance app = new Appearance();
 //        app.setMaterial(material);
@@ -254,7 +266,7 @@ public class SharedRenderToTextureDemo extends Frame
 
         trans.set(0, 0.0f, 5f);
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -294,7 +306,7 @@ public class SharedRenderToTextureDemo extends Frame
 
         */
 
-        Layer[] layers = { layer };
+        Layer[] layers = {layer};
 
         texture.setLayers(layers, 1);
         texture.setRepaintRequired(true);

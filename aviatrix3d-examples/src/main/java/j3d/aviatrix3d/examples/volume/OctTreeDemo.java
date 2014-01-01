@@ -1,17 +1,15 @@
+package j3d.aviatrix3d.examples.volume;
 
 // Standard imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -27,6 +25,7 @@ import org.j3d.geom.SphereGenerator;
 import org.j3d.geom.BoxGenerator;
 
 import org.j3d.renderer.aviatrix3d.geom.volume.*;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Example application that demonstrates how to use the OctTree extension
@@ -75,9 +74,7 @@ public class OctTreeDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new GenericCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -114,9 +111,10 @@ public class OctTreeDemo extends Frame
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(true);
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -173,7 +171,7 @@ public class OctTreeDemo extends Frame
 
         for(int i = 0; i < 8; i++)
         {
-            trans.set(trans_val[i]);
+            trans.set(trans_val[i][0], trans_val[i][1], trans_val[i][2]);
             mat.setIdentity();
             mat.setTranslation(trans);
 
@@ -205,8 +203,8 @@ public class OctTreeDemo extends Frame
         box_shape.setGeometry(geom2);
         box_shape.setAppearance(app2);
 
-        mat.setIdentity();
-        mat.rotY(0.707f);
+        MatrixUtils mu = new MatrixUtils();
+        mu.rotateY(0.707, mat);
 
         TransformGroup box_tx = new TransformGroup();
         box_tx.setTransform(mat);

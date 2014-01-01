@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.geometry;
 
 // Standard imports
 import java.awt.*;
@@ -12,9 +13,8 @@ import java.nio.FloatBuffer;
 import java.io.*;
 
 import javax.imageio.ImageIO;
-import javax.media.opengl.GLCapabilities;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 
 // Application Specific imports
@@ -76,9 +76,7 @@ public class PointSpriteDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new GenericCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -160,9 +158,10 @@ public class PointSpriteDemo extends Frame
 
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 3);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 3);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -225,7 +224,7 @@ public class PointSpriteDemo extends Frame
         shape.setAppearance(app);
 
 //        trans.set(0.5f, 0, 0);
-        Matrix4f mat2 = new Matrix4f();
+        Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
 //        mat2.setTranslation(trans);
 

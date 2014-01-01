@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.shader;
 
 // External imports
 import java.awt.*;
@@ -15,13 +16,14 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
+import org.j3d.maths.vector.Vector4d;
 
-import javax.media.opengl.GLCapabilities;
-
+import org.j3d.geom.GeometryData;
+import org.j3d.geom.BoxGenerator;
+import org.j3d.util.MatrixUtils;
+import org.j3d.util.TriangleUtils;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -29,15 +31,8 @@ import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
-import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
-
-import org.j3d.geom.GeometryData;
-import org.j3d.geom.BoxGenerator;
-import org.j3d.geom.SphereGenerator;
-import org.j3d.util.MatrixUtils;
-import org.j3d.util.TriangleUtils;
 
 /**
  * Example application demonstrating deferred shading with simple lighting.
@@ -214,9 +209,7 @@ public class DeferredShadingDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(true);
@@ -321,7 +314,8 @@ public class DeferredShadingDemo extends Frame
 
         createCommonQuad();
 
-        Vector3f real_view_pos = new Vector3f(0, 0, 20.0f);
+        Vector3d real_view_pos = new Vector3d();
+        real_view_pos.set(0, 0, 20.0f);
 
         MRTOffscreenTexture2D gbuffer_tex = createGBufferTexture(real_view_pos);
 
@@ -425,7 +419,7 @@ public class DeferredShadingDemo extends Frame
      * post-processing.
      */
     private MRTOffscreenTexture2D createDeferredRenderTexture(MRTOffscreenTexture2D gBuffer,
-                                                              Vector3f viewPos)
+                                                              Vector3d viewPos)
     {
         // Quads to draw to. Don't reuse the baseQuad here because we want to
         // set separate per-vertex colouring for ambient lighting. Just makes
@@ -508,19 +502,19 @@ public class DeferredShadingDemo extends Frame
 
         // Get the frustum planes for the light pass and then transform them to
         // the world coords.
-        Vector4f[] frustum_planes = new Vector4f[6];
+        Vector4d[] frustum_planes = new Vector4d[6];
         for(int i = 0; i < 6; i++)
-            frustum_planes[i] = new Vector4f();
+            frustum_planes[i] = new Vector4d();
 
         mainSceneEnv.generateViewFrustumPlanes(frustum_planes);
 
         MatrixUtils utils = new MatrixUtils();
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
 //        view_mat.setTranslation(viewPos);
 
-        Matrix4f inv_view = new Matrix4f();
+        Matrix4d inv_view = new Matrix4d();
 
         utils.inverse(view_mat, inv_view);
 
@@ -540,8 +534,8 @@ public class DeferredShadingDemo extends Frame
         float[] proj_mat_arr = new float[16];
 
         mainSceneEnv.getProjectionMatrix(proj_mat_arr);
-        Matrix4f proj_mat = new Matrix4f();
-        Matrix4f unproj_mat = new Matrix4f();
+        Matrix4d proj_mat = new Matrix4d();
+        Matrix4d unproj_mat = new Matrix4d();
 
         proj_mat.m00 = proj_mat_arr[0];
         proj_mat.m01 = proj_mat_arr[1];
@@ -560,7 +554,7 @@ public class DeferredShadingDemo extends Frame
         proj_mat.m32 = proj_mat_arr[14];
         proj_mat.m33 = proj_mat_arr[15];
 
-        Matrix4f model_mat = new Matrix4f();
+        Matrix4d model_mat = new Matrix4d();
         model_mat.setIdentity();
         model_mat.setTranslation(viewPos);
 
@@ -577,7 +571,8 @@ public class DeferredShadingDemo extends Frame
             float in_y = ((pixels[i][1] - view_size[1]) / view_size[3]) * 2 - 1;
             float in_z = 10  * 2 - 1;
 
-            Vector4f window = new Vector4f(in_x, in_y, in_z, 1);
+            Vector4d window = new Vector4d();
+            window.set(in_x, in_y, in_z, 1);
 
             unproj_mat.transform(window);
 
@@ -586,7 +581,7 @@ public class DeferredShadingDemo extends Frame
 
             window.w = 1 / window.w;
 
-            Vector3f v = new Vector3f();
+            Vector3d v = new Vector3d();
             v.x = window.x * window.w;
             v.y = window.y * window.w;
             v.z = window.z * window.w;
@@ -635,11 +630,10 @@ public class DeferredShadingDemo extends Frame
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(true);
-        caps.setAlphaBits(8);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
+        caps.alphaBits = 8;
 
         MRTOffscreenTexture2D off_tex =
             new MRTOffscreenTexture2D(caps, TEXTURE_SIZE, TEXTURE_SIZE, 1);
@@ -733,10 +727,9 @@ public class DeferredShadingDemo extends Frame
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
 
         MRTOffscreenTexture2D off_tex =
             new MRTOffscreenTexture2D(caps, TEXTURE_SIZE, TEXTURE_SIZE, 1);
@@ -827,10 +820,9 @@ public class DeferredShadingDemo extends Frame
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
 
         MRTOffscreenTexture2D horizontal_bloom_tex =
             new MRTOffscreenTexture2D(caps, HALF_TEXTURE_SIZE, HALF_TEXTURE_SIZE, 1);
@@ -906,11 +898,11 @@ public class DeferredShadingDemo extends Frame
     /**
      * Create the contents of the offscreen texture that is being rendered
      */
-    private MRTOffscreenTexture2D createGBufferTexture(Vector3f viewPos)
+    private MRTOffscreenTexture2D createGBufferTexture(Vector3d viewPos)
     {
         Viewpoint vp = new Viewpoint();
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
         view_mat.setTranslation(viewPos);
 
@@ -996,12 +988,11 @@ shader_args.setUniform("planes", 2, d_planes, 1);
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(true);
-        caps.setDepthBits(24);
-        caps.setAlphaBits(8);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
+        caps.depthBits = 24;
+        caps.alphaBits = 8;
 
         MRTOffscreenTexture2D off_tex =
             new MRTOffscreenTexture2D(caps, TEXTURE_SIZE, TEXTURE_SIZE, 3, true);
@@ -1026,7 +1017,7 @@ shader_args.setUniform("planes", 2, d_planes, 1);
     /**
      * Creates the antialias pass output texture from the input texture
      */
-    private MRTOffscreenTexture2D createSSAOTexture(Vector3f viewPos)
+    private MRTOffscreenTexture2D createSSAOTexture(Vector3d viewPos)
     {
         MRTOffscreenTexture2D gbuffer_tex =
             createSSAOGBufferTexture(viewPos);
@@ -1125,10 +1116,9 @@ shader_args.setUniform("planes", 2, d_planes, 1);
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
 
         MRTOffscreenTexture2D off_tex =
             new MRTOffscreenTexture2D(caps, HALF_TEXTURE_SIZE, HALF_TEXTURE_SIZE, 1);
@@ -1146,11 +1136,11 @@ shader_args.setUniform("planes", 2, d_planes, 1);
     /**
      * Create the contents of the offscreen texture that is being rendered
      */
-    private MRTOffscreenTexture2D createSSAOGBufferTexture(Vector3f viewPos)
+    private MRTOffscreenTexture2D createSSAOGBufferTexture(Vector3d viewPos)
     {
         Viewpoint vp = new Viewpoint();
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
         view_mat.setTranslation(viewPos);
 
@@ -1219,12 +1209,11 @@ shader_args.setUniform("planes", 2, d_planes, 1);
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(true);
-        caps.setDepthBits(24);
-        caps.setAlphaBits(8);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
+        caps.depthBits = 24;
+        caps.alphaBits = 8;
 
         MRTOffscreenTexture2D off_tex =
             new MRTOffscreenTexture2D(caps,
@@ -1257,7 +1246,7 @@ shader_args.setUniform("planes", 2, d_planes, 1);
      * @return The render pass representing this light or null if there is
      *    no effect to be rendered for this combo
      */
-    private RenderPass createLightPass(Vector4f[] frustumPlanes,
+    private RenderPass createLightPass(Vector4d[] frustumPlanes,
                                        float[] lightPos,
                                        float[] lightColour,
                                        float radius,
@@ -1369,8 +1358,8 @@ shader_args.setUniform("planes", 2, d_planes, 1);
 
         // transform light position from global to view space. Need to make the
         // light a 4D vector so that the position is multiplied through
-        Vector4f view_light_pos =
-            new Vector4f(lightPos[0], lightPos[1], lightPos[2], 1);
+        Vector4d view_light_pos = new Vector4d();
+        view_light_pos.set(lightPos[0], lightPos[1], lightPos[2], 1);
 
 // Need to do something about this
 //        viewPos.transform(view_light_pos);
@@ -1425,7 +1414,7 @@ shader_args.setUniform("planes", 2, d_planes, 1);
      * @param sy The height size of the screen in pixels
      * @param scissor The bounds of the scissor to copy in to this
      */
-    private int calcLightScissor(Vector4f lightPos,
+    private int calcLightScissor(Vector4d lightPos,
                                  float radius,
                                  int sx,
                                  int sy,
@@ -1434,7 +1423,7 @@ shader_args.setUniform("planes", 2, d_planes, 1);
         int[] rect = { 0, 0, sx, sy };
         float r2 = radius * radius;
 
-        Vector3f l2 = new Vector3f();
+        Vector3d l2 = new Vector3d();
         l2.x = lightPos.x * lightPos.x;
         l2.y = lightPos.y * lightPos.y;
         l2.z = lightPos.z * lightPos.z;
@@ -1748,20 +1737,20 @@ shader_args.setUniform("planes", 2, d_planes, 1);
         wall_shape.setAppearance(plain_app_1);
 
         // Transform the geometry in some way
-        Matrix4f geom_mat1 = new Matrix4f();
+        Matrix4d geom_mat1 = new Matrix4d();
         geom_mat1.setIdentity();
         geom_mat1.m03 = 0.5f;
         geom_mat1.m13 = -2.0f;
         geom_mat1.m23 = -1.0f;
 
-        Matrix4f geom_mat2 = new Matrix4f();
+        Matrix4d geom_mat2 = new Matrix4d();
         geom_mat2.setIdentity();
         geom_mat2.rotY(-PI_4);
         geom_mat2.m03 = 0.0f;
         geom_mat2.m13 = -4.5f;
         geom_mat2.m23 = -0.0f;
 
-        Matrix4f geom_mat3 = new Matrix4f();
+        Matrix4d geom_mat3 = new Matrix4d();
         geom_mat3.setIdentity();
         geom_mat3.rotY(PI_4 - 0.07f);
         geom_mat3.m03 = 1.0f;
@@ -1795,7 +1784,7 @@ shader_args.setUniform("planes", 2, d_planes, 1);
     /**
      * Load the shader file. Find it relative to the classpath.
      *
-     * @param file THe name of the file to load
+     * @param name THe name of the file to load
      */
     private String[] loadShaderFile(String name)
     {
@@ -1839,28 +1828,27 @@ shader_args.setUniform("planes", 2, d_planes, 1);
      */
     private float[] generateSamplePattern(int numSamples, float radius)
     {
-        Vector3f[] sample_sphere = new Vector3f[numSamples];
+        Vector3d[] sample_sphere = new Vector3d[numSamples];
 
         Random rndm = new Random();
 
         // construct random unit vectors
         for(int i = 0; i < numSamples; i++)
         {
-            sample_sphere[i] = new Vector3f(rndm.nextFloat(),
-                                            rndm.nextFloat(),
-                                            rndm.nextFloat());
-            sample_sphere[i].normalize();
+            sample_sphere[i] = new Vector3d();
+            sample_sphere[i].set(rndm.nextFloat(), rndm.nextFloat(), rndm.nextFloat());
+            sample_sphere[i].normalise();
         }
 
         // Energy minimization
-        Vector3f force = new Vector3f();
+        Vector3d force = new Vector3d();
 
         for(int iter = 0; iter < 100; iter++)
         {
             for( int i = 0; i < numSamples; i++)
             {
-                Vector3f res = new Vector3f();
-                Vector3f vec = sample_sphere[i];
+                Vector3d res = new Vector3d();
+                Vector3d vec = sample_sphere[i];
 
                 // Minimize with other samples
                 for( int j = 0; j < numSamples; j++)
@@ -1880,7 +1868,7 @@ shader_args.setUniform("planes", 2, d_planes, 1);
 
                 res.scale(0.5f);
                 sample_sphere[i].add(res);
-                sample_sphere[i].normalize();
+                sample_sphere[i].normalise();
             }
         }
 

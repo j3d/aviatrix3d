@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.shader;
 
 // External imports
 import java.awt.*;
@@ -13,11 +14,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 import org.j3d.util.I18nManager;
 
@@ -25,13 +23,11 @@ import org.j3d.util.I18nManager;
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
-import org.j3d.geom.BoxGenerator;
 import org.j3d.geom.SphereGenerator;
 import org.j3d.util.MatrixUtils;
 import org.j3d.util.TriangleUtils;
@@ -87,6 +83,9 @@ public class GBufferDemo extends Frame
     /** The view environment created for the main scene */
     private ViewEnvironment mainSceneEnv;
 
+    /** Utility for processing matrix rotations */
+    private MatrixUtils matrixUtils;
+
     /**
      * Construct a new shader demo instance.
      */
@@ -99,6 +98,8 @@ public class GBufferDemo extends Frame
 
         setLayout(new BorderLayout());
         addWindowListener(this);
+
+        matrixUtils = new MatrixUtils();
 
         setupAviatrix();
         setupSceneGraph();
@@ -118,9 +119,7 @@ public class GBufferDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(true);
@@ -247,9 +246,9 @@ public class GBufferDemo extends Frame
         shape_1.setGeometry(real_geom);
         shape_1.setAppearance(app_1);
 
-        Matrix4f mat_1 = new Matrix4f();
+        Matrix4d mat_1 = new Matrix4d();
         mat_1.setIdentity();
-        mat_1.setTranslation(new Vector3f(-1.05f, 1.05f, 0));
+        mat_1.setTranslation(new Vector3d(-1.05f, 1.05f, 0));
 
         TransformGroup normal_buffer_tx = new TransformGroup();
         normal_buffer_tx.setTransform(mat_1);
@@ -269,9 +268,9 @@ public class GBufferDemo extends Frame
         shape_2.setGeometry(real_geom);
         shape_2.setAppearance(app_2);
 
-        Matrix4f mat_2 = new Matrix4f();
+        Matrix4d mat_2 = new Matrix4d();
         mat_2.setIdentity();
-        mat_2.setTranslation(new Vector3f(1.05f, 1.05f, 0));
+        mat_2.setTranslation(new Vector3d(1.05f, 1.05f, 0));
 
         TransformGroup diffuse_buffer_tx = new TransformGroup();
         diffuse_buffer_tx.setTransform(mat_2);
@@ -291,9 +290,9 @@ public class GBufferDemo extends Frame
         shape_3.setGeometry(real_geom);
         shape_3.setAppearance(app_3);
 
-        Matrix4f mat_3 = new Matrix4f();
+        Matrix4d mat_3 = new Matrix4d();
         mat_3.setIdentity();
-        mat_3.setTranslation(new Vector3f(-1.05f, -1.05f, 0));
+        mat_3.setTranslation(new Vector3d(-1.05f, -1.05f, 0));
 
         TransformGroup specular_buffer_tx = new TransformGroup();
         specular_buffer_tx.setTransform(mat_3);
@@ -313,9 +312,9 @@ public class GBufferDemo extends Frame
         shape_4.setGeometry(real_geom);
         shape_4.setAppearance(app_4);
 
-        Matrix4f mat_4 = new Matrix4f();
+        Matrix4d mat_4 = new Matrix4d();
         mat_4.setIdentity();
-        mat_4.setTranslation(new Vector3f(1.05f, -1.05f, 0));
+        mat_4.setTranslation(new Vector3d(1.05f, -1.05f, 0));
 
         TransformGroup depth_buffer_tx = new TransformGroup();
         depth_buffer_tx.setTransform(mat_4);
@@ -324,9 +323,9 @@ public class GBufferDemo extends Frame
 
         Viewpoint vp = new Viewpoint();
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
-        view_mat.setTranslation(new Vector3f(0, 0, 6f));
+        view_mat.setTranslation(new Vector3d(0, 0, 6f));
 
         TransformGroup tx = new TransformGroup();
         tx.setTransform(view_mat);
@@ -362,9 +361,9 @@ public class GBufferDemo extends Frame
     {
         Viewpoint vp = new Viewpoint();
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
-        view_mat.setTranslation(new Vector3f(0, 0, 7f));
+        view_mat.setTranslation(new Vector3d(0, 0, 7f));
 
         TransformGroup tx = new TransformGroup();
         tx.setTransform(view_mat);
@@ -484,15 +483,13 @@ public class GBufferDemo extends Frame
         shape.setAppearance(app);
 
         // Transform the geometry in some way
-        Matrix4f geom_mat1 = new Matrix4f();
-        geom_mat1.setIdentity();
-        geom_mat1.rotX(PI_4);
+        Matrix4d geom_mat1 = new Matrix4d();
+        matrixUtils.rotateX(PI_4, geom_mat1);
 
-        Matrix4f geom_mat2 = new Matrix4f();
-        geom_mat2.setIdentity();
-        geom_mat2.rotY(PI_4);
+        Matrix4d geom_mat2 = new Matrix4d();
+        matrixUtils.rotateY(PI_4, geom_mat2);
 
-        geom_mat2.mul(geom_mat1);
+        geom_mat2.mul(geom_mat2, geom_mat1);
 
         TransformGroup geom_tx = new TransformGroup();
         geom_tx.setTransform(geom_mat2);
@@ -551,11 +548,10 @@ public class GBufferDemo extends Frame
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(true);
-        caps.setDepthBits(24);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
+        caps.depthBits = 24;
 
         MRTOffscreenTexture2D off_tex =
             new MRTOffscreenTexture2D(caps, TEXTURE_SIZE, TEXTURE_SIZE, 4);
@@ -574,7 +570,7 @@ public class GBufferDemo extends Frame
     /**
      * Load the shader file. Find it relative to the classpath.
      *
-     * @param file THe name of the file to load
+     * @param name THe name of the file to load
      */
     private String[] loadShaderFile(String name)
     {
@@ -590,7 +586,7 @@ public class GBufferDemo extends Frame
         try
         {
             FileReader is = new FileReader(file);
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             char[] read_buf = new char[1024];
             int num_read = 0;
 

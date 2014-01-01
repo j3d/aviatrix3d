@@ -10,6 +10,8 @@
  *
  ****************************************************************************/
 
+package j3d.aviatrix3d.examples.effects;
+
 // External imports
 import java.awt.*;
 import java.awt.event.*;
@@ -21,15 +23,12 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
 import javax.imageio.ImageIO;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -43,6 +42,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.terrain.ElevationGridGenerator;
 import org.j3d.texture.procedural.TextureGenerator;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Demonstration of generating terrain and textures using entirely procedural
@@ -586,9 +586,7 @@ public class DynamicTerrainDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -618,7 +616,7 @@ public class DynamicTerrainDemo extends Frame
     /**
      * Setup the basic scene which consists of a quad and a viewpoint
      *
-     * @param nSphere Number of sphere objects to pre-initialise
+     * @param nSpheres Number of sphere objects to pre-initialise
      */
     private void setupSceneGraph(int nSpheres)
     {
@@ -629,10 +627,13 @@ public class DynamicTerrainDemo extends Frame
         // We could set these directly, but we don't because we'd like to
         // pass the values through to the shaders as well. More convenient and
         // we guarantee the same values then.
-        Vector3f trans = new Vector3f(0, 30, 70);
-        Matrix4f mat = new Matrix4f();
-        mat.setIdentity();
-        mat.rotX((float)(-Math.PI / 8));
+        Vector3d trans = new Vector3d();
+        trans.set(0, 30, 70);
+
+        Matrix4d mat = new Matrix4d();
+
+        MatrixUtils mu = new MatrixUtils();
+        mu.rotateX(Math.PI / -8, mat);
         mat.setTranslation(trans);
 
         TransformGroup tx = new TransformGroup();

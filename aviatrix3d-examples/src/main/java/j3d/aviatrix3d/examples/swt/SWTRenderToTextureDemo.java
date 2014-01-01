@@ -1,12 +1,11 @@
+package j3d.aviatrix3d.examples.swt;
 
 // External imports
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -14,7 +13,6 @@ import org.eclipse.swt.layout.FillLayout;
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleSWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
@@ -23,6 +21,7 @@ import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+import org.j3d.renderer.aviatrix3d.swt.output.SimpleSWTSurface;
 
 /**
  * Example application that demonstrates Render to texture capabilities on
@@ -58,9 +57,7 @@ public class SWTRenderToTextureDemo
     private void setupAviatrix(Shell parent)
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage(2);
         culler.setOffscreenCheckEnabled(true);
@@ -90,9 +87,10 @@ public class SWTRenderToTextureDemo
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -130,9 +128,8 @@ public class SWTRenderToTextureDemo
 //        app.setMaterial(material);
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
 
         OffscreenTexture2D texture = new OffscreenTexture2D(caps, 128, 128);
         setupTextureSceneGraph(texture);
@@ -176,11 +173,12 @@ public class SWTRenderToTextureDemo
 
         TransformGroup grp = new TransformGroup();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
-        mat.setScale(10);
+        mat.set(10);
         mat.setTranslation(trans);
 
         // Flat panel that has the viewable object as the demo
@@ -223,7 +221,7 @@ public class SWTRenderToTextureDemo
 
         trans.set(0, 0.5f, -0.5f);
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 

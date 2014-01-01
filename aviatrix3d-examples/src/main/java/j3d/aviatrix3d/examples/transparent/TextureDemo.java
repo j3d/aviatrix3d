@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.transparent;
 
 // Standard imports
 import java.awt.*;
@@ -10,10 +11,8 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
 import javax.imageio.ImageIO;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -73,9 +72,7 @@ public class TextureDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -114,9 +111,10 @@ public class TextureDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -197,10 +195,12 @@ public class TextureDemo extends Frame
             app2.setTextureUnits(tu2, 1);
         }
 
+        trans = new Vector3d();
+        trans.set(-0.5f, 0, 0);
+
         TransformGroup tg2 = new TransformGroup();
-        Matrix4f transform2 = new Matrix4f();
-        transform2.setIdentity();
-        transform2.setTranslation(new Vector3f(-0.5f, 0, 0));
+        Matrix4d transform2 = new Matrix4d();
+        transform2.set(trans);
         tg2.setTransform(transform2);
 
         Shape3D shape2 = new Shape3D();
@@ -209,10 +209,12 @@ public class TextureDemo extends Frame
         tg2.addChild(shape2);
 
 
+        trans = new Vector3d();
+        trans.set(0, 0, -1);
+
         TransformGroup tg = new TransformGroup();
-        Matrix4f transform = new Matrix4f();
-        transform.setIdentity();
-        transform.setTranslation(new Vector3f(0, 0, -1));
+        Matrix4d transform = new Matrix4d();
+        transform.set(trans);
         tg.setTransform(transform);
 
         Shape3D backShape = new Shape3D();

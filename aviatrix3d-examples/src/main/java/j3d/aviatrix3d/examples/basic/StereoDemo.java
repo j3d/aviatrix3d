@@ -1,19 +1,16 @@
+package j3d.aviatrix3d.examples.basic;
 
 // Standard imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
-
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 import org.j3d.util.I18nManager;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.StereoAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -75,10 +72,7 @@ public class StereoDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
-        caps.setStereo(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -114,11 +108,11 @@ public class StereoDemo extends Frame
 
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
-        mat.setIdentity();
-        mat.setTranslation(trans);
+        Matrix4d mat = new Matrix4d();
+        mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.addChild(vp);
@@ -142,7 +136,7 @@ public class StereoDemo extends Frame
         shape.setGeometry(geom);
 
         trans.set(0.5f, 0, 0);
-        Matrix4f mat2 = new Matrix4f();
+        Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
         mat2.setTranslation(trans);
 

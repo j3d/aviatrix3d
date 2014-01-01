@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.basic;
 
 // Standard imports
 import java.awt.*;
@@ -10,10 +11,6 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
 import javax.imageio.ImageIO;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -27,6 +24,8 @@ import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -72,9 +71,7 @@ public class TextureDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -155,11 +152,11 @@ public class TextureDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
-        mat.setIdentity();
-        mat.setTranslation(trans);
+        Matrix4d mat = new Matrix4d();
+        mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.addChild(vp);
@@ -174,10 +171,6 @@ public class TextureDemo extends Frame
                           0.25f, 0, -1, 0.5f, 0, -1,      0.25f, 0.25f, -1,
                           0.5f, 0, -1,  0.5f, 0.25f, -1,  0.25f, 0.25f, -1 };
 
-        float[] normal = { 0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1};
         float[][] tex_coord = { { 0, 0,  1, 0,  0, 1,   1, 0,  1, 1, 0, 1,
                                   0, 0,  1, 0,  0, 1,   1, 0,  1, 1, 0, 1 } };
         int[] tex_type = { VertexGeometry.TEXTURE_COORDINATE_2 };

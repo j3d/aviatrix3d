@@ -1,5 +1,7 @@
+package j3d.aviatrix3d.examples.texture;
 
 // External imports
+
 import javax.media.Buffer;
 import javax.media.Format;
 import javax.media.Control;
@@ -20,7 +22,7 @@ import org.j3d.aviatrix3d.ByteTextureComponent2D;
 /**
  * JMF Renderer for taking RGB output and processing it as a
  * sub texture update.
- *
+ * <p/>
  * This demo is based on the ideas provided in the example SimpleAWTRenderer
  * that comes with JMF 2.0. It presents a very simple playback interface with
  * no time-based control over the video stream. If you would like to have
@@ -103,7 +105,7 @@ public class VideoTextureRenderer implements VideoRenderer, NodeUpdateListener
                                        3,
                                        3,             // pixel stride
                                        Format.NOT_SPECIFIED,
-                                       Format.TRUE  ,
+                                       Format.TRUE,
                                        Format.NOT_SPECIFIED);
 
         supportedFormats = new VideoFormat[1];
@@ -237,15 +239,15 @@ public class VideoTextureRenderer implements VideoRenderer, NodeUpdateListener
     {
         Format ret_val = null;
 
-        if(format instanceof RGBFormat)
+        if (format instanceof RGBFormat)
         {
-            RGBFormat rgb_f = (RGBFormat)format;
+            RGBFormat rgb_f = (RGBFormat) format;
             Dimension size = rgb_f.getSize();
             frameWidth = size.width;
             frameHeight = size.height;
             currentFormat = format;
 
-System.out.println("frame width: " + frameWidth + " height: " + frameHeight);
+            System.out.println("frame width: " + frameWidth + " height: " + frameHeight);
             // Do we need it flipped, based on the Y-up flag of the
             // texture component?
             int flip = outputTexture.isYUp() ? Format.TRUE : Format.FALSE;
@@ -265,7 +267,7 @@ System.out.println("frame width: " + frameWidth + " height: " + frameHeight);
 
             // now, create the buffers to the right size
             int req_size = frameWidth * frameHeight * 3;
-            if((processedFrame == null) || (processedFrame.length < req_size))
+            if ((processedFrame == null) || (processedFrame.length < req_size))
             {
                 processedFrame = new byte[req_size];
                 inProgressFrame = new byte[req_size];
@@ -283,26 +285,26 @@ System.out.println("frame width: " + frameWidth + " height: " + frameHeight);
      */
     public synchronized int process(Buffer buffer)
     {
-        if(buffer.isEOM())
+        if (buffer.isEOM())
             return BUFFER_PROCESSED_OK;
 
         Format inf = buffer.getFormat();
-        if(inf == null)
+        if (inf == null)
             return BUFFER_PROCESSED_FAILED;
 
-        if((inf != currentFormat) || !buffer.getFormat().equals(currentFormat))
+        if ((inf != currentFormat) || !buffer.getFormat().equals(currentFormat))
         {
-            if(setInputFormat(inf) != null)
+            if (setInputFormat(inf) != null)
                 return BUFFER_PROCESSED_FAILED;
         }
 
         Object data = buffer.getData();
-        if(!(data instanceof byte[]))
+        if (!(data instanceof byte[]))
             return BUFFER_PROCESSED_FAILED;
 
 
         // Take the pixels and write them out to individual bytes
-        byte[] src_pixels = (byte[])data;
+        byte[] src_pixels = (byte[]) data;
         int num_pixels = frameWidth * frameHeight * 3;
 
         System.arraycopy(src_pixels, 0, inProgressFrame, 0, num_pixels);
@@ -385,10 +387,12 @@ System.out.println("frame width: " + frameWidth + " height: " + frameHeight);
      */
     public void syncTextureUpdate()
     {
-        if(newFrameAvailable) {
+        if (newFrameAvailable)
+        {
             if (outputTexture.isLive())
                 outputTexture.dataChanged(this);
-            else {
+            else
+            {
                 // ignore as its not visible
             }
         }

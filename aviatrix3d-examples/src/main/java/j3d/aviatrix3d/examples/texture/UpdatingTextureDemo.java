@@ -1,12 +1,12 @@
+package j3d.aviatrix3d.examples.texture;
 
 // Standard imports
+
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -33,7 +33,7 @@ import org.j3d.geom.BoxGenerator;
  * @version $Revision: 1.7 $
  */
 public class UpdatingTextureDemo extends Frame
-    implements WindowListener
+        implements WindowListener
 {
     private static final int XSIZE = 64;
     private static final int YSIZE = 64;
@@ -72,9 +72,7 @@ public class UpdatingTextureDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -97,7 +95,7 @@ public class UpdatingTextureDemo extends Frame
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
-        Component comp = (Component)surface.getSurfaceObject();
+        Component comp = (Component) surface.getSurfaceObject();
         add(comp, BorderLayout.CENTER);
     }
 
@@ -109,21 +107,21 @@ public class UpdatingTextureDemo extends Frame
         byte[] tex_buffer = new byte[XSIZE * YSIZE * 3];
         int pos = 0;
 
-        for(int y = 0; y < YSIZE; y++)
+        for (int y = 0; y < YSIZE; y++)
         {
-            for(int x = 0; x < XSIZE; x++)
+            for (int x = 0; x < XSIZE; x++)
             {
-                tex_buffer[pos++] = (byte)0x0;
-                tex_buffer[pos++] = (byte)0xFF;
-                tex_buffer[pos++] = (byte)0x0;
+                tex_buffer[pos++] = (byte) 0x0;
+                tex_buffer[pos++] = (byte) 0xFF;
+                tex_buffer[pos++] = (byte) 0x0;
             }
         }
 
         ByteTextureComponent2D img_comp =
-            new ByteTextureComponent2D(TextureComponent.FORMAT_RGB,
-                                       XSIZE,
-                                       YSIZE,
-                                       tex_buffer);
+                new ByteTextureComponent2D(TextureComponent.FORMAT_RGB,
+                                           XSIZE,
+                                           YSIZE,
+                                           tex_buffer);
 
 
         Texture texture = new Texture2D(Texture.FORMAT_RGB, img_comp);
@@ -131,9 +129,9 @@ public class UpdatingTextureDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 0.5f);
+        Vector3d trans = new Vector3d(0, 0, 0.5f);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -145,22 +143,26 @@ public class UpdatingTextureDemo extends Frame
         scene_root.addChild(tx);
 
         // Flat panel that has the viewable object as the demo
-        float[] coord = { 0, 0, -0.5f,     0.25f, 0, -0.5f,     0, 0.25f, -0.5f,
-                          0.25f, 0, -0.5f, 0.25f, 0.25f, -0.5f, 0, 0.25f, -0.5f };
+        float[] coord = {
+                0, 0, -0.5f, 0.25f, 0, -0.5f, 0, 0.25f, -0.5f,
+                0.25f, 0, -0.5f, 0.25f, 0.25f, -0.5f, 0, 0.25f, -0.5f
+        };
 
-        float[] normal = { 0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1};
-        float[][] tex_coord = { { 0, 0,  1, 0,  0, 1,   1, 0,  1, 1, 0, 1, } };
-        int[] tex_type = { VertexGeometry.TEXTURE_COORDINATE_2 };
+        float[] normal = {
+                0, 0, 1, 0, 0, 1, 0, 0, 1,
+                0, 0, 1, 0, 0, 1, 0, 0, 1
+        };
+        float[][] tex_coord = {{0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1,}};
+        int[] tex_type = {VertexGeometry.TEXTURE_COORDINATE_2};
 
         TriangleArray geom = new TriangleArray();
         geom.setVertices(TriangleArray.COORDINATE_3, coord, 6);
         geom.setTextureCoordinates(tex_type, tex_coord, 1);
 
         Material material = new Material();
-        material.setDiffuseColor(new float[] { 0, 0, 1 });
-        material.setEmissiveColor(new float[] { 0, 0, 1 });
-        material.setSpecularColor(new float[] { 1, 1, 1 });
+        material.setDiffuseColor(new float[]{0, 0, 1});
+        material.setEmissiveColor(new float[]{0, 0, 1});
+        material.setSpecularColor(new float[]{1, 1, 1});
 
         TextureUnit[] tu = new TextureUnit[1];
         tu[0] = new TextureUnit();
@@ -188,7 +190,7 @@ public class UpdatingTextureDemo extends Frame
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
-        Layer[] layers = { layer };
+        Layer[] layers = {layer};
         displayManager.setLayers(layers, 1);
 
         TextureUpdater anim = new TextureUpdater(img_comp);

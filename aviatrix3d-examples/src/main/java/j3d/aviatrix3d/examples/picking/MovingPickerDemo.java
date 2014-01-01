@@ -1,19 +1,16 @@
+package j3d.aviatrix3d.examples.picking;
 
 // External imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
-import org.j3d.aviatrix3d.picking.PickRequest;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
@@ -25,6 +22,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -71,9 +69,7 @@ public class MovingPickerDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -109,11 +105,13 @@ public class MovingPickerDemo extends Frame
 
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0.5f, 0.5f);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0.5f, 0.5f);
 
-        Matrix4f mat = new Matrix4f();
-        mat.setIdentity();
-        mat.rotX(-0.7075f);
+        MatrixUtils mu = new MatrixUtils();
+
+        Matrix4d mat = new Matrix4d();
+        mu.rotateX(-0.7075f, mat);
         mat.setTranslation(trans);
 
         TransformGroup tx = new TransformGroup();
@@ -148,10 +146,10 @@ public class MovingPickerDemo extends Frame
         shape.setGeometry(geom);
         shape.setAppearance(app);
 
-        Matrix4f mat2 = new Matrix4f();
+        Matrix4d mat2 = new Matrix4d();
         trans.set(0.1f, 0.05f, 0);
-        mat2.setIdentity();
-        mat2.rotZ((float)(Math.PI / 4));
+
+        mu.rotateZ(Math.PI / 4, mat2);
         mat2.setTranslation(trans);
 
         TransformGroup shape_transform = new TransformGroup();

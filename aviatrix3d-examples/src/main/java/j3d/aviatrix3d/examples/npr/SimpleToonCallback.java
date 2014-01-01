@@ -1,9 +1,8 @@
+package j3d.aviatrix3d.examples.npr;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
@@ -36,10 +35,10 @@ public class SimpleToonCallback
     private float angle;
 
     /** Work variable to update the translation with */
-    private Vector3f translation;
+    private Vector3d translation;
 
     /** Matrix used to update the transform */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
 
     /**
@@ -55,8 +54,8 @@ public class SimpleToonCallback
         fragShader = frag;
         completeShader = comp;
 
-        translation = new Vector3f();
-        matrix = new Matrix4f();
+        translation = new Vector3d();
+        matrix = new Matrix4d();
         matrix.setIdentity();
     }
 

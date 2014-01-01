@@ -10,15 +10,13 @@
  *
  ****************************************************************************/
 
+package j3d.aviatrix3d.examples.multipass;
+
 // External imports
 import java.awt.*;
 import java.awt.event.*;
 
 import java.util.ArrayList;
-
-import javax.media.opengl.GLCapabilities;
-
-import javax.vecmath.*;
 
 import org.j3d.aviatrix3d.*;
 
@@ -33,6 +31,9 @@ import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
+import org.j3d.maths.vector.Vector4d;
 import org.j3d.renderer.aviatrix3d.geom.Box;
 
 // Local imports
@@ -68,10 +69,10 @@ public class StencilShadowDemo extends Frame
      * Global transformation matrix of the silhouette edge
      * geometry and the shadow volume geometry.
      */
-    private Matrix4f geomTransform;
+    private Matrix4d geomTransform;
     
     /** Global position of the light */
-    private Vector4f lightPos;
+    private Vector4d lightPos;
     
     /**
      * Constructor
@@ -101,10 +102,8 @@ public class StencilShadowDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
-        caps.setStencilBits(8);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.stencilBits = 8;
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(true);
@@ -142,10 +141,11 @@ public class StencilShadowDemo extends Frame
         TransformGroup volumeGroupPass1 = new TransformGroup();
         TransformGroup volumeGroupPass2 = new TransformGroup();
         
-        geomTransform = new Matrix4f();
+        geomTransform = new Matrix4d();
         geomTransform.setIdentity();
         
-        lightPos = new Vector4f(0.9f, 0.9f, 0.0f, 1.0f);
+        lightPos = new Vector4d();
+        lightPos.set(0.9, 0.9, 0.0, 1.0);
         
         ArrayList<SEdgeIndTriArray> sceneGeomList = 
         	new ArrayList<SEdgeIndTriArray>();
@@ -262,28 +262,28 @@ public class StencilShadowDemo extends Frame
 		Box roomGeomBack = new Box(roomBoxWidth, roomBoxHeight, boxthickness, roomApp);
 		Box roomGeomBottom = new Box(roomBoxWidth, boxthickness, roomBoxHeight, roomApp);
 		
-		Matrix4f mat = new Matrix4f();
+		Matrix4d mat = new Matrix4d();
 
 		mat.setIdentity();
-		mat.setTranslation(new Vector3f(-roomBoxWidth / 2, 0, 0));
+		mat.setTranslation(new Vector3d(-roomBoxWidth / 2, 0, 0));
 		TransformGroup roomLeft = new TransformGroup();
 		roomLeft.setTransform(mat);
 		roomLeft.addChild(roomGeomLeft);
 
 		mat.setIdentity();
-		mat.setTranslation(new Vector3f(roomBoxWidth / 2, 0, 0));
+		mat.setTranslation(new Vector3d(roomBoxWidth / 2, 0, 0));
 		TransformGroup roomRight = new TransformGroup();
 		roomRight.setTransform(mat);
 		roomRight.addChild(roomGeomRight);
 
 		mat.setIdentity();
-		mat.setTranslation(new Vector3f(0, 0, -roomBoxHeight / 2));
+		mat.setTranslation(new Vector3d(0, 0, -roomBoxHeight / 2));
 		TransformGroup roomBack = new TransformGroup();
 		roomBack.setTransform(mat);
 		roomBack.addChild(roomGeomBack);
 
 		mat.setIdentity();
-		mat.setTranslation(new Vector3f(0, -roomBoxHeight / 2, 0));
+		mat.setTranslation(new Vector3d(0, -roomBoxHeight / 2, 0));
 		TransformGroup roomBottom = new TransformGroup();
 		roomBottom.setTransform(mat);
 		roomBottom.addChild(roomGeomBottom);
@@ -307,7 +307,7 @@ public class StencilShadowDemo extends Frame
     private TransformGroup createGeom(Geometry geom,
     								  PolygonAttributes polyAttrib,
     								  BlendAttributes blendAttrib,
-    								  Matrix4f transform) {
+    								  Matrix4d transform) {
 
     	float[] geomDiffuse = {0.0f, 0.0f, 0.75f, 1};
     	float[] geomAmbient = {0.25f, 0.25f, 0.25f, 1};
@@ -342,7 +342,7 @@ public class StencilShadowDemo extends Frame
      * 
      * @return Single render pass
      */
-    private RenderPass createNoLightScenePass(Geometry geom, Matrix4f geomTransform, Vector4f lightPos)
+    private RenderPass createNoLightScenePass(Geometry geom, Matrix4d geomTransform, Vector4d lightPos)
     {
     	RenderPass renderPass = new RenderPass();
     	
@@ -373,9 +373,9 @@ public class StencilShadowDemo extends Frame
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(false);
         
-        Vector3f trans = new Vector3f(0.0f, 0.0f, 3f);
+        Vector3d trans = new Vector3d(0.0, 0.0, 3);
 		
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -400,7 +400,7 @@ public class StencilShadowDemo extends Frame
      * 
      * @return Single render pass
      */
-    private RenderPass createVolumeCastPass1(Vector4f lightPos,
+    private RenderPass createVolumeCastPass1(Vector4d lightPos,
     										 TransformGroup group)
     {
     	RenderPass renderPass = new RenderPass();
@@ -432,9 +432,9 @@ public class StencilShadowDemo extends Frame
 		Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(false);
         
-        Vector3f trans = new Vector3f(0.0f, 0.0f, 3f);
+        Vector3d trans = new Vector3d(0.0, 0.0, 3);
 		
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -458,7 +458,7 @@ public class StencilShadowDemo extends Frame
      * 
      * @return Single render pass
      */
-    private RenderPass createVolumeCastPass2(Vector4f lightPos,
+    private RenderPass createVolumeCastPass2(Vector4d lightPos,
     										 TransformGroup group)
     {
     	RenderPass renderPass = new RenderPass();
@@ -490,9 +490,9 @@ public class StencilShadowDemo extends Frame
 		Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(false);
         
-        Vector3f trans = new Vector3f(0.0f, 0.0f, 3f);
+        Vector3d trans = new Vector3d(0.0, 0.0, 3);
 		
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -515,7 +515,7 @@ public class StencilShadowDemo extends Frame
      * 
      * @return Single render pass
      */
-    private RenderPass createWholeScenePass(Geometry geom, Matrix4f geomTransform, Vector4f lightPos)
+    private RenderPass createWholeScenePass(Geometry geom, Matrix4d geomTransform, Vector4d lightPos)
     {
     	RenderPass renderPass = new RenderPass();
     	
@@ -551,9 +551,9 @@ public class StencilShadowDemo extends Frame
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(false);
         
-        Vector3f trans = new Vector3f(0.0f, 0.0f, 3f);
+        Vector3d trans = new Vector3d(0.0, 0.0, 3);
 		
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -576,7 +576,7 @@ public class StencilShadowDemo extends Frame
 		pointLight.setSpecularColor(lightSpecular);
 		pointLight.setGlobalOnly(true);
 		pointLight.setEnabled(true);
-		pointLight.setPosition(lightPos.x, lightPos.y, lightPos.z);
+		pointLight.setPosition((float)lightPos.x, (float)lightPos.y, (float)lightPos.z);
 		
 		scene_root.addChild(pointLight);
 		

@@ -1,9 +1,11 @@
+package j3d.aviatrix3d.examples.shader;
 
 // External imports
 import java.util.ArrayList;
 
-import javax.vecmath.Matrix4f;
+import org.j3d.maths.vector.Matrix4d;
 
+import org.j3d.util.MatrixUtils;
 import org.j3d.util.interpolator.PositionInterpolator;
 import org.j3d.util.interpolator.RotationInterpolator;
 
@@ -63,13 +65,16 @@ class DeferredShadingAnimator
     private long firstFrameTime;
 
     /** Where we are in the cycle */
-    private Matrix4f vpMatrix;
+    private Matrix4d vpMatrix;
 
     /** Position interpolation for moving the VP */
     private PositionInterpolator posInterp;
 
     /** Position interpolation for moving the VP */
     private RotationInterpolator rotInterp;
+
+    /** Utility for doing matrix rotations */
+    private MatrixUtils matrixUtils;
 
     /**
      *
@@ -89,9 +94,11 @@ class DeferredShadingAnimator
         windowDimensions = new int[4];
         windowSizeChanged = false;
 
-        vpMatrix = new Matrix4f();
+        vpMatrix = new Matrix4d();
         posInterp = new PositionInterpolator();
         rotInterp = new RotationInterpolator();
+
+        matrixUtils = new MatrixUtils();
 
         // Setup the keyframes for position interpolation. First position
         // corresponds to the start point. Uses a [0,1] fractional scale
@@ -125,8 +132,7 @@ class DeferredShadingAnimator
         float[] new_pos = posInterp.floatValue(cycle_fraction);
         float[] new_angle = rotInterp.floatValue(cycle_fraction);
 
-        vpMatrix.setIdentity();
-        vpMatrix.rotY(new_angle[3]);
+        matrixUtils.rotateY(new_angle[3], vpMatrix);
         vpMatrix.m03 = new_pos[0];
         vpMatrix.m13 = new_pos[1];
         vpMatrix.m23 = new_pos[2];

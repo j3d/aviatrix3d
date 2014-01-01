@@ -1,17 +1,12 @@
+package j3d.aviatrix3d.examples.basic;
 
 // External imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
-
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -21,6 +16,8 @@ import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -66,9 +63,7 @@ public class BasicDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -104,11 +99,12 @@ public class BasicDemo extends Frame
 
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
-        mat.setTranslation(trans);
+        mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.addChild(vp);
@@ -132,9 +128,9 @@ public class BasicDemo extends Frame
         shape.setGeometry(geom);
 
         trans.set(0.2f, 0.5f, 0);
-        Matrix4f mat2 = new Matrix4f();
+        Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
-        mat2.setTranslation(trans);
+        mat2.set(trans);
 
         TransformGroup shape_transform = new TransformGroup();
         shape_transform.addChild(shape);
@@ -165,6 +161,7 @@ public class BasicDemo extends Frame
     /**
      * Ignored
      */
+    @Override
     public void windowActivated(WindowEvent evt)
     {
     }
@@ -172,6 +169,7 @@ public class BasicDemo extends Frame
     /**
      * Ignored
      */
+    @Override
     public void windowClosed(WindowEvent evt)
     {
     }
@@ -181,6 +179,7 @@ public class BasicDemo extends Frame
      *
      * @param evt The event that caused this method to be called.
      */
+    @Override
     public void windowClosing(WindowEvent evt)
     {
         sceneManager.shutdown();
@@ -190,6 +189,7 @@ public class BasicDemo extends Frame
     /**
      * Ignored
      */
+    @Override
     public void windowDeactivated(WindowEvent evt)
     {
     }
@@ -197,6 +197,7 @@ public class BasicDemo extends Frame
     /**
      * Ignored
      */
+    @Override
     public void windowDeiconified(WindowEvent evt)
     {
     }
@@ -204,6 +205,7 @@ public class BasicDemo extends Frame
     /**
      * Ignored
      */
+    @Override
     public void windowIconified(WindowEvent evt)
     {
     }
@@ -211,6 +213,7 @@ public class BasicDemo extends Frame
     /**
      * When the window is opened, start everything up.
      */
+    @Override
     public void windowOpened(WindowEvent evt)
     {
         sceneManager.setEnabled(true);

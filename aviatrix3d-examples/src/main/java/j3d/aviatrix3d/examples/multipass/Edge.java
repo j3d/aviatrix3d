@@ -11,6 +11,8 @@
  *
  ****************************************************************************/
 
+package j3d.aviatrix3d.examples.multipass;
+
 /**
  * A structure that contains pair of edges
  * 

@@ -1,12 +1,11 @@
+package j3d.aviatrix3d.examples.layers;
 
 // External imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
@@ -21,6 +20,7 @@ import org.j3d.aviatrix3d.pipeline.graphics.SimpleTransparencySortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Example application that demonstrates a multiple level layers within a
@@ -77,9 +77,7 @@ public class CombinedLayersDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -141,11 +139,11 @@ public class CombinedLayersDemo extends Frame
 
         Viewpoint vp1 = new Viewpoint();
         Background bg = new ColorBackground(GREY);
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
-        mat.setIdentity();
-        mat.setTranslation(trans);
+        Matrix4d mat = new Matrix4d();
+        mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.addChild(vp1);
@@ -182,8 +180,9 @@ public class CombinedLayersDemo extends Frame
         shape.setGeometry(geom);
         shape.setAppearance(app);
 
-        trans = new Vector3f(-0.1f, 0, 0);
-        Matrix4f mat2 = new Matrix4f();
+        trans = new Vector3d();
+        trans.set(-0.1f, 0, 0);
+        Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
         mat2.setTranslation(trans);
 
@@ -193,11 +192,11 @@ public class CombinedLayersDemo extends Frame
 
         Viewpoint vp2_1 = new Viewpoint();
         bg = new ColorBackground(TRANSPARENT_BLACK);
-        trans = new Vector3f(0, 0, 1);
+        trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        mat = new Matrix4f();
-        mat.setIdentity();
-        mat.setTranslation(trans);
+        mat = new Matrix4d();
+        mat.set(trans);
 
         tx = new TransformGroup();
         tx.addChild(vp2_1);
@@ -228,10 +227,10 @@ public class CombinedLayersDemo extends Frame
         shape.setGeometry(geom);
         shape.setAppearance(app);
 
-        trans = new Vector3f(0, 0, 1);
-        mat2 = new Matrix4f();
-        mat2.setIdentity();
-        mat2.setTranslation(trans);
+        trans = new Vector3d();
+        trans.set(0, 0, 1);
+        mat2 = new Matrix4d();
+        mat2.set(trans);
 
         TransformGroup layer2_2_group = new TransformGroup();
         layer2_2_group.addChild(shape);
@@ -242,7 +241,7 @@ public class CombinedLayersDemo extends Frame
 
         Viewpoint vp2_2 = new Viewpoint();
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -273,15 +272,16 @@ public class CombinedLayersDemo extends Frame
         shape.setGeometry(geom);
         shape.setAppearance(app);
 
-        trans = new Vector3f(0.1f, 0, 1);
-        mat2 = new Matrix4f();
-        mat2.setIdentity();
-        mat2.setTranslation(trans);
+        trans = new Vector3d();
+        trans.set(0.1f, 0, 1);
+        mat2 = new Matrix4d();
+        mat2.set(trans);
 
         Viewpoint vp2_3 = new Viewpoint();
 
-        trans = new Vector3f(0, 0, 1);
-        mat = new Matrix4f();
+        trans = new Vector3d();
+        trans.set(0, 0, 1);
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -316,14 +316,16 @@ public class CombinedLayersDemo extends Frame
         // scene graph from somewhat on the side.
         Viewpoint vp3 = new Viewpoint();
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
-        trans = new Vector3f(1, 0, 1);
-        mat = new Matrix4f();
-        mat.setIdentity();
-        mat.rotY((float)(Math.PI / 4));
+        trans = new Vector3d();
+        trans.set(1, 0, 1);
+        mat = new Matrix4d();
+
+        MatrixUtils mu = new MatrixUtils();
+        mu.rotateY(Math.PI / 4, mat);
         mat.setTranslation(trans);
 
         tx = new TransformGroup();

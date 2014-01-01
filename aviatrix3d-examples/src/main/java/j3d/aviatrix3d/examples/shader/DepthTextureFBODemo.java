@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.shader;
 
 // External imports
 import java.awt.*;
@@ -11,25 +12,20 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
-import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
 import org.j3d.geom.SphereGenerator;
-import org.j3d.util.MatrixUtils;
 
 /**
  * Example application showing off using an offscreen buffer as a depth-only
@@ -97,9 +93,7 @@ public class DepthTextureFBODemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(true);
@@ -138,9 +132,10 @@ public class DepthTextureFBODemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 12f);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 12f);
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
         view_mat.setTranslation(trans);
 
@@ -177,9 +172,10 @@ public class DepthTextureFBODemo extends Frame
         light_shape.setAppearance(light_app);
         light_shape.setGeometry(light_geom);
 
-        Vector3f light_pos = new Vector3f(0, 0, -5);
+        Vector3d light_pos = new Vector3d();
+        light_pos.set(0, 0, -5);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(light_pos);
 
@@ -263,7 +259,7 @@ public class DepthTextureFBODemo extends Frame
         shape.setGeometry(test_geom);
         shape.setAppearance(app);
 
-        Matrix4f rot_mat  = new Matrix4f();
+        Matrix4d rot_mat  = new Matrix4d();
         rot_mat.setIdentity();
         rot_mat.rotY(PI_4);
 
@@ -362,7 +358,7 @@ public class DepthTextureFBODemo extends Frame
     /**
      * Load the shader file. Find it relative to the classpath.
      *
-     * @param file THe name of the file to load
+     * @param name THe name of the file to load
      */
     private String[] loadShaderFile(String name)
     {
@@ -489,7 +485,7 @@ public class DepthTextureFBODemo extends Frame
      * object from the position of the light
      */
     private OffscreenTexture2D createViewpointDepthMap(VertexGeometry worldGeom,
-                                                       Matrix4f viewMatrix,
+                                                       Matrix4d viewMatrix,
                                                        int windowWidth,
                                                        int windowHeight)
     {
@@ -502,10 +498,9 @@ public class DepthTextureFBODemo extends Frame
 
         // Set up the capabilities for a 32bit depth-only texture that
         // we'll be rendering to.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
 
         Viewpoint vp = new Viewpoint();
 
@@ -523,7 +518,7 @@ public class DepthTextureFBODemo extends Frame
         object.setAppearance(app);
         object.setGeometry(worldGeom);
 
-        Matrix4f rot_mat  = new Matrix4f();
+        Matrix4d rot_mat  = new Matrix4d();
         rot_mat.setIdentity();
         rot_mat.rotY(PI_4);
 

@@ -1,13 +1,12 @@
+package j3d.aviatrix3d.examples.npr;
 
 // External imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
-import javax.media.opengl.GLCapabilities;
 
 import org.j3d.util.I18nManager;
 
@@ -15,15 +14,12 @@ import org.j3d.util.I18nManager;
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
-import org.j3d.geom.BoxGenerator;
 import org.j3d.geom.SphereGenerator;
-import org.j3d.util.MatrixUtils;
 
 /**
  * Example application demonstrating the use of fixed function pipeline to do
@@ -99,10 +95,8 @@ public class StencilEdgeDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setStencilBits(8);
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.stencilBits = 8;
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(true);
@@ -139,9 +133,10 @@ public class StencilEdgeDemo extends Frame
     {
 //        Background bg = createBackground();
 
-        Vector3f trans = new Vector3f(0, 0, 7f);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 7f);
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
         view_mat.setTranslation(trans);
 
@@ -322,9 +317,10 @@ public class StencilEdgeDemo extends Frame
 
         Viewpoint sil_vp = new Viewpoint();
 
-        trans = new Vector3f(0, 0, 7f);
+        trans = new Vector3d();
+        trans.set(0, 0, 7f);
 
-        view_mat = new Matrix4f();
+        view_mat = new Matrix4d();
         view_mat.setIdentity();
         view_mat.setTranslation(trans);
 
@@ -442,7 +438,7 @@ public class StencilEdgeDemo extends Frame
      * Create the render pass with the window coords as given.
      */
     private RenderPass createStencilPass(SharedGroup commonScene,
-                                         Matrix4f vpMat,
+                                         Matrix4d vpMat,
                                          int x,
                                          int y,
                                          int width,

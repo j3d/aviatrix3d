@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.loaders;
 
 // External imports
 import java.awt.*;
@@ -14,15 +15,12 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -88,9 +86,7 @@ public class BasicLoaderDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -225,9 +221,10 @@ public class BasicLoaderDemo extends Frame
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(true);
 
-        Vector3f trans = new Vector3f(0, 0, 3);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 3);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -263,7 +260,7 @@ public class BasicLoaderDemo extends Frame
         System.out.println("Scaling by  " + (1 / max));
 
         mat.setIdentity();
-        mat.setScale(1 / max);
+        mat.set(1 / max);
         mat.setTranslation(trans);
 
         TransformGroup tg = new TransformGroup();

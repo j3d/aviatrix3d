@@ -10,6 +10,8 @@
  *
  ****************************************************************************/
 
+package j3d.aviatrix3d.examples.shader;
+
 // External imports
 import java.awt.*;
 import java.awt.event.*;
@@ -21,15 +23,12 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
 import javax.imageio.ImageIO;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -186,9 +185,7 @@ public class HumusFlagDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -218,7 +215,7 @@ public class HumusFlagDemo extends Frame
     /**
      * Setup the basic scene which consists of a quad and a viewpoint
      *
-     * @param nSphere Number of sphere objects to pre-initialise
+     * @param nSpheres Number of sphere objects to pre-initialise
      */
     private void setupSceneGraph(int nSpheres)
     {
@@ -228,8 +225,9 @@ public class HumusFlagDemo extends Frame
         // We could set these directly, but we don't because we'd like to
         // pass the values through to the shaders as well. More convenient and
         // we guarantee the same values then.
-        Vector3f trans = new Vector3f(0, 100, 600);
-        Matrix4f mat = new Matrix4f();
+        Vector3d trans = new Vector3d();
+        trans.set(0, 100, 600);
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -307,7 +305,7 @@ public class HumusFlagDemo extends Frame
      * @param viewPos The fixed position of the viewer
      * @param
      */
-    private TransformGroup createPole(Vector3f viewPos,
+    private TransformGroup createPole(Vector3d viewPos,
                                       float[] colour)
     {
         poleProgram = new ShaderProgram();
@@ -344,9 +342,9 @@ public class HumusFlagDemo extends Frame
         args.setUniform("lightPos", 3, f_args, 1);
         args.setUniform("color", 4, colour, 1);
 
-        f_args[0] = viewPos.x;
-        f_args[1] = viewPos.y;
-        f_args[2] = viewPos.z;
+        f_args[0] = (float)viewPos.x;
+        f_args[1] = (float)viewPos.y;
+        f_args[2] = (float)viewPos.z;
         args.setUniform("camPos", 3, f_args, 1);
 
         GLSLangShader shader = new GLSLangShader();
@@ -373,7 +371,7 @@ public class HumusFlagDemo extends Frame
      * @param viewPos The fixed position of the viewer
      * @param
      */
-    private TransformGroup createArrow(Vector3f viewPos,
+    private TransformGroup createArrow(Vector3d viewPos,
                                        float[] colour)
     {
         float[] normals =
@@ -425,9 +423,9 @@ public class HumusFlagDemo extends Frame
         args.setUniform("lightPos", 3, f_args, 1);
         args.setUniform("color", 4, colour, 1);
 
-        f_args[0] = viewPos.x;
-        f_args[1] = viewPos.y;
-        f_args[2] = viewPos.z;
+        f_args[0] = (float)viewPos.x;
+        f_args[1] = (float)viewPos.y;
+        f_args[2] = (float)viewPos.z;
         args.setUniform("camPos", 3, f_args, 1);
 
         GLSLangShader shader = new GLSLangShader();
@@ -453,7 +451,7 @@ public class HumusFlagDemo extends Frame
      *
      * @return The group that contains the cloth geometry
      */
-    private TransformGroup createCloth(Vector3f viewPos)
+    private TransformGroup createCloth(Vector3d viewPos)
     {
         // Leave this uninitiliazed
         IndexedTriangleStripArray geom = new IndexedTriangleStripArray();
@@ -529,9 +527,9 @@ public class HumusFlagDemo extends Frame
         float[] f_args = new float[4];
         args.setUniform("lightPos", 3, f_args, 1);
 
-        f_args[0] = viewPos.x;
-        f_args[1] = viewPos.y;
-        f_args[2] = viewPos.z;
+        f_args[0] = (float)viewPos.x;
+        f_args[1] = (float)viewPos.y;
+        f_args[2] = (float)viewPos.z;
 
         args.setUniform("camPos", 3, f_args, 1);
 
@@ -602,7 +600,7 @@ public class HumusFlagDemo extends Frame
     /**
      * Load a shader source file into an array of strings.
      *
-     * @param name The name of the file to load
+     * @param file The name of the file to load
      * @return the strings that represent the source.
      */
     private String[] loadShaderSource(String file)

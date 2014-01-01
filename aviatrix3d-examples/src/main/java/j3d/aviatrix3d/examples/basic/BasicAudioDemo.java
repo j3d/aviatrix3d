@@ -1,14 +1,11 @@
+package j3d.aviatrix3d.examples.basic;
 
 // Standard imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
 import java.nio.ByteBuffer;
-import net.java.games.joal.util.ALut;
+import com.jogamp.openal.util.ALut;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -32,6 +29,8 @@ import org.j3d.aviatrix3d.pipeline.audio.AudioSortStage;
 
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -56,10 +55,10 @@ public class BasicAudioDemo extends Frame
     private AudioOutputDevice audioDevice;
 
     /** Work variable to update the translation with */
-    private Vector3f translation;
+    private Vector3d translation;
 
     /** Matrix used to update the transform */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
     private TransformGroup shape_transform;
 
@@ -93,10 +92,7 @@ public class BasicAudioDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
-
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -143,11 +139,12 @@ public class BasicAudioDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
-        mat.setTranslation(trans);
+        mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.addChild(vp);
@@ -171,9 +168,9 @@ public class BasicAudioDemo extends Frame
         shape.setGeometry(geom);
 
         trans.set(0f, 0f, -0.1f);
-        Matrix4f mat2 = new Matrix4f();
+        Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
-        mat2.setTranslation(trans);
+        mat2.set(trans);
 
         shape_transform = new TransformGroup();
         shape_transform.addChild(shape);
@@ -205,8 +202,8 @@ public class BasicAudioDemo extends Frame
         Layer[] layers = { layer };
         displayManager.setLayers(layers, 1);
 
-        translation = new Vector3f();
-        matrix = new Matrix4f();
+        translation = new Vector3d();
+        matrix = new Matrix4d();
         matrix.setIdentity();
 
         sceneManager.setApplicationObserver(this);
@@ -310,7 +307,7 @@ public class BasicAudioDemo extends Frame
 
         translation.z -= angle/4.0f;
 
-        matrix.setTranslation(translation);
+        matrix.set(translation);
 
         shape_transform.setTransform(matrix);
     }

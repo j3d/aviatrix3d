@@ -1,5 +1,7 @@
+package j3d.aviatrix3d.examples.texture;
 
 // Standard imports
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -10,10 +12,9 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
 import javax.imageio.ImageIO;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
 
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -41,7 +42,7 @@ import org.j3d.geom.BoxGenerator;
  * @version $Revision: 1.12 $
  */
 public class TexturedSphereDemo extends Frame
-    implements WindowListener
+        implements WindowListener
 {
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -77,9 +78,7 @@ public class TexturedSphereDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -102,7 +101,7 @@ public class TexturedSphereDemo extends Frame
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
-        Component comp = (Component)surface.getSurfaceObject();
+        Component comp = (Component) surface.getSurfaceObject();
         add(comp, BorderLayout.CENTER);
 
         Button b = new Button("Press me");
@@ -122,7 +121,7 @@ public class TexturedSphereDemo extends Frame
         try
         {
             File f = new File("textures/left_cube_map.jpg");
-            if(!f.exists())
+            if (!f.exists())
                 System.out.println("Can't find texture source file");
 
             FileInputStream is = new FileInputStream(f);
@@ -134,7 +133,7 @@ public class TexturedSphereDemo extends Frame
             img_height = img.getHeight(null);
             int format = TextureComponent.FORMAT_RGB;
 
-            switch(img.getType())
+            switch (img.getType())
             {
                 case BufferedImage.TYPE_3BYTE_BGR:
                 case BufferedImage.TYPE_CUSTOM:
@@ -148,11 +147,11 @@ public class TexturedSphereDemo extends Frame
             }
 
             img_comp = new ImageTextureComponent2D(format,
-                                            img_width,
-                                            img_height,
-                                            img);
+                                                   img_width,
+                                                   img_height,
+                                                   img);
         }
-        catch(IOException ioe)
+        catch (IOException ioe)
         {
             System.out.println("Error reading image: " + ioe);
         }
@@ -160,9 +159,9 @@ public class TexturedSphereDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -176,14 +175,14 @@ public class TexturedSphereDemo extends Frame
         // Sphere to render the shader onto
         GeometryData data = new GeometryData();
         data.geometryType = GeometryData.TRIANGLES;
-        data.geometryComponents = GeometryData.NORMAL_DATA|
-                                  GeometryData.TEXTURE_2D_DATA;
+        data.geometryComponents = GeometryData.NORMAL_DATA |
+                GeometryData.TEXTURE_2D_DATA;
 
-        SphereGenerator generator = new SphereGenerator(0.4f, 16);
+        SphereGenerator generator = new SphereGenerator(0.4d, 16);
 //        BoxGenerator generator = new BoxGenerator(0.2f, 0.2f, 0.2f);
         generator.generate(data);
 
-        int[] tex_type = { VertexGeometry.TEXTURE_COORDINATE_2 };
+        int[] tex_type = {VertexGeometry.TEXTURE_COORDINATE_2};
         float[][] tex_coord = new float[1][data.vertexCount * 2];
 
         System.arraycopy(data.textureCoordinates, 0, tex_coord[0], 0,
@@ -197,23 +196,23 @@ public class TexturedSphereDemo extends Frame
         geom.setTextureCoordinates(tex_type, tex_coord, 1);
 
         Material material = new Material();
-        material.setDiffuseColor(new float[] { 0, 0, 1 });
-        material.setEmissiveColor(new float[] { 0, 0, 1 });
-        material.setSpecularColor(new float[] { 1, 1, 1 });
+        material.setDiffuseColor(new float[]{0, 0, 1});
+        material.setEmissiveColor(new float[]{0, 0, 1});
+        material.setSpecularColor(new float[]{1, 1, 1});
 
         Appearance app = new Appearance();
         app.setMaterial(material);
 
-        if(img_comp != null)
+        if (img_comp != null)
         {
 //            Texture2D texture = new Texture2D(Texture.FORMAT_RGB,
 //                                              img_comp);
 
             Texture2D texture = new Texture2D();
             texture.setSources(Texture.MODE_BASE_LEVEL,
-                              Texture.FORMAT_RGB,
-                              new TextureComponent[] { img_comp },
-                              1);
+                               Texture.FORMAT_RGB,
+                               new TextureComponent[]{img_comp},
+                               1);
 
             TextureUnit[] tu = new TextureUnit[1];
             tu[0] = new TextureUnit();
@@ -240,7 +239,7 @@ public class TexturedSphereDemo extends Frame
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
-        Layer[] layers = { layer };
+        Layer[] layers = {layer};
         displayManager.setLayers(layers, 1);
     }
 

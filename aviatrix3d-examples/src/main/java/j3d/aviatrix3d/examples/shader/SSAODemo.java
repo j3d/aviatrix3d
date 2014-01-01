@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.shader;
 
 // External imports
 import java.awt.*;
@@ -13,12 +14,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 import org.j3d.util.I18nManager;
 
@@ -26,15 +23,12 @@ import org.j3d.util.I18nManager;
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
-import org.j3d.geom.SphereGenerator;
-import org.j3d.util.MatrixUtils;
 import org.j3d.util.TriangleUtils;
 
 /**
@@ -84,7 +78,7 @@ public class SSAODemo extends Frame
     private static final int WINDOW_SIZE = 512;
 
     /** Sample radius to make for SSAO */
-    private static final float SSAO_SAMPLE_RADIUS = 0.03f;
+    private static final float SSAO_SAMPLE_RADIUS = 0.03d;
 
     /** PI / 4 for rotations */
     private static final float PI_4 = (float)(Math.PI * 0.25f);
@@ -138,9 +132,7 @@ public class SSAODemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(true);
@@ -240,7 +232,7 @@ public class SSAODemo extends Frame
     {
         shaderCallback = new BulkShaderLoadStatusCallback();
 
-        Vector3f real_view_pos = new Vector3f(0, 0, 20.0f);
+        Vector3d real_view_pos = new Vector3d(0, 0, 20.0f);
 
         MRTOffscreenTexture2D gbuffer_tex = createGBufferTexture(real_view_pos);
 
@@ -310,7 +302,7 @@ public class SSAODemo extends Frame
      */
     private MRTOffscreenTexture2D createSSAOTexture(Texture normalSource,
                                                     Texture depthSource,
-                                                    Vector3f viewPos)
+                                                    Vector3d viewPos)
     {
         // two quads to draw to
         float[] quad_coords = { -1, -1, -0.5f, 1, -1, -0.5f, 1, 1, -0.5f, -1, 1, -0.5f };
@@ -421,10 +413,9 @@ public class SSAODemo extends Frame
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
 
         MRTOffscreenTexture2D off_tex =
             new MRTOffscreenTexture2D(caps, TEXTURE_SIZE, TEXTURE_SIZE, 1);
@@ -441,11 +432,11 @@ public class SSAODemo extends Frame
     /**
      * Create the contents of the offscreen texture that is being rendered
      */
-    private MRTOffscreenTexture2D createGBufferTexture(Vector3f viewPos)
+    private MRTOffscreenTexture2D createGBufferTexture(Vector3d viewPos)
     {
         Viewpoint vp = new Viewpoint();
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
         view_mat.setTranslation(viewPos);
 
@@ -566,20 +557,20 @@ public class SSAODemo extends Frame
         wall_shape.setGeometry(wall_geom);
 
         // Transform the geometry in some way
-        Matrix4f geom_mat1 = new Matrix4f();
+        Matrix4d geom_mat1 = new Matrix4d();
         geom_mat1.setIdentity();
         geom_mat1.m03 = 0.5f;
         geom_mat1.m13 = -2.0f;
         geom_mat1.m23 = -1.0f;
 
-        Matrix4f geom_mat2 = new Matrix4f();
+        Matrix4d geom_mat2 = new Matrix4d();
         geom_mat2.setIdentity();
         geom_mat2.rotY(-PI_4);
         geom_mat2.m03 = 0.0f;
         geom_mat2.m13 = -4.5f;
         geom_mat2.m23 = -0.0f;
 
-        Matrix4f geom_mat3 = new Matrix4f();
+        Matrix4d geom_mat3 = new Matrix4d();
         geom_mat3.setIdentity();
         geom_mat3.rotY(PI_4 - 0.07f);
         geom_mat3.m03 = 1.0f;
@@ -627,12 +618,11 @@ public class SSAODemo extends Frame
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(true);
-        caps.setDepthBits(24);
-        caps.setAlphaBits(8);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
+        caps.depthBits = 24;
+        caps.alphaBits = 8;
 
         MRTOffscreenTexture2D off_tex =
             new MRTOffscreenTexture2D(caps, true, TEXTURE_SIZE, TEXTURE_SIZE, 1, true);

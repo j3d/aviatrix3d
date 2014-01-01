@@ -10,11 +10,13 @@
  *
  ****************************************************************************/
 
+package j3d.aviatrix3d.examples.shader;
+
 // External imports
 import java.util.Random;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
@@ -140,10 +142,10 @@ public class HumusClothAnimator
     private Random rgen;
 
     /** A matrix for settting transform values when needed */
-    private Matrix4f tmpMatrix;
+    private Matrix4d tmpMatrix;
 
     /** A vertex for settting transform values when needed */
-    private Vector3f tmpVertex;
+    private Vector3d tmpVertex;
 
     /** A temp array for setting uniform variable values  */
     private float[] tmpFloat;
@@ -166,10 +168,10 @@ public class HumusClothAnimator
         lightGroup = light;
         clothGroup = cloth;
 
-        tmpMatrix = new Matrix4f();
+        tmpMatrix = new Matrix4d();
         tmpMatrix.setIdentity();
 
-        tmpVertex = new Vector3f();
+        tmpVertex = new Vector3d();
         tmpFloat = new float[4];
 
         // Pull apart the cloth structure for the bits we need
@@ -486,7 +488,7 @@ public class HumusClothAnimator
         }
         else if(src == lightGroup)
         {
-            tmpVertex.set(lightPos);
+            tmpVertex.set(lightPos[0], lightPos[1], lightPos[2]);
             tmpMatrix.setTranslation(tmpVertex);
 
             lightGroup.setTransform(tmpMatrix);

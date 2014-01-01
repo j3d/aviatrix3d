@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.shader;
 
 // External imports
 import java.awt.*;
@@ -7,11 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileReader;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 import org.j3d.util.I18nManager;
 
@@ -19,15 +17,12 @@ import org.j3d.util.I18nManager;
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
-import org.j3d.geom.BoxGenerator;
 import org.j3d.geom.SphereGenerator;
-import org.j3d.util.MatrixUtils;
 
 /**
  * Example application demonstrating the use multiple render targets. Two
@@ -100,9 +95,7 @@ public class MultipleRenderTargetDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(true);
@@ -268,9 +261,9 @@ public class MultipleRenderTargetDemo extends Frame
         shape_1.setGeometry(real_geom);
         shape_1.setAppearance(app_1);
 
-        Matrix4f mat_1 = new Matrix4f();
+        Matrix4d mat_1 = new Matrix4d();
         mat_1.setIdentity();
-        mat_1.setTranslation(new Vector3f(-1.5f, 0, 0));
+        mat_1.setTranslation(new Vector3d(-1.5f, 0, 0));
 
         TransformGroup tg_1 = new TransformGroup();
         tg_1.setTransform(mat_1);
@@ -290,9 +283,9 @@ public class MultipleRenderTargetDemo extends Frame
         shape_2.setGeometry(real_geom);
         shape_2.setAppearance(app_2);
 
-        Matrix4f mat_2 = new Matrix4f();
+        Matrix4d mat_2 = new Matrix4d();
         mat_2.setIdentity();
-        mat_2.setTranslation(new Vector3f(1.5f, 0, 0));
+        mat_2.setTranslation(new Vector3d(1.5f, 0, 0));
 
         TransformGroup tg_2 = new TransformGroup();
         tg_2.setTransform(mat_2);
@@ -301,9 +294,9 @@ public class MultipleRenderTargetDemo extends Frame
 
         Viewpoint vp = new Viewpoint();
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
-        view_mat.setTranslation(new Vector3f(0, 0, 10f));
+        view_mat.setTranslation(new Vector3d(0, 0, 10f));
 
         TransformGroup tx = new TransformGroup();
         tx.setTransform(view_mat);
@@ -339,9 +332,9 @@ public class MultipleRenderTargetDemo extends Frame
     {
         Viewpoint vp = new Viewpoint();
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
-        view_mat.setTranslation(new Vector3f(0, 0, 10f));
+        view_mat.setTranslation(new Vector3d(0, 0, 10f));
 
         TransformGroup tx = new TransformGroup();
         tx.setTransform(view_mat);
@@ -414,9 +407,8 @@ public class MultipleRenderTargetDemo extends Frame
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
 
         MRTOffscreenTexture2D off_tex =
             new MRTOffscreenTexture2D(caps, TEXTURE_SIZE, TEXTURE_SIZE, 2);

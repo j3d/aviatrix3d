@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.shader;
 
 // External imports
 import java.awt.*;
@@ -13,12 +14,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 import org.j3d.util.I18nManager;
 
@@ -26,7 +23,6 @@ import org.j3d.util.I18nManager;
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
@@ -98,6 +94,9 @@ public class EdgeDetectionDemo extends Frame
     /** The view environment created for the main scene */
     private ViewEnvironment mainSceneEnv;
 
+    /** Utility for doing matrix rotations */
+    private MatrixUtils matrixUtils;
+
     /**
      * Construct a new shader demo instance.
      */
@@ -110,6 +109,8 @@ public class EdgeDetectionDemo extends Frame
 
         setLayout(new BorderLayout());
         addWindowListener(this);
+
+        matrixUtils = new MatrixUtils();
 
         setupAviatrix();
         setupSceneGraph();
@@ -129,9 +130,7 @@ public class EdgeDetectionDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(true);
@@ -229,8 +228,10 @@ public class EdgeDetectionDemo extends Frame
      */
     private void setupSceneGraph()
     {
-        Vector3f real_view_pos = new Vector3f(0, 0, 15f);
-        Vector3f render_view_pos = new Vector3f(0, 0, 0.9f);
+        Vector3d real_view_pos = new Vector3d();
+        real_view_pos.set(0, 0, 15f);
+        Vector3d render_view_pos = new Vector3d();
+        render_view_pos.set(0, 0, 0.9f);
 
         // two quads to draw to
         float[] quad_coords = { -1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0 };
@@ -296,7 +297,7 @@ public class EdgeDetectionDemo extends Frame
 
         Viewpoint vp = new Viewpoint();
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
         view_mat.setTranslation(render_view_pos);
 
@@ -340,11 +341,11 @@ public class EdgeDetectionDemo extends Frame
     /**
      * Create the contents of the offscreen texture that is being rendered
      */
-    private MRTOffscreenTexture2D createRenderTargetTexture(Vector3f viewPos)
+    private MRTOffscreenTexture2D createRenderTargetTexture(Vector3d viewPos)
     {
         Viewpoint vp = new Viewpoint();
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
         view_mat.setTranslation(viewPos);
 
@@ -485,15 +486,13 @@ public class EdgeDetectionDemo extends Frame
         torus_shape.setAppearance(app);
 
         // Transform the geometry in some way
-        Matrix4f geom_mat1 = new Matrix4f();
-        geom_mat1.setIdentity();
-        geom_mat1.rotX(PI_4);
+        Matrix4d geom_mat1 = new Matrix4d();
+        matrixUtils.rotateX(PI_4, geom_mat1);
 
-        Matrix4f geom_mat2 = new Matrix4f();
-        geom_mat2.setIdentity();
-        geom_mat2.rotY(PI_4);
+        Matrix4d geom_mat2 = new Matrix4d();
+        matrixUtils.rotateY(PI_4, geom_mat2);
 
-        geom_mat2.mul(geom_mat1);
+        geom_mat2.mul(geom_mat2, geom_mat1);
         geom_mat2.m03 = 3.0f;
 
         TransformGroup box_tx = new TransformGroup();
@@ -540,11 +539,9 @@ public class EdgeDetectionDemo extends Frame
         Layer[] layers = { layer };
 
         // The texture requires its own set of capabilities.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
-        caps.setPbufferFloatingPointBuffers(false);
-        caps.setDepthBits(24);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.depthBits = 24;
 
         MRTOffscreenTexture2D off_tex =
             new MRTOffscreenTexture2D(caps, TEXTURE_SIZE, TEXTURE_SIZE, 2, false);
@@ -563,7 +560,7 @@ public class EdgeDetectionDemo extends Frame
     /**
      * Load the shader file. Find it relative to the classpath.
      *
-     * @param file THe name of the file to load
+     * @param name THe name of the file to load
      */
     private String[] loadShaderFile(String name)
     {

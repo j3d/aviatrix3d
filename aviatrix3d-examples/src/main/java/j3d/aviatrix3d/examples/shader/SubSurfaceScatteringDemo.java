@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.shader;
 
 // External imports
 import java.awt.*;
@@ -11,17 +12,14 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
@@ -79,6 +77,9 @@ public class SubSurfaceScatteringDemo extends Frame
     /** Our drawing surface */
     private GraphicsOutputDevice surface;
 
+    /** Matrix utils for doing rotations */
+    private MatrixUtils matrixUtils;
+
     /**
      * Construct a new shader demo instance.
      */
@@ -88,6 +89,8 @@ public class SubSurfaceScatteringDemo extends Frame
 
         setLayout(new BorderLayout());
         addWindowListener(this);
+
+        matrixUtils = new MatrixUtils();
 
         setupAviatrix();
 
@@ -106,9 +109,7 @@ public class SubSurfaceScatteringDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(true);
@@ -148,9 +149,10 @@ public class SubSurfaceScatteringDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 75f);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 75f);
 
-        Matrix4f view_mat = new Matrix4f();
+        Matrix4d view_mat = new Matrix4d();
         view_mat.setIdentity();
         view_mat.setTranslation(trans);
 
@@ -187,9 +189,10 @@ public class SubSurfaceScatteringDemo extends Frame
         light_shape.setAppearance(light_app);
         light_shape.setGeometry(light_geom);
 
-        Vector3f light_pos = new Vector3f(50, 0, -50);
+        Vector3d light_pos = new Vector3d();
+        light_pos.set(50, 0, -50);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(light_pos);
 
@@ -239,9 +242,9 @@ public class SubSurfaceScatteringDemo extends Frame
 
         float[] light_pos_mat =
         {
-            1, 0, 0, light_pos.x,
-            0, 1, 0, light_pos.y,
-            0, 0, 1, light_pos.z,
+            1, 0, 0, (float)light_pos.x,
+            0, 1, 0, (float)light_pos.y,
+            0, 0, 1, (float)light_pos.z,
             0, 0, 0, 1
         };
 
@@ -385,16 +388,14 @@ public class SubSurfaceScatteringDemo extends Frame
 //        shape.setGeometry(test_geom);
         shape.setAppearance(app);
 
-        Matrix4f rot_mat  = new Matrix4f();
-        rot_mat.setIdentity();
-        rot_mat.rotY(PI_4);
+        Matrix4d rot_mat  = new Matrix4d();
+        matrixUtils.rotateY(PI_4, rot_mat);
 
         TransformGroup anim_rotation = new TransformGroup();
         anim_rotation.setTransform(rot_mat);
         anim_rotation.addChild(shape);
 
-        rot_mat.setIdentity();
-        rot_mat.rotX(PI_4);
+        matrixUtils.rotateX(PI_4, rot_mat);
 
         TransformGroup main_rotation = new TransformGroup();
         main_rotation.setTransform(rot_mat);
@@ -495,7 +496,7 @@ public class SubSurfaceScatteringDemo extends Frame
     /**
      * Load the shader file. Find it relative to the classpath.
      *
-     * @param file THe name of the file to load
+     * @param name THe name of the file to load
      */
     private String[] loadShaderFile(String name)
     {
@@ -634,26 +635,26 @@ public class SubSurfaceScatteringDemo extends Frame
      * object from the position of the light
      */
     private OffscreenTexture2D createLightDepthMap(VertexGeometry worldGeom,
-                                                   Vector3f lightPos,
+                                                   Vector3d lightPos,
                                                    float[] lightProjMatrix,
                                                    float[] depthScale,
                                                    SubSurfaceAnimator anim)
     {
         // Set up the capabilities for a 32bit depth-only texture that
         // we'll be rendering to.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferFloatingPointBuffers(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
+        caps.useFloatingPointBuffers = true;
 
         // Place this viewpoint in the light's position
         Viewpoint vp = new Viewpoint();
 
-        Matrix4f vp_mat = new Matrix4f();
+        Matrix4d vp_mat = new Matrix4d();
 
         MatrixUtils utils = new MatrixUtils();
-        utils.lookAt(new Point3f(lightPos),
-                     new Point3f(),
-                     new Vector3f(0, 1, 0),
+        utils.lookAt(new Point3d(lightPos),
+                     new Point3d(),
+                     new Vector3d(0, 1, 0),
                      vp_mat);
 
         utils.inverse(vp_mat, vp_mat);
@@ -698,16 +699,14 @@ public class SubSurfaceScatteringDemo extends Frame
         object.setGeometry(worldGeom);
 
 
-        Matrix4f rot_mat  = new Matrix4f();
-        rot_mat.setIdentity();
-        rot_mat.rotY(PI_4);
+        Matrix4d rot_mat  = new Matrix4d();
+        matrixUtils.rotateY(PI_4, rot_mat);
 
         TransformGroup anim_rotation = new TransformGroup();
         anim_rotation.setTransform(rot_mat);
         anim_rotation.addChild(object);
 
-        rot_mat.setIdentity();
-        rot_mat.rotX(PI_4);
+        matrixUtils.rotateX(PI_4, rot_mat);
 
         TransformGroup main_rotation = new TransformGroup();
         main_rotation.setTransform(rot_mat);
@@ -744,7 +743,7 @@ public class SubSurfaceScatteringDemo extends Frame
         // Copy this matrix into a temp matrix, then multiply it by the projection
         // matrix to get the final proj matrix for the light, finally copying it
         // back in to the original array to hand back to the shader
-        Matrix4f light_mat = new Matrix4f();
+        Matrix4d light_mat = new Matrix4d();
         light_mat.m00 = lightProjMatrix[0];
         light_mat.m01 = lightProjMatrix[1];
         light_mat.m02 = lightProjMatrix[2];
@@ -767,25 +766,25 @@ public class SubSurfaceScatteringDemo extends Frame
 
         vp_mat.mul(light_mat, vp_mat);
 
-        lightProjMatrix[0] = vp_mat.m00;
-        lightProjMatrix[1] = vp_mat.m01;
-        lightProjMatrix[2] = vp_mat.m02;
-        lightProjMatrix[3] = vp_mat.m03;
+        lightProjMatrix[0] = (float)vp_mat.m00;
+        lightProjMatrix[1] = (float)vp_mat.m01;
+        lightProjMatrix[2] = (float)vp_mat.m02;
+        lightProjMatrix[3] = (float)vp_mat.m03;
 
-        lightProjMatrix[4] = vp_mat.m10;
-        lightProjMatrix[5] = vp_mat.m11;
-        lightProjMatrix[6] = vp_mat.m12;
-        lightProjMatrix[7] = vp_mat.m13;
+        lightProjMatrix[4] = (float)vp_mat.m10;
+        lightProjMatrix[5] = (float)vp_mat.m11;
+        lightProjMatrix[6] = (float)vp_mat.m12;
+        lightProjMatrix[7] = (float)vp_mat.m13;
 
-        lightProjMatrix[8] = vp_mat.m20;
-        lightProjMatrix[9] = vp_mat.m21;
-        lightProjMatrix[10] = vp_mat.m22;
-        lightProjMatrix[11] = vp_mat.m23;
+        lightProjMatrix[8] = (float)vp_mat.m20;
+        lightProjMatrix[9] = (float)vp_mat.m21;
+        lightProjMatrix[10] = (float)vp_mat.m22;
+        lightProjMatrix[11] = (float)vp_mat.m23;
 
-        lightProjMatrix[12] = vp_mat.m30;
-        lightProjMatrix[13] = vp_mat.m31;
-        lightProjMatrix[14] = vp_mat.m32;
-        lightProjMatrix[15] = vp_mat.m33;
+        lightProjMatrix[12] = (float)vp_mat.m30;
+        lightProjMatrix[13] = (float)vp_mat.m31;
+        lightProjMatrix[14] = (float)vp_mat.m32;
+        lightProjMatrix[15] = (float)vp_mat.m33;
 
         // Use a fixed size depth map for now. This should resize in some
         // proportion to the actual viewport size,and probaly the main
@@ -812,7 +811,7 @@ public class SubSurfaceScatteringDemo extends Frame
      * object from the position of the light
      */
     private OffscreenTexture2D createViewpointDepthMap(VertexGeometry worldGeom,
-                                                       Matrix4f viewMatrix,
+                                                       Matrix4d viewMatrix,
                                                        SubSurfaceAnimator anim,
                                                        int windowWidth,
                                                        int windowHeight)
@@ -826,9 +825,8 @@ public class SubSurfaceScatteringDemo extends Frame
 
         // Set up the capabilities for a 32bit depth-only texture that
         // we'll be rendering to.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(false);
-        caps.setPbufferRenderToTexture(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
+        caps.doubleBuffered = false;
 
         Viewpoint vp = new Viewpoint();
 
@@ -846,16 +844,14 @@ public class SubSurfaceScatteringDemo extends Frame
         object.setAppearance(app);
         object.setGeometry(worldGeom);
 
-        Matrix4f rot_mat  = new Matrix4f();
-        rot_mat.setIdentity();
-        rot_mat.rotY(PI_4);
+        Matrix4d rot_mat  = new Matrix4d();
+        matrixUtils.rotateY(PI_4, rot_mat);
 
         TransformGroup anim_rotation = new TransformGroup();
         anim_rotation.setTransform(rot_mat);
         anim_rotation.addChild(object);
 
-        rot_mat.setIdentity();
-        rot_mat.rotX(PI_4);
+        matrixUtils.rotateX(PI_4, rot_mat);
 
         TransformGroup main_rotation = new TransformGroup();
         main_rotation.setTransform(rot_mat);
@@ -937,9 +933,9 @@ public class SubSurfaceScatteringDemo extends Frame
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(true);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
-        mat.setTranslation(new Vector3f(0f, 0f, 10f));
+        mat.setTranslation(new Vector3d(0f, 0f, 10f));
 
         TransformGroup viewpointTransform = new TransformGroup();
         viewpointTransform.addChild(vp);
@@ -974,9 +970,6 @@ public class SubSurfaceScatteringDemo extends Frame
     /**
      * makeRectangle builds a quadArray shape to create a
      * rectangle with two colors, blended top-to-bottom.
-     * @param color a length 6 float array, where the first
-     * three values represent the bottom color and the second
-     * three values represent the top color.
      * @return a Shape3D that can be inserted into the scene.
      */
     private Shape3D makeRectangle()

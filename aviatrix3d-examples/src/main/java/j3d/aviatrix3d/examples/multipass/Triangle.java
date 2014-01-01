@@ -11,8 +11,10 @@
  *
  ****************************************************************************/
 
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
+package j3d.aviatrix3d.examples.multipass;
+
+import org.j3d.maths.vector.Vector3d;
+import org.j3d.maths.vector.Vector4d;
 
 /**
  * A triangle object containing index of the vertices
@@ -27,7 +29,7 @@ public class Triangle {
 	public int[] vertIndex = new int[3];
 	
 	/** Vector representing plane equation of this triangle */
-	public Vector4f plane = new Vector4f();
+	public Vector4d plane = new Vector4d();
 	
 	/**
 	 * Constructs instance of this triangle
@@ -57,14 +59,18 @@ public class Triangle {
 	 */
 	public Triangle(int idx1, int idx2, int idx3, float[] coords) {
 
-		Vector3f vert1 = new Vector3f(coords[idx1 + 0], coords[idx1 + 1], coords[idx1 + 2]);
-		Vector3f vert2 = new Vector3f(coords[idx2 + 0], coords[idx2 + 1], coords[idx2 + 2]);
-		Vector3f vert3 = new Vector3f(coords[idx3 + 0], coords[idx3 + 1], coords[idx3 + 2]);
+		Vector3d vert1 = new Vector3d();
+		Vector3d vert2 = new Vector3d();
+        Vector3d vert3 = new Vector3d();
+
+        vert1.set(coords[idx1 + 0], coords[idx1 + 1], coords[idx1 + 2]);
+        vert2.set(coords[idx2 + 0], coords[idx2 + 1], coords[idx2 + 2]);
+        vert3.set(coords[idx3 + 0], coords[idx3 + 1], coords[idx3 + 2]);
 		
-		vert2.sub(vert1);
-		vert3.sub(vert1);
+		vert2.sub(vert2, vert1);
+		vert3.sub(vert3, vert1);
 		
-		Vector3f cross = new Vector3f();
+		Vector3d cross = new Vector3d();
 		cross.cross(vert2, vert3);
 		
 		plane.x = cross.x;

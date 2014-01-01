@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.npr;
 
 // External imports
 import java.awt.*;
@@ -7,10 +8,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 import org.j3d.util.I18nManager;
 
@@ -18,7 +17,6 @@ import org.j3d.util.I18nManager;
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
@@ -93,9 +91,7 @@ public class SimpleToonShaderDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new FrustumCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -132,9 +128,10 @@ public class SimpleToonShaderDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(false);
-        Vector3f trans = new Vector3f(0, 0, 4.0f);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 4.0f);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -148,8 +145,9 @@ public class SimpleToonShaderDemo extends Frame
         light.setEnabled(true);
         light.setGlobalOnly(true);
 
-        trans = new Vector3f(5, 0, 10f);
-        mat = new Matrix4f();
+        trans = new Vector3d();
+        trans.set(5, 0, 10f);
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -308,7 +306,7 @@ public class SimpleToonShaderDemo extends Frame
     /**
      * Load the shader file. Find it relative to the classpath.
      *
-     * @param file THe name of the file to load
+     * @param name THe name of the file to load
      */
     private String[] loadShaderFile(String name)
     {

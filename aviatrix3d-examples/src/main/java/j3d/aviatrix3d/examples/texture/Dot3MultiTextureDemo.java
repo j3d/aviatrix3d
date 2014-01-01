@@ -1,5 +1,7 @@
+package j3d.aviatrix3d.examples.texture;
 
 // Standard imports
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -10,16 +12,14 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
 import javax.imageio.ImageIO;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
 
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
 
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
-import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
@@ -40,7 +40,7 @@ import org.j3d.geom.BoxGenerator;
  * @version $Revision: 1.14 $
  */
 public class Dot3MultiTextureDemo extends Frame
-    implements WindowListener
+        implements WindowListener
 {
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -76,9 +76,7 @@ public class Dot3MultiTextureDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -102,7 +100,7 @@ public class Dot3MultiTextureDemo extends Frame
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
-        Component comp = (Component)surface.getSurfaceObject();
+        Component comp = (Component) surface.getSurfaceObject();
         add(comp, BorderLayout.CENTER);
     }
 
@@ -118,9 +116,9 @@ public class Dot3MultiTextureDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0.1f, 0.8f);
+        Vector3d trans = new Vector3d(0, 0.1f, 0.8f);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -134,15 +132,15 @@ public class Dot3MultiTextureDemo extends Frame
         // Sphere to render the shader onto
         GeometryData data = new GeometryData();
         data.geometryType = GeometryData.TRIANGLES;
-        data.geometryComponents = GeometryData.NORMAL_DATA|
-                                  GeometryData.TEXTURE_2D_DATA;
+        data.geometryComponents = GeometryData.NORMAL_DATA |
+                GeometryData.TEXTURE_2D_DATA;
 
         BoxGenerator generator = new BoxGenerator(0.2f, 0.2f, 0.2f);
         generator.generate(data);
 
-        int[] tex_type = { VertexGeometry.TEXTURE_COORDINATE_2 };
+        int[] tex_type = {VertexGeometry.TEXTURE_COORDINATE_2};
         float[][] tex_coord = new float[1][data.vertexCount * 2];
-        int[] tex_sets = { 0, 0 };
+        int[] tex_sets = {0, 0};
 
         System.arraycopy(data.textureCoordinates, 0, tex_coord[0], 0,
                          data.vertexCount * 2);
@@ -156,22 +154,22 @@ public class Dot3MultiTextureDemo extends Frame
         geom.setTextureSetMap(tex_sets);
 
         Material material = new Material();
-        material.setDiffuseColor(new float[] { 1, 1, 1 });
-        material.setEmissiveColor(new float[] { 1, 1, 1 });
-        material.setSpecularColor(new float[] { 1, 1, 1 });
+        material.setDiffuseColor(new float[]{1, 1, 1});
+        material.setEmissiveColor(new float[]{1, 1, 1});
+        material.setSpecularColor(new float[]{1, 1, 1});
         material.setLightingEnabled(true);
 
         Texture2D base_texture = new Texture2D();
         base_texture.setSources(Texture.MODE_BASE_LEVEL,
-                               Texture.FORMAT_RGB,
-                               base_img,
-                               1);
+                                Texture.FORMAT_RGB,
+                                base_img,
+                                1);
 
         Texture2D filter_texture = new Texture2D();
         filter_texture.setSources(Texture.MODE_BASE_LEVEL,
-                                 Texture.FORMAT_RGB,
-                                 filter_img,
-                                 1);
+                                  Texture.FORMAT_RGB,
+                                  filter_img,
+                                  1);
 
         TextureAttributes base_ta = new TextureAttributes();
         base_ta.setBlendColor(0.5f, 0, 0, 1);
@@ -221,7 +219,7 @@ public class Dot3MultiTextureDemo extends Frame
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
-        Layer[] layers = { layer };
+        Layer[] layers = {layer};
         displayManager.setLayers(layers, 1);
     }
 
@@ -297,7 +295,7 @@ public class Dot3MultiTextureDemo extends Frame
         try
         {
             File f = new File(name);
-            if(!f.exists())
+            if (!f.exists())
                 System.out.println("Can't find texture source file");
 
             FileInputStream is = new FileInputStream(f);
@@ -309,7 +307,7 @@ public class Dot3MultiTextureDemo extends Frame
             int img_height = img.getHeight(null);
             int format = TextureComponent.FORMAT_RGB;
 
-            switch(img.getType())
+            switch (img.getType())
             {
                 case BufferedImage.TYPE_3BYTE_BGR:
                 case BufferedImage.TYPE_CUSTOM:
@@ -323,16 +321,16 @@ public class Dot3MultiTextureDemo extends Frame
             }
 
             img_comp = new ImageTextureComponent2D(format,
-                                            img_width,
-                                            img_height,
-                                            img);
+                                                   img_width,
+                                                   img_height,
+                                                   img);
         }
-        catch(IOException ioe)
+        catch (IOException ioe)
         {
             System.out.println("Error reading image: " + ioe);
         }
 
-        return new TextureComponent2D[] { img_comp };
+        return new TextureComponent2D[]{img_comp};
     }
 
     public static void main(String[] args)

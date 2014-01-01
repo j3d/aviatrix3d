@@ -1,5 +1,7 @@
+package j3d.aviatrix3d.examples.texture;
 
 // Standard imports
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -10,10 +12,9 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
 import javax.imageio.ImageIO;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
 
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -40,7 +41,7 @@ import org.j3d.geom.BoxGenerator;
  * @version $Revision: 1.14 $
  */
 public class Texture3DDemo extends Frame
-    implements WindowListener
+        implements WindowListener
 {
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -76,9 +77,7 @@ public class Texture3DDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -101,7 +100,7 @@ public class Texture3DDemo extends Frame
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
-        Component comp = (Component)surface.getSurfaceObject();
+        Component comp = (Component) surface.getSurfaceObject();
         add(comp, BorderLayout.CENTER);
     }
 
@@ -117,15 +116,15 @@ public class Texture3DDemo extends Frame
         src_img[1] = loadImage("textures/3d_texture_2.gif");
 
         ImageTextureComponent3D[] img_comp = {
-            new ImageTextureComponent3D(TextureComponent.FORMAT_RGB, src_img)
+                new ImageTextureComponent3D(TextureComponent.FORMAT_RGB, src_img)
         };
 
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0.3f, 1);
+        Vector3d trans = new Vector3d(0, 0.3d, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -139,13 +138,13 @@ public class Texture3DDemo extends Frame
         // Sphere to render the shader onto
         GeometryData data = new GeometryData();
         data.geometryType = GeometryData.TRIANGLES;
-        data.geometryComponents = GeometryData.NORMAL_DATA|
-                                  GeometryData.TEXTURE_3D_DATA;
+        data.geometryComponents = GeometryData.NORMAL_DATA |
+                GeometryData.TEXTURE_3D_DATA;
 
         BoxGenerator generator = new BoxGenerator(0.2f, 0.2f, 0.2f);
         generator.generate(data);
 
-        int[] tex_type = { VertexGeometry.TEXTURE_COORDINATE_3 };
+        int[] tex_type = {VertexGeometry.TEXTURE_COORDINATE_3};
         float[][] tex_coord = new float[1][data.vertexCount * 3];
 
         System.arraycopy(data.textureCoordinates, 0, tex_coord[0], 0,
@@ -159,15 +158,15 @@ public class Texture3DDemo extends Frame
         geom.setTextureCoordinates(tex_type, tex_coord, 1);
 
         Material material = new Material();
-        material.setDiffuseColor(new float[] { 0, 0, 1 });
-        material.setEmissiveColor(new float[] { 0, 0, 1 });
-        material.setSpecularColor(new float[] { 1, 1, 1 });
+        material.setDiffuseColor(new float[]{0, 0, 1});
+        material.setEmissiveColor(new float[]{0, 0, 1});
+        material.setSpecularColor(new float[]{1, 1, 1});
 
         Texture3D texture = new Texture3D();
         texture.setSources(Texture.MODE_BASE_LEVEL,
-                          Texture.FORMAT_RGB,
-                          img_comp,
-                          1);
+                           Texture.FORMAT_RGB,
+                           img_comp,
+                           1);
 
         TexCoordGeneration coord_gen = new TexCoordGeneration();
         coord_gen.setParameter(TexCoordGeneration.TEXTURE_S,
@@ -212,7 +211,7 @@ public class Texture3DDemo extends Frame
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
-        Layer[] layers = { layer };
+        Layer[] layers = {layer};
         displayManager.setLayers(layers, 1);
     }
 
@@ -288,7 +287,7 @@ public class Texture3DDemo extends Frame
         try
         {
             File f = new File(name);
-            if(!f.exists())
+            if (!f.exists())
                 System.out.println("Can't find texture source file");
 
             FileInputStream is = new FileInputStream(f);
@@ -296,7 +295,7 @@ public class Texture3DDemo extends Frame
             BufferedInputStream stream = new BufferedInputStream(is);
             img_comp = ImageIO.read(stream);
         }
-        catch(IOException ioe)
+        catch (IOException ioe)
         {
             System.out.println("Error reading image: " + ioe);
         }

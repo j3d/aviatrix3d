@@ -1,12 +1,9 @@
+package j3d.aviatrix3d.examples.swt;
 
 // External imports
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -14,7 +11,6 @@ import org.eclipse.swt.layout.FillLayout;
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleSWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
@@ -23,6 +19,9 @@ import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
+import org.j3d.renderer.aviatrix3d.swt.output.SimpleSWTSurface;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -63,9 +62,7 @@ public class BasicDemo
     private void setupAviatrix(Shell parent)
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -96,11 +93,11 @@ public class BasicDemo
 
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
-        mat.setIdentity();
-        mat.setTranslation(trans);
+        Matrix4d mat = new Matrix4d();
+        mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.addChild(vp);
@@ -124,7 +121,7 @@ public class BasicDemo
         shape.setGeometry(geom);
 
         trans.set(0.2f, 0.5f, 0);
-        Matrix4f mat2 = new Matrix4f();
+        Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
         mat2.setTranslation(trans);
 

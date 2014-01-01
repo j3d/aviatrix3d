@@ -10,6 +10,8 @@
  *
  ****************************************************************************/
 
+package j3d.aviatrix3d.examples.effects;
+
 // Standard imports
 import java.awt.BorderLayout;
 import java.awt.Color;

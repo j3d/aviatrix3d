@@ -1,7 +1,8 @@
+package j3d.aviatrix3d.examples.swt;
 
 // External imports
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -14,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
-import javax.media.opengl.GLCapabilities;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -24,8 +24,6 @@ import org.eclipse.swt.widgets.Shell;
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleSWTSurface;
-import org.j3d.aviatrix3d.output.graphics.DebugSWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
@@ -40,6 +38,7 @@ import org.j3d.aviatrix3d.rendering.BoundingVolume;
 import org.j3d.renderer.aviatrix3d.loader.AVModel;
 import org.j3d.renderer.aviatrix3d.loader.AVLoader;
 import org.j3d.renderer.aviatrix3d.loader.discreet.MaxLoader;
+import org.j3d.renderer.aviatrix3d.swt.output.DebugSWTSurface;
 import org.j3d.renderer.aviatrix3d.texture.TextureCreateUtils;
 
 /**
@@ -85,9 +84,7 @@ public class SWTLoaderDemo
     private void setupAviatrix(Shell parent)
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -219,9 +216,10 @@ public class SWTLoaderDemo
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(true);
 
-        Vector3f trans = new Vector3f(0, 0, 3);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 3);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -257,7 +255,7 @@ public class SWTLoaderDemo
         System.out.println("Scaling by  " + (1 / max));
 
         mat.setIdentity();
-        mat.setScale(1 / max);
+        mat.set(1 / max);
         mat.setTranslation(trans);
 
         TransformGroup tg = new TransformGroup();

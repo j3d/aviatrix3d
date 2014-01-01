@@ -1,18 +1,6 @@
+package j3d.aviatrix3d.examples.shader;
 
 // Standard imports
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.File;
-import java.net.MalformedURLException;
-
-import java.net.URL;
-
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
-
 import org.j3d.util.interpolator.ColorInterpolator;
 
 // Application Specific imports
@@ -50,9 +38,9 @@ public class UniformAnimation
     {
         shaderArgs = args;
         interpolator = new ColorInterpolator();
-        interpolator.addRGBKeyFrame(0, 1, 0.3f, 0.2f, 0);
-        interpolator.addRGBKeyFrame(0.5f, 0, 0.3f, 0.2f, 0);
-        interpolator.addRGBKeyFrame(1, 1, 0.3f, 0.2f, 0);
+        interpolator.addRGBKeyFrame(0, 1, 0.3d, 0.2f, 0);
+        interpolator.addRGBKeyFrame(0.5f, 0, 0.3d, 0.2f, 0);
+        interpolator.addRGBKeyFrame(1, 1, 0.3d, 0.2f, 0);
         cycleStartTime = System.currentTimeMillis();
     }
 

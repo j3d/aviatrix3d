@@ -1,17 +1,8 @@
+package j3d.aviatrix3d.examples.volume;
 
 // Standard imports
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.File;
-import java.net.MalformedURLException;
-
-import java.net.URL;
-
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -27,10 +18,10 @@ public class VpAnimation
     implements ApplicationUpdateObserver, NodeUpdateListener
 {
     /** Work variable to update the translation with */
-    private Vector3f translation;
+    private Vector3d translation;
 
     /** Matrix used to update the transform */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
     /** The scene graph node to update */
     private TransformGroup transform;
@@ -46,8 +37,8 @@ public class VpAnimation
      */
     public VpAnimation(TransformGroup tx)
     {
-        translation = new Vector3f();
-        matrix = new Matrix4f();
+        translation = new Vector3d();
+        matrix = new Matrix4d();
         matrix.setIdentity();
         transform = tx;
     }
@@ -90,13 +81,7 @@ public class VpAnimation
         angle += Math.PI / 1000;
         distance -= Math.PI / 50;
 
-        float radius = (float)(0.3f * (float)Math.sin(distance) + 1.5f);
-
-//        float x = radius * (float)Math.sin(angle);
-//        float y = radius * (float)Math.cos(angle);
-//
-//        translation.x = x;
-//        translation.z = y;
+        float radius = (float)(0.3d * (float)Math.sin(distance) + 1.5f);
 
         translation.z = radius;
 

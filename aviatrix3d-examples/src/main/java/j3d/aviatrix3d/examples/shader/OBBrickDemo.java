@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.shader;
 
 // External imports
 import java.awt.*;
@@ -7,15 +8,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -25,9 +23,6 @@ import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
-
-import org.j3d.geom.GeometryData;
-import org.j3d.geom.SphereGenerator;
 
 /**
  * Example application that demonstrates using the GLSLang Brick shader from
@@ -90,9 +85,7 @@ public class OBBrickDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -127,9 +120,9 @@ public class OBBrickDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 2f);
+        Vector3d trans = new Vector3d(0, 0, 2f);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -178,9 +171,9 @@ public class OBBrickDemo extends Frame
         shader_prog.addShaderObject(frag_shader);
         shader_prog.link();
 
-        float[] brick_colour = { 1, 0.3f, 0.2f };
-        float[] mortar_colour = { 0.85f, 0.86f, 0.84f };
-        float[] brick_size = { 0.3f, 0.15f };
+        float[] brick_colour = { 1, 0.3d, 0.2f };
+        float[] mortar_colour = { 0.85f, 0.86f, 0.84d };
+        float[] brick_size = { 0.3d, 0.15f };
         float[] brick_pct = { 0.9f, 0.85f };
         float[] light_pos = { 0, 0, 4 };
 
@@ -204,7 +197,7 @@ public class OBBrickDemo extends Frame
         shape.setAppearance(app);
 
 //        trans.set(0, 0, -8);
-        Matrix4f mat2 = new Matrix4f();
+        Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
 //        mat2.setTranslation(trans);
 //        mat2.setScale(0.05f);

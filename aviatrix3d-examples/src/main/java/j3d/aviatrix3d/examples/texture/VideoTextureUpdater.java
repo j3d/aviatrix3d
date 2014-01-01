@@ -1,5 +1,7 @@
+package j3d.aviatrix3d.examples.texture;
 
 // Standard imports
+
 import javax.media.*;
 
 import java.net.URL;
@@ -8,11 +10,13 @@ import javax.media.control.TrackControl;
 import javax.media.format.VideoFormat;
 
 // Application Specific imports
+import net.java.games.input.ControllerEvent;
+import net.java.games.input.ControllerListener;
 import org.j3d.aviatrix3d.*;
 
 /**
  * Handler for illustrating updating textures on demand.
- *
+ * <p/>
  * Since sub-image updates are ignored for any texture that has not yet
  * been part of a live scene graph, or drawn yet we have to put a set of
  * frame delays into the system to make sure the texture has been drawn
@@ -22,7 +26,7 @@ import org.j3d.aviatrix3d.*;
  * @version $Revision: 1.2 $
  */
 class VideoTextureUpdater
-    implements ApplicationUpdateObserver, ControllerListener
+        implements ApplicationUpdateObserver, ControllerListener
 {
     /** The renderer needed to control the video processing */
     private VideoTextureRenderer renderer;
@@ -62,7 +66,7 @@ class VideoTextureUpdater
             processor.addControllerListener(this);
             processor.configure();
 
-            if(!waitForState(processor.Configured))
+            if (!waitForState(processor.Configured))
             {
                 System.out.println("Failed to configure the processor");
                 return;
@@ -74,20 +78,20 @@ class VideoTextureUpdater
             // obtain the track control
             TrackControl[] controls = processor.getTrackControls();
 
-            for(int i = 0; i < controls.length; i++)
+            for (int i = 0; i < controls.length; i++)
             {
                 Format format = controls[i].getFormat();
                 try
                 {
-                    if(format instanceof VideoFormat)
+                    if (format instanceof VideoFormat)
                     {
                         controls[i].setRenderer(renderer);
 //                        controls[i].setFormat(renderer.getSupportedInputFormats()[0]);
                     }
                 }
-                catch(UnsupportedPlugInException e)
+                catch (UnsupportedPlugInException e)
                 {
-                    System.err.println("Unsupported plugin??? "+ e);
+                    System.err.println("Unsupported plugin??? " + e);
                 }
 
             }
@@ -95,7 +99,7 @@ class VideoTextureUpdater
             // prefetch
             processor.prefetch();
 
-            if(!waitForState(processor.Prefetched))
+            if (!waitForState(processor.Prefetched))
             {
                 System.out.println("Failed to prefech the processor");
                 return;
@@ -103,7 +107,7 @@ class VideoTextureUpdater
 
             processor.start();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             System.out.println("Error starting movie handling");
             System.out.println(e.getMessage());
@@ -147,9 +151,9 @@ class VideoTextureUpdater
     {
 //System.out.println("got event " + event);
         // bare minimum handling of events here.
-        if(event instanceof ConfigureCompleteEvent ||
-           event instanceof RealizeCompleteEvent ||
-           event instanceof PrefetchCompleteEvent)
+        if (event instanceof ConfigureCompleteEvent ||
+                event instanceof RealizeCompleteEvent ||
+                event instanceof PrefetchCompleteEvent)
         {
             synchronized (waitSync)
             {
@@ -157,15 +161,15 @@ class VideoTextureUpdater
                 waitSync.notifyAll();
             }
         }
-        else if(event instanceof ResourceUnavailableEvent)
+        else if (event instanceof ResourceUnavailableEvent)
         {
-            synchronized(waitSync)
+            synchronized (waitSync)
             {
                 stateTransOK = false;
                 waitSync.notifyAll();
             }
         }
-        else if(event instanceof EndOfMediaEvent)
+        else if (event instanceof EndOfMediaEvent)
         {
 //            processor.setMediaTime(new Time(0));
 //            processor.start();
@@ -226,16 +230,16 @@ System.out.println("got start");
 
     public boolean waitForState(int state)
     {
-        synchronized(waitSync)
+        synchronized (waitSync)
         {
             try
             {
-                while(processor.getState() != state && stateTransOK)
+                while (processor.getState() != state && stateTransOK)
                 {
                     waitSync.wait();
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
             }
 

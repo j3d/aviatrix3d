@@ -10,15 +10,17 @@
  *
  ****************************************************************************/
 
+package j3d.aviatrix3d.examples.multipass;
+
 // External imports
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
-import javax.vecmath.AxisAngle4f;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
+import org.j3d.maths.vector.Vector4d;
+import org.j3d.maths.vector.AxisAngle4d;
 
 import org.j3d.aviatrix3d.*;
 
@@ -53,16 +55,16 @@ public class StencilShadowAnimator implements
     private TransformGroup backShadowGroup;
     
     /** A utility matrix used for updating the transforms each frame */
-    private Matrix4f updateMatrix;
+    private Matrix4d updateMatrix;
     
     /** 
      * A utility matrix used for updating the transfroms of the viewpoint
      * in each of the render passes.
      */
-    private Matrix4f sceneMatrix;
+    private Matrix4d sceneMatrix;
     
     /** Shared position of the light */
-    private Vector4f lightPos;
+    private Vector4d lightPos;
 
     /** The current angle of object rotation */
     private float rotation;
@@ -82,9 +84,9 @@ public class StencilShadowAnimator implements
 	/**
 	 * Constructor
 	 */
-	public StencilShadowAnimator(Matrix4f objMatrix,
-								 Matrix4f sceneMatrix,
-								 Vector4f lightPos,
+	public StencilShadowAnimator(Matrix4d objMatrix,
+								 Matrix4d sceneMatrix,
+								 Vector4d lightPos,
 								 List<SEdgeIndTriArray> meshGeomList,
 								 TransformGroup volPass1,
 								 TransformGroup volPass2) {
@@ -144,7 +146,7 @@ public class StencilShadowAnimator implements
     	
         rotation = (float)((rotation + ROTATION_INC) % (2 * Math.PI));
         updateMatrix.setIdentity();
-        updateMatrix.set(new AxisAngle4f(0, 1, 1, rotation));
+        updateMatrix.set(new AxisAngle4d(0, 1, 1, rotation));
         
         for(int j = 0; j < coordList.size(); j++) {
         	SEdgeIndTriArray vtxArray =
@@ -162,8 +164,8 @@ public class StencilShadowAnimator implements
 			
 			float[] geomVertexes = coordList.get(j);
 	        
-	        Vector3f inVert = new Vector3f();
-			Vector3f outVert = new Vector3f();
+	        Vector3d inVert = new Vector3d();
+			Vector3d outVert = new Vector3d();
 			
 			for(int i = 0; i < geomVertexes.length; i += loopIncrVal) {
 	
@@ -285,14 +287,14 @@ public class StencilShadowAnimator implements
     /**
      * Creates an instance of shadow volume geometry
      * 
-     * @param silhouetteEdgeGeom
+     * @param silhouetteGeom
      * @param transform
      * @param lightPos
      * @return
      */
     private ArrayList<Geometry> createShadowVolumeGeom(SEdgeIndTriArray silhouetteGeom,
-		    										   Matrix4f transform,
-		    										   Vector4f lightPos) {
+		    										   Matrix4d transform,
+		    										   Vector4d lightPos) {
     	
     	ArrayList<Geometry> geomList = new ArrayList<Geometry>();
 

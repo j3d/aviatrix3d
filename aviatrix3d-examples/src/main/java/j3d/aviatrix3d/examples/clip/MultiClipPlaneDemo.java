@@ -1,17 +1,15 @@
+package j3d.aviatrix3d.examples.clip;
 
 // Standard imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -69,9 +67,7 @@ public class MultiClipPlaneDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -107,9 +103,10 @@ public class MultiClipPlaneDemo extends Frame
 
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -183,9 +180,10 @@ public class MultiClipPlaneDemo extends Frame
 
         scene_root.addChild(cp1);
 
-        trans = new Vector3f(-0.2f, 0.025f, 0);
+        trans = new Vector3d();
+        trans.set(-0.2f, 0.025f, 0);
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -196,7 +194,8 @@ public class MultiClipPlaneDemo extends Frame
 
         scene_root.addChild(left_tx);
 
-        trans = new Vector3f(0.2f, 0, 0);
+        trans = new Vector3d();
+        trans.set(0.2f, 0, 0);
         mat.setTranslation(trans);
 
         TransformGroup right_tx = new TransformGroup();

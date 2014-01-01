@@ -1,15 +1,13 @@
+package j3d.aviatrix3d.examples.basic;
 
 // Standard imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
-
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 import org.j3d.renderer.aviatrix3d.geom.*;
 
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
@@ -21,6 +19,7 @@ import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Example application that demonstrates a local fog effects.
@@ -78,9 +77,7 @@ public class CombinedFogDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -117,11 +114,14 @@ public class CombinedFogDemo extends Frame
         Viewpoint vp = new Viewpoint();
         vp.setHeadlightEnabled(true);
 
-        Vector3f trans = new Vector3f(0, 1, 2);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 1, 2);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
-        mat.rotX((float)(Math.PI / -8));
+
+        MatrixUtils mu = new MatrixUtils();
+        mu.rotateX(Math.PI / -8, mat);
         mat.setTranslation(trans);
 
 
@@ -143,7 +143,7 @@ public class CombinedFogDemo extends Frame
 
         Fog fog = new Fog(FOG_COLOUR);
         fog.setEnabled(true);
-        fog.setLinearDistance(0.1f, 3f);
+        fog.setLinearDistance(0.1f, 3);
         scene_root.addChild(fog);
 
         SimpleScene scene = new SimpleScene();
@@ -239,9 +239,9 @@ public class CombinedFogDemo extends Frame
     {
         double angle_inc = 2 * Math.PI / num;
         double angle = 0;
-        Vector3f translation = new Vector3f();
+        Vector3d translation = new Vector3d();
 
-        Matrix4f matrix = new Matrix4f();
+        Matrix4d matrix = new Matrix4d();
         matrix.setIdentity();
 
         Material material = new Material();

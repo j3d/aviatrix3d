@@ -1,17 +1,8 @@
+package j3d.aviatrix3d.examples.shader;
 
 // Standard imports
-import java.awt.*;
-import java.awt.event.*;
 
-import java.io.File;
-import java.net.MalformedURLException;
-
-import java.net.URL;
-
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -26,7 +17,7 @@ public class ModelRotationAnimation
     implements ApplicationUpdateObserver, NodeUpdateListener
 {
     /** Matrix used to update the transform */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
     /** The scene graph node to update */
     private TransformGroup transform;
@@ -39,7 +30,7 @@ public class ModelRotationAnimation
      */
     public ModelRotationAnimation(TransformGroup tx)
     {
-        matrix = new Matrix4f();
+        matrix = new Matrix4d();
         matrix.setIdentity();
         transform = tx;
     }

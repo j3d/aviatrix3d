@@ -1,3 +1,4 @@
+package j3d.aviatrix3d.examples.transparent;
 
 // Standard imports
 import java.awt.*;
@@ -11,16 +12,13 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
 import javax.imageio.ImageIO;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
 
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
-import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
@@ -29,6 +27,7 @@ import org.j3d.aviatrix3d.pipeline.graphics.TransparencyDepthSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Example application that demonstrates the use of two pass rendering for
@@ -77,10 +76,7 @@ public class TwoPassTextureDemo extends Frame
         // Assemble two single-threaded pipelines - one surface with two pass
         // rendering enabled, another without it, to demonstrate the
         // differences
-
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         // Single pass version
         GraphicsCullStage sp_culler = new NullCullStage();
@@ -159,11 +155,13 @@ public class TwoPassTextureDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0.5f, 0.5f);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0.5f, 0.5f);
 
-        Matrix4f mat = new Matrix4f();
-        mat.setIdentity();
-        mat.rotX((float)(Math.PI * -0.25f));
+        MatrixUtils mu = new MatrixUtils();
+
+        Matrix4d mat = new Matrix4d();
+        mu.rotateX(Math.PI * -0.25f, mat);
         mat.setTranslation(trans);
 
         TransformGroup tx = new TransformGroup();
@@ -222,18 +220,16 @@ public class TwoPassTextureDemo extends Frame
         SharedNode transparent_shape = new SharedNode();
         transparent_shape.setChild(shape);
 
-        Matrix4f transform = new Matrix4f();
-        transform.setIdentity();
-        transform.rotY((float)(Math.PI * -0.25f));
+        Matrix4d transform = new Matrix4d();
+        mu.rotateY(Math.PI * -0.25f, transform);
 
         TransformGroup tg = new TransformGroup();
         tg.setTransform(transform);
         tg.addChild(transparent_shape);
 
 
-        Matrix4f transform2 = new Matrix4f();
-        transform2.setIdentity();
-        transform2.rotY((float)(Math.PI * 0.25f));
+        Matrix4d transform2 = new Matrix4d();
+        mu.rotateY(Math.PI * 0.25f, transform2);
 
         TransformGroup tg2 = new TransformGroup();
         tg2.setTransform(transform2);

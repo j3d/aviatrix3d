@@ -1,17 +1,15 @@
+package j3d.aviatrix3d.examples.layers;
 
 // External imports
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -73,9 +71,7 @@ public class MultiViewportDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -124,8 +120,9 @@ public class MultiViewportDemo extends Frame
         Shape3D shape = new Shape3D();
         shape.setGeometry(geom);
 
-        Vector3f trans = new Vector3f(0.2f, 0.5f, 0);
-        Matrix4f mat2 = new Matrix4f();
+        Vector3d trans = new Vector3d();
+        trans.set(0.2f, 0.5f, 0);
+        Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
         mat2.setTranslation(trans);
 
@@ -138,9 +135,10 @@ public class MultiViewportDemo extends Frame
 
         Viewpoint vp1 = new Viewpoint();
         Background bg1 = new ColorBackground(RED);
-        trans = new Vector3f(0, 0, 1);
+        trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -156,9 +154,10 @@ public class MultiViewportDemo extends Frame
 
         Viewpoint vp2 = new Viewpoint();
         Background bg2 = new ColorBackground(GREEN);
-        trans = new Vector3f(1, 0, 1);
+        trans = new Vector3d();
+        trans.set(1, 0, 1);
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -173,9 +172,10 @@ public class MultiViewportDemo extends Frame
 
         Viewpoint vp3 = new Viewpoint();
         Background bg3 = new ColorBackground(BLUE);
-        trans = new Vector3f(0, 1, 1);
+        trans = new Vector3d();
+        trans.set(0, 1, 1);
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -191,9 +191,10 @@ public class MultiViewportDemo extends Frame
         // Group 4 has no background. It should default back to black, as
         // the global default setting.
         Viewpoint vp4 = new Viewpoint();
-        trans = new Vector3f(0, -1, 1);
+        trans = new Vector3d();
+        trans.set(0, -1, 1);
 
-        mat = new Matrix4f();
+        mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 

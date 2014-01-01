@@ -1,13 +1,15 @@
+package j3d.aviatrix3d.examples.texture;
 
 // Standard imports
-import javax.media.opengl.GLCapabilities;
+// None
 
 // Application Specific imports
+
 import org.j3d.aviatrix3d.*;
 
 /**
  * Handler for illustrating updating textures on demand.
- *
+ * <p/>
  * Since sub-image updates are ignored for any texture that has not yet
  * been part of a live scene graph, or drawn yet we have to put a set of
  * frame delays into the system to make sure the texture has been drawn
@@ -17,44 +19,44 @@ import org.j3d.aviatrix3d.*;
  * @version $Revision: 1.3 $
  */
 class TextureUpdater
-    implements ApplicationUpdateObserver, NodeUpdateListener
+        implements ApplicationUpdateObserver, NodeUpdateListener
 {
     // Simple texture source to see the output
     private static final byte[] TEX_UPDATE_DATA =
-    {
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0xFF, (byte)0,    (byte)0,    (byte)0xFF, (byte)0,   (byte)0,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-        (byte)0,    (byte)0,    (byte)0xFF, (byte)0,    (byte)0,   (byte)0xFF,
-    };
+            {
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+                    (byte) 0, (byte) 0, (byte) 0xFF, (byte) 0, (byte) 0, (byte) 0xFF,
+            };
 
     /** The scene graph node to update */
     private ByteTextureComponent2D texSource;
@@ -86,7 +88,7 @@ class TextureUpdater
      */
     public void updateSceneGraph()
     {
-        if(++updateCount == 3)
+        if (++updateCount == 3)
         {
             texSource.dataChanged(this);
         }

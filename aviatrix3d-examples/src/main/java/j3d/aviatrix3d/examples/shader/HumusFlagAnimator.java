@@ -10,11 +10,13 @@
  *
  ****************************************************************************/
 
+package j3d.aviatrix3d.examples.shader;
+
 // External imports
 import java.util.Random;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
@@ -149,10 +151,10 @@ public class HumusFlagAnimator
     private Random rgen;
 
     /** A matrix for settting transform values when needed */
-    private Matrix4f tmpMatrix;
+    private Matrix4d tmpMatrix;
 
     /** A vertex for settting transform values when needed */
-    private Vector3f tmpVertex;
+    private Vector3d tmpVertex;
 
     /** A temp array for setting uniform variable values  */
     private float[] tmpFloat;
@@ -174,10 +176,10 @@ ShaderProgram prog;
         lightGroup = light;
         clothGroup = cloth;
 
-        tmpMatrix = new Matrix4f();
+        tmpMatrix = new Matrix4d();
         tmpMatrix.setIdentity();
 
-        tmpVertex = new Vector3f();
+        tmpVertex = new Vector3d();
         tmpFloat = new float[4];
 
         // Pull apart the cloth structure for the bits we need
@@ -290,7 +292,7 @@ ShaderProgram prog;
         lastFrameTime = cur_time;
 
         lightPos[0] = 3 * C_SIZE * CLOTH_SIZE_X * perlinNoise.noise1(0.5f * time / 1000f);
-        lightPos[1] = 320 + 100 * perlinNoise.noise1(0.3f * time / 1000f + 23.37f);
+        lightPos[1] = 320 + 100 * perlinNoise.noise1(0.3d * time / 1000f + 23.37f);
         lightPos[2] = C_SIZE * CLOTH_SIZE_X * perlinNoise.noise1(12.31f - 0.5f * time / 1000f);
 
         if(time >= nextTime)
@@ -307,7 +309,7 @@ ShaderProgram prog;
                 case 3:
                     float off = 4 * (rgen.nextFloat() - 0.5f);
                     angle += off + (off >= 0 ? 1 : -1) * 0.5f;
-                    radius = rgen.nextFloat() * 0.5f + 0.3f;
+                    radius = rgen.nextFloat() * 0.5f + 0.3d;
 
 
                     windDirection[0] = radius * (float)Math.cos(angle);
@@ -485,7 +487,7 @@ ShaderProgram prog;
                                                              y - 9.842f,
                                                              z + 4.741f);
         node.dir[2] += 500 * attribs[0] * perlinNoise.noise3(x - 2.3142f,
-                                                             y + 7.1423f,
+                                                             y + 7.1423d,
                                                              z + 3.412f);
     }
 

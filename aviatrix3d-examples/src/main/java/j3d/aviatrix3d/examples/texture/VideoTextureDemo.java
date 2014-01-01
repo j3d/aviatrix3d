@@ -1,5 +1,7 @@
+package j3d.aviatrix3d.examples.texture;
 
 // Standard imports
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -7,15 +9,12 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -26,8 +25,6 @@ import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
-import org.j3d.geom.GeometryData;
-import org.j3d.geom.BoxGenerator;
 
 /**
  * Example application that demonstrates integration of JMF for video rendering
@@ -37,7 +34,7 @@ import org.j3d.geom.BoxGenerator;
  * @version $Revision: 1.9 $
  */
 public class VideoTextureDemo extends Frame
-    implements WindowListener
+        implements WindowListener
 {
     /** Location of the video file to play */
     private static final String MPEG_SOURCE = "textures/MovieTextureTest.mpg";
@@ -76,9 +73,7 @@ public class VideoTextureDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -101,7 +96,7 @@ public class VideoTextureDemo extends Frame
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
-        Component comp = (Component)surface.getSurfaceObject();
+        Component comp = (Component) surface.getSurfaceObject();
         add(comp, BorderLayout.CENTER);
     }
 
@@ -112,19 +107,19 @@ public class VideoTextureDemo extends Frame
     {
         // Create the raw texture and initialise it to grey
         int tex_size = VideoTextureRenderer.TEXTURE_FRAME_SIZE *
-                       VideoTextureRenderer.TEXTURE_FRAME_SIZE * 3;
+                VideoTextureRenderer.TEXTURE_FRAME_SIZE * 3;
 
         byte[] tex_buffer = new byte[tex_size];
         int pos = 0;
 
-        for(int i = 0; i < tex_size; i++)
-            tex_buffer[pos++] = (byte)0x00;
+        for (int i = 0; i < tex_size; i++)
+            tex_buffer[pos++] = (byte) 0x00;
 
         ByteTextureComponent2D img_comp =
-            new ByteTextureComponent2D(TextureComponent.FORMAT_RGB,
-                                       VideoTextureRenderer.TEXTURE_FRAME_SIZE,
-                                       VideoTextureRenderer.TEXTURE_FRAME_SIZE,
-                                       tex_buffer);
+                new ByteTextureComponent2D(TextureComponent.FORMAT_RGB,
+                                           VideoTextureRenderer.TEXTURE_FRAME_SIZE,
+                                           VideoTextureRenderer.TEXTURE_FRAME_SIZE,
+                                           tex_buffer);
 
 
         Texture texture = new Texture2D(Texture.FORMAT_RGB, img_comp);
@@ -136,7 +131,7 @@ public class VideoTextureDemo extends Frame
             File f = new File(MPEG_SOURCE);
             movie_url = f.toURL();
         }
-        catch(MalformedURLException mue)
+        catch (MalformedURLException mue)
         {
             System.out.println("Unable to locate MPEG file");
         }
@@ -144,11 +139,11 @@ public class VideoTextureDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0.1f, 0.1f, -0.15f);
+        Vector3d trans = new Vector3d();
+        trans.set(0.1f, 0.1f, -0.15f);
 
-        Matrix4f mat = new Matrix4f();
-        mat.setIdentity();
-        mat.setTranslation(trans);
+        Matrix4d mat = new Matrix4d();
+        mat.set(trans);
 
         TransformGroup tx = new TransformGroup();
         tx.addChild(vp);
@@ -158,22 +153,22 @@ public class VideoTextureDemo extends Frame
         scene_root.addChild(tx);
 
         // Flat panel that has the viewable object as the demo
-        float[] coord = { 0, 0, -0.5f,     0.25f, 0, -0.5f,     0, 0.25f, -0.5f,
-                          0.25f, 0, -0.5f, 0.25f, 0.25f, -0.5f, 0, 0.25f, -0.5f };
+        float[] coord = {
+                0, 0, -0.5f, 0.25f, 0, -0.5f, 0, 0.25f, -0.5f,
+                0.25f, 0, -0.5f, 0.25f, 0.25f, -0.5f, 0, 0.25f, -0.5f
+        };
 
-        float[] normal = { 0, 0, 1, 0, 0, 1, 0, 0, 1,
-                           0, 0, 1, 0, 0, 1, 0, 0, 1};
-        float[][] tex_coord = { { 0, 0,  1, 0,  0, 1,   1, 0,  1, 1, 0, 1, } };
-        int[] tex_type = { VertexGeometry.TEXTURE_COORDINATE_2 };
+        float[][] tex_coord = {{0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1,}};
+        int[] tex_type = {VertexGeometry.TEXTURE_COORDINATE_2};
 
         TriangleArray geom = new TriangleArray();
         geom.setVertices(TriangleArray.COORDINATE_3, coord, 6);
         geom.setTextureCoordinates(tex_type, tex_coord, 1);
 
         Material material = new Material();
-        material.setDiffuseColor(new float[] { 0, 0, 1 });
-        material.setEmissiveColor(new float[] { 0, 0, 1 });
-        material.setSpecularColor(new float[] { 1, 1, 1 });
+        material.setDiffuseColor(new float[]{0, 0, 1});
+        material.setEmissiveColor(new float[]{0, 0, 1});
+        material.setSpecularColor(new float[]{1, 1, 1});
 
         TextureUnit[] tu = new TextureUnit[1];
         tu[0] = new TextureUnit();
@@ -201,7 +196,7 @@ public class VideoTextureDemo extends Frame
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
-        Layer[] layers = { layer };
+        Layer[] layers = {layer};
         displayManager.setLayers(layers, 1);
 
         VideoTextureRenderer vtr = new VideoTextureRenderer(img_comp);

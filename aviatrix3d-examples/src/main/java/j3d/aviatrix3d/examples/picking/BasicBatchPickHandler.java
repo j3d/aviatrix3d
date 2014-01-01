@@ -1,10 +1,8 @@
+package j3d.aviatrix3d.examples.picking;
 
 // External imports
-
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // External imports
 import org.j3d.aviatrix3d.*;
@@ -25,10 +23,10 @@ public class BasicBatchPickHandler
     private static final float[] BLUE = { 0, 0, 1 };
 
     /** Work variable to update the translation with */
-    private Vector3f translation;
+    private Vector3d translation;
 
     /** Matrix used to update the transform */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
     /** The scene graph node to update */
     private TransformGroup transform;
@@ -53,8 +51,8 @@ public class BasicBatchPickHandler
     {
         pickRoot = root;
         material = mat;
-        translation = new Vector3f();
-        matrix = new Matrix4f();
+        translation = new Vector3d();
+        matrix = new Matrix4d();
         matrix.setIdentity();
         transform = tx;
 
@@ -131,7 +129,7 @@ public class BasicBatchPickHandler
     {
         angle += Math.PI / 100;
 
-        float x = 0.4f * (float)Math.sin(angle);
+        double x = 0.4d * Math.sin(angle);
 
         translation.x = x;
 

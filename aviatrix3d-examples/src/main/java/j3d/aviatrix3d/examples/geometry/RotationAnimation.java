@@ -1,20 +1,12 @@
+package j3d.aviatrix3d.examples.geometry;
 
 // External imports
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.File;
-import java.net.MalformedURLException;
-
-import java.net.URL;
-
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
+import org.j3d.util.MatrixUtils;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -26,11 +18,8 @@ import org.j3d.aviatrix3d.*;
 public class RotationAnimation
     implements ApplicationUpdateObserver, NodeUpdateListener
 {
-    /** Work variable to update the translation with */
-    private Vector3f translation;
-
     /** Matrix used to update the transform */
-    private Matrix4f matrix;
+    private Matrix4d matrix;
 
     /** The scene graph node to update */
     private TransformGroup transform;
@@ -38,13 +27,15 @@ public class RotationAnimation
     /** The current angle */
     private float angle;
 
+    /** Utility for doing matrix rotations */
+    private MatrixUtils matrixUtils;
+
     /**
      *
      */
     public RotationAnimation(TransformGroup tx)
     {
-        translation = new Vector3f();
-        matrix = new Matrix4f();
+        matrix = new Matrix4d();
         matrix.setIdentity();
         transform = tx;
     }
@@ -86,15 +77,7 @@ public class RotationAnimation
     {
         angle += Math.PI / 500;
 
-        float x = 0.5f * (float)Math.sin(angle);
-        float y = 0.5f * (float)Math.cos(angle);
-
-//        translation.x = x;
-//        translation.z = y;
-
-//        matrix.setTranslation(translation);
-
-        matrix.rotY(angle);
+        matrixUtils.rotateY(angle, matrix);
 
         transform.setTransform(matrix);
     }

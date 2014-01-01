@@ -1,5 +1,7 @@
+package j3d.aviatrix3d.examples.texture;
 
 // External imports
+
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,13 +20,13 @@ import org.j3d.renderer.aviatrix3d.texture.TextureCreateUtils;
 /**
  * Example application that demonstrates how to use the loader interface
  * to load a file into the scene graph.
- * <p>
+ * <p/>
  *
  * @author Justin Couch
  * @version $Revision: 1.1 $
  */
 public class NormalMapDemo extends JFrame
-    implements ActionListener
+        implements ActionListener
 {
     private JFileChooser openDialog;
 
@@ -82,11 +84,11 @@ public class NormalMapDemo extends JFrame
      */
     public void actionPerformed(ActionEvent evt)
     {
-        if(openDialog == null)
+        if (openDialog == null)
             openDialog = new JFileChooser();
 
         int ret_val = openDialog.showOpenDialog(this);
-        if(ret_val != JFileChooser.APPROVE_OPTION)
+        if (ret_val != JFileChooser.APPROVE_OPTION)
             return;
 
         File file = openDialog.getSelectedFile();
@@ -99,7 +101,7 @@ public class NormalMapDemo extends JFrame
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);
 
-            if(img == null)
+            if (img == null)
             {
                 System.out.println("Image load barfed");
                 return;
@@ -112,7 +114,7 @@ public class NormalMapDemo extends JFrame
             mapIcon.setImage(map_img);
             mapLabel.setIcon(mapIcon);
         }
-        catch(IOException ioe)
+        catch (IOException ioe)
         {
             System.out.println("crashed " + ioe.getMessage());
             ioe.printStackTrace();

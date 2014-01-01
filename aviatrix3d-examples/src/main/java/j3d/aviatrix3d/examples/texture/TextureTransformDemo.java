@@ -1,5 +1,7 @@
+package j3d.aviatrix3d.examples.texture;
 
 // Standard imports
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -10,10 +12,9 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 
 import javax.imageio.ImageIO;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
 
-import javax.media.opengl.GLCapabilities;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -41,7 +42,7 @@ import org.j3d.util.MatrixUtils;
  * @version $Revision: 1.11 $
  */
 public class TextureTransformDemo extends Frame
-    implements WindowListener
+        implements WindowListener
 {
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -77,9 +78,7 @@ public class TextureTransformDemo extends Frame
     private void setupAviatrix()
     {
         // Assemble a simple single-threaded pipeline.
-        GLCapabilities caps = new GLCapabilities();
-        caps.setDoubleBuffered(true);
-        caps.setHardwareAccelerated(true);
+        GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         GraphicsCullStage culler = new NullCullStage();
         culler.setOffscreenCheckEnabled(false);
@@ -102,7 +101,7 @@ public class TextureTransformDemo extends Frame
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
-        Component comp = (Component)surface.getSurfaceObject();
+        Component comp = (Component) surface.getSurfaceObject();
         add(comp, BorderLayout.CENTER);
     }
 
@@ -119,7 +118,7 @@ public class TextureTransformDemo extends Frame
         try
         {
             File f = new File("textures/transform_test.gif");
-            if(!f.exists())
+            if (!f.exists())
                 System.out.println("Can't find texture source file");
 
             FileInputStream is = new FileInputStream(f);
@@ -131,7 +130,7 @@ public class TextureTransformDemo extends Frame
             img_height = img.getHeight(null);
             int format = TextureComponent.FORMAT_RGB;
 
-            switch(img.getType())
+            switch (img.getType())
             {
                 case BufferedImage.TYPE_3BYTE_BGR:
                 case BufferedImage.TYPE_CUSTOM:
@@ -148,11 +147,11 @@ public class TextureTransformDemo extends Frame
             }
 
             img_comp = new ImageTextureComponent2D(format,
-                                            img_width,
-                                            img_height,
-                                            img);
+                                                   img_width,
+                                                   img_height,
+                                                   img);
         }
-        catch(IOException ioe)
+        catch (IOException ioe)
         {
             System.out.println("Error reading image: " + ioe);
         }
@@ -160,9 +159,10 @@ public class TextureTransformDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3f trans = new Vector3f(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
-        Matrix4f mat = new Matrix4f();
+        Matrix4d mat = new Matrix4d();
         mat.setIdentity();
         mat.setTranslation(trans);
 
@@ -176,15 +176,15 @@ public class TextureTransformDemo extends Frame
         // Sphere to render the shader onto
         GeometryData data = new GeometryData();
         data.geometryType = GeometryData.TRIANGLES;
-        data.geometryComponents = GeometryData.NORMAL_DATA|
-                                  GeometryData.TEXTURE_2D_DATA;
+        data.geometryComponents = GeometryData.NORMAL_DATA |
+                GeometryData.TEXTURE_2D_DATA;
 
         BoxGenerator generator = new BoxGenerator(0.2f, 0.2f, 0.2f);
         generator.generate(data);
 
-        int[] tex_type = { VertexGeometry.TEXTURE_COORDINATE_2 };
+        int[] tex_type = {VertexGeometry.TEXTURE_COORDINATE_2};
         float[][] tex_coord = new float[1][data.vertexCount * 2];
-        int[] tex_sets = { 0, 0 };
+        int[] tex_sets = {0, 0};
 
         System.arraycopy(data.textureCoordinates, 0, tex_coord[0], 0,
                          data.vertexCount * 2);
@@ -198,17 +198,17 @@ public class TextureTransformDemo extends Frame
         geom.setTextureSetMap(tex_sets);
 
         Material material = new Material();
-        material.setDiffuseColor(new float[] { 0, 0, 1 });
-        material.setEmissiveColor(new float[] { 0, 0, 1 });
-        material.setSpecularColor(new float[] { 1, 1, 1 });
+        material.setDiffuseColor(new float[]{0, 0, 1});
+        material.setEmissiveColor(new float[]{0, 0, 1});
+        material.setSpecularColor(new float[]{1, 1, 1});
 
-        if(img_comp != null)
+        if (img_comp != null)
         {
             Texture2D texture = new Texture2D();
             texture.setSources(Texture.MODE_BASE_LEVEL,
-                              Texture.FORMAT_RGB,
-                              new TextureComponent[] { img_comp },
-                              1);
+                               Texture.FORMAT_RGB,
+                               new TextureComponent[]{img_comp},
+                               1);
 
 
             // place 4 shapes into the scene with different transformations
@@ -216,9 +216,9 @@ public class TextureTransformDemo extends Frame
             // None    shift
             // rotate  scale
             TextureUnit[] tu = new TextureUnit[1];
-            Matrix4f tex_transform = new Matrix4f();
-            Matrix4f obj_transform = new Matrix4f();
-            Vector3f translation = new Vector3f();
+            Matrix4d tex_transform = new Matrix4d();
+            Matrix4d obj_transform = new Matrix4d();
+            Vector3d translation = new Vector3d();
 
             tex_transform.setIdentity();
             obj_transform.setIdentity();
@@ -235,7 +235,7 @@ public class TextureTransformDemo extends Frame
             shape.setAppearance(app);
 
             translation.x = -0.15f;
-            translation.y =  0.15f;
+            translation.y = 0.15f;
             obj_transform.setTranslation(translation);
 
             TransformGroup tg = new TransformGroup();
@@ -259,8 +259,8 @@ public class TextureTransformDemo extends Frame
             shape.setGeometry(geom);
             shape.setAppearance(app);
 
-            translation.x =  0.15f;
-            translation.y =  0.15f;
+            translation.x = 0.15f;
+            translation.y = 0.15f;
             obj_transform.setTranslation(translation);
 
             tg = new TransformGroup();
@@ -270,7 +270,7 @@ public class TextureTransformDemo extends Frame
 
             // Rotated texture
             MatrixUtils mu = new MatrixUtils();
-            mu.rotateY((float)(Math.PI / 2), tex_transform);
+            mu.rotateY((float) (Math.PI / 2), tex_transform);
 
             tu[0] = new TextureUnit();
             tu[0].setTexture(texture);
@@ -284,8 +284,8 @@ public class TextureTransformDemo extends Frame
             shape.setGeometry(geom);
             shape.setAppearance(app);
 
-            translation.x =  -0.15f;
-            translation.y =  -0.15f;
+            translation.x = -0.15f;
+            translation.y = -0.15f;
             obj_transform.setTranslation(translation);
 
             tg = new TransformGroup();
@@ -294,8 +294,7 @@ public class TextureTransformDemo extends Frame
             scene_root.addChild(tg);
 
             // Scaled texture
-            tex_transform.setIdentity();
-            tex_transform.setScale(2);
+            tex_transform.set(2);
 
             tu[0] = new TextureUnit();
             tu[0].setTexture(texture);
@@ -309,8 +308,8 @@ public class TextureTransformDemo extends Frame
             shape.setGeometry(geom);
             shape.setAppearance(app);
 
-            translation.x =   0.15f;
-            translation.y =  -0.15f;
+            translation.x = 0.15f;
+            translation.y = -0.15f;
             obj_transform.setTranslation(translation);
 
             tg = new TransformGroup();
@@ -331,7 +330,7 @@ public class TextureTransformDemo extends Frame
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
-        Layer[] layers = { layer };
+        Layer[] layers = {layer};
         displayManager.setLayers(layers, 1);
     }
 
