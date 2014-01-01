@@ -22,6 +22,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 // Local imports
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
 import org.j3d.aviatrix3d.rendering.ProfilingData;
 
 /**
@@ -51,7 +53,7 @@ public class DebugAWTSurface extends BaseAWTSurface
      *
      * @param caps A set of required capabilities for this canvas.
      */
-    public DebugAWTSurface(GLCapabilities caps)
+    public DebugAWTSurface(GraphicsRenderingCapabilities caps)
     {
         this(caps, null, null);
     }
@@ -64,7 +66,7 @@ public class DebugAWTSurface extends BaseAWTSurface
      * @param chooser Custom algorithm for selecting one of the available
      *    GLCapabilities for the component;
      */
-    public DebugAWTSurface(GLCapabilities caps, GLCapabilitiesChooser chooser)
+    public DebugAWTSurface(GraphicsRenderingCapabilities caps, GraphicsRenderingCapabilitiesChooser chooser)
     {
         this(caps, chooser, null);
     }
@@ -78,7 +80,7 @@ public class DebugAWTSurface extends BaseAWTSurface
      *   otherwise a GLCanvas. Note that setting this to true could negatively
      *   impact performance.
      */
-    public DebugAWTSurface(GLCapabilities caps, boolean lightweight)
+    public DebugAWTSurface(GraphicsRenderingCapabilities caps, boolean lightweight)
     {
         this(caps, null, null, lightweight);
     }
@@ -94,8 +96,8 @@ public class DebugAWTSurface extends BaseAWTSurface
      *   otherwise a GLCanvas. Note that setting this to true could negatively
      *   impact performance.
      */
-    public DebugAWTSurface(GLCapabilities caps,
-                           GLCapabilitiesChooser chooser,
+    public DebugAWTSurface(GraphicsRenderingCapabilities caps,
+                           GraphicsRenderingCapabilitiesChooser chooser,
                            boolean lightweight)
     {
         this(caps, chooser, null, lightweight);
@@ -113,7 +115,7 @@ public class DebugAWTSurface extends BaseAWTSurface
      * @param sharedSurface The surface that you'd like this surface to share
      *    the GL context with, if possible. May be null.
      */
-    public DebugAWTSurface(GLCapabilities caps, BaseSurface sharedSurface)
+    public DebugAWTSurface(GraphicsRenderingCapabilities caps, BaseSurface sharedSurface)
     {
         this(caps, null, sharedSurface, false);
     }
@@ -132,8 +134,8 @@ public class DebugAWTSurface extends BaseAWTSurface
      * @param sharedSurface The surface that you'd like this surface to share
      *    the GL context with, if possible. May be null.
      */
-    public DebugAWTSurface(GLCapabilities caps,
-                           GLCapabilitiesChooser chooser,
+    public DebugAWTSurface(GraphicsRenderingCapabilities caps,
+                           GraphicsRenderingCapabilitiesChooser chooser,
                            BaseSurface sharedSurface)
     {
         this(caps, chooser, sharedSurface, false);
@@ -154,7 +156,7 @@ public class DebugAWTSurface extends BaseAWTSurface
      *   otherwise a GLCanvas. Note that setting this to true could negatively
      *   impact performance.
      */
-    public DebugAWTSurface(GLCapabilities caps,
+    public DebugAWTSurface(GraphicsRenderingCapabilities caps,
                            BaseSurface sharedSurface,
                            boolean lightweight)
     {
@@ -178,8 +180,8 @@ public class DebugAWTSurface extends BaseAWTSurface
      *   otherwise a GLCanvas. Note that setting this to true could negatively
      *   impact performance.
      */
-    public DebugAWTSurface(GLCapabilities caps,
-                           GLCapabilitiesChooser chooser,
+    public DebugAWTSurface(GraphicsRenderingCapabilities caps,
+                           GraphicsRenderingCapabilitiesChooser chooser,
                            BaseSurface sharedSurface,
                            boolean lightweight)
     {
@@ -390,16 +392,19 @@ public class DebugAWTSurface extends BaseAWTSurface
      * @param chooser Custom algorithm for selecting one of the available
      *    GLCapabilities for the component;
      */
-    private void init(GLCapabilities caps, GLCapabilitiesChooser chooser)
+    private void init(GraphicsRenderingCapabilities caps, GraphicsRenderingCapabilitiesChooser chooser)
     {
         GLContext shared_context = null;
 
         if(sharedSurface != null)
             shared_context = sharedSurface.getGLContext();
 
+        GLCapabilities jogl_caps = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
+        GLCapabilitiesChooser jogl_chooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
+
         if(lightweight)
         {
-            canvas = new GLJPanel(caps, chooser, shared_context);
+            canvas = new GLJPanel(jogl_caps, jogl_chooser, shared_context);
 
             // Don't fetch context here because the JOGL code doesn't
             // generate a valid context until the window has been drawn and
@@ -407,7 +412,7 @@ public class DebugAWTSurface extends BaseAWTSurface
         }
         else
         {
-            canvas = new GLCanvas(caps, chooser, shared_context, null);
+            canvas = new GLCanvas(jogl_caps, jogl_chooser, shared_context, null);
             ((GLCanvas)canvas).setAutoSwapBufferMode(false);
 
             canvasContext = ((GLAutoDrawable)canvas).getContext();

@@ -26,6 +26,8 @@ import java.util.Locale;
 import org.j3d.util.I18nManager;
 
 // Local imports
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
 import org.j3d.aviatrix3d.rendering.OffscreenBufferRenderable;
 import org.j3d.aviatrix3d.rendering.ProfilingData;
 
@@ -96,7 +98,7 @@ public class StereoAWTSurface extends BaseAWTSurface
      * @throws IllegalArgumentException The policy type is not one of the legal
      *    selections.
      */
-    public StereoAWTSurface(GLCapabilities caps, int policy)
+    public StereoAWTSurface(GraphicsRenderingCapabilities caps, int policy)
     {
         this(caps, null, null, false, policy);
     }
@@ -112,8 +114,8 @@ public class StereoAWTSurface extends BaseAWTSurface
      * @throws IllegalArgumentException The policy type is not one of the legal
      *    selections.
      */
-    public StereoAWTSurface(GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+    public StereoAWTSurface(GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             int policy)
     {
         this(caps, chooser, null, false, policy);
@@ -131,7 +133,7 @@ public class StereoAWTSurface extends BaseAWTSurface
      * @throws IllegalArgumentException The policy type is not one of the legal
      *    selections.
      */
-    public StereoAWTSurface(GLCapabilities caps,
+    public StereoAWTSurface(GraphicsRenderingCapabilities caps,
                             boolean lightweight,
                             int policy)
     {
@@ -152,8 +154,8 @@ public class StereoAWTSurface extends BaseAWTSurface
      * @throws IllegalArgumentException The policy type is not one of the legal
      *    selections.
      */
-    public StereoAWTSurface(GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+    public StereoAWTSurface(GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             boolean lightweight,
                             int policy)
     {
@@ -175,7 +177,7 @@ public class StereoAWTSurface extends BaseAWTSurface
      * @throws IllegalArgumentException The policy type is not one of the legal
      *    selections.
      */
-    public StereoAWTSurface(GLCapabilities caps,
+    public StereoAWTSurface(GraphicsRenderingCapabilities caps,
                             BaseSurface sharedWith,
                             int policy)
     {
@@ -199,8 +201,8 @@ public class StereoAWTSurface extends BaseAWTSurface
      * @throws IllegalArgumentException The policy type is not one of the legal
      *    selections.
      */
-    public StereoAWTSurface(GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+    public StereoAWTSurface(GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             BaseSurface sharedWith,
                             int policy)
     {
@@ -225,7 +227,7 @@ public class StereoAWTSurface extends BaseAWTSurface
      * @throws IllegalArgumentException The policy type is not one of the legal
      *    selections.
      */
-    public StereoAWTSurface(GLCapabilities caps,
+    public StereoAWTSurface(GraphicsRenderingCapabilities caps,
                             BaseSurface sharedWith,
                             boolean lightweight,
                             int policy)
@@ -253,16 +255,16 @@ public class StereoAWTSurface extends BaseAWTSurface
      * @throws IllegalArgumentException The policy type is not one of the legal
      *    selections.
      */
-    public StereoAWTSurface(GLCapabilities caps,
-                            GLCapabilitiesChooser chooser,
+    public StereoAWTSurface(GraphicsRenderingCapabilities caps,
+                            GraphicsRenderingCapabilitiesChooser chooser,
                             BaseSurface sharedWith,
                             boolean lightweight,
                             int policy)
     {
         super(sharedWith, lightweight);
 
-        requestedCapabilities = caps;
-        requestedChooser = chooser;
+        requestedCapabilities = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
+        requestedChooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
 
         renderLeftFrame = true;
         quadBuffersAvailable = false;
