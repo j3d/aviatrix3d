@@ -159,7 +159,8 @@ public class TexturedSphereDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3d trans = new Vector3d(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
         Matrix4d mat = new Matrix4d();
         mat.setIdentity();
@@ -178,7 +179,7 @@ public class TexturedSphereDemo extends Frame
         data.geometryComponents = GeometryData.NORMAL_DATA |
                 GeometryData.TEXTURE_2D_DATA;
 
-        SphereGenerator generator = new SphereGenerator(0.4d, 16);
+        SphereGenerator generator = new SphereGenerator(0.4f, 16);
 //        BoxGenerator generator = new BoxGenerator(0.2f, 0.2f, 0.2f);
         generator.generate(data);
 

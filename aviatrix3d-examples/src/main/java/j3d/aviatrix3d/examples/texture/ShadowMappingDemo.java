@@ -541,16 +541,38 @@ public class ShadowMappingDemo extends JFrame
         viewEnv.getProjectionMatrix(projMatrixArray);
 
         Matrix4d projectionMatrix = new Matrix4d();
-        projectionMatrix.set(projMatrixArray);
+        projectionMatrix.m00 = projMatrixArray[0];
+        projectionMatrix.m01 = projMatrixArray[1];
+        projectionMatrix.m02 = projMatrixArray[2];
+        projectionMatrix.m03 = projMatrixArray[3];
+
+        projectionMatrix.m10 = projMatrixArray[4];
+        projectionMatrix.m11 = projMatrixArray[5];
+        projectionMatrix.m12 = projMatrixArray[6];
+        projectionMatrix.m13 = projMatrixArray[7];
+
+        projectionMatrix.m20 = projMatrixArray[8];
+        projectionMatrix.m21 = projMatrixArray[9];
+        projectionMatrix.m22 = projMatrixArray[10];
+        projectionMatrix.m23 = projMatrixArray[11];
+
+        projectionMatrix.m30 = projMatrixArray[12];
+        projectionMatrix.m31 = projMatrixArray[13];
+        projectionMatrix.m32 = projMatrixArray[14];
+        projectionMatrix.m33 = projMatrixArray[15];
 
         // Calculate the texture matrix for projection.
         // This matrix transforms from eye space to light's clip space
-        Matrix4d biasMatrix = new Matrix4d(0.5f, 0.0f, 0.0f, 0.0f,
-                                           0.0f, 0.5f, 0.0f, 0.0f,
-                                           0.0f, 0.0f, 0.5f, 0.0f,
-                                           0.0f, 0.0f, 0.0f, 1.0f);
+        Matrix4d biasMatrix = new Matrix4d();
+        biasMatrix.m00 = 0.5;
+        biasMatrix.m11 = 0.5;
+        biasMatrix.m22 = 0.5;
+        biasMatrix.m33 = 1.0;
 
-        biasMatrix.setTranslation(new Vector3d(0.5f, 0.5f, 0.5f));
+        Vector3d trans = new Vector3d();
+        trans.set(0.5, 0.5, 0.5);
+
+        biasMatrix.setTranslation(trans);
         biasMatrix.mul(biasMatrix, projectionMatrix);
         projMtxBias.set(biasMatrix);
         biasMatrix.mul(biasMatrix, spotlightInverseTransform);
@@ -560,10 +582,25 @@ public class ShadowMappingDemo extends JFrame
         float[] rRow = new float[4];
         float[] qRow = new float[4];
 
-        biasMatrix.getRow(0, sRow);
-        biasMatrix.getRow(1, tRow);
-        biasMatrix.getRow(2, rRow);
-        biasMatrix.getRow(3, qRow);
+        sRow[0] = (float)biasMatrix.m00;
+        sRow[1] = (float)biasMatrix.m01;
+        sRow[2] = (float)biasMatrix.m02;
+        sRow[3] = (float)biasMatrix.m03;
+
+        tRow[0] = (float)biasMatrix.m10;
+        tRow[1] = (float)biasMatrix.m11;
+        tRow[2] = (float)biasMatrix.m12;
+        tRow[3] = (float)biasMatrix.m13;
+
+        rRow[0] = (float)biasMatrix.m20;
+        rRow[1] = (float)biasMatrix.m21;
+        rRow[2] = (float)biasMatrix.m22;
+        rRow[3] = (float)biasMatrix.m23;
+
+        qRow[0] = (float)biasMatrix.m30;
+        qRow[1] = (float)biasMatrix.m31;
+        qRow[2] = (float)biasMatrix.m32;
+        qRow[3] = (float)biasMatrix.m33;
 
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
         caps.doubleBuffered = false;
@@ -666,13 +703,8 @@ public class ShadowMappingDemo extends JFrame
 
         texUnits[1] = new TextureUnit();
 
-        Matrix4d identityMtx = new Matrix4d();
-        identityMtx.setIdentity();
-        float[] sRow = new float[4];
-        float[] tRow = new float[4];
-
-        identityMtx.getRow(0, sRow);
-        identityMtx.getRow(1, tRow);
+        float[] sRow = {1.0f, 0.0f, 0.0f, 0.0f};
+        float[] tRow = {0.0f, 1.0f, 0.0f, 0.0f};
 
         TexCoordGeneration coordGen = new TexCoordGeneration();
         coordGen.setParameter(TexCoordGeneration.TEXTURE_S,
@@ -707,9 +739,11 @@ public class ShadowMappingDemo extends JFrame
         Torus torus = new Torus(0.15f, 0.45f);
         torus.setAppearance(app1);
 
+        Vector3d trans = new Vector3d();
+        trans.set(0, 1, 0);
+
         Matrix4d mat2 = new Matrix4d();
-        mat2.setIdentity();
-        mat2.setTranslation(new Vector3d(0, 1, 0));
+        mat2.setTranslation(trans);
 
         camerasPointofView.addChild(torus);
 

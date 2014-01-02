@@ -116,7 +116,8 @@ public class Dot3MultiTextureDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3d trans = new Vector3d(0, 0.1f, 0.8f);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0.1f, 0.8f);
 
         Matrix4d mat = new Matrix4d();
         mat.setIdentity();

@@ -49,9 +49,6 @@
                     <target>1.6</target>
                     <meminitial>256m</meminitial>
                     <maxmem>1024m</maxmem>
-                    <excludes>
-                        <exclude>j3d/aviatrix3d/examples/texture/*.java</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
             <plugin>

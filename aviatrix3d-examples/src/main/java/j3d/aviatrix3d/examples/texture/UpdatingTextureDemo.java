@@ -11,7 +11,6 @@ import org.j3d.maths.vector.Vector3d;
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
@@ -21,9 +20,6 @@ import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
-
-import org.j3d.geom.GeometryData;
-import org.j3d.geom.BoxGenerator;
 
 /**
  * Example application that demonstrates updating textures on the fly with
@@ -129,7 +125,8 @@ public class UpdatingTextureDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3d trans = new Vector3d(0, 0, 0.5f);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 0.5);
 
         Matrix4d mat = new Matrix4d();
         mat.setIdentity();

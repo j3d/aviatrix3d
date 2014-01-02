@@ -131,7 +131,8 @@ public class CubeMapDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3d trans = new Vector3d(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
         Matrix4d mat = new Matrix4d();
         mat.setIdentity();

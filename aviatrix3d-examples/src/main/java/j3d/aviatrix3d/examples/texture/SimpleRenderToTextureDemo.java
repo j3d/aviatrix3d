@@ -96,7 +96,8 @@ public class SimpleRenderToTextureDemo extends Frame
         // View group
         Viewpoint vp = new Viewpoint();
 
-        Vector3d trans = new Vector3d(0, 0, 1);
+        Vector3d trans = new Vector3d();
+        trans.set(0, 0, 1);
 
         Matrix4d mat = new Matrix4d();
         mat.setIdentity();
@@ -117,12 +118,6 @@ public class SimpleRenderToTextureDemo extends Frame
                 0.5f, 0, -1, 0.5f, 0.25f, -1, 0.25f, 0.25f, -1
         };
 
-        float[] normal = {
-                0, 0, 1, 0, 0, 1, 0, 0, 1,
-                0, 0, 1, 0, 0, 1, 0, 0, 1,
-                0, 0, 1, 0, 0, 1, 0, 0, 1,
-                0, 0, 1, 0, 0, 1, 0, 0, 1
-        };
         float[][] tex_coord = {
                 {
                         0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1,
@@ -189,11 +184,10 @@ public class SimpleRenderToTextureDemo extends Frame
 
         TransformGroup grp = new TransformGroup();
 
-        Vector3d trans = new Vector3d(0, 0, 0);
+        Vector3d trans = new Vector3d();
 
         Matrix4d mat = new Matrix4d();
-        mat.setIdentity();
-        mat.setScale(10);
+        mat.set(10);
         mat.setTranslation(trans);
 
         // Flat panel that has the viewable object as the demo
