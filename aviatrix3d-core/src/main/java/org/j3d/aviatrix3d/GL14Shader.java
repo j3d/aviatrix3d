@@ -29,7 +29,7 @@ import org.j3d.aviatrix3d.rendering.ShaderRenderable;
  *
  * @author Justin Couch
  * @version $Revision: 1.14 $
- * @Deprecated When moving to OpenGL 3 or later, these older shaders are not supported.
+ * @deprecated When moving to OpenGL 3 or later, these older shaders are not supported.
  */
 public class GL14Shader extends Shader
     implements ShaderRenderable
