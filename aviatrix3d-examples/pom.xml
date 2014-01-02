@@ -64,6 +64,38 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven.jar.plugin.version}</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.plugin.version}</version>
+                <configuration>
+                    <docfilessubdirs>true</docfilessubdirs>
+                    <windowtitle>Aviatrix3d Library ${project.version}</windowtitle>
+                    <doctitle>Aviatrix3D API ${project.version}</doctitle>
+                    <header>Aviatrix3D Code</header>
+                    <bottom><![CDATA[
+                        <center>
+                        Latest Info from <a href="http://aviatrix3d.j3d.org">http://aviatrix3d.j3d.org/</a> <br>
+                            <font size=2>Copyright &copy; 2001 - 2014 <a href="http://www.j3d.org">j3d.org</a></font>
+                        </center>
+                        ]]>
+                    </bottom>
+                    <overview>${project.baseDir}/aviatrix3d-core/src/main/javadoc/overview.html</overview>
+                    <quiet>true</quiet>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>aggregate</id>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                        <phase>site</phase>
+                        <configuration>
+                            <sourcepath>${project.build.sourceDirectory}/../generated</sourcepath>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
