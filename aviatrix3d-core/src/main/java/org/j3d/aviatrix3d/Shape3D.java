@@ -350,8 +350,8 @@ public class Shape3D extends Leaf
      *
      * @param parent The reference to check against this class
      * @throws CyclicSceneGraphStructureException Equal parent and child
-     @Override
      */
+    @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws CyclicSceneGraphStructureException
     {

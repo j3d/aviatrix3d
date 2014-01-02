@@ -28,7 +28,7 @@ import org.j3d.aviatrix3d.rendering.ShaderComponentRenderable;
  *
  * @author Justin Couch
  * @version $Revision: 1.10 $
- * @Deprecated When moving to OpenGL 3 or later, these older shaders are not supported.
+ * @deprecated When moving to OpenGL 3 or later, these older shaders are not supported.
  */
 public abstract class GL14ShaderProgram extends NodeComponent
     implements ShaderComponentRenderable
