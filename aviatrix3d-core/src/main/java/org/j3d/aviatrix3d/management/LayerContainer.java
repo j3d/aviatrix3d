@@ -19,15 +19,10 @@ import java.util.ArrayList;
 import org.j3d.aviatrix3d.*;
 
 /**
- * A grouping node that can have multiple parents, thus allowing a graph
- * structure to the scene graph.
- *
- * Normal nodes cannot have more than one parent, so this class provides
- * the ability to have more than one. In doing so, it overrides the normal
- * methods provided by Node to provide the shared functionality.
+ * Simple internal class for managing all the layers at the top of a scene graph
+ * like a normal node for propagation of updates and live state.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
  */
 class LayerContainer extends BaseSceneGraphObject
 {
@@ -39,47 +34,34 @@ class LayerContainer extends BaseSceneGraphObject
      */
     LayerContainer()
     {
-         layers = new ArrayList<Layer>();
+         layers = new ArrayList<>();
     }
 
     //----------------------------------------------------------
     // Methods defined by SceneGraphObject
     //----------------------------------------------------------
 
-    /**
-     * Check to see if this node is the same reference as the passed node that
-     * is a parent of this node. This is the downwards check to ensure that
-     * there is no cyclic scene graph structures at the point where someone
-     * adds a node to the scenegraph. When the reference and this are the
-     * same, an exception is generated. Since each class may have different
-     * lists of child node setups, this should be overriden by any class that
-     * can take children, and have the call passed along to the children.
-     *
-     * @param parent The reference to check against this class
-     * @throws CyclicSceneGraphStructureException Equal parent and child
-     */
+    @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws CyclicSceneGraphStructureException
     {
         if(parent == this)
+        {
             throw new CyclicSceneGraphStructureException();
+        }
 
         for(int i = 0; i < layers.size(); i++)
         {
             Layer l = layers.get(i);
 
             if(l != null)
+            {
                 checkForCyclicChild(l, parent);
+            }
         }
     }
 
-    /**
-     * Set the scenegraph update handler for this node.  It will notify
-     * all its children of the value. A null value will clear the current
-     * handler.
-     *
-     * @param handler The instance to use as a handler
-     */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         super.setUpdateHandler(handler);
@@ -89,25 +71,29 @@ class LayerContainer extends BaseSceneGraphObject
             Layer l = layers.get(i);
 
             if(l != null)
+            {
                 setUpdateHandler(l);
+            }
         }
     }
 
-    /**
-     * Notification that this object is live now.
-     */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
         if(state == alive)
+        {
             return;
+        }
 
         for(int i = 0; i < layers.size(); i++)
         {
             Layer l = layers.get(i);
 
             if(l != null)
+            {
                 setLive(l, state);
+            }
         }
 
         // Call this after, that way the bounds are recalculated here with
@@ -125,7 +111,7 @@ class LayerContainer extends BaseSceneGraphObject
      * layers in place (and liveness state) and adding or removing old
      * layers.
      *
-     * @param layers The collection of layers, in order, to render
+     * @param newLayers The collection of layers, in order, to render
      * @param numLayers The number of valid layers to use
      */
     void changeLayers(Layer[] newLayers, int numLayers)
