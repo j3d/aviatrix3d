@@ -45,6 +45,12 @@ class ThreadPrivilegedAction implements PrivilegedAction
      */
     ThreadPrivilegedAction(Runnable r)
     {
+        if(r == null)
+        {
+            // No I18n here because this should be caught during development.
+            throw new IllegalArgumentException("No runnable is defined");
+        }
+
         targetThread = r;
 
         AccessController.doPrivileged(this);
@@ -54,13 +60,7 @@ class ThreadPrivilegedAction implements PrivilegedAction
     // Methods defined by PrivilegedAction
     //---------------------------------------------------------------
 
-    /**
-     * Tell render to start or stop management. If currently running, it
-     * will wait until all the pipelines have completed their current cycle
-     * and will then halt.
-     *
-     * @param state True if to enable management
-     */
+    @Override
     public Object run()
     {
         runtimeThread = new Thread(targetThread, "AV3D Runtime");
