@@ -23,7 +23,6 @@ import java.nio.Buffer;
  * Geometry classes for shader attribute values.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
  */
 public class ShaderAttribValue
 {
@@ -60,10 +59,7 @@ public class ShaderAttribValue
      */
     public boolean equals(Object o)
     {
-        if(!(o instanceof ShaderAttribValue))
-            return false;
-        else
-            return equals((ShaderAttribValue)o);
+        return (o instanceof ShaderAttribValue) && equals((ShaderAttribValue) o);
     }
 
     //---------------------------------------------------------------
@@ -79,16 +75,22 @@ public class ShaderAttribValue
     public boolean equals(ShaderAttribValue sav)
     {
         if(sav == this)
+        {
             return true;
+        }
 
         if(sav == null)
+        {
             return false;
+        }
 
         if((dataType != sav.dataType) ||
            (size != sav.size) ||
            (normalise != sav.normalise) ||
            (data != sav.data))
+        {
             return false;
+        }
 
         // We probably should go through and check each byte of the data array,
         // but that would be horribly expensive.

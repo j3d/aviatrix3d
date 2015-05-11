@@ -45,6 +45,7 @@ import org.j3d.util.I18nManager;
  * <ul>
  * <li>illegalCapacityMsg: Error message when constructor capacity < 0</li>
  * <li>illegalLoadFactorMsg: Error message when constructor loadFactor <= 0</li>
+ * <li>invalidUpdateStrategyMsg: The texture update strategy is not valid</li>
  * </ul>
  *
  *
@@ -53,13 +54,17 @@ import org.j3d.util.I18nManager;
  */
 public class TextureUpdateStateManager implements SubTextureUpdateListener
 {
-    /** Message when the PickRequest doesn't have one of the required types */
+    /** Message when the initial capacity is negative */
     private static final String BAD_CAPACITY_PROP =
         "org.j3d.aviatrix3d.management.TextureUpdateStateManager.illegalCapacityMsg";
 
-    /** Message when the PickRequest doesn't have one of the required types */
+    /** Message when the load factor is less than or equal to zero */
     private static final String BAD_LOAD_FACTOR_PROP =
         "org.j3d.aviatrix3d.management.TextureUpdateStateManager.illegalLoadFactorMsg";
+
+    /** Message when the update strategy selected is invalid */
+    private static final String BAD_STRATEGY_TYPE_PROP =
+        "org.j3d.aviatrix3d.management.TextureUpdateStateManager.invalidUpdateStrategyMsg";
 
     /** Increment size for the pending update list */
     private static final int PENDING_LIST_INC = 10;
@@ -163,7 +168,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
 
 			NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-			Object[] msg_args = { new Integer(initialCapacity) };
+			Object[] msg_args = { initialCapacity };
 			Format[] fmts = { n_fmt };
 			MessageFormat msg_fmt =
 				new MessageFormat(msg_pattern, lcl);
@@ -182,18 +187,21 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
 
 			NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-			Object[] msg_args = { new Integer(initialCapacity) };
+			Object[] msg_args = { initialCapacity };
 			Format[] fmts = { n_fmt };
-			MessageFormat msg_fmt =
-				new MessageFormat(msg_pattern, lcl);
+			MessageFormat msg_fmt = new MessageFormat(msg_pattern, lcl);
 			msg_fmt.setFormats(fmts);
 			String msg = msg_fmt.format(msg_args);
 
             throw new IllegalArgumentException(msg);
 		}
 
+        checkUpdateStrategyType(strategy);
+
         if(initialCapacity == 0)
+        {
             initialCapacity = 1;
+        }
 
         updateStrategy = strategy;
         this.loadFactor = loadFactor;
@@ -223,6 +231,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
      * @param level The mipmap level that changed
      * @param pixels Buffer of the data that has updated
      */
+    @Override
     public void textureUpdated(int x,
                                int y,
                                int z,
@@ -292,6 +301,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
      */
     public void setUpdateStrategy(int strategy)
     {
+        checkUpdateStrategyType(strategy);
         updateStrategy = strategy;
     }
 
@@ -309,7 +319,9 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
         for(Entry e = tab[index] ; e != null ; e = e.next)
         {
             if(e.hash == hash)
+            {
                 return e.numUpdatesPending;
+            }
         }
 
         return 0;
@@ -357,7 +369,9 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
         for(Entry e = tab[index]; e != null; e = e.next)
         {
             if(e.hash == hash)
+            {
                 return;
+            }
         }
 
         if(count >= threshold)
@@ -378,7 +392,9 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
         e.next = tab[index];
 
         if(e.updatesPending == null)
+        {
             e.updatesPending = new TextureUpdateData[1];
+        }
 
         tab[index] = e;
         count++;
@@ -833,5 +849,29 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
         System.arraycopy(e.updatesPending, 0, tmp, 0, old_size);
 
         e.updatesPending = tmp;
+    }
+
+    /**
+     * Internal convenience method that checks the validity of the update strategy
+     * type passed in.
+     *
+     * @param type The type value to check
+     * @throws IllegalArgumentException The strategy is not a recognised type
+     */
+    private void checkUpdateStrategyType(int type)
+    {
+        if(type != UPDATE_BUFFER_ALL && type != UPDATE_BUFFER_LAST && type != UPDATE_DISCARD_OVERWRITES)
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(BAD_STRATEGY_TYPE_PROP);
+
+            Locale lcl = intl_mgr.getFoundLocale();
+
+            Object[] msg_args = { type };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, lcl);
+            String msg = msg_fmt.format(msg_args);
+
+            throw new IllegalArgumentException(msg);
+        }
     }
 }

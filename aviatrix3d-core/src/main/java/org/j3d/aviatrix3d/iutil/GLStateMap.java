@@ -19,6 +19,8 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ArrayList;
 
+import javax.media.opengl.GL;
+
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -53,7 +55,6 @@ import org.j3d.util.I18nManager;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
  * @see java.util.HashMap
  */
 public class GLStateMap
@@ -102,24 +103,9 @@ public class GLStateMap
         }
 
         /**
-         * Create a new entry with the given values.
-         *
-         * @param hash The code used to hash the object with
-         * @param value The value for this key
-         * @param next A reference to the next entry in the table
-         */
-        protected Entry(int hash, boolean value, Entry next)
-        {
-            this.hash = hash;
-            this.value = value;
-            this.next = next;
-        }
-
-        /**
          * Convenience method to set the entry with the given values.
          *
          * @param hash The code used to hash the object with
-         * @param key The key used to enter this in the table
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
@@ -160,7 +146,7 @@ public class GLStateMap
 
             NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-            Object[] msg_args = { new Integer(initialCapacity) };
+            Object[] msg_args = { initialCapacity };
             Format[] fmts = { n_fmt };
             MessageFormat msg_fmt =
                 new MessageFormat(msg_pattern, lcl);
@@ -179,7 +165,7 @@ public class GLStateMap
 
             NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-            Object[] msg_args = { new Integer(initialCapacity) };
+            Object[] msg_args = { initialCapacity };
             Format[] fmts = { n_fmt };
             MessageFormat msg_fmt =
                 new MessageFormat(msg_pattern, lcl);
@@ -196,7 +182,7 @@ public class GLStateMap
         table = new Entry[initialCapacity];
         threshold = (int)(initialCapacity * loadFactor);
 
-        entryCache = new ArrayList<Entry>(initialCapacity);
+        entryCache = new ArrayList<>(initialCapacity);
     }
 
     /**
@@ -228,7 +214,7 @@ public class GLStateMap
      *    key in this state map, as determined by the <tt>equals</tt>
      *    method; <code>false</code> otherwise.
      */
-    public boolean containsKey(Object key)
+    public boolean containsKey(GL key)
     {
         Entry tab[] = table;
         int hash = key.hashCode();
@@ -236,7 +222,9 @@ public class GLStateMap
         for(Entry e = tab[index] ; e != null ; e = e.next)
         {
             if(e.hash == hash)
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -247,7 +235,7 @@ public class GLStateMap
      * @param key a key in the state map.
      * @return True or false depending on the state set
      */
-    public boolean getState(Object key)
+    public boolean getState(GL key)
     {
         Entry tab[] = table;
         int hash = key.hashCode();
@@ -255,7 +243,9 @@ public class GLStateMap
         for(Entry e = tab[index] ; e != null ; e = e.next)
         {
             if(e.hash == hash)
+            {
                 return e.value;
+            }
         }
 
         return false;
@@ -273,7 +263,7 @@ public class GLStateMap
      * @param value  the value to associate with the key
      * @throws NullPointerException if the key is <code>null</code>.
      */
-    public void put(Object key, boolean value)
+    public void put(GL key, boolean value)
     {
         // Makes sure the key is not already in the state map.
         Entry[] tab = table;
@@ -312,7 +302,7 @@ public class GLStateMap
      * @return  the value to which the key had been mapped in this state map,
      *          or <code>null</code> if the key did not have a mapping.
      */
-    public boolean remove(Object key)
+    public boolean remove(GL key)
     {
         Entry[] tab = table;
         int hash = key.hashCode();
@@ -374,7 +364,9 @@ public class GLStateMap
             Entry e = tab[index];
 
             if(e == null)
+            {
                 continue;
+            }
 
             while(e.next != null)
             {
@@ -437,7 +429,7 @@ public class GLStateMap
         if(size == 0)
             ret_val = new Entry();
         else
-            ret_val = (Entry)entryCache.remove(size - 1);
+            ret_val = entryCache.remove(size - 1);
 
         return ret_val;
     }
