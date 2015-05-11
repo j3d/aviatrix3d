@@ -51,7 +51,6 @@ import org.j3d.util.ErrorReporter;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.9 $
  */
 public class SingleDisplayCollection extends DisplayCollection
 {
@@ -137,14 +136,7 @@ public class SingleDisplayCollection extends DisplayCollection
     // Methods defined by DisplayCollection
     //---------------------------------------------------------------
 
-    /**
-     * Register an error reporter with the engine so that any errors generated
-     * by the node's internals can be reported in a nice, pretty fashion.
-     * Setting a value of null will clear the currently set reporter. If one
-     * is already set, the new value replaces the old.
-     *
-     * @param reporter The instance to use or null
-     */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         if(reporter == null)
@@ -159,50 +151,20 @@ public class SingleDisplayCollection extends DisplayCollection
             audioPipeline.setErrorReporter(reporter);
     }
 
-    /**
-     * Tell render to start or stop management. If currently running, it
-     * will wait until all the pipelines have completed their current cycle
-     * and will then halt.
-     *
-     * @param state True if to enable management
-     */
+    @Override
     public void setEnabled(boolean state)
     {
         enabled = state;
         layerContainer.setLive(state);
     }
 
-    /**
-     * Get the current render state of the manager.
-     *
-     * @return true if the manager is currently running
-     */
-    public boolean isEnabled()
-    {
-        return enabled;
-    }
-
-    /**
-     * Force a single render of all pipelines now contained in this collection
-     * now. Blocks until all rendering is complete (based on the definition of
-     * the implementing class).
-     * <p>
-     *
-     * In general, it is inadvisable that method be called by end users as it is
-     * normally managed by the RenderManager.
-     * The return value indicates success or failure in the ability to
-     * render this frame. Typically it will indicate failure if the
-     * underlying surface has been disposed of, either directly through the
-     * calling of the method on this interface, or through an internal check
-     * mechanism. If failure is indicated, then check to see if the surface has
-     * been disposed of and discontinue rendering if it has.
-     *
-     * @return true if the drawing succeeded, or false if not
-     */
+    @Override
     public boolean process()
     {
         if(!enabled || terminate)
+        {
             return false;
+        }
 
         boolean ret_val = true;
 
@@ -214,11 +176,15 @@ public class SingleDisplayCollection extends DisplayCollection
 
             ret_val = graphicsPipeline.render();
             if(ret_val)
+            {
                 graphicsPipeline.swapBuffers();
+            }
         }
 
         if(terminate)
+        {
             return false;
+        }
 
         if(audioPipeline != null)
         {
@@ -235,26 +201,13 @@ public class SingleDisplayCollection extends DisplayCollection
         return ret_val;
     }
 
-    /**
-     * Cause the surface to redraw the next frame only, with no processing of
-     * the pipeline. This is typically an optimisation step when nothing has
-     * changed in user land, so there's no processing that needs to be done.
-     * Skip the processing and tell the drawable surface to render again what
-     * it already has set from the previous frame.
-     * <p>
-     * The return value indicates success or failure in the ability to
-     * render this frame. Typically it will indicate failure if the
-     * underlying surface has been disposed of, either directly through the
-     * calling of the method on this interface, or through an internal check
-     * mechanism. If failure is indicated, then check to see if the surface has
-     * been disposed of and discontinue rendering if it has.
-     *
-     * @return true if the drawing succeeded, or false if not
-     */
+    @Override
     public boolean displayOnly()
     {
         if(!enabled || terminate)
+        {
             return false;
+        }
 
         boolean ret_val = true;
 
@@ -270,24 +223,28 @@ public class SingleDisplayCollection extends DisplayCollection
                 RenderableRequestData rrq = checkForGraphicsRequests();
                 graphicsPipeline.setRequestData(rrq);
 
-                // Bug fix (by Sang Park): When shader nodes were being dynamically added to the scene graph,
-                // shader programs weren't being initalized by the render processor.  Reason it wasn't being initalized
-                // was because RenderableRequestData was never passed into the render processor. Below code fixes the
-                // problem.
+                // Bug fix (by Sang Park): When shader nodes were being dynamically added
+                // to the scene graph, shader programs weren't being initalized by the
+                // render processor.  Reason it wasn't being initalized was because
+                // RenderableRequestData was never passed into the render processor.
+                // Below code fixes the problem.
 
-                // If there is no reqested data display redraw the last frame (added)
                 if(rrq == null)
                 {
+                    // If there is no requested data display redraw the last frame (added)
                     ret_val = graphicsPipeline.displayOnly(); // This was the original code.
                 }
-                // Pass the request data to the render processor to process any new changes that happened in the scene graph (added)
                 else
                 {
-                    ret_val = graphicsPipeline.render(); // This was added to pass in request data into the render processor
+                    // Pass the request data to the render processor to process any new
+                    // changes that happened in the scene graph (added)
+                    ret_val = graphicsPipeline.render();
                 }
 
                 if(ret_val)
+                {
                     graphicsPipeline.swapBuffers();
+                }
             }
 
             if(terminate)
@@ -307,11 +264,7 @@ public class SingleDisplayCollection extends DisplayCollection
         return ret_val;
     }
 
-    /**
-     * Force a halt of the current processing. Any processing in progress
-     * should exit immediately. Used to abort the current scene processing due
-     * to application shutdown or complete scene replacement.
-     */
+    @Override
     public void halt()
     {
         if(graphicsPipeline != null)
@@ -321,23 +274,7 @@ public class SingleDisplayCollection extends DisplayCollection
             audioPipeline.halt();
     }
 
-    /**
-     * Set the set of layers for this manager. Setting a value of
-     * <code>null</code> will remove the currently set of layers. If this is
-     * set while a current scene is set, then the scene will be cleared. Layers
-     * are presented in depth order - layers[0] is rendered before layers[1]
-     * etc.
-     * <p>
-     * If this render manager is currently running, this method can only be
-     * called during the main update
-     *
-     * @param layers The collection of layers, in order, to render
-     * @param numLayers The number of valid layers to use
-     * @throws IllegalArgumentException The length of the layers array is less
-     *    than numLayers
-     * @throws InvalidWriteTimingException The method was called with the
-     *    system enabled and not during the app observer callback
-     */
+    @Override
     public void setLayers(Layer[] layers, int numLayers)
         throws IllegalArgumentException, InvalidWriteTimingException
     {
@@ -390,41 +327,24 @@ public class SingleDisplayCollection extends DisplayCollection
             audioPipeline.setRenderableLayers(layers, numLayers);
     }
 
-    /**
-     * Get the number of layers that are currently set. If no layers are set,
-     * or a scene is set, this will return zero.
-     *
-     * @return a value greater than or equal to zero
-     */
+    @Override
     public int numLayers()
     {
         return numLayers;
     }
 
-    /**
-     * Fetch the current layers that are set. The values will be copied into
-     * the user-provided array. That array must be at least
-     * {@link #numLayers()} in length. If not, this method does nothing (the
-     * provided array will be unchanged).
-     *
-     * @param layers An array to copy the values into
-     */
+    @Override
     public void getLayers(Layer[] layers)
     {
         if((layers == null) || (layers.length < numLayers))
+        {
             return;
+        }
 
         System.arraycopy(this.layers, 0, layers, 0, numLayers);
     }
 
-    /**
-     * Add a pipeline to be rendered to the manager. A duplicate registration
-     * or null value is ignored.
-     *
-     * @param pipe The new pipe instance to be added
-     * @throws IllegalStateException The system is currently management and
-     *   should be disabled first.
-     */
+    @Override
     public void addPipeline(RenderPipeline pipe)
         throws IllegalStateException
     {
@@ -438,27 +358,16 @@ public class SingleDisplayCollection extends DisplayCollection
         if(pipe instanceof GraphicsRenderPipeline)
         {
             graphicsPipeline = (GraphicsRenderPipeline)pipe;
-
-            if(graphicsPipeline != null)
-                graphicsPipeline.setRenderableLayers(layers, numLayers);
+            graphicsPipeline.setRenderableLayers(layers, numLayers);
         }
         else if(pipe instanceof AudioRenderPipeline)
         {
             audioPipeline = (AudioRenderPipeline)pipe;
-
-            if(audioPipeline != null)
-                audioPipeline.setRenderableLayers(layers, numLayers);
+            audioPipeline.setRenderableLayers(layers, numLayers);
         }
     }
 
-    /**
-     * Remove an already registered pipeline from the manager. A or null value
-     * or one that is not currently registered is ignored.
-     *
-     * @param pipe The pipe instance to be removed
-     * @throws IllegalStateException The system is currently management and
-     *   should be disabled first.
-     */
+    @Override
     public void removePipeline(RenderPipeline pipe)
         throws IllegalStateException
     {
@@ -487,29 +396,21 @@ public class SingleDisplayCollection extends DisplayCollection
         }
     }
 
-    /**
-     * Set the update handler that controls synchronisations of write/read
-     * process to the scene graph.
-     *
-     * @param handler The new handler instance to use
-     */
+    @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
         layerContainer.setUpdateHandler(handler);
     }
 
-    /**
-     * Notification to shutdown the internals of the renderer because the
-     * application is about to exit. Normally this will be called by the
-     * containing {@link RenderManager} and should not need to be called by
-     * end users.
-     */
+    @Override
     public void shutdown()
     {
         // If this has already been called once, ignore it. Most of the
         // variables will have been nulled out by now.
         if(terminate || !enabled)
+        {
             return;
+        }
 
         terminate = true;
 
@@ -520,23 +421,18 @@ public class SingleDisplayCollection extends DisplayCollection
             audioPipeline.halt();
     }
 
-    /**
-     * Check to see if this pipeline is now inoperable. It may be inoperable
-     * for one of many reasons, such as the output device is terminated, user
-     * terminated or some abnormal internal condition.
-     *
-     * @return true if the collection is no longer operable
-     */
+    @Override
     public boolean isDisposed()
     {
         if(super.isDisposed())
+        {
             return true;
+        }
 
         if(graphicsPipeline != null)
         {
-            GraphicsOutputDevice dev =
-                graphicsPipeline.getGraphicsOutputDevice();
-            return dev != null ? dev.isDisposed() : false;
+            GraphicsOutputDevice dev = graphicsPipeline.getGraphicsOutputDevice();
+            return dev != null && dev.isDisposed();
         }
 
         return false;
@@ -549,7 +445,9 @@ public class SingleDisplayCollection extends DisplayCollection
     {
         // now clear the array
         for(int i = 0; i < numDeletables; i++)
+        {
             deletionList[i] = null;
+        }
 
         numDeletables = 0;
     }

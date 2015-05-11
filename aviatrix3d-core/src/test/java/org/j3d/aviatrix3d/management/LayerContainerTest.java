@@ -33,26 +33,6 @@ import org.j3d.aviatrix3d.rendering.ViewportCullable;
  */
 public class LayerContainerTest
 {
-    class TestLayer extends Layer
-    {
-        TestLayer()
-        {
-            super(Layer.SIMPLE);
-        }
-
-        @Override
-        public ViewportCullable getCullableViewport(int viewportIndex)
-        {
-            return null;
-        }
-
-        @Override
-        public int numCullableChildren()
-        {
-            return 0;
-        }
-    };
-
     @Test(groups = "unit")
     public void testBasicConstruction() throws Exception
     {
@@ -66,7 +46,6 @@ public class LayerContainerTest
     public void testChangeLayers() throws Exception
     {
         Layer[] test_layers = { new TestLayer() };
-
 
         LayerContainer class_under_test = new LayerContainer();
         class_under_test.changeLayers(test_layers, 1);
