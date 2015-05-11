@@ -95,8 +95,8 @@
                 <version>3.1</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <meminitial>256m</meminitial>
                     <maxmem>1024m</maxmem>
                 </configuration>
@@ -126,7 +126,7 @@
                     <bottom><![CDATA[
                         <center>
                         Latest Info from <a href="http://aviatrix3d.j3d.org">http://aviatrix3d.j3d.org/</a> <br>
-                            <font size=2>Copyright &copy; 2001 - 2014 <a href="http://www.j3d.org">j3d.org</a></font>
+                            <font size=2>Copyright &copy; 2001 - 2015 <a href="http://www.j3d.org">j3d.org</a></font>
                         </center>
                         ]]>
                     </bottom>
