@@ -244,15 +244,15 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
         switch(updateStrategy)
         {
             case UPDATE_BUFFER_ALL:
-                updateAppend(x, y, width, height, level, pixels);
+                updateAppend(x, y, width, height, depth, level, pixels);
                 break;
 
             case UPDATE_BUFFER_LAST:
-                updateReplace(x, y, width, height, level, pixels);
+                updateReplace(x, y, width, height, depth, level, pixels);
                 break;
 
             case UPDATE_DISCARD_OVERWRITES:
-                updateOverlap(x, y, width, height, level, pixels);
+                updateOverlap(x, y, width, height, depth, level, pixels);
                 break;
         }
 
@@ -331,7 +331,9 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
      * Returns an array holding all the pending updates for the given GL
      * context and resets the number pending back to 0. The array is the
      * internal list and should be treated as read-only data. If the context
-     * is unknown to this map, it will return null.
+     * is unknown to this map, it will return null. The array should not
+     * contain any data and the length is unimportant. Use {@link #getNumUpdatesPending(GL)}
+     * to find out how many valid elements are in this array.
      *
      * @param gl The GL context to fetch the update array for
      * @return An array to read updates from, or null
@@ -533,6 +535,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
                                int y,
                                int width,
                                int height,
+                               int depth,
                                int level,
                                byte[] pixels)
     {
@@ -559,6 +562,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
                 tud.y = y;
                 tud.width = width;
                 tud.height = height;
+                tud.depth = depth;
                 tud.level = level;
                 tud.format = format;
 
@@ -586,6 +590,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
                                int y,
                                int width,
                                int height,
+                               int depth,
                                int level,
                                byte[] pixels)
     {
@@ -628,6 +633,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
                             tud.width = width;
                             tud.height = height;
                             tud.level = level;
+                            tud.depth = depth;
                             tud.format = format;
                             update_found = true;
 
@@ -654,14 +660,18 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
                         tud = e.updatesPending[e.numUpdatesPending];
                     }
 
+                    e.numUpdatesPending++;
                     tud.x = x;
                     tud.y = y;
                     tud.width = width;
                     tud.height = height;
+                    tud.depth = depth;
                     tud.level = level;
                     tud.format = format;
 
                     copyPixels(tud, pixels);
+
+                    e = e.next;
                 }
             }
         }
@@ -681,6 +691,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
                               int y,
                               int width,
                               int height,
+                              int depth,
                               int level,
                               byte[] pixels)
     {
@@ -704,11 +715,13 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
                     tud = e.updatesPending[e.numUpdatesPending];
                 }
 
+                e.numUpdatesPending++;
                 tud.x = x;
                 tud.y = y;
                 tud.width = width;
                 tud.height = height;
                 tud.level = level;
+                tud.depth = depth;
                 tud.format = format;
 
                 copyPixels(tud, pixels);
