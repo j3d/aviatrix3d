@@ -139,10 +139,7 @@ public class SingleDisplayCollection extends DisplayCollection
     @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
-        if(reporter == null)
-            errorReporter = DefaultErrorReporter.getDefaultReporter();
-        else
-            errorReporter = reporter;
+        super.setErrorReporter(reporter);
 
         if(graphicsPipeline != null)
             graphicsPipeline.setErrorReporter(reporter);
@@ -154,7 +151,8 @@ public class SingleDisplayCollection extends DisplayCollection
     @Override
     public void setEnabled(boolean state)
     {
-        enabled = state;
+        super.setEnabled(state);
+
         layerContainer.setLive(state);
     }
 
@@ -295,7 +293,7 @@ public class SingleDisplayCollection extends DisplayCollection
 
 			NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-			Object[] msg_args = { new Integer(size), new Integer(numLayers) };
+			Object[] msg_args = { size, numLayers };
 			Format[] fmts = { n_fmt };
 			MessageFormat msg_fmt =
 				new MessageFormat(msg_pattern, lcl);
@@ -412,7 +410,7 @@ public class SingleDisplayCollection extends DisplayCollection
             return;
         }
 
-        terminate = true;
+        super.shutdown();
 
         if(graphicsPipeline != null)
             graphicsPipeline.halt();
