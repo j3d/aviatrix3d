@@ -197,6 +197,7 @@ class FBODescriptor extends BaseBufferDescriptor
      * Bind the current buffer to this context now. Default implementation does
      * nothing. Override for the pbuffer render-to-texture-specific case.
      */
+    @Override
     public void bindBuffer(GLContext parentContext)
     {
         if(mrtTextureIdMap[0] != 0)
@@ -210,6 +211,7 @@ class FBODescriptor extends BaseBufferDescriptor
      * Unbind the current buffer from this context now. Default implementation
      * does nothing. Override for the pbuffer render-to-texture-specific case.
      */
+    @Override
     public void unbindBuffer(GLContext parentContext)
     {
         if(mrtTextureIdMap[0] != 0)
@@ -224,6 +226,7 @@ class FBODescriptor extends BaseBufferDescriptor
      *
      * @param context The GL context this buffer comes from
      */
+    @Override
     public void swapBuffers(GLContext context)
     {
         // do nothing for the FBOs
@@ -234,6 +237,7 @@ class FBODescriptor extends BaseBufferDescriptor
      *
      * @param context The GL context this buffer comes from
      */
+    @Override
     public void resize(GLContext context)
     {
         if(bufferId == 0)
@@ -256,6 +260,7 @@ class FBODescriptor extends BaseBufferDescriptor
      *
      * @param context The GL context this buffer comes from
      */
+    @Override
     public void delete(GLContext context)
     {
         if(bufferId == 0)

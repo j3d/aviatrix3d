@@ -53,6 +53,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
      *    false if it was not possible or had an error when creating this
      *    buffer type.
      */
+    @Override
     public boolean initialise(GLContext parentContext)
     {
         initComplete = true;
@@ -66,6 +67,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
     /**
      * Reinitialise this descriptor because the GL context has changed.
      */
+    @Override
     public void reinitialize()
     {
         // Do nothing for the main canvas.
@@ -77,6 +79,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
      *
      * @return The context for the buffer, or null
      */
+    @Override
     public GLContext getLocalContext()
     {
         return localContext;
@@ -92,6 +95,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
      * @throws GLException Exception when something at the low-level went
      *    wrong.
      */
+    @Override
     public EnableState enable(GLContext context)
         throws GLException
     {
@@ -133,6 +137,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
      * @throws GLException Exception when something at the low-level went
      *    wrong.
      */
+    @Override
     public void disable(GLContext context)
         throws GLException
     {
@@ -143,6 +148,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
      * Bind the current buffer to this context now. Default implementation does
      * nothing. Override for the pbuffer render-to-texture-specific case.
      */
+    @Override
     public void bindBuffer(GLContext parentContext)
     {
     }
@@ -151,6 +157,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
      * Unbind the current buffer from this context now. Default implementation
      * does nothing. Override for the pbuffer render-to-texture-specific case.
      */
+    @Override
     public void unbindBuffer(GLContext parentContext)
     {
     }
@@ -160,6 +167,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
      *
      * @param context The GL context this buffer comes from
      */
+    @Override
     public void swapBuffers(GLContext context)
     {
         GLDrawable drawable = context.getGLDrawable();
@@ -171,6 +179,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
      *
      * @param context The GL context this buffer comes from
      */
+    @Override
     public void resize(GLContext context)
     {
         bufferWidth = ownerRenderable.getWidth();
@@ -183,6 +192,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
      *
      * @param context The GL context this buffer comes from
      */
+    @Override
     public void delete(GLContext context)
     {
     }
