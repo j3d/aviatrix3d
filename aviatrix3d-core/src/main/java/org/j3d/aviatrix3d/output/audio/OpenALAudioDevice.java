@@ -46,8 +46,8 @@ import org.j3d.aviatrix3d.rendering.ProfilingData;
  *     failed</li>
  * <li>makeCurrentFailedMsg: Error message when making the OpenAL context current for
  *     rendering failed</li>
- * <li>initFailedMsg: Error message when the OpenAL context initialisation
- *     failed</li>
+ * <li>initFailedMsg: Error message when the OpenAL context initialisation failed</li>
+ * <li>nativeLibrariesMissingMsg: OpenAL failed to start due to missing native libraries</li>
  * </ul>
  *
  * @author Alan Hudson
@@ -67,6 +67,10 @@ public class OpenALAudioDevice
     /** Message when there is an error during the surface initialisation. */
     private static final String INIT_FAILURE_PROP =
 		"org.j3d.aviatrix3d.output.audio.OpenALAudioDevice.initFailedMsg";
+
+    /** Message when there is an error during the surface initialisation. */
+    private static final String MISSING_NATIVE_LIBS_PROP =
+        "org.j3d.aviatrix3d.output.audio.OpenALAudioDevice.nativeLibrariesMissingMsg";
 
     /** Default orientation that we set the listener to every frame */
     private static final FloatBuffer DEFAULT_ORIENTATION;
@@ -119,6 +123,7 @@ public class OpenALAudioDevice
     /** Error reporter used to send out messages */
     private ErrorReporter errorReporter;
 
+    /** Provider for our OpenAL context and device interfaces to abstract away the factory */
     private OpenALProvider openalProvider;
 
     /** Single threaded rendering mode operation state. Defaults to false. */
@@ -195,15 +200,15 @@ public class OpenALAudioDevice
             return false;
         }
 
+        if(commands == null || commands.numValid == 0)
+        {
+            return true;
+        }
+
         // tell the draw lock that it's ok to run now, so long as it's not called
         // before the canvas has completed initialisation.
         if(!initComplete)
         {
-            if(commands == null || commands.numValid == 0)
-            {
-                return true;
-            }
-
             try
             {
                 al = openalProvider.getAL();
@@ -232,7 +237,7 @@ public class OpenALAudioDevice
             catch(UnsatisfiedLinkError ule)
 			{
 				I18nManager intl_mgr = I18nManager.getManager();
-				String msg = intl_mgr.getString(INIT_FAILURE_PROP);
+				String msg = intl_mgr.getString(MISSING_NATIVE_LIBS_PROP);
                 errorReporter.errorReport(msg, null);
 
                 initFailed = true;
@@ -241,18 +246,11 @@ public class OpenALAudioDevice
         }
         else
         {
-            if(commands == null)
-            {
-                return true;
-            }
-
+            // Multithreaded safety = take a local reference to the array and
+            // length so that if we get a setDrawableObjects() call midway through
+            // executing this loop we don't end up with oddball state.
             AudioInstructions localCommands = commands;
             int len = localCommands.numValid;
-
-            if(len == 0)
-            {
-                return true;
-            }
 
             if(len > lastId)
             {
@@ -288,7 +286,7 @@ public class OpenALAudioDevice
                             break;
 
                         default:
-                            System.out.println("Unknown OP in AudioDevice");
+                            errorReporter.warningReport("Unknown OP in AudioDevice", null);
 
                     }
                 }
