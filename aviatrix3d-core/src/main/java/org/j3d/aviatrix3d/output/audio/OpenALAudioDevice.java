@@ -119,6 +119,8 @@ public class OpenALAudioDevice
     /** Error reporter used to send out messages */
     private ErrorReporter errorReporter;
 
+    private OpenALProvider openalProvider;
+
     /** Single threaded rendering mode operation state. Defaults to false. */
     private boolean singleThreaded;
 
@@ -157,19 +159,14 @@ public class OpenALAudioDevice
         lastId = 0;
 
         errorReporter = DefaultErrorReporter.getDefaultReporter();
+        openalProvider = new DefaultOpenALProvider();
    }
 
     //---------------------------------------------------------------
     // Methods defined by AudioOutputDevice
     //---------------------------------------------------------------
 
-    /**
-     * Update the list of items to be rendered to the current list. Draw them
-     * at the next oppourtunity.
-     *
-     * @param otherData data to be processed before the rendering
-     * @param commands The list of drawable surfaces to render
-     */
+    @Override
     public void setDrawableObjects(RenderableRequestData otherData,
                                    AudioInstructions commands)
     {
@@ -181,14 +178,7 @@ public class OpenALAudioDevice
     // Methods defined by OutputDevice
     //---------------------------------------------------------------
 
-    /**
-     * Register an error reporter with the engine so that any errors generated
-     * by the node's internals can be reported in a nice, pretty fashion.
-     * Setting a value of null will clear the currently set reporter. If one
-     * is already set, the new value replaces the old.
-     *
-     * @param reporter The instance to use or null
-     */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         if(reporter == null)
@@ -197,38 +187,27 @@ public class OpenALAudioDevice
             errorReporter = reporter;
     }
 
-    /**
-     * Instruct the surface to draw the collected set of nodes now. The
-     * registered view environment is used to draw to this surface. If no
-     * view is registered, the surface is cleared and then this call is
-     * exited. The drawing surface does not swap the buffers at this point.
-     * <p>
-     * The return value indicates success or failure in the ability to
-     * render this frame. Typically it will indicate failure if the
-     * underlying surface has been disposed of, either directly through the
-     * calling of the method on this interface, or through an internal check
-     * mechanism. If failure is indicated, then check to see if the surface has
-     * been disposed of and discontinue rendering if it has.
-     *
-     * @param profilingData The timing and load data
-     * @return true if the drawing succeeded, or false if not
-     */
+    @Override
     public boolean draw(ProfilingData profilingData)
     {
         if(initFailed)
+        {
             return false;
+        }
 
         // tell the draw lock that it's ok to run now, so long as it's not called
         // before the canvas has completed initialisation.
         if(!initComplete)
         {
             if(commands == null || commands.numValid == 0)
+            {
                 return true;
+            }
 
             try
             {
-                al = ALFactory.getAL();
-                ALC alc = ALFactory.getALC();
+                al = openalProvider.getAL();
+                ALC alc = openalProvider.getALC();
 
                 device = alc.alcOpenDevice(null);
                 context = alc.alcCreateContext(device, null);
@@ -263,20 +242,26 @@ public class OpenALAudioDevice
         else
         {
             if(commands == null)
+            {
                 return true;
+            }
 
             AudioInstructions localCommands = commands;
             int len = localCommands.numValid;
 
             if(len == 0)
+            {
                 return true;
+            }
 
             if(len > lastId)
+            {
                 lastId = len;
+            }
 
             try
             {
-                ALC alc = ALFactory.getALC();
+                ALC alc = openalProvider.getALC();
                 alc.alcMakeContextCurrent(context);
                 AudioRenderable obj;
                 AudioDetails[] details = localCommands.renderList;
@@ -321,22 +306,13 @@ public class OpenALAudioDevice
         return !terminate;
     }
 
-    /**
-     * Get the underlying object that this surface is rendered to. If it is a
-     * screen display device, the surface can be one of AWT Component or
-     * Swing JComponent. An off-screen buffer would be a form of AWT Image etc.
-     *
-     * @return The drawable surface representation
-     */
+    @Override
     public Object getSurfaceObject()
     {
         return null;
     }
 
-    /**
-     * Instruct this surface that you have finished with the resources needed
-     * and to dispose all rendering resources.
-     */
+    @Override
     public void dispose()
     {
         // OpenAL has some shutdown code to do this.  This code occasionally
@@ -348,7 +324,7 @@ public class OpenALAudioDevice
         {
             try
             {
-                ALC alc = ALFactory.getALC();
+                ALC alc = openalProvider.getALC();
                 alc.alcMakeContextCurrent(context);
 
                 // TODO: Assume id's are issued sequentially.  Really need
@@ -376,45 +352,36 @@ public class OpenALAudioDevice
         }
     }
 
-    /**
-     * Check to see the disposal state of the surface. Will return true if the
-     * {@link #dispose} method has been called or an internal dispose handler
-     * has detected the underlying surface is no longer valid to draw to.
-     *
-     * @return true if the surface is disposed and no longer usable
-     */
+    @Override
     public boolean isDisposed()
     {
         return terminate || initFailed;
     }
 
-    /**
-     * Notification that this surface is being drawn to with a single thread.
-     * This can be used to optmise internal state handling when needed in a
-     * single versus multithreaded environment.
-     * <p>
-     *
-     * This method should never be called by end user code. It is purely for
-     * the purposes of the {@link org.j3d.aviatrix3d.management.RenderManager}
-     * to inform the device about what state it can expect.
-     *
-     * @param state true if the device can expect single threaded behaviour
-     */
+    @Override
     public void enableSingleThreaded(boolean state)
     {
         singleThreaded = state;
     }
 
-    /**
-     * If the output device is marked as single threaded, this instructs the
-     * device that the current rendering thread has exited. Next time the draw
-     * method is called, a new rendering context will need to be created for
-     * a new incoming thread instance. Also, if any other per-thread resources
-     * are around, clean those up now. This is called just before that thread
-     * exits.
-     */
+    @Override
     public void disposeSingleThreadResources()
     {
         // Do nothing for now until we implement this properly.
+    }
+
+    // ----- Local Methods ---------------------------------------------------
+
+    /**
+     * Override the use of the default OpenAL provider that this class uses
+     * with a custom provider. Normally this will not need to be set by an
+     * end user, mostly used by unit testing code. If the parameter is sent
+     * as null, then the default provider is reinstated.
+     *
+     * @param provider The provider to use or null to use the default
+     */
+    public void setOpenALProvider(OpenALProvider provider)
+    {
+        openalProvider = provider != null ? provider : new DefaultOpenALProvider();
     }
 }
