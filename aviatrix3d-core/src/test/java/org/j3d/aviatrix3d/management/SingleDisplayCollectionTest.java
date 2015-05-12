@@ -41,7 +41,7 @@ public class SingleDisplayCollectionTest
     public void setupTests() throws Exception
     {
         I18nManager intl_mgr = I18nManager.getManager();
-        intl_mgr.setApplication("TextureUpdateStateManagerTest", "config.i18n.org-j3d-aviatrix3d-resources-core");
+        intl_mgr.setApplication("SingleDisplayCollectionTest", "config.i18n.org-j3d-aviatrix3d-resources-core");
     }
 
     @Test(groups = "unit")
