@@ -20,6 +20,8 @@ import java.net.URLConnection;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
+
+import org.j3d.loaders.HeightMapSourceOrigin;
 import org.j3d.loaders.dem.*;
 
 import org.j3d.geom.GeometryData;
@@ -226,6 +228,12 @@ public class DEMLoader
             return parser.getGridStep();
         else
             return null;
+    }
+
+    @Override
+    public HeightMapSourceOrigin getOriginLocation()
+    {
+        return HeightMapSourceOrigin.BOTTOM_LEFT;
     }
 
     //----------------------------------------------------------
