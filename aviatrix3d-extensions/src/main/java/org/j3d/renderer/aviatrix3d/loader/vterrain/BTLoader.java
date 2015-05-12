@@ -20,6 +20,8 @@ import java.net.URLConnection;
 
 // Loader imports
 import org.j3d.aviatrix3d.*;
+
+import org.j3d.loaders.HeightMapSourceOrigin;
 import org.j3d.loaders.vterrain.*;
 
 import org.j3d.geom.GeometryData;
@@ -228,6 +230,12 @@ public class BTLoader
     public float[] getGridStep()
     {
         return gridStepData;
+    }
+
+    @Override
+    public HeightMapSourceOrigin getOriginLocation()
+    {
+        return HeightMapSourceOrigin.BOTTOM_LEFT;
     }
 
     //----------------------------------------------------------
