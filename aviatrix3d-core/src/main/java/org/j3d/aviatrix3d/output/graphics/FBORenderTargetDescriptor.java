@@ -62,6 +62,7 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
      *    false if it was not possible or had an error when creating this
      *    buffer type.
      */
+    @Override
     public boolean initialise(GLContext parentContext)
     {
         localContext = parentContext;
@@ -73,6 +74,7 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
     /**
      * Reinitialise this descriptor because the GL context has changed.
      */
+    @Override
     public void reinitialize()
 	{
 		// do nothing in this case
@@ -84,6 +86,7 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
      *
      * @return The context for the buffer, or null
      */
+    @Override
     public GLContext getLocalContext()
     {
         return localContext;
@@ -99,6 +102,7 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
      * @throws GLException Exception when something at the low-level went
      *    wrong.
      */
+    @Override
     public EnableState enable(GLContext context)
         throws GLException
     {
@@ -112,6 +116,7 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
      * @throws GLException Exception when something at the low-level went
      *    wrong.
      */
+    @Override
     public void disable(GLContext context)
         throws GLException
     {
@@ -121,6 +126,7 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
      * Bind the current buffer to this context now. Default implementation does
      * nothing. Override for the pbuffer render-to-texture-specific case.
      */
+    @Override
     public void bindBuffer(GLContext parentContext)
     {
         if(textureId != 0)
@@ -134,6 +140,7 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
      * Unbind the current buffer from this context now. Default implementation
      * does nothing. Override for the pbuffer render-to-texture-specific case.
      */
+    @Override
     public void unbindBuffer(GLContext parentContext)
     {
         if(textureId != 0)
@@ -148,6 +155,7 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
      *
      * @param context The GL context this buffer comes from
      */
+    @Override
     public void swapBuffers(GLContext context)
     {
         // do nothing for the FBOs
@@ -158,6 +166,7 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
      *
      * @param context The GL context this buffer comes from
      */
+    @Override
     public void resize(GLContext context)
     {
         // Do nothing for child render targets
@@ -169,6 +178,7 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
      *
      * @param context The GL context this buffer comes from
      */
+    @Override
     public void delete(GLContext context)
     {
         // Do nothing for child render targets
