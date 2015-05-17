@@ -558,14 +558,18 @@ public abstract class BaseRenderingProcessor
             }
 
             if(terminate)
+            {
                 terminateCleanup();
+            }
         }
         catch(GLException ie)
         {
             // Ignore interrupted exceptions, but it probably means we've
             // be shutdown.
             if(ie.getCause() instanceof InterruptedException)
+            {
                 terminate = true;
+            }
             else
             {
                 I18nManager intl_mgr = I18nManager.getManager();
@@ -575,7 +579,9 @@ public abstract class BaseRenderingProcessor
         }
 
         if(terminate)
+        {
             status = EnableState.TERMINATE_REQUESTED;
+        }
 
         return status;
     }
@@ -679,7 +685,7 @@ public abstract class BaseRenderingProcessor
     @Override
     public void enableSingleThreaded(boolean state)
     {
-//        singleThreaded = state;
+        singleThreaded = state;
     }
 
     /**

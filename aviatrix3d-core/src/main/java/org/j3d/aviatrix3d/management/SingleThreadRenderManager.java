@@ -338,14 +338,7 @@ public class SingleThreadRenderManager
     // Methods defined by RenderManager
     //---------------------------------------------------------------
 
-    /**
-     * Register an error reporter with the engine so that any errors generated
-     * by the node's internals can be reported in a nice, pretty fashion.
-     * Setting a value of null will clear the currently set reporter. If one
-     * is already set, the new value replaces the old.
-     *
-     * @param reporter The instance to use or null
-     */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         if(reporter == null)
@@ -356,49 +349,25 @@ public class SingleThreadRenderManager
         pickHandler.setErrorReporter(errorReporter);
     }
 
-    /**
-     * Set whether the manager should automatically halt management if an error
-     * or exception is detected during the user callback processing. If this is
-     * set to true (the default) then processing immediately halts and sets the
-     * state to disabled as soon as an error is detected. The management
-     * contexts are not disposed of. We just terminate the current management
-     * process if this is detected.
-     * <p>
-     * If the value is set to false, then the error is caught, but management
-     * continues on regardless.
-     * <p>
-     * In both states, the error that is caught is reported through the
-     * currently registered {@link ErrorReporter} instance as an error message.
-     *
-     * @param state true to enable halting, false to disable
-     */
+    @Override
     public void setHaltOnError(boolean state)
     {
         haltOnError = state;
     }
 
-    /**
-     * Check to see the current halt on error state.
-     *
-     * @return true if the system halts on an error condition
-     * @see #setHaltOnError
-     */
+    @Override
     public boolean isHaltingOnError()
     {
         return haltOnError;
     }
 
-    /**
-     * Tell render to start or stop management. If currently running, it
-     * will wait until all the graphicsPipelines have completed their current
-     * cycle and will then halt.
-     *
-     * @param state True if to enable management
-     */
+    @Override
     public synchronized void setEnabled(boolean state)
     {
         if(enabled == state)
+        {
             return;
+        }
 
         if(state)
         {
@@ -421,30 +390,20 @@ public class SingleThreadRenderManager
         {
             DisplayCollection c = displays.get(i);
             c.setEnabled(state);
-            if (state && !usableDisplays.contains(c)) {
+            if (state && !usableDisplays.contains(c))
+            {
                 usableDisplays.add(c);
             }
         }
     }
 
-    /**
-     * Get the current render state of the manager.
-     *
-     * @return true if the manager is currently running
-     */
+    @Override
     public boolean isEnabled()
     {
         return enabled;
     }
 
-    /**
-     * Force a single render of all graphicsPipelines now. Ignores the enabled
-     *  and cycle time settings to cause a single render at this point in time.
-     * If a render is currently in progress, an exception is generated
-     *
-     * @throws IllegalStateException The system is currently management and
-     *   should be disabled first.
-     */
+    @Override
     public synchronized void renderOnce()
         throws IllegalStateException
     {
@@ -465,51 +424,25 @@ public class SingleThreadRenderManager
         }
     }
 
-    /**
-     * Request that the manager perform a full scene render pass and update,
-     * ignoring any usual optimisations that it may take. For performance
-     * reasons, a render manager may elect to not run or update some portions
-     * of the scene graph. This method requests that the next frame only should
-     * ignore those optimisations and process the full scene graph.
-     * <p>
-     *
-     * This method will work both in automated management and with the
-     * {@link #renderOnce()} method.
-     */
+    @Override
     public void requestFullSceneRender()
     {
         sceneChanged = true;
     }
 
-    /**
-     * Set the minimum duty cycle of the render manager. This is the type in
-     * milliseconds that should be the minimum between frames and can be used
-     * to throttle the management loop to a maximum frame rate should other
-     * systems require CPU time.
-     *
-     * @param cycleTime The minimum time in milliseconds between frames
-     */
+    @Override
     public void setMinimumFrameInterval(int cycleTime)
     {
         minimumCycleTime = cycleTime;
     }
 
-    /**
-     * Fetch the currently set duty cycle value.
-     *
-     * @return The duty cycle time, in milliseconds
-     */
+    @Override
     public int getMinimumFrameInterval()
     {
         return minimumCycleTime;
     }
 
-    /**
-     * Add a dislay collection to be managed. A duplicate registration
-     * or null value is ignored.
-     *
-     * @param collection The new collection instance to be added
-     */
+    @Override
     public void addDisplay(DisplayCollection collection)
     {
         if(collection == null || displays.contains(collection) ||
@@ -524,12 +457,7 @@ public class SingleThreadRenderManager
 
     }
 
-    /**
-     * Remove an already registered display collection from the manager. A or
-     * null value or one that is not currently registered is ignored.
-     *
-     * @param collection The collection instance to be removed
-     */
+    @Override
     public void removeDisplay(DisplayCollection collection)
     {
         if(collection == null)
@@ -539,15 +467,7 @@ public class SingleThreadRenderManager
         addedDisplays.remove(collection);
     }
 
-    /**
-     * Set the picking handler to use. Overrides the default implementation
-     * that is used. If null is passed, the code reverts to the default
-     * implementation. This can only be set when the manager is not active
-     *
-     * @param mgr The new pick manager instance to use, or null
-     * @throws IllegalStateException The system is currently management and
-     *   should be disabled first.
-     */
+    @Override
     public void setPickingManager(PickingManager mgr)
         throws IllegalStateException
     {
@@ -564,28 +484,13 @@ public class SingleThreadRenderManager
             pickHandler = new DefaultPickingHandler();
     }
 
-    /**
-     * Register an observer that can be used to know when the application is
-     * safe to update the scene graph. A value of null will remove the
-     * currently set value.
-     *
-     * @param obs The observer instance to use
-     */
+    @Override
     public void setApplicationObserver(ApplicationUpdateObserver obs)
     {
         observer = obs;
     }
 
-    /**
-     * Disable the internal shutdown hook system. It will be up to the calling
-     * application to make sure the {@link #shutdown()} method is called to
-     * turn off the OpenGL management system. If it does not, there is a good
-     * possibility of a crash of the system.
-     * <p>
-     *
-     * If the internal shutdown is disabled, then the shutdown callback of the
-     * <code>ApplicationUpdateObserver</code> will not be called.
-     */
+    @Override
     public void disableInternalShutdown()
     {
         if(shutdownThread != null)
@@ -593,6 +498,7 @@ public class SingleThreadRenderManager
             AccessController.doPrivileged(
                 new PrivilegedAction<Object>()
                 {
+                    @Override
                     public Object run()
                     {
                         Runtime rt = Runtime.getRuntime();
@@ -606,10 +512,7 @@ public class SingleThreadRenderManager
         }
     }
 
-    /**
-     * Notification to shutdown the internals of the renderer because the
-     * application is about to exit.
-     */
+    @Override
     public synchronized void shutdown()
     {
         // If this has already been called once, ignore it. Most of the
@@ -659,6 +562,7 @@ public class SingleThreadRenderManager
      * Run method used to synchronise the internal management state and the
      * external state of the canvas. Should never be called directly.
      */
+    @Override
     public void run()
     {
         boolean valid_drawable = true;
@@ -864,62 +768,31 @@ public class SingleThreadRenderManager
     // Methods defined by NodeUpdateHandler
     //---------------------------------------------------------------
 
-    /**
-     * Check to see if writing to the node is permitted currently.
-     *
-     * @param src The object that is requesting the check
-     * @return true if the end user can write, false if not
-     */
+    @Override
     public boolean isDataWritePermitted(Object src)
     {
         return (src == writableDataObject) || !enabled;
     }
 
-    /**
-     * Check to see if writing to the node is permitted currently.
-     *
-     * @param src The object that is requesting the check
-     * @return true if the end user can write, false if not
-     */
+    @Override
     public boolean isBoundsWritePermitted(Object src)
     {
         return (src == writableBoundsObject) || !enabled;
     }
 
-    /**
-     * Check to see if picking is permitted currently.
-     *
-     * @return true if the end user can pick, false if not
-     */
+    @Override
     public boolean isPickingPermitted()
     {
         return !enabled || pickPermitted;
     }
 
-    /**
-     * Feedback to the internals that a data object has changed and it requires
-     * re-management. This should only be called by classes that can effect the
-     * management but don't normally use the data/bounds write listeners (ie
-     * changes are made during the app update portion of the scene graph).
-     * Typically this would be used for things like the {@link ViewEnvironment}
-     * changing the aspect ratio etc.
-     */
+    @Override
     public void notifyUpdateRequired()
     {
         sceneChanged = true;
     }
 
-    /**
-     * Notify the handler that you have updates to the SG that might alter
-     * a node's bounds.
-     *
-     * @param l The change requestor
-     * @param src The object that is passing this listener through.
-     * @param intL Internal listener for making callbacks at a later time
-     *    to propogate the bounds changes.
-     * @throws InvalidListenerSetTimingException If called when the node called
-     *    during one of the bounds/data changed callbacks
-     */
+    @Override
     public synchronized boolean boundsChanged(NodeUpdateListener l,
                                               Object src,
                                               InternalNodeUpdateListener intL)
@@ -935,7 +808,9 @@ public class SingleThreadRenderManager
         // Check for duplicates
         if(boundsChangeSrcSet.contains(src) &&
             boundsChangeListenerSet.contains(l))
+        {
             return false;
+        }
 
         boundsChangeListenerSet.add(l);
         boundsChangeSrcSet.add(src);
@@ -950,15 +825,7 @@ public class SingleThreadRenderManager
         return true;
     }
 
-    /**
-     * Notify the handler that you have updates to the SG that will not
-     * alter a node's bounds.
-     *
-     * @param l The change requestor
-     * @param src The object that is passing this listener through.
-     * @throws InvalidListenerSetTimingException If called when the node called
-     *    during one of the bounds/data changed callbacks
-     */
+    @Override
     public synchronized void dataChanged(NodeUpdateListener l, Object src)
         throws InvalidListenerSetTimingException
     {
@@ -984,16 +851,7 @@ public class SingleThreadRenderManager
         lastDataChangeItem++;
     }
 
-    /**
-     * Notify the handler that you are now going to be the active layer for
-     * sound rendering. Note that updating the active sound node means that
-     * the other sound node is disabled. This will be called on the data change
-     * callback normally. The source object will be an instance of either
-     * Layer or ViewportLayer, depending on the circumstances.
-     *
-     * @param intL Internal listener for making callbacks at a later time
-     *    to propogate when the target is no longer the active listener.
-     */
+    @Override
     public void activeSoundLayerChanged(InternalLayerUpdateListener intL)
         throws InvalidListenerSetTimingException
     {
@@ -1018,24 +876,13 @@ public class SingleThreadRenderManager
         activeSoundLayer = intL;
     }
 
-    /**
-     * Get the picking handler so that we can do some picking operations.
-     *
-     * @return the current instance of the picking system
-     */
+    @Override
     public PickingManager getPickingManager()
     {
         return pickHandler;
     }
 
-    /**
-     * The shader object passed requires an initialisation be performed. Queue
-     * the shader up for processing now.
-     *
-     * @param shader The shader instance to queue
-     * @param updateResponse true if this is being made as a response to a node's
-     *   setUpdateHandler() method
-     */
+    @Override
     public void shaderRequiresInit(ShaderSourceRenderable shader,
                                    boolean updateResponse)
     {
@@ -1057,15 +904,7 @@ public class SingleThreadRenderManager
         lastShaderInitItem++;
     }
 
-    /**
-     * The shader object passed requires updating the log info. Queue
-     * the shader up for processing now so that at the next oppourtunity it
-     * can call glGetLogInfoARB.
-     *
-     * @param shader The shader instance to queue
-     * @param updateResponse true if this is being made as a response to a node's
-     *   setUpdateHandler() method
-     */
+    @Override
     public void shaderRequiresLogInfo(ShaderSourceRenderable shader,
                                       boolean updateResponse)
     {
@@ -1087,50 +926,14 @@ public class SingleThreadRenderManager
         lastShaderLogItem++;
     }
 
-    /**
-     * Notification that the passed in renderable is wishing to mark itself
-     * ready for deletion processing. For example, this could be because a
-     * texture has had its contents replaced and needs to free up the old
-     * texture object ID. The reasons why this object is now marked for
-     * deletion are not defined - that is the sole discretion of the calling
-     * code.
-     * <p>
-     *
-     * This renderable instance will begin the deletion processing as soon
-     * as the start of the next culling pass begins. Once it hits the output
-     * device, deletion requests are guaranteed to be the first item that is
-     * processed, before all other requests.
-     * <p>
-     * If the object is already in the queue, the request will be silently
-     * ignored.
-     *
-     * @param deletable The renderable that will handle the cleanup at
-     *     the appropriate time
-     */
+    @Override
     public void requestDeletion(DeletableRenderable deletable)
     {
         resizeDeletionQueue();
         deletionQueue[numDeletables++] = deletable;
     }
 
-    /**
-     * Woops, we were in error, so please rescind that deletion request.
-     * For example, during the data update change processing a texture was
-     * reparented, first by deletion, then by addition to a new parent, this
-     * would ensure that we don't continuing attempting to delete the texture
-     * when we should not.
-     * <p>
-     *
-     * You can only rescind request that has happened in this frame as the
-     * delete requests are packaged up and sent off down the pipeline each
-     * frame, then forgotten about during the rendering process.
-     * <p>
-     * Rescinding a request for an object no-longer in the queue (eg multiple
-     * request, or just was never added in the first place), will be silently
-     * ignored.
-     *
-     * @param deletable The renderable that should be removed from the queue.
-     */
+    @Override
     public void rescindDeletionRequest(DeletableRenderable deletable)
     {
         for(int i = 0; i < numDeletables; i++)
@@ -1248,7 +1051,9 @@ public class SingleThreadRenderManager
     private void processShaderLists()
     {
         if((lastShaderInitItem == 0) && (lastShaderLogItem == 0))
+        {
             return;
+        }
 
         for(int i = 0; i < displays.size() && !terminate; i++)
         {
@@ -1277,7 +1082,7 @@ public class SingleThreadRenderManager
      * Resize the list if needed. Marked as final in order to encourage the
      * compiler to inline the code for faster execution
      */
-    private final void resizeDataChangeList()
+    private void resizeDataChangeList()
     {
         if((lastDataChangeItem + 1) == dataChangeList.length)
         {
@@ -1299,7 +1104,7 @@ public class SingleThreadRenderManager
      * Resize the list if needed. Marked as final in order to encourage the
      * compiler to inline the code for faster execution
      */
-    private final void resizeBoundsChangeList()
+    private void resizeBoundsChangeList()
     {
         if((lastBoundsChangeItem + 1) == boundsChangeList.length)
         {
@@ -1325,7 +1130,7 @@ public class SingleThreadRenderManager
      * Resize the list if needed. Marked as final in order to encourage the
      * compiler to inline the code for faster execution
      */
-    private final void resizeShaderInitList()
+    private void resizeShaderInitList()
     {
         if((lastShaderInitItem + 1) == shaderInitList.length)
         {
@@ -1345,7 +1150,7 @@ public class SingleThreadRenderManager
      * Resize the list if needed. Marked as final in order to encourage the
      * compiler to inline the code for faster execution
      */
-    private final void resizeShaderLogList()
+    private void resizeShaderLogList()
     {
         if((lastShaderLogItem + 1) == shaderLogList.length)
         {
@@ -1365,9 +1170,9 @@ public class SingleThreadRenderManager
      * Resize the array if needed. Marked as final in order to encourage the
      * compiler to inline the code for faster execution
      */
-    private final void resizeDeletionQueue()
+    private void resizeDeletionQueue()
     {
-        if((numDeletables) == deletionQueue.length)
+        if(numDeletables == deletionQueue.length)
         {
             int old_size = deletionQueue.length;
             int new_size = old_size + CHANGELIST_INCREMENT;
