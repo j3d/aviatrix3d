@@ -15,7 +15,6 @@
 package org.j3d.aviatrix3d.output.graphics;
 
 import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLDrawable;
 
@@ -23,10 +22,10 @@ import org.j3d.util.ErrorReporter;
 import org.j3d.util.I18nManager;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import static org.j3d.aviatrix3d.test.AV3DMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.testng.Assert.*;
 
@@ -34,6 +33,7 @@ import org.j3d.aviatrix3d.pipeline.RenderOp;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.rendering.ObjectRenderable;
 import org.j3d.aviatrix3d.rendering.ViewEnvironmentCullable;
+import org.j3d.aviatrix3d.test.MockGL2;
 
 /**
  * Unit tests for the 2D rendering processor
@@ -44,10 +44,6 @@ public class StandardRenderingProcessorTest
 {
     @Mock
     private GL mockGL;
-
-//    @Mock
-//    private GL2 mockGL2;
-    private MockGL2 mockGL2;
 
     @Mock
     private GLContext mockContext;
@@ -61,6 +57,8 @@ public class StandardRenderingProcessorTest
     @Mock
     private ErrorReporter mockReporter;
 
+    private MockGL2 mockGL2;
+
     @BeforeMethod(groups = "unit")
     public void setupTests() throws Exception
     {
@@ -69,7 +67,7 @@ public class StandardRenderingProcessorTest
         I18nManager intl_mgr = I18nManager.getManager();
         intl_mgr.setApplication("StandardRenderingProcessorTest", "config.i18n.org-j3d-aviatrix3d-resources-core");
 
-        mockGL2 = new MockGL2();
+        mockGL2 = new MockGL2(mockContext);
         when(mockGL.getGL2()).thenReturn(mockGL2);
         when(mockContext.getGL()).thenReturn(mockGL);
         when(mockContext.getGLDrawable()).thenReturn(mockDrawable);
@@ -297,6 +295,10 @@ public class StandardRenderingProcessorTest
 
         verify(test_renderable, times(1)).render(mockGL2);
         verify(test_renderable, times(1)).postRender(mockGL2);
+
+        mockGL2.verifyCall("glPushMatrix");
+        mockGL2.verifyCall("glPopMatrix");
+        mockGL2.verifyCall("glMultMatrixd", avAny(double[].class), 0);
 
         assertEquals(test_profile_data.numRenderables, 2, "Should have registered renderables");
     }
