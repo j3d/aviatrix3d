@@ -166,7 +166,7 @@ public abstract class BaseRenderingProcessor
     protected int lastLightIdx;
 
     /** Mapping of the object ID to it's used light ID */
-    protected IntHashMap lightIdMap;
+    protected IntHashMap<Integer> lightIdMap;
 
     /** Stack of the available OGL clip IDs that could be assigned to clips */
     protected Integer[] availableClips;
@@ -175,7 +175,7 @@ public abstract class BaseRenderingProcessor
     protected int lastClipIdx;
 
     /** Mapping of the object ID to it's used clip ID */
-    protected IntHashMap clipIdMap;
+    protected IntHashMap<Integer> clipIdMap;
 
     /**
      * Flag to say if we the default clear colour should be used, or
@@ -297,9 +297,9 @@ public abstract class BaseRenderingProcessor
 
         numRenderables = 0;
 
-        lightIdMap = new IntHashMap();
-        clipIdMap = new IntHashMap();
-        envSaveMap = new HashMap<String, GraphicsEnvironmentData>();
+        lightIdMap = new IntHashMap<>();
+        clipIdMap = new IntHashMap<>();
+        envSaveMap = new HashMap<>();
 
         lastLightIdx = 0;
         lastClipIdx = 0;
@@ -308,12 +308,11 @@ public abstract class BaseRenderingProcessor
         otherDataRequests = new GraphicsRequestData();
         currentViewport = new float[4];
 
-        addedBuffers = new ArrayList<OffscreenBufferRenderable>();
-        addedProcessors = new ArrayList<RenderingProcessor>();
-        updatedBuffers = new ArrayList<OffscreenBufferRenderable>();
-        childBuffers = new HashMap<OffscreenBufferRenderable,
-                                   BaseBufferDescriptor>();
-        removedBuffers = new ArrayList<OffscreenBufferRenderable>();
+        addedBuffers = new ArrayList<>();
+        addedProcessors = new ArrayList<>();
+        updatedBuffers = new ArrayList<>();
+        childBuffers = new HashMap<>();
+        removedBuffers = new ArrayList<>();
         errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 
@@ -1048,7 +1047,7 @@ public abstract class BaseRenderingProcessor
 
         availableClips = new Integer[num_id[0]];
         for(int i = 0; i < num_id[0]; i++)
-            availableClips[i] = new Integer(GL2.GL_CLIP_PLANE0 + i);
+            availableClips[i] = GL2.GL_CLIP_PLANE0 + i;
 
         gl.glGetIntegerv(GL2.GL_MAX_LIGHTS, num_id, 0);
         num_lights = num_id[0];
@@ -1057,7 +1056,7 @@ public abstract class BaseRenderingProcessor
         availableLights = new Integer[num_id[0]];
 
         for(int i = 0; i < num_id[0]; i++)
-            availableLights[i] = new Integer(GL2.GL_LIGHT1 + i);
+            availableLights[i] = GL2.GL_LIGHT1 + i;
 
         initComplete = true;
 
@@ -1072,7 +1071,7 @@ public abstract class BaseRenderingProcessor
             int sl_major_version = 0;
             int sl_minor_version = 0;
 
-            HashSet<String> extensions = new HashSet<String>();
+            HashSet<String> extensions = new HashSet<>();
 
             String gl_version = gl.glGetString(GL.GL_VERSION);
             String gl_vendor = gl.glGetString(GL.GL_VENDOR);
@@ -1496,11 +1495,13 @@ public abstract class BaseRenderingProcessor
 //        if(data.effectsProcessor != null)
 //            data.effectsProcessor.postDraw(gl, data.userData);
 
-        if(terminate)
-            return;
+//        if(terminate)
+//            return;
 
         if(data.viewpoint != null)
+        {
             data.viewpoint.postRender(gl);
+        }
     }
 
     /**
@@ -1513,7 +1514,9 @@ public abstract class BaseRenderingProcessor
     {
         // Will want to check here for the VP being non-live.
         if(data.viewpoint == null)
+        {
             return;
+        }
 
         updateProjectionMatrix(gl, data);
 
@@ -1567,7 +1570,7 @@ public abstract class BaseRenderingProcessor
 
                 NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-                Object[] msg_args = { new Integer(data.viewProjectionType) };
+                Object[] msg_args = { data.viewProjectionType };
                 Format[] fmts = { n_fmt };
                 MessageFormat msg_fmt =
                     new MessageFormat(msg_pattern, lcl);
@@ -1706,7 +1709,9 @@ public abstract class BaseRenderingProcessor
             FBODescriptor parent_desc = new FBODescriptor(renderable);
             ret_val = parent_desc;
             if(!ret_val.initialise(localContext))
+            {
                 ret_val = null;
+            }
             else
             {
                 for(int i = 1; i < buffer_data.getNumRenderTargets(); i++)
@@ -1741,7 +1746,9 @@ public abstract class BaseRenderingProcessor
         // to the offscreen texture.
 
         if(ret_val != null)
+        {
             renderable.registerBuffer(localContext, ret_val);
+        }
 
         return ret_val;
     }

@@ -361,7 +361,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     if(lastLightIdx >= availableLights.length)
                         continue;
 
-                    l_id = (Integer)lightIdMap.remove(renderableList[i].id);
+                    l_id = lightIdMap.remove(renderableList[i].id);
 
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.postRender(gl, l_id);
@@ -393,7 +393,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     if(lastClipIdx >= availableClips.length)
                         continue;
 
-                    c_id = (Integer)clipIdMap.remove(renderableList[i].id);
+                    c_id = clipIdMap.remove(renderableList[i].id);
 
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.postRender(gl, c_id);
