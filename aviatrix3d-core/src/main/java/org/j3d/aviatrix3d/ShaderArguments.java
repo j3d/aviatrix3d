@@ -21,6 +21,7 @@ import java.util.HashMap;
 
 import javax.media.opengl.GL2;
 
+import org.j3d.util.HashSet;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -112,7 +113,7 @@ public class ShaderArguments extends NodeComponent
     private HashMap<String, ShaderArgumentValue> values;
 
     /** Ignored var names for those that we have tried to fetch and failed */
-    private HashSet ignoredNames;
+    private HashSet<String> ignoredNames;
 
     /** List of the values existing */
     private String[] varNames;
@@ -125,8 +126,8 @@ public class ShaderArguments extends NodeComponent
      */
     public ShaderArguments()
     {
-        values = new HashMap<String, ShaderArgumentValue>();
-        ignoredNames = new HashSet();
+        values = new HashMap<>();
+        ignoredNames = new HashSet<>();
         varNames = new String[32];
         numVarNames = 0;
     }

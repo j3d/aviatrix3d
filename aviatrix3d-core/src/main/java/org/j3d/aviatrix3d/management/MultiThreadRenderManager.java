@@ -20,12 +20,12 @@ import java.util.HashMap;
 
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
+import org.j3d.util.HashSet;
 import org.j3d.util.I18nManager;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.HashSet;
 import org.j3d.aviatrix3d.picking.PickingManager;
 
 import org.j3d.aviatrix3d.rendering.DeletableRenderable;

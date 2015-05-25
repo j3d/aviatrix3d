@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
-import org.j3d.aviatrix3d.HashSet;
+import org.j3d.util.HashSet;
 import org.j3d.util.I18nManager;
 
 // Local imports
