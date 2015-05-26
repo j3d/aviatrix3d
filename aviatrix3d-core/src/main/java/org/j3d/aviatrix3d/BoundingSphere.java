@@ -103,6 +103,7 @@ public class BoundingSphere extends BoundingVolume
      *
      * @return One of the constant types defined
      */
+    @Override
     public int getType()
     {
         return SPHERE_BOUNDS;
@@ -114,6 +115,7 @@ public class BoundingSphere extends BoundingVolume
      * @param min The minimum position of the bounds
      * @param max The maximum position of the bounds
      */
+    @Override
     public void getExtents(float[] min, float[] max)
     {
         min[0] = center[0] - radius;
@@ -130,6 +132,7 @@ public class BoundingSphere extends BoundingVolume
      *
      * @param center The center of the bounds will be copied here
      */
+    @Override
     public void getCenter(float[] center)
     {
         center[0] = this.center[0];
@@ -143,6 +146,7 @@ public class BoundingSphere extends BoundingVolume
      * @param pos The location of the point to test against
      * @return true if the point lies inside this bounds
      */
+    @Override
     public boolean checkIntersectionPoint(float[] pos)
     {
         float x = pos[0] - center[0];
@@ -154,18 +158,6 @@ public class BoundingSphere extends BoundingVolume
     }
 
     /**
-     * Check for the given line intersecting this bounds. The line is
-     * described in normal vector form of <code>ax + by + cz + d = 0</code>.
-     *
-     * @param coeff The 4 constants for the line equation
-     * @return true if the line intersects this bounds
-     */
-    public boolean checkIntersectionLine(float[] coeff)
-    {
-        return false;
-    }
-
-    /**
      * Check for the given ray intersecting this bounds. The line is
      * described as a starting point and a vector direction.
      *
@@ -173,6 +165,7 @@ public class BoundingSphere extends BoundingVolume
      * @param dir The direction vector of the ray
      * @return true if the ray intersects this bounds
      */
+    @Override
     public boolean checkIntersectionRay(float[] pos, float[] dir)
     {
         return raySphere(pos, dir);
@@ -186,26 +179,9 @@ public class BoundingSphere extends BoundingVolume
      * @param end The start location of the segment
      * @return true if the segment intersects this bounds
      */
-    public boolean checkIntersectionSegment(float[] start,
-                                            float[] end)
+    @Override
+    public boolean checkIntersectionSegment(float[] start, float[] end)
 
-    {
-        return false;
-    }
-
-    /**
-     * Check for the given line segment intersecting this bounds. The line is
-     * described as the line going from the start point in a given direction
-     * with a length in that direction.
-     *
-     * @param start The start location of the segment
-     * @param dir The direction vector of the segment
-     * @param length The length to the segment
-     * @return true if the segment intersects this bounds
-     */
-    public boolean checkIntersectionSegment(float[] start,
-                                            float[] dir,
-                                            float length)
     {
         return false;
     }
@@ -218,6 +194,7 @@ public class BoundingSphere extends BoundingVolume
      * @param r The radius of the sphere
      * @return true if the sphere intersects this bounds
      */
+    @Override
     public boolean checkIntersectionSphere(float[] c, float r)
     {
         float x = c[0] - center[0];
@@ -238,6 +215,7 @@ public class BoundingSphere extends BoundingVolume
      * @param v2 The third vertex of the triangle
      * @return true if the sphere intersects this bounds
      */
+    @Override
     public boolean checkIntersectionTriangle(float[] v0, float[] v1, float[] v2)
     {
         return false;
@@ -254,6 +232,7 @@ public class BoundingSphere extends BoundingVolume
      * @param height The half-height of the cylinder from the center point
      * @return true if the sphere intersects this bounds
      */
+    @Override
     public boolean checkIntersectionCylinder(float[] center,
                                              float[] direction,
                                              float radius,
@@ -272,6 +251,7 @@ public class BoundingSphere extends BoundingVolume
      * @param angle The spread angle of the cone
      * @return true if the sphere intersects this bounds
      */
+    @Override
     public boolean checkIntersectionCone(float[] vertex,
                                          float[] direction,
                                          float angle)
@@ -287,6 +267,7 @@ public class BoundingSphere extends BoundingVolume
      * @param maxExtents The maximum extent value on each axis
      * @return true if the box intersects this bounds
      */
+    @Override
     public boolean checkIntersectionBox(float[] minExtents, float[] maxExtents)
     {
         float d_min = 0;
@@ -334,6 +315,7 @@ public class BoundingSphere extends BoundingVolume
      * @param mat The vworld to local transformation matrix
      * @return int FRUSTUM_ALLOUT, FRUSTUM_ALLIN, FRUSTUM_PARTIAL.
      */
+    @Override
     public int checkIntersectionFrustum(Vector4d[] planes, Matrix4d mat)
     {
         return FRUSTUM_PARTIAL;
@@ -344,6 +326,7 @@ public class BoundingSphere extends BoundingVolume
      *
      * @param mat The matrix to transform this bounds by
      */
+    @Override
     public void transform(Matrix4d mat)
     {
     }
@@ -357,6 +340,7 @@ public class BoundingSphere extends BoundingVolume
      *
      * @return A string representing the bounds information
      */
+    @Override
     public String toString()
     {
         StringBuilder buf = new StringBuilder("Bounding Sphere: center: ( ");
@@ -489,7 +473,7 @@ public class BoundingSphere extends BoundingVolume
 			
 			NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 			
-			Object[] msg_args = { new Float(radius) };
+			Object[] msg_args = { radius };
 			
 			Format[] fmts = { n_fmt };
 			MessageFormat msg_fmt =
