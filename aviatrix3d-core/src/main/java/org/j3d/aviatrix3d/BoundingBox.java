@@ -106,6 +106,7 @@ public class BoundingBox extends BoundingVolume
      *
      * @return One of the constant types defined
      */
+    @Override
     public int getType()
     {
         return BOX_BOUNDS;
@@ -117,6 +118,7 @@ public class BoundingBox extends BoundingVolume
      * @param min The minimum position of the bounds
      * @param max The maximum position of the bounds
      */
+    @Override
     public void getExtents(float[] min, float[] max)
     {
         min[0] = (float)this.min.x;
@@ -133,6 +135,7 @@ public class BoundingBox extends BoundingVolume
      *
      * @param center The center of the bounds will be copied here
      */
+    @Override
     public void getCenter(float[] center)
     {
         center[0] = this.center[0];
@@ -141,23 +144,12 @@ public class BoundingBox extends BoundingVolume
     }
     
     /**
-     * Get the size of the bounding volume.
-     *
-     * @param size The size of the bounds will be copied here
-     */
-    public void getSize(float[] size)
-    {
-        size[0] = this.size[0];
-        size[1] = this.size[1];
-        size[2] = this.size[2];
-    }
-    
-    /**
      * Check for the given point lieing inside this bounds.
      *
      * @param pos The location of the point to test against
      * @return true if the point lies inside this bounds
      */
+    @Override
     public boolean checkIntersectionPoint(float[] pos)
     {
         return pos[0] >= min.x && pos[0] <= max.x &&
@@ -173,6 +165,7 @@ public class BoundingBox extends BoundingVolume
      * @param dir The direction vector of the ray
      * @return true if the ray intersects this bounds
      */
+    @Override
     public boolean checkIntersectionRay(float[] pos, float[] dir)
     {
         // This is based on the Graphics Gems code by Andrew Woo.
@@ -188,7 +181,7 @@ public class BoundingBox extends BoundingVolume
         double c_plane_y = 0;
         double c_plane_z = 0;
         
-        // Find candidate planes; Unrlled loop
+        // Find candidate planes; Unrolled loop
         if(pos[0] < min.x)
         {
             quadrant_0 = false;
@@ -319,6 +312,7 @@ public class BoundingBox extends BoundingVolume
      * @param radius The radius of the sphere
      * @return true if the sphere intersects this bounds
      */
+    @Override
     public boolean checkIntersectionSphere(float[] center, float radius)
     {
         float r2 = radius * radius;
@@ -369,11 +363,11 @@ public class BoundingBox extends BoundingVolume
      * @param v2 The third vertex of the triangle
      * @return true if the sphere intersects this bounds
      */
+    @Override
     public boolean checkIntersectionTriangle(float[] v0, float[] v1, float[] v2)
     {
         // An implmentation of this code in Java:
         // http://www.cs.lth.se/home/Tomas_Akenine_Moller/code/tribox3.txt
-
 
         // center the triangle verts to the origin of the box.
         float vtx0_x = v0[0] - center[0];
@@ -405,32 +399,26 @@ public class BoundingBox extends BoundingVolume
         float fey = Math.abs(edge0_y);
         float fez = Math.abs(edge0_z);
 
-        if(!axisTest(edge0_z, edge0_y, fez, fey, vtx0_y, vtx0_z, vtx2_y, vtx2_z, 
-                     size[1], size[2]))
+        if(!axisTest(edge0_z, edge0_y, fez, fey, vtx0_y, vtx0_z, vtx2_y, vtx2_z, size[1], size[2]))
             return false;
 
-        if(!axisTest(edge0_z, edge0_x, fez, fex, vtx0_x, vtx0_z, vtx2_x, vtx2_z, 
-                     size[0], size[2]))
+        if(!axisTest(edge0_z, edge0_x, fez, fex, vtx0_x, vtx0_z, vtx2_x, vtx2_z, size[0], size[2]))
             return false;
 
-        if(!axisTest(edge0_y, edge0_x, fey, fex, vtx1_y, vtx1_z, vtx2_x, vtx2_y, 
-                     size[0], size[1]))
+        if(!axisTest(edge0_y, edge0_x, fey, fex, vtx1_y, vtx1_z, vtx2_x, vtx2_y, size[0], size[1]))
             return false;
 
         fex = Math.abs(edge1_x);
         fey = Math.abs(edge1_y);
         fez = Math.abs(edge1_z);
 
-        if(!axisTest(edge1_z, edge1_y, fez, fey, vtx0_y, vtx0_z, vtx2_y, vtx2_z, 
-                     size[1], size[2]))
+        if(!axisTest(edge1_z, edge1_y, fez, fey, vtx0_y, vtx0_z, vtx2_y, vtx2_z, size[1], size[2]))
             return false;
 
-        if(!axisTest(edge1_z, edge1_x, fez, fex, vtx0_x, vtx0_z, vtx2_x, vtx2_z, 
-                     size[0], size[2]))
+        if(!axisTest(edge1_z, edge1_x, fez, fex, vtx0_x, vtx0_z, vtx2_x, vtx2_z, size[0], size[2]))
             return false;
 
-        if(!axisTest(edge1_y, edge1_x, fey, fex, vtx0_y, vtx0_z, vtx1_x, vtx1_y, 
-                     size[0], size[1]))
+        if(!axisTest(edge1_y, edge1_x, fey, fex, vtx0_y, vtx0_z, vtx1_x, vtx1_y, size[0], size[1]))
             return false;
 
         fex = Math.abs(edge2_x);
@@ -453,135 +441,132 @@ public class BoundingBox extends BoundingVolume
          // triangle in each direction, and test for overlap in that direciton.
          // Equiv to testing a minimal AABB around the triangle against this
          // bbox
-         float min = vtx0_x;
-         float max = vtx0_x;
+        float min = vtx0_x;
+        float max = vtx0_x;
 
-         if(vtx1_x < min)
-             min = vtx1_x;
+        if(vtx1_x < min)
+            min = vtx1_x;
 
-         if(vtx1_x > max)
-             max = vtx1_x;
- 
-         if(vtx2_x < min)
-             min = vtx2_x;
+        if(vtx1_x > max)
+            max = vtx1_x;
 
-         if(vtx2_x > max)
-             max = vtx2_x;
- 
-         if(min > size[0] || max < -size[0])
-             return false;
+        if(vtx2_x < min)
+            min = vtx2_x;
 
-         if(min > size[1] || max < -size[1])
-             return false;
+        if(vtx2_x > max)
+            max = vtx2_x;
 
-         if(min > size[2] || max < -size[2])
-             return false;
+        if(min > size[0] || max < -size[0])
+            return false;
 
-         min = vtx0_y;
-         max = vtx0_y;
+        if(min > size[1] || max < -size[1])
+            return false;
 
-         if(vtx1_y < min)
-             min = vtx1_y;
+        if(min > size[2] || max < -size[2])
+            return false;
 
-         if(vtx1_y > max)
-             max = vtx1_y;
- 
-         if(vtx2_y < min)
-             min = vtx2_y;
+        min = vtx0_y;
+        max = vtx0_y;
 
-         if(vtx2_y > max)
-             max = vtx2_y;
- 
-         if(min > size[0] || max < -size[0])
-             return false;
+        if(vtx1_y < min)
+            min = vtx1_y;
 
-         if(min > size[1] || max < -size[1])
-             return false;
+        if(vtx1_y > max)
+            max = vtx1_y;
 
-         if(min > size[2] || max < -size[2])
-             return false;
+        if(vtx2_y < min)
+            min = vtx2_y;
 
-         min = vtx0_z;
-         max = vtx0_z;
+        if(vtx2_y > max)
+            max = vtx2_y;
 
-         if(vtx1_z < min)
-             min = vtx1_z;
+        if(min > size[0] || max < -size[0])
+            return false;
 
-         if(vtx1_z > max)
-             max = vtx1_z;
- 
-         if(vtx2_z < min)
-             min = vtx2_z;
+        if(min > size[1] || max < -size[1])
+           return false;
 
-         if(vtx2_z > max)
-             max = vtx2_z;
- 
-         if(min > size[0] || max < -size[0])
-             return false;
+        if(min > size[2] || max < -size[2])
+          return false;
 
-         if(min > size[1] || max < -size[1])
-             return false;
+        min = vtx0_z;
+        max = vtx0_z;
 
-         if(min > size[2] || max < -size[2])
-             return false;
+        if(vtx1_z < min)
+            min = vtx1_z;
 
-         // Final test - if the box intersects the plane of the triangle.
-         float n_x = edge1_y * edge2_z - edge2_y * edge1_z;
-         float n_y = edge1_z * edge2_x - edge2_x * edge1_z;
-         float n_z = edge1_x * edge2_y - edge2_z * edge1_x;
+        if(vtx1_z > max)
+           max = vtx1_z;
 
-         float min_x, min_y, min_z;
-         float max_x, max_y, max_z;
+        if(vtx2_z < min)
+           min = vtx2_z;
 
-         if(n_x > 0)
-         {
-             min_x = -size[0] - vtx0_x;
-             max_x = size[0] - vtx0_x;
-         }
-         else
-         {
-             min_x = size[0] - vtx0_x;
-             max_x = -size[0] - vtx0_x;
-         }
+        if(vtx2_z > max)
+           max = vtx2_z;
 
-         if(n_y > 0)
-         {
-             min_y = -size[1] - vtx0_y;
-             max_y = size[1] - vtx0_y;
-         }
-         else
-         {
-             min_y = size[1] - vtx0_y;
-             max_y = -size[1] - vtx0_y;
-         }
+        if(min > size[0] || max < -size[0])
+            return false;
 
-         if(n_z > 0)
-         {
-             min_z = -size[0] - vtx0_z;
-             max_z = size[0] - vtx0_z;
-         }
-         else
-         {
-             min_z = size[0] - vtx0_z;
-             max_z = -size[0] - vtx0_z;
-         }
+        if(min > size[1] || max < -size[1])
+            return false;
 
-         float d = n_x * min_x + n_y * min_y + n_z * min_z;
+        if(min > size[2] || max < -size[2])
+            return false;
 
-         if(d > 0)
-             return false;
+        // Final test - if the box intersects the plane of the triangle.
+        float n_x = edge1_y * edge2_z - edge2_y * edge1_z;
+        float n_y = edge1_z * edge2_x - edge2_x * edge1_z;
+        float n_z = edge1_x * edge2_y - edge2_z * edge1_x;
 
-         d = n_x * max_x + n_y * max_y + n_z * max_z;
+        float min_x, min_y, min_z;
+        float max_x, max_y, max_z;
 
-         // was
-         // if d >= 0
-         //   return true;
-         //  else
-         //    return false
-         if(d < 0)
-             return false;       
+        if(n_x > 0)
+        {
+            min_x = -size[0] - vtx0_x;
+            max_x = size[0] - vtx0_x;
+        }
+        else
+        {
+            min_x = size[0] - vtx0_x;
+            max_x = -size[0] - vtx0_x;
+        }
 
-         return true;
+        if(n_y > 0)
+        {
+            min_y = -size[1] - vtx0_y;
+            max_y = size[1] - vtx0_y;
+        }
+        else
+        {
+            min_y = size[1] - vtx0_y;
+            max_y = -size[1] - vtx0_y;
+        }
+
+        if(n_z > 0)
+        {
+            min_z = -size[0] - vtx0_z;
+            max_z = size[0] - vtx0_z;
+        }
+        else
+        {
+            min_z = size[0] - vtx0_z;
+            max_z = -size[0] - vtx0_z;
+        }
+
+        float d = n_x * min_x + n_y * min_y + n_z * min_z;
+
+        if(d > 0)
+            return false;
+
+        d = n_x * max_x + n_y * max_y + n_z * max_z;
+
+        // was
+        // if d >= 0
+        //   return true;
+        //  else
+        //    return false
+        return d >= 0;
     }
 
     /**
@@ -595,10 +580,11 @@ public class BoundingBox extends BoundingVolume
      * @param height The half-height of the cylinder from the center point
      * @return true if the sphere intersects this bounds
      */
+    @Override
     public boolean checkIntersectionCylinder(float[] center,
-        float[] direction,
-        float radius,
-        float height)
+                                             float[] direction,
+                                             float radius,
+                                             float height)
     {
         return false;
     }
@@ -613,9 +599,8 @@ public class BoundingBox extends BoundingVolume
      * @param angle The spread angle of the cone
      * @return true if the sphere intersects this bounds
      */
-    public boolean checkIntersectionCone(float[] vertex,
-        float[] direction,
-        float angle)
+    @Override
+    public boolean checkIntersectionCone(float[] vertex, float[] direction, float angle)
     {
         return false;
     }
@@ -628,6 +613,7 @@ public class BoundingBox extends BoundingVolume
      * @param maxExtents The maximum extent value on each axis
      * @return true if the box intersects this bounds
      */
+    @Override
     public boolean checkIntersectionBox(float[] minExtents, float[] maxExtents)
     {
         // a.min <= b.max && a.max >= b.min
@@ -643,6 +629,7 @@ public class BoundingBox extends BoundingVolume
      * @param mat The vworld to local transformation matrix
      * @return int FRUSTUM_ALLOUT, FRUSTUM_ALLIN, FRUSTUM_PARTIAL.
      */
+    @Override
     public int checkIntersectionFrustum(Vector4d[] planes, Matrix4d mat)
     {
         // transform the vertices of the bounding box
@@ -720,8 +707,8 @@ public class BoundingBox extends BoundingVolume
      * @param end The start location of the segment
      * @return true if the segment intersects this bounds
      */
+    @Override
     public boolean checkIntersectionSegment(float[] start, float[] end)
-        
     {
         // Implemented using the Box Overlap test
         // find the centerpoint of the line and direction. Translate
@@ -742,17 +729,13 @@ public class BoundingBox extends BoundingVolume
         float h_x = size[0];
         float h_y = size[1];
         float h_z = size[2];
-        
-        if((Math.abs(c_x) > v_x + h_x) ||
-            (Math.abs(c_y) > v_y + h_y) ||
-            (Math.abs(c_z) > v_z + h_z) ||
-            (Math.abs(c_y * w_z - c_z * w_y) > h_y * v_z + h_z * v_y) ||
-            (Math.abs(c_x * w_z - c_z * w_x) > h_x * v_z + h_z * v_x) ||
-            (Math.abs(c_x * w_y - c_y * w_x) > h_x * v_y + h_y * v_x))
-            
-            return false;
-        
-        return true;
+
+        return !((Math.abs(c_x) > v_x + h_x) ||
+                 (Math.abs(c_y) > v_y + h_y) ||
+                 (Math.abs(c_z) > v_z + h_z) ||
+                 (Math.abs(c_y * w_z - c_z * w_y) > h_y * v_z + h_z * v_y) ||
+                 (Math.abs(c_x * w_z - c_z * w_x) > h_x * v_z + h_z * v_x) ||
+                 (Math.abs(c_x * w_y - c_y * w_x) > h_x * v_y + h_y * v_x));
     }
     
     /**
@@ -760,6 +743,7 @@ public class BoundingBox extends BoundingVolume
      *
      * @param mat The matrix to transform this bounds by
      */
+    @Override
     public void transform(Matrix4d mat)
     {
         min.x = center[0];
@@ -793,7 +777,19 @@ public class BoundingBox extends BoundingVolume
     //---------------------------------------------------------------
     // Local methods
     //---------------------------------------------------------------
-    
+
+    /**
+     * Get the size of the bounding volume.
+     *
+     * @param size The size of the bounds will be copied here
+     */
+    public void getSize(float[] size)
+    {
+        size[0] = this.size[0];
+        size[1] = this.size[1];
+        size[2] = this.size[2];
+    }
+
     /**
      * Set both of the bounds of the box.
      *
@@ -904,7 +900,7 @@ public class BoundingBox extends BoundingVolume
      */
     public String toString()
     {
-        StringBuffer buf = new StringBuffer("Bounding Box: min(");
+        StringBuilder buf = new StringBuilder("Bounding Box: min(");
         buf.append(min.x);
         buf.append(' ');
         buf.append(min.y);
