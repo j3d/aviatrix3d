@@ -13,9 +13,7 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.media.opengl.GL;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLContext;
+// None
 
 // Local imports
 // None
@@ -93,7 +91,7 @@ public class BufferSetupData
      */
     public void enableUnclampedColorBuffer(boolean enable)
     {
-        fpColorBuffer = enable;
+        unclampedColor = enable;
     }
 
     /**
