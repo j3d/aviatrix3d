@@ -75,5 +75,6 @@ public class CullInstructions
     public void resizeChildren(int size)
     {
         children = new Cullable[size];
+        numChildren = 0;
     }
 }
