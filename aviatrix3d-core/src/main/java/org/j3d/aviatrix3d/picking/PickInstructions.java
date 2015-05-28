@@ -77,5 +77,6 @@ public class PickInstructions
     public void resizeChildren(int size)
     {
         children = new PickTarget[size];
+        numChildren = 0;
     }
 }
