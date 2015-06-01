@@ -166,6 +166,7 @@ class DefaultPickingHandler
      *
      * @param reporter The instance to use or null
      */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         if(reporter == null)
@@ -173,7 +174,10 @@ class DefaultPickingHandler
         else
             errorReporter = reporter;
 
-        batchPicker.setErrorReporter(errorReporter);
+        if(batchPicker != null)
+        {
+            batchPicker.setErrorReporter(errorReporter);
+        }
     }
 
     /**
@@ -186,6 +190,7 @@ class DefaultPickingHandler
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public synchronized void pickBatch(PickTarget root,
                                        PickRequest[] req,
                                        int numRequests)
@@ -200,7 +205,10 @@ class DefaultPickingHandler
         else
         {
             if(batchPicker == null)
+            {
                 batchPicker = new DefaultBatchPickingHandler();
+                batchPicker.setErrorReporter(errorReporter);
+            }
 
             batchPicker.processPick(root, req, numRequests);
         }
@@ -215,6 +223,7 @@ class DefaultPickingHandler
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public synchronized void pickSingle(PickTarget root, PickRequest req)
         throws NotPickableException
     {
@@ -271,7 +280,7 @@ class DefaultPickingHandler
 
 				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-				Object[] msg_args = { new Integer(req.pickGeometryType) };
+				Object[] msg_args = { req.pickGeometryType };
 				Format[] fmts = { n_fmt };
 				MessageFormat msg_fmt =
 					new MessageFormat(msg_pattern, lcl);
@@ -315,19 +324,18 @@ class DefaultPickingHandler
                 break;
 
             default:
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
 
-				Locale lcl = intl_mgr.getFoundLocale();
+                Locale lcl = intl_mgr.getFoundLocale();
 
-				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
+                NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-				Object[] msg_args = { new Integer(req.pickSortType) };
-				Format[] fmts = { n_fmt };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				msg_fmt.setFormats(fmts);
-				String msg = msg_fmt.format(msg_args);
+                Object[] msg_args = { req.pickSortType };
+                Format[] fmts = { n_fmt };
+                MessageFormat msg_fmt = new MessageFormat(msg_pattern, lcl);
+                msg_fmt.setFormats(fmts);
+                String msg = msg_fmt.format(msg_args);
                 errorReporter.warningReport(msg, null);
         }
     }
@@ -489,8 +497,6 @@ class DefaultPickingHandler
 
                 if(pickCustom((CustomPickTarget)target_node, req))
                 {
-                    CustomPickTarget cpt = (CustomPickTarget)target_node;
-
                     num_kids = pickInstructions.numChildren;
 
                     // reset the transform at the top of the stack
@@ -508,8 +514,7 @@ class DefaultPickingHandler
                     pickPath[0] = target_node;
 
                     // Make sure to clone the array locally
-                    PickTarget[] kids =
-                        (PickTarget[])pickInstructions.children.clone();
+                    PickTarget[] kids = pickInstructions.children.clone();
 
                     // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids && !found; i++)
@@ -953,7 +958,7 @@ class DefaultPickingHandler
                                     SceneGraphPath path,
                                     boolean needTransform)
     {
-        if(leaf.checkPickMask(req.pickType))
+        if(!leaf.checkPickMask(req.pickType))
             return false;
 
         boolean found = false;
@@ -1003,7 +1008,7 @@ class DefaultPickingHandler
         }
         else
         {
-            output_list = new ArrayList<SceneGraphPath>();
+            output_list = new ArrayList<>();
             req.foundPaths = output_list;
         }
 
@@ -1131,7 +1136,7 @@ class DefaultPickingHandler
             case PickTarget.LEAF_PICK_TYPE:
                 transformPath[0].setIdentity();
                 validTransform[0] = true;
-                pickPath[0] = (LeafPickTarget)target_node;
+                pickPath[0] = target_node;
                 lastPathIndex = 1;
 
                 found += pickAllPoint((LeafPickTarget)target_node,
@@ -1142,6 +1147,16 @@ class DefaultPickingHandler
                                       req.generateVWorldMatrix);
 
                 req.pickCount = found;
+                break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found += pickAllPoint((CustomPickTarget)target_node,
+                                      req,
+                                      start,
+                                      output_list,
+                                      0,
+                                      req.generateVWorldMatrix);
+
                 break;
         }
     }
@@ -1475,7 +1490,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids; i++)
             {
@@ -1568,7 +1583,7 @@ class DefaultPickingHandler
                 paths.add(p);
             }
             else
-                p = (SceneGraphPath)paths.get(currentPath);
+                p = paths.get(currentPath);
 
             if(needTransform)
                 buildVWorldTransform();
@@ -1603,11 +1618,8 @@ class DefaultPickingHandler
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
-                pickAllLineSegment(root, req);
-                break;
-
             case PickRequest.SORT_ORDERED:
-                pickAllLineSegmentSorted(root, req);
+                pickAllLineSegment(root, req);
                 break;
 
             case PickRequest.SORT_ANY:
@@ -1626,7 +1638,7 @@ class DefaultPickingHandler
 
 				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-				Object[] msg_args = { new Integer(req.pickSortType) };
+				Object[] msg_args = { req.pickSortType };
 				Format[] fmts = { n_fmt };
 				MessageFormat msg_fmt =
 					new MessageFormat(msg_pattern, lcl);
@@ -1804,6 +1816,15 @@ class DefaultPickingHandler
                                               req.useGeometry,
                                               false);
                 break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found = pickSingleLineSegment((CustomPickTarget)target_node,
+                                              req,
+                                              start,
+                                              end,
+                                              output_path,
+                                              req.generateVWorldMatrix,
+                                              req.useGeometry);
         }
 
         req.pickCount = found ? 1 : 0;
@@ -2358,7 +2379,7 @@ class DefaultPickingHandler
             output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
         else
         {
-            output_list = new ArrayList<SceneGraphPath>();
+            output_list = new ArrayList<>();
             req.foundPaths = output_list;
         }
 
@@ -2514,6 +2535,16 @@ class DefaultPickingHandler
                                             req.useGeometry,
                                             false);
                 break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found += pickAllLineSegment((CustomPickTarget)target_node,
+                                            req,
+                                            start,
+                                            end,
+                                            output_list,
+                                            found,
+                                            req.generateVWorldMatrix,
+                                            req.useGeometry);
         }
 
         req.pickCount = found;
@@ -2927,7 +2958,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids; i++)
             {
@@ -3041,7 +3072,7 @@ class DefaultPickingHandler
                         paths.add(p);
                     }
                     else
-                        p = (SceneGraphPath)paths.get(currentPath);
+                        p = paths.get(currentPath);
 
                     if(needTransform)
                         buildVWorldTransform();
@@ -3073,7 +3104,7 @@ class DefaultPickingHandler
                     paths.add(p);
                 }
                 else
-                    p = (SceneGraphPath)paths.get(currentPath);
+                    p = paths.get(currentPath);
 
                 if(needTransform)
                     buildVWorldTransform();
@@ -3102,8 +3133,7 @@ class DefaultPickingHandler
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
      */
-    private void pickSingleLineSegmentSorted(PickTarget root,
-        PickRequest req)
+    private void pickSingleLineSegmentSorted(PickTarget root, PickRequest req)
     {
         SceneGraphPath output_path = null;
 
@@ -3261,7 +3291,17 @@ class DefaultPickingHandler
                                                output_path,
                                                req.generateVWorldMatrix,
                                                req.useGeometry,
-                                               false);
+                                               true);
+                break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found = pickSingleLineSegmentSorted((CustomPickTarget)target_node,
+                                                    req,
+                                                    start,
+                                                    end,
+                                                    output_path,
+                                                    req.generateVWorldMatrix,
+                                                    req.useGeometry);
                 break;
         }
 
@@ -3654,7 +3694,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
@@ -3720,18 +3760,6 @@ class DefaultPickingHandler
         }
 
         return found;
-    }
-
-    /**
-     * Check for all intersections against this geometry and it's children to
-     * see if there is an intersection with the given ray. Return the first
-     * found.
-     *
-     * @param root The root point to start the pick processing from
-     * @param req The list of picks to be made, starting at this object
-     */
-    private void pickAllLineSegmentSorted(PickTarget root, PickRequest req)
-    {
     }
 
     // ----------------------- Ray Picking ------------------------------
@@ -3942,6 +3970,17 @@ class DefaultPickingHandler
                                       req.generateVWorldMatrix,
                                       req.useGeometry,
                                       false);
+                break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found = pickSingleRay((CustomPickTarget)target_node,
+                                      req,
+                                      start,
+                                      end,
+                                      output_path,
+                                      req.generateVWorldMatrix,
+                                      req.useGeometry);
+                break;
         }
 
         req.pickCount = found ? 1 : 0;
@@ -4499,7 +4538,7 @@ class DefaultPickingHandler
             output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
         else
         {
-            output_list = new ArrayList<SceneGraphPath>();
+            output_list = new ArrayList<>();
             req.foundPaths = output_list;
         }
 
@@ -4654,6 +4693,16 @@ class DefaultPickingHandler
                                     req.useGeometry,
                                     false);
                 break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found += pickAllRay((CustomPickTarget)target_node,
+                                    req,
+                                    start,
+                                    end,
+                                    output_list,
+                                    found,
+                                    req.generateVWorldMatrix,
+                                    req.useGeometry);
         }
 
         req.pickCount = found;
@@ -6617,10 +6666,12 @@ class DefaultPickingHandler
         ArrayList<SceneGraphPath> output_list = null;
 
         if(req.foundPaths instanceof ArrayList)
-            output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
+        {
+            output_list = (ArrayList<SceneGraphPath>) req.foundPaths;
+        }
         else
         {
-            output_list = new ArrayList<SceneGraphPath>();
+            output_list = new ArrayList<>();
             req.foundPaths = output_list;
         }
 
@@ -7185,7 +7236,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids; i++)
             {
@@ -7286,7 +7337,7 @@ class DefaultPickingHandler
                 paths.add(p);
             }
             else
-                p = (SceneGraphPath)paths.get(currentPath);
+                p = paths.get(currentPath);
 
             if(needTransform)
                 buildVWorldTransform();
@@ -7338,7 +7389,7 @@ class DefaultPickingHandler
 
 				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-				Object[] msg_args = { new Integer(req.pickSortType) };
+				Object[] msg_args = { req.pickSortType };
 				Format[] fmts = { n_fmt };
 				MessageFormat msg_fmt =
 					new MessageFormat(msg_pattern, lcl);
@@ -7858,7 +7909,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
