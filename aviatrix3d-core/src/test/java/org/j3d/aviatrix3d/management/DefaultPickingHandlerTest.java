@@ -122,6 +122,45 @@ public class DefaultPickingHandlerTest
 //        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
     }
 
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllCustomPick(int geometryType, float[] origin, float[] destination, float additionalData,
+                                    int sortType, int pickType) throws Exception
+    {
+        // Tests single level custom picker. Need separate test for nested custom pick
+        // handling.
+
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        CustomPickTarget mock_target = mock(CustomPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+    }
+
 
     // ------- Point Picking Tests -------------------------------------------
 
@@ -191,28 +230,6 @@ public class DefaultPickingHandlerTest
 //        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
     }
 
-    @Test(groups = "unit", dataProvider = "single child pick options")
-    public void testPointCustomPick(int sortType, int pickType) throws Exception
-    {
-        // Tests single level custom picker. Need separate test for nested custom pick
-        // handling.
-
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_POINT;
-        test_request.pickSortType = sortType;
-        test_request.pickType = pickType;
-
-        CustomPickTarget mock_target = mock(CustomPickTarget.class);
-        when(mock_target.checkPickMask(pickType)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.pickSingle(mock_target, test_request);
-
-        verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
-    }
-
     @Test(groups = "unit")
     public void testPointPickInvalidSortType() throws Exception
     {
@@ -278,29 +295,6 @@ public class DefaultPickingHandlerTest
         class_under_test.pickSingle(mock_target, test_request);
 
         assertEquals(test_request.pickCount, 0, "Should not have an intersection");
-    }
-
-    @Test(groups = "unit", dataProvider = "single child pick options")
-    public void testRayCustomPick(int sortType, int pickType) throws Exception
-    {
-        // Tests single level custom picker. Need separate test for nested custom pick
-        // handling.
-
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_RAY;
-        test_request.pickSortType = sortType;
-        test_request.pickType = pickType;
-        test_request.destination[1] = 1.0f;
-
-        CustomPickTarget mock_target = mock(CustomPickTarget.class);
-        when(mock_target.checkPickMask(pickType)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.pickSingle(mock_target, test_request);
-
-        verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
     }
 
     @Test(groups = "unit")
@@ -370,29 +364,6 @@ public class DefaultPickingHandlerTest
         assertEquals(test_request.pickCount, 0, "Should not have an intersection");
     }
 
-    @Test(groups = "unit", dataProvider = "single child pick options")
-    public void testLineSegmentCustomPick(int sortType, int pickType) throws Exception
-    {
-        // Tests single level custom picker. Need separate test for nested custom pick
-        // handling.
-
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_LINE_SEGMENT;
-        test_request.pickSortType = sortType;
-        test_request.pickType = pickType;
-        test_request.destination[1] = 1.0f;
-
-        CustomPickTarget mock_target = mock(CustomPickTarget.class);
-        when(mock_target.checkPickMask(pickType)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.pickSingle(mock_target, test_request);
-
-        verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
-    }
-
     @Test(groups = "unit")
     public void testLineSegmentPickInvalidSortType() throws Exception
     {
@@ -415,23 +386,6 @@ public class DefaultPickingHandlerTest
 
         assertEquals(test_request.pickCount, 0, "Should not have found intersection");
         verify(mock_reporter, atLeast(1)).warningReport(anyString(), any(Throwable.class));
-    }
-
-    @DataProvider(name = "single child pick options")
-    public Object[][] generateSingleChildPickOptions()
-    {
-        return new Object[][]
-        {
-            { PickRequest.SORT_ALL, PickRequest.FIND_ALL },
-            { PickRequest.SORT_ANY, PickRequest.FIND_ALL },
-            { PickRequest.SORT_CLOSEST, PickRequest.FIND_ALL },
-            { PickRequest.SORT_ORDERED, PickRequest.FIND_ALL },
-
-            { PickRequest.SORT_ALL, PickRequest.FIND_GENERAL },
-            { PickRequest.SORT_ANY, PickRequest.FIND_GENERAL },
-            { PickRequest.SORT_CLOSEST, PickRequest.FIND_GENERAL },
-            { PickRequest.SORT_ORDERED, PickRequest.FIND_GENERAL },
-        };
     }
 
     @DataProvider(name = "pick types")
@@ -467,6 +421,8 @@ public class DefaultPickingHandlerTest
     public Object[][] generatePickComboOptions()
     {
         float[] direction_up = { 0, 1, 0 };
+        float[] box_top = { 1, 1, 1};
+
         return new Object[][]
         {
             { PickRequest.PICK_POINT, null, null, 0, PickRequest.SORT_ALL, PickRequest.FIND_ALL },
@@ -520,15 +476,15 @@ public class DefaultPickingHandlerTest
 //            { PickRequest.PICK_CONE, null, direction_up, 1, PickRequest.SORT_CLOSEST, PickRequest.FIND_GENERAL },
 //            { PickRequest.PICK_CONE, null, direction_up, 1, PickRequest.SORT_ORDERED, PickRequest.FIND_GENERAL },
 
-            { PickRequest.PICK_BOX, null, direction_up, 0, PickRequest.SORT_ALL, PickRequest.FIND_ALL },
-            { PickRequest.PICK_BOX, null, direction_up, 0, PickRequest.SORT_ANY, PickRequest.FIND_ALL },
-            { PickRequest.PICK_BOX, null, direction_up, 0, PickRequest.SORT_CLOSEST, PickRequest.FIND_ALL },
-            { PickRequest.PICK_BOX, null, direction_up, 0, PickRequest.SORT_ORDERED, PickRequest.FIND_ALL },
+            { PickRequest.PICK_BOX, null, box_top, 0, PickRequest.SORT_ALL, PickRequest.FIND_ALL },
+            { PickRequest.PICK_BOX, null, box_top, 0, PickRequest.SORT_ANY, PickRequest.FIND_ALL },
+            { PickRequest.PICK_BOX, null, box_top, 0, PickRequest.SORT_CLOSEST, PickRequest.FIND_ALL },
+            { PickRequest.PICK_BOX, null, box_top, 0, PickRequest.SORT_ORDERED, PickRequest.FIND_ALL },
 
-            { PickRequest.PICK_BOX, null, direction_up, 0, PickRequest.SORT_ALL, PickRequest.FIND_GENERAL },
-            { PickRequest.PICK_BOX, null, direction_up, 0, PickRequest.SORT_ANY, PickRequest.FIND_GENERAL },
-            { PickRequest.PICK_BOX, null, direction_up, 0, PickRequest.SORT_CLOSEST, PickRequest.FIND_GENERAL },
-            { PickRequest.PICK_BOX, null, direction_up, 0, PickRequest.SORT_ORDERED, PickRequest.FIND_GENERAL },
+            { PickRequest.PICK_BOX, null, box_top, 0, PickRequest.SORT_ALL, PickRequest.FIND_GENERAL },
+            { PickRequest.PICK_BOX, null, box_top, 0, PickRequest.SORT_ANY, PickRequest.FIND_GENERAL },
+            { PickRequest.PICK_BOX, null, box_top, 0, PickRequest.SORT_CLOSEST, PickRequest.FIND_GENERAL },
+            { PickRequest.PICK_BOX, null, box_top, 0, PickRequest.SORT_ORDERED, PickRequest.FIND_GENERAL },
 
             { PickRequest.PICK_SPHERE, null, null, 0.5f, PickRequest.SORT_ALL, PickRequest.FIND_ALL },
             { PickRequest.PICK_SPHERE, null, null, 0.5f, PickRequest.SORT_ANY, PickRequest.FIND_ALL },

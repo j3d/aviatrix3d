@@ -8926,6 +8926,14 @@ class DefaultPickingHandler
                                       req.generateVWorldMatrix);
 
                 break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found = pickSingleBox((CustomPickTarget)target_node,
+                                      req,
+                                      start,
+                                      end,
+                                      output_path,
+                                      req.generateVWorldMatrix);
         }
 
         req.pickCount = found ? 1 : 0;
@@ -9523,6 +9531,15 @@ class DefaultPickingHandler
 
                 req.pickCount = found;
                 break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found += pickAllBox((CustomPickTarget)target_node,
+                                    req,
+                                    start,
+                                    end,
+                                    output_list,
+                                    found,
+                                    req.generateVWorldMatrix);
         }
     }
 
@@ -11388,6 +11405,14 @@ class DefaultPickingHandler
                                          output_path,
                                          req.generateVWorldMatrix);
                 break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found = pickSingleSphere((CustomPickTarget)target_node,
+                                         req,
+                                         start,
+                                         req.additionalData,
+                                         output_path,
+                                         req.generateVWorldMatrix);
         }
 
         req.pickCount = found ? 1 : 0;
@@ -11867,7 +11892,7 @@ class DefaultPickingHandler
             output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
         else
         {
-            output_list = new ArrayList<SceneGraphPath>();
+            output_list = new ArrayList<>();
             req.foundPaths = output_list;
         }
 
@@ -12019,6 +12044,15 @@ class DefaultPickingHandler
 
                 req.pickCount = found;
                 break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found += pickAllSphere((CustomPickTarget)target_node,
+                                       req,
+                                       start,
+                                       req.additionalData,
+                                       output_list,
+                                       found,
+                                       req.generateVWorldMatrix);
         }
     }
 
