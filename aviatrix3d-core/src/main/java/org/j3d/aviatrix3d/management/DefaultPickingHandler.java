@@ -1100,6 +1100,7 @@ class DefaultPickingHandler
                                                       output_list,
                                                       found,
                                                       req.generateVWorldMatrix);
+                                break;
 
                             case PickTarget.CUSTOM_PICK_TYPE:
                                 found += pickAllPoint((CustomPickTarget)kids[i],
