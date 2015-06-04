@@ -4493,6 +4493,7 @@ class DefaultPickingHandler
                                               needTransform,
                                               useGeom,
                                               false);
+                        break;
 
                     case PickTarget.CUSTOM_PICK_TYPE:
                         found = pickSingleRay((CustomPickTarget)kids[i],

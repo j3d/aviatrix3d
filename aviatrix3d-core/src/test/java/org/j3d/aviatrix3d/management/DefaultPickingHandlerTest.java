@@ -19,6 +19,8 @@ import java.util.List;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.ErrorReporter;
 import org.j3d.util.I18nManager;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -246,12 +248,31 @@ public class DefaultPickingHandlerTest
 
         test_request.additionalData = additionalData;
 
-        PickTarget mock_child = mock(LeafPickTarget.class);
-        when(mock_child.checkPickMask(pickType)).thenReturn(true);
-        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
-        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+        // Run these all in reverse order so that each path will pick up a different child
+        // first for the purposes of checking all code paths.
+        PickTarget mock_child1 = mock(LeafPickTarget.class);
+        when(mock_child1.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child1.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child1.getPickableBounds()).thenReturn(new BoundingBox());
 
-        PickTarget[] test_group_children = { mock_child };
+        SinglePickTarget mock_child2 = mock(SinglePickTarget.class);
+        when(mock_child2.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child2.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
+        when(mock_child2.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_child2.getPickableChild()).thenReturn(mock_child1);
+
+
+        PickTarget[] test_child_group_children = { mock_child2, mock_child1 };
+
+        GroupPickTarget mock_child3 = mock(GroupPickTarget.class);
+        when(mock_child3.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child3.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_child3.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_child3.getPickableChildren()).thenReturn(test_child_group_children);
+        when(mock_child3.numPickableChildren()).thenReturn(test_child_group_children.length);
+
+        PickTarget[] test_group_children = { mock_child3, mock_child2, mock_child1 };
+
         GroupPickTarget mock_target = mock(GroupPickTarget.class);
         when(mock_target.checkPickMask(pickType)).thenReturn(true);
         when(mock_target.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
@@ -262,12 +283,17 @@ public class DefaultPickingHandlerTest
         DefaultPickingHandler class_under_test = new DefaultPickingHandler();
         class_under_test.pickSingle(mock_target, test_request);
 
-        assertEquals(test_request.pickCount, 1, "Expected an intersection");
 
         if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertEquals(test_request.pickCount, 4, "Wrong number of intersections found");
             assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+        }
         else
+        {
+            assertEquals(test_request.pickCount, 1, "Expected an intersection");
             assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+        }
 
         // Can't test this as the mock does not implement both PickTarget and Node, so the
         // check in the SceneGraphPath update() method will ignore the mocked object.
@@ -308,6 +334,51 @@ public class DefaultPickingHandlerTest
         when(mock_target.checkPickMask(pickType)).thenReturn(true);
         when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
         when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        final PickTarget mock_child1 = mock(LeafPickTarget.class);
+        when(mock_child1.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child1.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child1.getPickableBounds()).thenReturn(new BoundingBox());
+
+        final SinglePickTarget mock_child2 = mock(SinglePickTarget.class);
+        when(mock_child2.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child2.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
+        when(mock_child2.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_child2.getPickableChild()).thenReturn(mock_child1);
+
+
+        PickTarget[] test_child_group_children = { mock_child1, mock_child2 };
+
+        final GroupPickTarget mock_child3 = mock(GroupPickTarget.class);
+        when(mock_child3.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child3.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_child3.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_child3.getPickableChildren()).thenReturn(test_child_group_children);
+        when(mock_child3.numPickableChildren()).thenReturn(test_child_group_children.length);
+
+        doAnswer(
+            new Answer()
+            {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable
+                {
+                    Object[] args = invocation.getArguments();
+                    Object mock = invocation.getMock();
+
+                    PickInstructions instructions = (PickInstructions)args[0];
+                    instructions.resizeChildren(4);
+                    instructions.numChildren = 4;
+
+                    // Always have child 0 as null to test skipping this as the output
+                    instructions.children[0] = null;
+                    instructions.children[1] = mock_child1;
+                    instructions.children[2] = mock_child2;
+                    instructions.children[3] = mock_child3;
+                    instructions.hasTransform = false;
+                    return null;
+                }
+            }
+        ).when(mock_target).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
 
         DefaultPickingHandler class_under_test = new DefaultPickingHandler();
         class_under_test.pickSingle(mock_target, test_request);
