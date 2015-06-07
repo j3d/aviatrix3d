@@ -415,51 +415,7 @@ class DefaultPickingHandler
                     pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
-                    for(int i = 0; i < num_kids && !found; i++)
-                    {
-                        if(kids[i] == null)
-                            continue;
-
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSinglePoint((GroupPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSinglePoint((SinglePickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSinglePoint((LeafPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSinglePoint((CustomPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-
-                                break;
-                        }
-                    }
+                    found = pickSinglePointFromList(kids, num_kids, req, start, output_path);
                 }
                 break;
 
@@ -516,54 +472,77 @@ class DefaultPickingHandler
                     // Make sure to clone the array locally
                     PickTarget[] kids = pickInstructions.children.clone();
 
-                    // now that the setup is done, walk down the tree.
-                    for(int i = 0; i < num_kids && !found; i++)
-                    {
-                        if(kids[i] == null)
-                            continue;
-
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSinglePoint((GroupPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSinglePoint((SinglePickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSinglePoint((LeafPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSinglePoint((CustomPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-                        }
-                    }
+                    found = pickSinglePointFromList(kids, num_kids, req, start, output_path);
                 }
                 break;
         }
 
         req.pickCount = found ? 1 : 0;
+    }
+
+    /**
+     * Pick from a list of kids a single response.
+     *
+     * @param targets The array holding target pick objects
+     * @param numTargets The number of valid items in the targets array
+     * @param req flags to compare against for picking
+     * @param loc The location of the point to pick with in local coords
+     * @param path The place to put the results in
+     * @return true if an intersection was found
+     */
+    private boolean pickSinglePointFromList(PickTarget[] targets,
+                                            int numTargets,
+                                            PickRequest req,
+                                            float[] loc,
+                                            SceneGraphPath path)
+    {
+        boolean found = false;
+
+        // now that the setup is done, walk down the tree.
+        for(int i = 0; i < numTargets && !found; i++)
+        {
+            if(targets[i] == null)
+                continue;
+
+            lastPathIndex = 1;
+
+            switch(targets[i].getPickTargetType())
+            {
+                case PickTarget.GROUP_PICK_TYPE:
+                    found = pickSinglePoint((GroupPickTarget)targets[i],
+                                            req,
+                                            loc,
+                                            path,
+                                            req.generateVWorldMatrix);
+                    break;
+
+                case PickTarget.SINGLE_PICK_TYPE:
+                    found = pickSinglePoint((SinglePickTarget)targets[i],
+                                            req,
+                                            loc,
+                                            path,
+                                            req.generateVWorldMatrix);
+                    break;
+
+                case PickTarget.LEAF_PICK_TYPE:
+                    found = pickSinglePoint((LeafPickTarget)targets[i],
+                                            req,
+                                            loc,
+                                            path,
+                                            req.generateVWorldMatrix);
+                    break;
+
+                case PickTarget.CUSTOM_PICK_TYPE:
+                    found = pickSinglePoint((CustomPickTarget)targets[i],
+                                            req,
+                                            loc,
+                                            path,
+                                            req.generateVWorldMatrix);
+                    break;
+            }
+        }
+
+        return found;
     }
 
     /**
@@ -642,6 +621,9 @@ class DefaultPickingHandler
      * Recurse the tree looking for intersections with a single point.
      *
      * @param req flags to compare against for picking
+     * @param path A place to set the results in
+     * @param needTransform True if the local to v-world transform needs
+     *    calculating
      */
     private boolean pickSinglePoint(GroupPickTarget root,
                                     PickRequest req,
@@ -661,53 +643,13 @@ class DefaultPickingHandler
         // rather than the real geometry.
         if(bounds instanceof BoundingGeometry)
         {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(target_node instanceof GroupPickTarget)
+            if(pickSinglePointFromBoundsGeometry((BoundingGeometry)bounds,
+                                                 req,
+                                                 loc,
+                                                 path,
+                                                 needTransform))
             {
-                return pickSinglePoint((GroupPickTarget)target_node,
-                    req,
-                    loc,
-                    path,
-                    needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSinglePoint((SinglePickTarget)target_node,
-                    req,
-                    loc,
-                    path,
-                    needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSinglePoint((LeafPickTarget)target_node,
-                    req,
-                    loc,
-                    path,
-                    needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSinglePoint((CustomPickTarget)target_node,
-                    req,
-                    loc,
-                    path,
-                    needTransform);
-            }
-            else if(target_node != null)
-            {
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
-
-				Locale lcl = intl_mgr.getFoundLocale();
-
-				Object[] msg_args = { target_node.getClass().getName() };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				String msg = msg_fmt.format(msg_args);
-                errorReporter.warningReport(msg, null);
+                return true;
             }
         }
 
@@ -799,6 +741,9 @@ class DefaultPickingHandler
      * custom pickable.
      *
      * @param req flags to compare against for picking
+     * @param path A place to set the results in
+     * @param needTransform True if the local to v-world transform needs
+     *    calculating
      */
     private boolean pickSinglePoint(CustomPickTarget root,
                                     PickRequest req,
@@ -818,44 +763,13 @@ class DefaultPickingHandler
         // rather than the real geometry.
         if(bounds instanceof BoundingGeometry)
         {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(target_node instanceof GroupPickTarget)
+            if(pickSinglePointFromBoundsGeometry((BoundingGeometry)bounds,
+                                                 req,
+                                                 loc,
+                                                 path,
+                                                 needTransform))
             {
-                return pickSinglePoint((GroupPickTarget)target_node,
-                                       req,
-                                       loc,
-                                       path,
-                                       needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSinglePoint((SinglePickTarget)target_node,
-                                       req,
-                                       loc,
-                                       path,
-                                       needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSinglePoint((LeafPickTarget)target_node,
-                                       req,
-                                       loc,
-                                       path,
-                                       needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSinglePoint((CustomPickTarget)target_node,
-                                       req,
-                                       loc,
-                                       path,
-                                       needTransform);
-            }
-            else if(target_node != null)
-            {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                return true;
             }
         }
 
@@ -889,7 +803,7 @@ class DefaultPickingHandler
             lastPathIndex++;
 
             // Make sure to clone the array locally
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             // now that the setup is done, walk down the tree.
             for(int i = 0; i < num_kids && !found; i++)
@@ -942,6 +856,74 @@ class DefaultPickingHandler
         }
 
         return found;
+    }
+
+    /**
+     * Convenience method to check if a bounding geometry single pick will
+     * find an intersection.
+     *
+     * @param bounds The original bounds as geometry
+     * @param req flags to compare against for picking
+     * @param path A place to set the results in
+     * @param needTransform True if the local to v-world transform needs
+     *    calculating
+     * @return
+     */
+    private boolean pickSinglePointFromBoundsGeometry(BoundingGeometry bounds,
+                                                      PickRequest req,
+                                                      float[] loc,
+                                                      SceneGraphPath path,
+                                                      boolean needTransform)
+    {
+        Node target_node = bounds.getProxyGeometry();
+
+        if(target_node instanceof GroupPickTarget)
+        {
+            return pickSinglePoint((GroupPickTarget)target_node,
+                                   req,
+                                   loc,
+                                   path,
+                                   needTransform);
+        }
+        else if(target_node instanceof SinglePickTarget)
+        {
+            return pickSinglePoint((SinglePickTarget)target_node,
+                                   req,
+                                   loc,
+                                   path,
+                                   needTransform);
+        }
+        else if(target_node instanceof LeafPickTarget)
+        {
+            return pickSinglePoint((LeafPickTarget)target_node,
+                                   req,
+                                   loc,
+                                   path,
+                                   needTransform);
+        }
+        else if(target_node instanceof CustomPickTarget)
+        {
+            return pickSinglePoint((CustomPickTarget)target_node,
+                                   req,
+                                   loc,
+                                   path,
+                                   needTransform);
+        }
+        else if(target_node != null)
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+            Locale lcl = intl_mgr.getFoundLocale();
+
+            Object[] msg_args = { target_node.getClass().getName() };
+            MessageFormat msg_fmt =
+                new MessageFormat(msg_pattern, lcl);
+            String msg = msg_fmt.format(msg_args);
+            errorReporter.warningReport(msg, null);
+        }
+
+        return false;
     }
 
     /**
@@ -1158,6 +1140,7 @@ class DefaultPickingHandler
                                       0,
                                       req.generateVWorldMatrix);
 
+                req.pickCount = found;
                 break;
         }
     }
@@ -1226,7 +1209,15 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
             }
         }
 
@@ -1459,7 +1450,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -1908,7 +1908,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -2178,7 +2187,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -2634,7 +2652,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -2920,7 +2947,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -3474,7 +3510,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -3658,7 +3703,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -3795,7 +3849,7 @@ class DefaultPickingHandler
 
 				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-				Object[] msg_args = { new Integer(req.pickSortType) };
+				Object[] msg_args = { req.pickSortType };
 				Format[] fmts = { n_fmt };
 				MessageFormat msg_fmt =
 					new MessageFormat(msg_pattern, lcl);
@@ -4153,7 +4207,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -4417,7 +4480,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -4793,7 +4865,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -5081,7 +5162,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -5526,7 +5616,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -5799,7 +5898,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -5937,7 +6045,7 @@ class DefaultPickingHandler
 
 				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-				Object[] msg_args = { new Integer(req.pickSortType) };
+				Object[] msg_args = { req.pickSortType };
 				Format[] fmts = { n_fmt };
 				MessageFormat msg_fmt =
 					new MessageFormat(msg_pattern, lcl);
@@ -6225,7 +6333,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -6499,7 +6616,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -6934,7 +7060,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -7195,7 +7330,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -7641,7 +7785,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -7873,7 +8026,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -8277,7 +8439,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -8555,7 +8726,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -8757,7 +8937,7 @@ class DefaultPickingHandler
 
 				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-				Object[] msg_args = { new Integer(req.pickSortType) };
+				Object[] msg_args = { req.pickSortType };
 				Format[] fmts = { n_fmt };
 				MessageFormat msg_fmt =
 					new MessageFormat(msg_pattern, lcl);
@@ -9002,7 +9182,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -9222,7 +9411,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -9608,7 +9806,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -9839,7 +10046,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -10037,7 +10253,7 @@ class DefaultPickingHandler
 
 				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-				Object[] msg_args = { new Integer(req.pickSortType) };
+				Object[] msg_args = { req.pickSortType };
 				Format[] fmts = { n_fmt };
 				MessageFormat msg_fmt =
 					new MessageFormat(msg_pattern, lcl);
@@ -10348,7 +10564,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -10483,7 +10708,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -10924,7 +11158,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -11069,7 +11312,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -11239,7 +11491,7 @@ class DefaultPickingHandler
 
 				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-				Object[] msg_args = { new Integer(req.pickSortType) };
+				Object[] msg_args = { req.pickSortType };
 				Format[] fmts = { n_fmt };
 				MessageFormat msg_fmt =
 					new MessageFormat(msg_pattern, lcl);
@@ -11559,7 +11811,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -11730,7 +11991,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -12131,7 +12401,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
@@ -12391,7 +12670,16 @@ class DefaultPickingHandler
             }
             else if(target_node != null)
             {
-                errorReporter.warningReport(UNKNOWN_PROXY_TYPE_PROP, null);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                Object[] msg_args = { target_node.getClass().getName() };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
             }
         }
 
