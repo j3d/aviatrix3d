@@ -2233,7 +2233,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
@@ -4293,6 +4293,7 @@ class DefaultPickingHandler
                                               needTransform,
                                               useGeom,
                                               false);
+                        break;
 
                     case PickTarget.CUSTOM_PICK_TYPE:
                         found = pickSingleRay((CustomPickTarget)kids[i],
@@ -4527,7 +4528,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
@@ -5209,7 +5210,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids; i++)
             {
@@ -5945,7 +5946,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
@@ -6669,7 +6670,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
@@ -8773,7 +8774,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids; i++)
             {
@@ -9343,6 +9344,15 @@ class DefaultPickingHandler
                                       path,
                                       needTransform);
                 break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found = pickSingleBox((CustomPickTarget)child,
+                                      req,
+                                      min,
+                                      max,
+                                      path,
+                                      needTransform);
+                break;
         }
 
         lastPathIndex--;
@@ -9460,7 +9470,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
@@ -9489,6 +9499,15 @@ class DefaultPickingHandler
 
                     case PickTarget.LEAF_PICK_TYPE:
                         found = pickSingleBox((LeafPickTarget)kids[i],
+                                              req,
+                                              min,
+                                              max,
+                                              path,
+                                              needTransform);
+                        break;
+
+                    case PickTarget.CUSTOM_PICK_TYPE:
+                        found = pickSingleBox((CustomPickTarget)kids[i],
                                               req,
                                               min,
                                               max,
@@ -9740,6 +9759,7 @@ class DefaultPickingHandler
                                     output_list,
                                     found,
                                     req.generateVWorldMatrix);
+                req.pickCount = found;
         }
     }
 
@@ -9797,6 +9817,16 @@ class DefaultPickingHandler
             else if(target_node instanceof LeafPickTarget)
             {
                 return pickAllBox((LeafPickTarget)target_node,
+                                  req,
+                                  min,
+                                  max,
+                                  paths,
+                                  currentPath,
+                                  needTransform);
+            }
+            else if(target_node instanceof CustomPickTarget)
+            {
+                return pickAllBox((CustomPickTarget)target_node,
                                   req,
                                   min,
                                   max,
@@ -9892,6 +9922,16 @@ class DefaultPickingHandler
                                             paths,
                                             currentPath + found,
                                             needTransform);
+                        break;
+
+                    case PickTarget.CUSTOM_PICK_TYPE:
+                        found += pickAllBox((CustomPickTarget)kids[i],
+                                            req,
+                                            min,
+                                            max,
+                                            paths,
+                                            currentPath + found,
+                                            needTransform);
                 }
             }
 
@@ -9976,6 +10016,16 @@ class DefaultPickingHandler
                                    paths,
                                    currentPath,
                                    needTransform);
+                break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found = pickAllBox((CustomPickTarget)child,
+                                   req,
+                                   min,
+                                   max,
+                                   paths,
+                                   currentPath,
+                                   needTransform);
         }
 
         lastPathIndex--;
@@ -10044,6 +10094,16 @@ class DefaultPickingHandler
                                   currentPath,
                                   needTransform);
             }
+            else if(target_node instanceof CustomPickTarget)
+            {
+                return pickAllBox((CustomPickTarget)target_node,
+                                  req,
+                                  min,
+                                  max,
+                                  paths,
+                                  currentPath,
+                                  needTransform);
+            }
             else if(target_node != null)
             {
                 I18nManager intl_mgr = I18nManager.getManager();
@@ -10094,7 +10154,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids; i++)
             {
@@ -10125,6 +10185,16 @@ class DefaultPickingHandler
 
                     case PickTarget.LEAF_PICK_TYPE:
                         found += pickAllBox((LeafPickTarget)kids[i],
+                                            req,
+                                            min,
+                                            max,
+                                            paths,
+                                            currentPath + found,
+                                            needTransform);
+                        break;
+
+                    case PickTarget.CUSTOM_PICK_TYPE:
+                        found += pickAllBox((CustomPickTarget)kids[i],
                                             req,
                                             min,
                                             max,
@@ -10745,7 +10815,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
@@ -11348,7 +11418,7 @@ class DefaultPickingHandler
             pickPath[lastPathIndex] = root;
 
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids; i++)
             {
@@ -11734,6 +11804,16 @@ class DefaultPickingHandler
                                          radius,
                                          path,
                                          needTransform);
+                break;
+
+            case PickTarget.CUSTOM_PICK_TYPE:
+                found = pickSingleSphere((CustomPickTarget)child,
+                                         req,
+                                         min,
+                                         radius,
+                                         path,
+                                         needTransform);
+
         }
 
         lastPathIndex--;
@@ -12038,7 +12118,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids && !found; i++)
             {
@@ -12325,6 +12405,7 @@ class DefaultPickingHandler
                                        output_list,
                                        found,
                                        req.generateVWorldMatrix);
+                req.pickCount = found;
         }
     }
 
@@ -12717,7 +12798,7 @@ class DefaultPickingHandler
 
             pickPath[lastPathIndex] = root;
             lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
+            PickTarget[] kids = pickInstructions.children.clone();
 
             for(int i = 0; i < num_kids; i++)
             {

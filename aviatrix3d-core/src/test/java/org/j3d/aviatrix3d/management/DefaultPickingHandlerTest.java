@@ -124,8 +124,55 @@ public class DefaultPickingHandlerTest
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
-    public void testAllSinglePick(int geometryType, float[] origin, float[] destination, float additionalData,
-                                  int sortType, int pickType) throws Exception
+    public void testAllLeafPick(int geometryType, float[] origin, float[] destination, float additionalData,
+                                int sortType, int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        PickTarget mock_target = mock(LeafPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 1, "Expected an intersection");
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+        else
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+
+        // Can't test this as the mock does not implement both PickTarget and Node, so the
+        // check in the SceneGraphPath update() method will ignore the mocked object.
+//        SceneGraphPath result_path = (SceneGraphPath)test_request.foundPaths;
+//        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+//        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllSingleWithLeafChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                           int sortType, int pickType) throws Exception
     {
         PickRequest test_request = new PickRequest();
         test_request.pickGeometryType = geometryType;
@@ -177,8 +224,8 @@ public class DefaultPickingHandlerTest
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
-    public void testAllLeafPick(int geometryType, float[] origin, float[] destination, float additionalData,
-                                 int sortType, int pickType) throws Exception
+    public void testAllSingleWithSingleChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                           int sortType, int pickType) throws Exception
     {
         PickRequest test_request = new PickRequest();
         test_request.pickGeometryType = geometryType;
@@ -201,10 +248,22 @@ public class DefaultPickingHandlerTest
 
         test_request.additionalData = additionalData;
 
-        PickTarget mock_target = mock(LeafPickTarget.class);
+        PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        SinglePickTarget mock_intermediate = mock(SinglePickTarget.class);
+        when(mock_intermediate.checkPickMask(pickType)).thenReturn(true);
+        when(mock_intermediate.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
+        when(mock_intermediate.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_intermediate.getPickableChild()).thenReturn(mock_child);
+
+        SinglePickTarget mock_target = mock(SinglePickTarget.class);
         when(mock_target.checkPickMask(pickType)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
         when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChild()).thenReturn(mock_intermediate);
 
         DefaultPickingHandler class_under_test = new DefaultPickingHandler();
         class_under_test.pickSingle(mock_target, test_request);
@@ -224,7 +283,149 @@ public class DefaultPickingHandlerTest
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
-    public void testAllGroupPick(int geometryType, float[] origin, float[] destination, float additionalData,
+    public void testAllSingleWithGroupChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                             int sortType, int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        PickTarget[] group_children = { mock_child };
+        GroupPickTarget mock_intermediate = mock(GroupPickTarget.class);
+        when(mock_intermediate.checkPickMask(pickType)).thenReturn(true);
+        when(mock_intermediate.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_intermediate.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_intermediate.getPickableChildren()).thenReturn(group_children);
+        when(mock_intermediate.numPickableChildren()).thenReturn(group_children.length);
+
+        SinglePickTarget mock_target = mock(SinglePickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChild()).thenReturn(mock_intermediate);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 1, "Expected an intersection");
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+        else
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+
+        // Can't test this as the mock does not implement both PickTarget and Node, so the
+        // check in the SceneGraphPath update() method will ignore the mocked object.
+//        SceneGraphPath result_path = (SceneGraphPath)test_request.foundPaths;
+//        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+//        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllSingleWithCustomChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                             int sortType, int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        final PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        CustomPickTarget mock_intermediate = mock(CustomPickTarget.class);
+        when(mock_intermediate.checkPickMask(pickType)).thenReturn(true);
+        when(mock_intermediate.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
+        when(mock_intermediate.getPickableBounds()).thenReturn(new BoundingBox());
+
+        doAnswer(
+            new Answer()
+            {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable
+                {
+                    Object[] args = invocation.getArguments();
+                    Object mock = invocation.getMock();
+
+                    PickInstructions instructions = (PickInstructions)args[0];
+                    instructions.resizeChildren(4);
+                    instructions.numChildren = 2;
+
+                    // Always have child 0 as null to test skipping this as the output
+                    instructions.children[0] = null;
+                    instructions.children[1] = mock_child;
+                    instructions.hasTransform = false;
+                    return null;
+                }
+            }
+        ).when(mock_intermediate).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+
+
+        SinglePickTarget mock_target = mock(SinglePickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChild()).thenReturn(mock_intermediate);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 1, "Expected an intersection");
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+        else
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+
+        // Can't test this as the mock does not implement both PickTarget and Node, so the
+        // check in the SceneGraphPath update() method will ignore the mocked object.
+//        SceneGraphPath result_path = (SceneGraphPath)test_request.foundPaths;
+//        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+//        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllGroupWithLeafChild(int geometryType, float[] origin, float[] destination, float additionalData,
                                   int sortType, int pickType) throws Exception
     {
         PickRequest test_request = new PickRequest();
@@ -250,28 +451,12 @@ public class DefaultPickingHandlerTest
 
         // Run these all in reverse order so that each path will pick up a different child
         // first for the purposes of checking all code paths.
-        PickTarget mock_child1 = mock(LeafPickTarget.class);
-        when(mock_child1.checkPickMask(pickType)).thenReturn(true);
-        when(mock_child1.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
-        when(mock_child1.getPickableBounds()).thenReturn(new BoundingBox());
+        PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
 
-        SinglePickTarget mock_child2 = mock(SinglePickTarget.class);
-        when(mock_child2.checkPickMask(pickType)).thenReturn(true);
-        when(mock_child2.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
-        when(mock_child2.getPickableBounds()).thenReturn(new BoundingBox());
-        when(mock_child2.getPickableChild()).thenReturn(mock_child1);
-
-
-        PickTarget[] test_child_group_children = { mock_child2, mock_child1 };
-
-        GroupPickTarget mock_child3 = mock(GroupPickTarget.class);
-        when(mock_child3.checkPickMask(pickType)).thenReturn(true);
-        when(mock_child3.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
-        when(mock_child3.getPickableBounds()).thenReturn(new BoundingBox());
-        when(mock_child3.getPickableChildren()).thenReturn(test_child_group_children);
-        when(mock_child3.numPickableChildren()).thenReturn(test_child_group_children.length);
-
-        PickTarget[] test_group_children = { mock_child3, mock_child2, mock_child1 };
+        PickTarget[] test_group_children = { mock_child };
 
         GroupPickTarget mock_target = mock(GroupPickTarget.class);
         when(mock_target.checkPickMask(pickType)).thenReturn(true);
@@ -286,7 +471,7 @@ public class DefaultPickingHandlerTest
 
         if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
         {
-            assertEquals(test_request.pickCount, 4, "Wrong number of intersections found");
+            assertEquals(test_request.pickCount, 1, "Wrong number of intersections found");
             assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
         }
         else
@@ -303,8 +488,239 @@ public class DefaultPickingHandlerTest
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
-    public void testAllCustomPick(int geometryType, float[] origin, float[] destination, float additionalData,
-                                    int sortType, int pickType) throws Exception
+    public void testAllGroupWithSingleChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                          int sortType, int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        // Run these all in reverse order so that each path will pick up a different child
+        // first for the purposes of checking all code paths.
+        PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        SinglePickTarget mock_intermediate = mock(SinglePickTarget.class);
+        when(mock_intermediate.checkPickMask(pickType)).thenReturn(true);
+        when(mock_intermediate.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
+        when(mock_intermediate.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_intermediate.getPickableChild()).thenReturn(mock_child);
+
+        PickTarget[] test_group_children = { mock_intermediate };
+
+        GroupPickTarget mock_target = mock(GroupPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChildren()).thenReturn(test_group_children);
+        when(mock_target.numPickableChildren()).thenReturn(test_group_children.length);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertEquals(test_request.pickCount, 1, "Wrong number of intersections found");
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+        }
+        else
+        {
+            assertEquals(test_request.pickCount, 1, "Expected an intersection");
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+        }
+
+        // Can't test this as the mock does not implement both PickTarget and Node, so the
+        // check in the SceneGraphPath update() method will ignore the mocked object.
+//        SceneGraphPath result_path = (SceneGraphPath)test_request.foundPaths;
+//        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+//        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllGroupWithGroupChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                            int sortType, int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        // Run these all in reverse order so that each path will pick up a different child
+        // first for the purposes of checking all code paths.
+        PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        PickTarget[] test_intermediate_children = { mock_child };
+
+        GroupPickTarget mock_intermediate = mock(GroupPickTarget.class);
+        when(mock_intermediate.checkPickMask(pickType)).thenReturn(true);
+        when(mock_intermediate.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_intermediate.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_intermediate.getPickableChildren()).thenReturn(test_intermediate_children);
+        when(mock_intermediate.numPickableChildren()).thenReturn(test_intermediate_children.length);
+
+        PickTarget[] test_group_children = { mock_intermediate };
+
+        GroupPickTarget mock_target = mock(GroupPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChildren()).thenReturn(test_group_children);
+        when(mock_target.numPickableChildren()).thenReturn(test_group_children.length);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertEquals(test_request.pickCount, 1, "Wrong number of intersections found");
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+        }
+        else
+        {
+            assertEquals(test_request.pickCount, 1, "Expected an intersection");
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+        }
+
+        // Can't test this as the mock does not implement both PickTarget and Node, so the
+        // check in the SceneGraphPath update() method will ignore the mocked object.
+//        SceneGraphPath result_path = (SceneGraphPath)test_request.foundPaths;
+//        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+//        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllGroupWithCustomChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                           int sortType, int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        // Run these all in reverse order so that each path will pick up a different child
+        // first for the purposes of checking all code paths.
+        final PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        CustomPickTarget mock_intermediate = mock(CustomPickTarget.class);
+        when(mock_intermediate.checkPickMask(pickType)).thenReturn(true);
+        when(mock_intermediate.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
+        when(mock_intermediate.getPickableBounds()).thenReturn(new BoundingBox());
+
+        doAnswer(
+            new Answer()
+            {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable
+                {
+                    Object[] args = invocation.getArguments();
+                    Object mock = invocation.getMock();
+
+                    PickInstructions instructions = (PickInstructions)args[0];
+                    instructions.resizeChildren(4);
+                    instructions.numChildren = 2;
+
+                    // Always have child 0 as null to test skipping this as the output
+                    instructions.children[0] = null;
+                    instructions.children[1] = mock_child;
+                    instructions.hasTransform = false;
+                    return null;
+                }
+            }
+        ).when(mock_intermediate).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+
+        PickTarget[] test_group_children = { mock_intermediate };
+
+        GroupPickTarget mock_target = mock(GroupPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChildren()).thenReturn(test_group_children);
+        when(mock_target.numPickableChildren()).thenReturn(test_group_children.length);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertEquals(test_request.pickCount, 1, "Wrong number of intersections found");
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+        }
+        else
+        {
+            assertEquals(test_request.pickCount, 1, "Expected an intersection");
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+        }
+
+        // Can't test this as the mock does not implement both PickTarget and Node, so the
+        // check in the SceneGraphPath update() method will ignore the mocked object.
+//        SceneGraphPath result_path = (SceneGraphPath)test_request.foundPaths;
+//        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+//        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllCustomLeafChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                       int sortType, int pickType) throws Exception
     {
         // Tests single level custom picker. Need separate test for nested custom pick
         // handling.
@@ -335,26 +751,10 @@ public class DefaultPickingHandlerTest
         when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
         when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
 
-        final PickTarget mock_child1 = mock(LeafPickTarget.class);
-        when(mock_child1.checkPickMask(pickType)).thenReturn(true);
-        when(mock_child1.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
-        when(mock_child1.getPickableBounds()).thenReturn(new BoundingBox());
-
-        final SinglePickTarget mock_child2 = mock(SinglePickTarget.class);
-        when(mock_child2.checkPickMask(pickType)).thenReturn(true);
-        when(mock_child2.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
-        when(mock_child2.getPickableBounds()).thenReturn(new BoundingBox());
-        when(mock_child2.getPickableChild()).thenReturn(mock_child1);
-
-
-        PickTarget[] test_child_group_children = { mock_child1, mock_child2 };
-
-        final GroupPickTarget mock_child3 = mock(GroupPickTarget.class);
-        when(mock_child3.checkPickMask(pickType)).thenReturn(true);
-        when(mock_child3.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
-        when(mock_child3.getPickableBounds()).thenReturn(new BoundingBox());
-        when(mock_child3.getPickableChildren()).thenReturn(test_child_group_children);
-        when(mock_child3.numPickableChildren()).thenReturn(test_child_group_children.length);
+        final PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
 
         doAnswer(
             new Answer()
@@ -367,13 +767,11 @@ public class DefaultPickingHandlerTest
 
                     PickInstructions instructions = (PickInstructions)args[0];
                     instructions.resizeChildren(4);
-                    instructions.numChildren = 4;
+                    instructions.numChildren = 2;
 
                     // Always have child 0 as null to test skipping this as the output
                     instructions.children[0] = null;
-                    instructions.children[1] = mock_child1;
-                    instructions.children[2] = mock_child2;
-                    instructions.children[3] = mock_child3;
+                    instructions.children[1] = mock_child;
                     instructions.hasTransform = false;
                     return null;
                 }
@@ -386,6 +784,244 @@ public class DefaultPickingHandlerTest
         verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
     }
 
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllCustomSingleChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                       int sortType, int pickType) throws Exception
+    {
+        // Tests single level custom picker. Need separate test for nested custom pick
+        // handling.
+
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        CustomPickTarget mock_target = mock(CustomPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        final SinglePickTarget mock_intermediate = mock(SinglePickTarget.class);
+        when(mock_intermediate.checkPickMask(pickType)).thenReturn(true);
+        when(mock_intermediate.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
+        when(mock_intermediate.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_intermediate.getPickableChild()).thenReturn(mock_child);
+
+        doAnswer(
+            new Answer()
+            {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable
+                {
+                    Object[] args = invocation.getArguments();
+                    Object mock = invocation.getMock();
+
+                    PickInstructions instructions = (PickInstructions)args[0];
+                    instructions.resizeChildren(4);
+                    instructions.numChildren = 2;
+
+                    // Always have child 0 as null to test skipping this as the output
+                    instructions.children[0] = null;
+                    instructions.children[1] = mock_intermediate;
+                    instructions.hasTransform = false;
+                    return null;
+                }
+            }
+                ).when(mock_target).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllCustomGroupChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                         int sortType, int pickType) throws Exception
+    {
+        // Tests single level custom picker. Need separate test for nested custom pick
+        // handling.
+
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        CustomPickTarget mock_target = mock(CustomPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        PickTarget[] test_group_children = { mock_child };
+        final GroupPickTarget mock_intermediate = mock(GroupPickTarget.class);
+        when(mock_intermediate.checkPickMask(pickType)).thenReturn(true);
+        when(mock_intermediate.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_intermediate.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_intermediate.getPickableChildren()).thenReturn(test_group_children);
+        when(mock_intermediate.numPickableChildren()).thenReturn(test_group_children.length);
+
+        doAnswer(
+            new Answer()
+            {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable
+                {
+                    Object[] args = invocation.getArguments();
+                    Object mock = invocation.getMock();
+
+                    PickInstructions instructions = (PickInstructions)args[0];
+                    instructions.resizeChildren(4);
+                    instructions.numChildren = 2;
+
+                    // Always have child 0 as null to test skipping this as the output
+                    instructions.children[0] = null;
+                    instructions.children[1] = mock_intermediate;
+                    instructions.hasTransform = false;
+                    return null;
+                }
+            }
+                ).when(mock_target).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllCustomCustomChild(int geometryType, float[] origin, float[] destination, float additionalData,
+                                        int sortType, int pickType) throws Exception
+    {
+        // Tests single level custom picker. Need separate test for nested custom pick
+        // handling.
+
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        CustomPickTarget mock_target = mock(CustomPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        final PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        final CustomPickTarget mock_intermediate = mock(CustomPickTarget.class);
+        when(mock_intermediate.checkPickMask(pickType)).thenReturn(true);
+        when(mock_intermediate.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
+        when(mock_intermediate.getPickableBounds()).thenReturn(new BoundingBox());
+
+        doAnswer(
+            new Answer()
+            {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable
+                {
+                    Object[] args = invocation.getArguments();
+                    Object mock = invocation.getMock();
+
+                    PickInstructions instructions = (PickInstructions)args[0];
+                    instructions.resizeChildren(4);
+                    instructions.numChildren = 2;
+
+                    // Always have child 0 as null to test skipping this as the output
+                    instructions.children[0] = null;
+                    instructions.children[1] = mock_intermediate;
+                    instructions.hasTransform = false;
+                    return null;
+                }
+            }
+        ).when(mock_target).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+
+        doAnswer(
+            new Answer()
+            {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable
+                {
+                    Object[] args = invocation.getArguments();
+                    Object mock = invocation.getMock();
+
+                    PickInstructions instructions = (PickInstructions)args[0];
+                    instructions.resizeChildren(4);
+                    instructions.numChildren = 2;
+
+                    // Always have child 0 as null to test skipping this as the output
+                    instructions.children[0] = null;
+                    instructions.children[1] = mock_child;
+                    instructions.hasTransform = false;
+                    return null;
+                }
+            }
+        ).when(mock_intermediate).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+    }
 
     // ------- Point Picking Tests -------------------------------------------
 
@@ -406,26 +1042,6 @@ public class DefaultPickingHandlerTest
         class_under_test.pickSingle(mock_target, test_request);
 
         assertEquals(test_request.pickCount, 0, "Should not have an intersection");
-    }
-
-    @Test(groups = "unit", dataProvider = "pick target types")
-    public void testPointPickNoIntersection(Class<PickTarget> pickClass, int targetType) throws Exception
-    {
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_POINT;
-        test_request.pickSortType = PickRequest.SORT_ANY;
-        test_request.pickType = PickRequest.FIND_ALL;
-        test_request.origin[0] = 3.0f;  // outside the +/- 1.0 bounding box
-
-        PickTarget mock_target = mock(pickClass);
-        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(targetType);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.pickSingle(mock_target, test_request);
-
-        assertEquals(test_request.pickCount, 0, "Should not have found intersection");
     }
 
     @Test(groups = "unit")
@@ -627,18 +1243,6 @@ public class DefaultPickingHandlerTest
             { PickRequest.PICK_POINT },
             { PickRequest.PICK_RAY },
             { PickRequest.PICK_SPHERE }
-        };
-    }
-
-    @DataProvider(name = "pick target types")
-    public Object[][] generatePickTargetTypes()
-    {
-        return new Object[][]
-        {
-            { LeafPickTarget.class, PickTarget.LEAF_PICK_TYPE },
-            { GroupPickTarget.class, PickTarget.GROUP_PICK_TYPE },
-            { CustomPickTarget.class, PickTarget.CUSTOM_PICK_TYPE },
-            { SinglePickTarget.class, PickTarget.SINGLE_PICK_TYPE }
         };
     }
 
