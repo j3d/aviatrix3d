@@ -30,6 +30,7 @@ import static org.mockito.Mockito.*;
 import static org.testng.Assert.*;
 
 import org.j3d.aviatrix3d.BoundingBox;
+import org.j3d.aviatrix3d.BoundingVoid;
 import org.j3d.aviatrix3d.SceneGraphPath;
 import org.j3d.aviatrix3d.picking.*;
 
@@ -62,7 +63,7 @@ public class DefaultPickingHandlerTest
     }
 
     @Test(groups = "unit")
-    public void testNullTarget() throws Exception
+    public void testNullRootTarget() throws Exception
     {
         PickRequest test_request = new PickRequest();
 
@@ -312,7 +313,8 @@ public class DefaultPickingHandlerTest
         when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
         when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
 
-        PickTarget[] group_children = { mock_child };
+        // Always have child 0 as null to test skipping this as the output
+        PickTarget[] group_children = { null, mock_child };
         GroupPickTarget mock_intermediate = mock(GroupPickTarget.class);
         when(mock_intermediate.checkPickMask(pickType)).thenReturn(true);
         when(mock_intermediate.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
@@ -1021,6 +1023,90 @@ public class DefaultPickingHandlerTest
         class_under_test.pickSingle(mock_target, test_request);
 
         verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testGroupChildSkipping(int geometryType, float[] origin, float[] destination, float additionalData,
+                                          int sortType, int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        // Run these all in reverse order so that each path will pick up a different child
+        // first for the purposes of checking all code paths.
+        PickTarget mock_pickable_child = mock(LeafPickTarget.class);
+        when(mock_pickable_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_pickable_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_pickable_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        // Child with a bounding VOID as the bounds so that it can never have an
+        // intersection
+        PickTarget mock_void_child = mock(LeafPickTarget.class);
+        when(mock_void_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_void_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_void_child.getPickableBounds()).thenReturn(new BoundingVoid());
+
+        // Child with a pick mask not matching
+        // intersection
+        PickTarget mock_masked_child = mock(LeafPickTarget.class);
+        when(mock_masked_child.checkPickMask(anyInt())).thenReturn(false);
+        when(mock_masked_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_masked_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        PickTarget mock_unbounded_child = mock(LeafPickTarget.class);
+        when(mock_unbounded_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_unbounded_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_unbounded_child.getPickableBounds()).thenReturn(null);
+
+        // Include null as well in the child list. Pickable child is last so that we can cover
+        // all code paths that reject it before finding it, for the single selection case.
+        PickTarget[] test_group_children =
+            { null, mock_masked_child, mock_void_child, mock_unbounded_child, mock_pickable_child  };
+
+        GroupPickTarget mock_target = mock(GroupPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChildren()).thenReturn(test_group_children);
+        when(mock_target.numPickableChildren()).thenReturn(test_group_children.length);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 1, "Wrong number of intersections found");
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+        }
+        else
+        {
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+        }
+
+        // Can't test this as the mock does not implement both PickTarget and Node, so the
+        // check in the SceneGraphPath update() method will ignore the mocked object.
+//        SceneGraphPath result_path = (SceneGraphPath)test_request.foundPaths;
+//        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+//        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
     }
 
     // ------- Point Picking Tests -------------------------------------------
