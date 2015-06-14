@@ -1922,7 +1922,7 @@ class DefaultPickingHandler
             tg.getInverseTransform(invertedMatrix);
             transform(invertedMatrix, start);
             transform(invertedMatrix, end);
-            checkExtents(start, end);
+            fixExtents(start, end);
 
             validTransform[lastPathIndex] = true;
         }
@@ -1981,7 +1981,7 @@ class DefaultPickingHandler
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
                         transform(invertedMatrix, start);
                         transform(invertedMatrix, end);
-                        checkExtents(start, end);
+                        fixExtents(start, end);
                     }
 
                     // Make sure to clone the array locally because if we are recursing the global
@@ -2061,7 +2061,7 @@ class DefaultPickingHandler
             tg.getInverseTransform(invertedMatrix);
             transform(invertedMatrix, start);
             transformNormal(invertedMatrix, end);
-            checkExtents(start, end);
+            fixExtents(start, end);
 
             validTransform[lastPathIndex] = true;
         }
@@ -2118,7 +2118,7 @@ class DefaultPickingHandler
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
                         transform(invertedMatrix, start);
                         transform(invertedMatrix, end);
-                        checkExtents(start, end);
+                        fixExtents(start, end);
                     }
 
                     // Make sure to clone the array locally because if we are recursing the global
@@ -2256,7 +2256,7 @@ class DefaultPickingHandler
             tg.getInverseTransform(invertedMatrix);
             transform(invertedMatrix, start);
             transform(invertedMatrix, end);
-            checkExtents(start, end);
+            fixExtents(start, end);
 
             validTransform[lastPathIndex] = true;
         }
@@ -2315,7 +2315,7 @@ class DefaultPickingHandler
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
                         transform(invertedMatrix, start);
                         transform(invertedMatrix, end);
-                        checkExtents(start, end);
+                        fixExtents(start, end);
                     }
 
                     // Make sure to clone the array locally because if we are recursing the global
@@ -2387,7 +2387,7 @@ class DefaultPickingHandler
             tg.getInverseTransform(invertedMatrix);
             transform(invertedMatrix, start);
             transformNormal(invertedMatrix, end);
-            checkExtents(start, end);
+            fixExtents(start, end);
 
             validTransform[lastPathIndex] = true;
         }
@@ -2444,7 +2444,7 @@ class DefaultPickingHandler
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
                         transform(invertedMatrix, start);
                         transform(invertedMatrix, end);
-                        checkExtents(start, end);
+                        fixExtents(start, end);
                     }
 
                     // Make sure to clone the array locally because if we are recursing the global
@@ -2880,8 +2880,12 @@ class DefaultPickingHandler
     private void updatePathAfterSuccess(LeafPickTarget geom, PickRequest req)
     {
         resizePath();
-        pickPath[lastPathIndex] = geom;
-        validTransform[lastPathIndex] = false;
+
+        // Don't need these here because they will have been set before this method
+        // was called. We just need to update the matrix and set the stack into the
+        // path and we're done.
+        //pickPath[l    astPathIndex] = geom;
+        //validTransform[lastPathIndex] = false;
 
         if(req.generateVWorldMatrix)
         {
@@ -2890,6 +2894,7 @@ class DefaultPickingHandler
         else
         {
             vworldMatrix.setIdentity();
+            invertedMatrix.setIdentity();
         }
 
         if(req.foundPaths instanceof SceneGraphPath)
@@ -2918,15 +2923,18 @@ class DefaultPickingHandler
 	 * Ensure that bounding box extents are properly ordered
 	 * after they have been transformed
 	 *
-	 * @param min_ext The minimum bound
-	 * @param max_ext The maximum bound
+	 * @param minExtent The minimum bound
+	 * @param maxExtent The maximum bound
 	 */
-	private void checkExtents(float[] min_ext, float[] max_ext) {
-		for (int i = 0; i < 3; i++) {
-			if(min_ext[i] > max_ext[i]) {
-				float tmp = min_ext[i];
-				min_ext[i] = max_ext[i];
-				max_ext[i] = tmp;
+	private void fixExtents(float[] minExtent, float[] maxExtent)
+    {
+		for (int i = 0; i < 3; i++)
+        {
+			if(minExtent[i] > maxExtent[i])
+            {
+				float tmp = minExtent[i];
+				minExtent[i] = maxExtent[i];
+				maxExtent[i] = tmp;
 			}
 		}
 	}

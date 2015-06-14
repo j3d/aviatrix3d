@@ -14,11 +14,13 @@
 
 package org.j3d.aviatrix3d.management;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.ErrorReporter;
 import org.j3d.util.I18nManager;
+import org.j3d.util.MatrixUtils;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
@@ -31,6 +33,7 @@ import static org.testng.Assert.*;
 
 import org.j3d.aviatrix3d.BoundingBox;
 import org.j3d.aviatrix3d.BoundingVoid;
+import org.j3d.aviatrix3d.Node;
 import org.j3d.aviatrix3d.SceneGraphPath;
 import org.j3d.aviatrix3d.picking.*;
 
@@ -149,7 +152,7 @@ public class DefaultPickingHandlerTest
 
         test_request.additionalData = additionalData;
 
-        PickTarget mock_target = mock(LeafPickTarget.class);
+        PickTarget mock_target = mockPickTarget(LeafPickTarget.class);
         when(mock_target.checkPickMask(pickType)).thenReturn(true);
         when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
         when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
@@ -159,16 +162,180 @@ public class DefaultPickingHandlerTest
 
         assertEquals(test_request.pickCount, 1, "Expected an intersection");
 
-        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
-            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
-        else
-            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+        SceneGraphPath result_path = null;
 
-        // Can't test this as the mock does not implement both PickTarget and Node, so the
-        // check in the SceneGraphPath update() method will ignore the mocked object.
-//        SceneGraphPath result_path = (SceneGraphPath)test_request.foundPaths;
-//        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
-//        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+            result_path = (SceneGraphPath)((List)test_request.foundPaths).get(0);
+        }
+        else
+        {
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+            result_path = (SceneGraphPath)test_request.foundPaths;
+        }
+
+        assertNotNull(result_path, "No scene graph path actually collected");
+        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+        assertEquals(result_path.getTerminalNode(), mock_target, "Target not in the path");
+
+        Matrix4d result_matrix = new Matrix4d();
+
+        result_path.getTransform(result_matrix);
+        assertIdentityMatrix(result_matrix);
+
+        result_path.getInverseTransform(result_matrix);
+        assertIdentityMatrix(result_matrix);
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testPickTransformHandling(int geometryType,
+                                          float[] origin,
+                                          float[] destination,
+                                          float additionalData,
+                                          int sortType,
+                                          int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        // Need this true so that the matrix is created properly
+        test_request.generateVWorldMatrix = true;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        Matrix4d test_matrix = new Matrix4d();
+        test_matrix.m00 = 1.0;
+        test_matrix.m01 = 2.0;
+
+
+        PickTarget mock_target = mockPickTransformTarget(LeafPickTarget.class, test_matrix);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 1, "Expected an intersection");
+
+        SceneGraphPath result_path = null;
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+            result_path = (SceneGraphPath)((List)test_request.foundPaths).get(0);
+        }
+        else
+        {
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+            result_path = (SceneGraphPath)test_request.foundPaths;
+        }
+
+        assertNotNull(result_path, "No scene graph path actually collected");
+        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+        assertEquals(result_path.getTerminalNode(), mock_target, "Target not in the path");
+
+        Matrix4d result_matrix = new Matrix4d();
+
+        result_path.getTransform(result_matrix);
+        assertEqualsMatrix(result_matrix, test_matrix, "forward");
+
+        Matrix4d inv_matrix = new Matrix4d();
+        MatrixUtils utils = new MatrixUtils();
+        utils.inverse(test_matrix, inv_matrix);
+
+        result_path.getInverseTransform(result_matrix);
+        assertEqualsMatrix(result_matrix, inv_matrix, "inverse");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testPickTransformHandlingNoMatrix(int geometryType,
+                                                  float[] origin,
+                                                  float[] destination,
+                                                  float additionalData,
+                                                  int sortType,
+                                                  int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        // Need this true so that the matrix is created properly
+        test_request.generateVWorldMatrix = false;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        Matrix4d test_matrix = new Matrix4d();
+        test_matrix.m00 = 1.0;
+        test_matrix.m01 = 2.0;
+
+        PickTarget mock_target = mockPickTransformTarget(LeafPickTarget.class, test_matrix);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 1, "Expected an intersection");
+
+        SceneGraphPath result_path = null;
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+            result_path = (SceneGraphPath)((List)test_request.foundPaths).get(0);
+        }
+        else
+        {
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+            result_path = (SceneGraphPath)test_request.foundPaths;
+        }
+
+        assertNotNull(result_path, "No scene graph path actually collected");
+        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+        assertEquals(result_path.getTerminalNode(), mock_target, "Target not in the path");
+
+        // Pick should succeed, but without any matrix being generated.
+        Matrix4d result_matrix = new Matrix4d();
+
+        result_path.getTransform(result_matrix);
+        assertIdentityMatrix(result_matrix);
+
+        result_path.getInverseTransform(result_matrix);
+        assertIdentityMatrix(result_matrix);
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
@@ -225,8 +392,12 @@ public class DefaultPickingHandlerTest
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
-    public void testAllSingleWithSingleChild(int geometryType, float[] origin, float[] destination, float additionalData,
-                                           int sortType, int pickType) throws Exception
+    public void testAllSingleWithSingleChild(int geometryType,
+                                             float[] origin,
+                                             float[] destination,
+                                             float additionalData,
+                                             int sortType,
+                                             int pickType) throws Exception
     {
         PickRequest test_request = new PickRequest();
         test_request.pickGeometryType = geometryType;
@@ -387,7 +558,6 @@ public class DefaultPickingHandlerTest
                 public Object answer(InvocationOnMock invocation) throws Throwable
                 {
                     Object[] args = invocation.getArguments();
-                    Object mock = invocation.getMock();
 
                     PickInstructions instructions = (PickInstructions)args[0];
                     instructions.resizeChildren(4);
@@ -674,7 +844,6 @@ public class DefaultPickingHandlerTest
                 public Object answer(InvocationOnMock invocation) throws Throwable
                 {
                     Object[] args = invocation.getArguments();
-                    Object mock = invocation.getMock();
 
                     PickInstructions instructions = (PickInstructions)args[0];
                     instructions.resizeChildren(4);
@@ -748,15 +917,19 @@ public class DefaultPickingHandlerTest
 
         test_request.additionalData = additionalData;
 
-        CustomPickTarget mock_target = mock(CustomPickTarget.class);
+        CustomPickTarget mock_target = mockPickTarget(CustomPickTarget.class);
         when(mock_target.checkPickMask(pickType)).thenReturn(true);
         when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
         when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
 
-        final PickTarget mock_child = mock(LeafPickTarget.class);
+        final PickTarget mock_child = mockPickTarget(LeafPickTarget.class);
         when(mock_child.checkPickMask(pickType)).thenReturn(true);
         when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
         when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        final Matrix4d test_matrix = new Matrix4d();
+        test_matrix.m00 = 1.0;
+        test_matrix.m01 = 2.0;
 
         doAnswer(
             new Answer()
@@ -765,7 +938,6 @@ public class DefaultPickingHandlerTest
                 public Object answer(InvocationOnMock invocation) throws Throwable
                 {
                     Object[] args = invocation.getArguments();
-                    Object mock = invocation.getMock();
 
                     PickInstructions instructions = (PickInstructions)args[0];
                     instructions.resizeChildren(4);
@@ -774,7 +946,8 @@ public class DefaultPickingHandlerTest
                     // Always have child 0 as null to test skipping this as the output
                     instructions.children[0] = null;
                     instructions.children[1] = mock_child;
-                    instructions.hasTransform = false;
+                    instructions.hasTransform = true;
+                    instructions.localTransform = test_matrix;
                     return null;
                 }
             }
@@ -784,6 +957,37 @@ public class DefaultPickingHandlerTest
         class_under_test.pickSingle(mock_target, test_request);
 
         verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+
+        assertEquals(test_request.pickCount, 1, "Wrong number of intersections found");
+
+        SceneGraphPath result_path;
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+            result_path = (SceneGraphPath)((List)test_request.foundPaths).get(0);
+        }
+        else
+        {
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+            result_path = (SceneGraphPath)test_request.foundPaths;
+        }
+
+        assertNotNull(result_path, "No scene graph path actually collected");
+        assertEquals(result_path.getNodeCount(), 2, "Wrong number of nodes in path");
+        assertEquals(result_path.getTerminalNode(), mock_child, "Target not in the path");
+
+        Matrix4d result_matrix = new Matrix4d();
+
+        result_path.getTransform(result_matrix);
+        assertEqualsMatrix(result_matrix, test_matrix, "forward");
+
+        Matrix4d inv_matrix = new Matrix4d();
+        MatrixUtils utils = new MatrixUtils();
+        utils.inverse(test_matrix, inv_matrix);
+
+        result_path.getInverseTransform(result_matrix);
+        assertEqualsMatrix(result_matrix, inv_matrix, "inverse");
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
@@ -837,7 +1041,6 @@ public class DefaultPickingHandlerTest
                 public Object answer(InvocationOnMock invocation) throws Throwable
                 {
                     Object[] args = invocation.getArguments();
-                    Object mock = invocation.getMock();
 
                     PickInstructions instructions = (PickInstructions)args[0];
                     instructions.resizeChildren(4);
@@ -911,7 +1114,6 @@ public class DefaultPickingHandlerTest
                 public Object answer(InvocationOnMock invocation) throws Throwable
                 {
                     Object[] args = invocation.getArguments();
-                    Object mock = invocation.getMock();
 
                     PickInstructions instructions = (PickInstructions)args[0];
                     instructions.resizeChildren(4);
@@ -982,7 +1184,6 @@ public class DefaultPickingHandlerTest
                 public Object answer(InvocationOnMock invocation) throws Throwable
                 {
                     Object[] args = invocation.getArguments();
-                    Object mock = invocation.getMock();
 
                     PickInstructions instructions = (PickInstructions)args[0];
                     instructions.resizeChildren(4);
@@ -1004,7 +1205,6 @@ public class DefaultPickingHandlerTest
                 public Object answer(InvocationOnMock invocation) throws Throwable
                 {
                     Object[] args = invocation.getArguments();
-                    Object mock = invocation.getMock();
 
                     PickInstructions instructions = (PickInstructions)args[0];
                     instructions.resizeChildren(4);
@@ -1024,6 +1224,64 @@ public class DefaultPickingHandlerTest
 
         verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
     }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllCustomNochildren(int geometryType, float[] origin, float[] destination, float additionalData,
+                                        int sortType, int pickType) throws Exception
+    {
+        // Tests single level custom picker. Need separate test for nested custom pick
+        // handling.
+
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        CustomPickTarget mock_target = mock(CustomPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.CUSTOM_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        doAnswer(
+            new Answer()
+            {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable
+                {
+                    Object[] args = invocation.getArguments();
+
+                    PickInstructions instructions = (PickInstructions)args[0];
+                    instructions.resizeChildren(1);
+                    instructions.numChildren = 0;
+                    instructions.hasTransform = false;
+                    return null;
+                }
+            }
+            ).when(mock_target).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        verify(mock_target, times(1)).pickChildren(any(PickInstructions.class), any(Matrix4d.class), eq(test_request));
+        assertEquals(test_request.pickCount, 0, "Should not have an intersection");
+    }
+
 
     @Test(groups = "unit", dataProvider = "pick options")
     public void testGroupChildSkipping(int geometryType, float[] origin, float[] destination, float additionalData,
@@ -1109,6 +1367,75 @@ public class DefaultPickingHandlerTest
 //        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
     }
 
+    @Test(groups = "unit", dataProvider = "pick types")
+    public void testPickInvalidSortType(int geometryType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = -300;
+        test_request.pickType = PickRequest.FIND_ALL;
+        test_request.destination[1] = 1.0f;
+        test_request.additionalData = 0.5f;
+
+        PickTarget mock_target = mock(LeafPickTarget.class);
+        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        ErrorReporter mock_reporter = mock(ErrorReporter.class);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.setErrorReporter(mock_reporter);
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 0, "Should not have found intersection");
+        verify(mock_reporter, atLeast(1)).warningReport(anyString(), any(Throwable.class));
+    }
+
+    @Test(groups = "unit", dataProvider = "pick types")
+    public void testPickReturnSinglePath(int geometryType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = PickRequest.SORT_ANY;
+        test_request.pickType = PickRequest.FIND_ALL;
+        test_request.destination[1] = 1.0f;
+        test_request.additionalData = 0.5f;
+        test_request.foundPaths = new Object();
+
+        PickTarget mock_target = mock(LeafPickTarget.class);
+        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Found path should be single scene graph path");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick types")
+    public void testPickReturnMultiplePaths(int geometryType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = PickRequest.SORT_ALL;
+        test_request.pickType = PickRequest.FIND_ALL;
+        test_request.destination[1] = 1.0f;
+        test_request.additionalData = 0.5f;
+        test_request.foundPaths = new Object();
+
+        PickTarget mock_target = mock(LeafPickTarget.class);
+        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertTrue(test_request.foundPaths instanceof List, "Found path should be a collection");
+    }
+
     // ------- Point Picking Tests -------------------------------------------
 
     @Test(groups = "unit")
@@ -1157,30 +1484,6 @@ public class DefaultPickingHandlerTest
 //        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
     }
 
-    @Test(groups = "unit")
-    public void testPointPickInvalidSortType() throws Exception
-    {
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_POINT;
-        test_request.pickSortType = -300;
-        test_request.pickType = PickRequest.FIND_ALL;
-
-        PickTarget mock_target = mock(LeafPickTarget.class);
-        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        ErrorReporter mock_reporter = mock(ErrorReporter.class);
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.setErrorReporter(mock_reporter);
-        class_under_test.pickSingle(mock_target, test_request);
-
-        assertEquals(test_request.pickCount, 0, "Should not have found intersection");
-        verify(mock_reporter, atLeast(1)).warningReport(anyString(), any(Throwable.class));
-    }
-
-
     // ------  Ray Picking Tests ---------------------------------------------
 
     @Test(groups = "unit")
@@ -1222,30 +1525,6 @@ public class DefaultPickingHandlerTest
         class_under_test.pickSingle(mock_target, test_request);
 
         assertEquals(test_request.pickCount, 0, "Should not have an intersection");
-    }
-
-    @Test(groups = "unit")
-    public void testRayPickInvalidSortType() throws Exception
-    {
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_RAY;
-        test_request.pickSortType = -300;
-        test_request.pickType = PickRequest.FIND_ALL;
-        test_request.destination[1] = 1.0f;
-
-        PickTarget mock_target = mock(LeafPickTarget.class);
-        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        ErrorReporter mock_reporter = mock(ErrorReporter.class);
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.setErrorReporter(mock_reporter);
-        class_under_test.pickSingle(mock_target, test_request);
-
-        assertEquals(test_request.pickCount, 0, "Should not have found intersection");
-        verify(mock_reporter, atLeast(1)).warningReport(anyString(), any(Throwable.class));
     }
 
     // ------  Line Segment Picking Tests ------------------------------------
@@ -1291,30 +1570,6 @@ public class DefaultPickingHandlerTest
         assertEquals(test_request.pickCount, 0, "Should not have an intersection");
     }
 
-    @Test(groups = "unit")
-    public void testLineSegmentPickInvalidSortType() throws Exception
-    {
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_LINE_SEGMENT;
-        test_request.pickSortType = -300;
-        test_request.pickType = PickRequest.FIND_ALL;
-        test_request.destination[1] = 1.0f;
-
-        PickTarget mock_target = mock(LeafPickTarget.class);
-        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        ErrorReporter mock_reporter = mock(ErrorReporter.class);
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.setErrorReporter(mock_reporter);
-        class_under_test.pickSingle(mock_target, test_request);
-
-        assertEquals(test_request.pickCount, 0, "Should not have found intersection");
-        verify(mock_reporter, atLeast(1)).warningReport(anyString(), any(Throwable.class));
-    }
-
     @DataProvider(name = "pick types")
     public Object[][] generatePickTypeOptions()
     {
@@ -1324,7 +1579,7 @@ public class DefaultPickingHandlerTest
             { PickRequest.PICK_CONE },
             { PickRequest.PICK_CONE_SEGMENT },
             { PickRequest.PICK_CYLINDER },
-            { PickRequest.PICK_FRUSTUM },
+//            { PickRequest.PICK_FRUSTUM },
             { PickRequest.PICK_LINE_SEGMENT },
             { PickRequest.PICK_POINT },
             { PickRequest.PICK_RAY },
@@ -1413,4 +1668,106 @@ public class DefaultPickingHandlerTest
         };
     }
 
+    /**
+     * Convenience method to check the given matrix is an identity matrix.
+     *
+     * @param matrix The matrix object to test
+     */
+    private void assertIdentityMatrix(Matrix4d matrix)
+    {
+        assertEquals(matrix.m00, 1.0, 0.00001, "[0][0] is not one in the identity matrix");
+        assertEquals(matrix.m01, 0.0, 0.00001, "[0][1] is not zero in the identity matrix");
+        assertEquals(matrix.m02, 0.0, 0.00001, "[0][2] is not zero in the identity matrix");
+        assertEquals(matrix.m03, 0.0, 0.00001, "[0][3] is not zero in the identity matrix");
+
+        assertEquals(matrix.m10, 0.0, 0.00001, "[1][0] is not zero in the identity matrix");
+        assertEquals(matrix.m11, 1.0, 0.00001, "[1][1] is not one in the identity matrix");
+        assertEquals(matrix.m12, 0.0, 0.00001, "[1][2] is not zero in the identity matrix");
+        assertEquals(matrix.m13, 0.0, 0.00001, "[1][3] is not zero in the identity matrix");
+
+        assertEquals(matrix.m20, 0.0, 0.00001, "[2][0] is not zero in the identity matrix");
+        assertEquals(matrix.m21, 0.0, 0.00001, "[2][1] is not zero in the identity matrix");
+        assertEquals(matrix.m22, 1.0, 0.00001, "[2][2] is not one in the identity matrix");
+        assertEquals(matrix.m23, 0.0, 0.00001, "[2][3] is not zero in the identity matrix");
+
+        assertEquals(matrix.m30, 0.0, 0.00001, "[3][0] is not zero in the identity matrix");
+        assertEquals(matrix.m31, 0.0, 0.00001, "[3][1] is not zero in the identity matrix");
+        assertEquals(matrix.m32, 0.0, 0.00001, "[3][2] is not zero in the identity matrix");
+        assertEquals(matrix.m33, 1.0, 0.00001, "[3][3] is not one in the identity matrix");
+    }
+
+    /**
+     * Convenience method to check the given matrix is an identity matrix.
+     *
+     * @param result The matrix object to test
+     */
+    private void assertEqualsMatrix(Matrix4d result, Matrix4d expected, String type)
+    {
+        assertEquals(result.m00, expected.m00, 0.00001, "[0][0] is incorrect in the " + type + " matrix");
+        assertEquals(result.m01, expected.m01, 0.00001, "[0][1] is incorrect in the " + type + " matrix");
+        assertEquals(result.m02, expected.m02, 0.00001, "[0][2] is incorrect in the " + type + " matrix");
+        assertEquals(result.m03, expected.m03, 0.00001, "[0][3] is incorrect in the " + type + " matrix");
+
+        assertEquals(result.m10, expected.m10, 0.00001, "[1][0] is incorrect in the " + type + " matrix");
+        assertEquals(result.m11, expected.m11, 0.00001, "[1][1] is incorrect in the " + type + " matrix");
+        assertEquals(result.m12, expected.m12, 0.00001, "[1][2] is incorrect in the " + type + " matrix");
+        assertEquals(result.m13, expected.m13, 0.00001, "[1][3] is incorrect in the " + type + " matrix");
+
+        assertEquals(result.m20, expected.m20, 0.00001, "[2][0] is incorrect in the " + type + " matrix");
+        assertEquals(result.m21, expected.m21, 0.00001, "[2][1] is incorrect in the " + type + " matrix");
+        assertEquals(result.m22, expected.m22, 0.00001, "[2][2] is incorrect in the " + type + " matrix");
+        assertEquals(result.m23, expected.m23, 0.00001, "[2][3] is incorrect in the " + type + " matrix");
+
+        assertEquals(result.m30, expected.m30, 0.00001, "[3][0] is incorrect in the " + type + " matrix");
+        assertEquals(result.m31, expected.m31, 0.00001, "[3][1] is incorrect in the " + type + " matrix");
+        assertEquals(result.m32, expected.m32, 0.00001, "[3][2] is incorrect in the " + type + " matrix");
+        assertEquals(result.m33, expected.m33, 0.00001, "[3][3] is incorrect in the " + type + " matrix");
+    }
+
+    private <T> T mockPickTarget(Class<T> cls)
+    {
+        return (T) mock(Node.class, withSettings().extraInterfaces(cls));
+    }
+
+    private <T extends PickTarget> T mockPickTransformTarget(Class<T> cls, final Matrix4d matrix)
+    {
+        T target = (T) mock(Node.class, withSettings().extraInterfaces(cls, TransformPickTarget.class));
+
+        doAnswer(
+            new Answer()
+            {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable
+                {
+                    Object[] args = invocation.getArguments();
+
+                    Matrix4d matrixArg = (Matrix4d)args[0];
+                    matrixArg.set(matrix);
+                    return null;
+                }
+            }
+        ).when((TransformPickTarget) target).getTransform(any(Matrix4d.class));
+
+        final Matrix4d inv_matrix = new Matrix4d();
+        MatrixUtils matrix_utils = new MatrixUtils();
+        matrix_utils.inverse(matrix, inv_matrix);
+
+
+        doAnswer(
+            new Answer()
+            {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable
+                {
+                    Object[] args = invocation.getArguments();
+
+                    Matrix4d matrixArg = (Matrix4d) args[0];
+                    matrixArg.set(inv_matrix);
+                    return null;
+                }
+            }
+                ).when((TransformPickTarget)target).getInverseTransform(any(Matrix4d.class));
+
+        return target;
+    }
 }
