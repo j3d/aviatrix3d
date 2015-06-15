@@ -31,11 +31,9 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 import static org.testng.Assert.*;
 
-import org.j3d.aviatrix3d.BoundingBox;
-import org.j3d.aviatrix3d.BoundingVoid;
-import org.j3d.aviatrix3d.Node;
-import org.j3d.aviatrix3d.SceneGraphPath;
+import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.picking.*;
+import org.j3d.aviatrix3d.rendering.BoundingVolume;
 
 /**
  * Unit tests for the default picking handler
@@ -1435,6 +1433,83 @@ public class DefaultPickingHandlerTest
 
         assertTrue(test_request.foundPaths instanceof List, "Found path should be a collection");
     }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testBoundingGeometryPick(int geometryType,
+                                         float[] origin,
+                                         float[] destination,
+                                         float additionalData,
+                                         int sortType,
+                                         int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        BoundingVolume test_proxy_bounds = new BoundingBox();
+        PickTarget mock_proxy = mockPickTarget(LeafPickTarget.class);
+
+        when(mock_proxy.checkPickMask(pickType)).thenReturn(true);
+        when(mock_proxy.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_proxy.getPickableBounds()).thenReturn(test_proxy_bounds);
+        when(((Node)mock_proxy).getBounds()).thenReturn(test_proxy_bounds);
+
+        BoundingGeometry test_bounds = new BoundingGeometry();
+        test_bounds.setProxyGeometry((Node)mock_proxy);
+
+        PickTarget mock_target = mockPickTarget(LeafPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(test_bounds);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 1, "Expected an intersection");
+
+        SceneGraphPath result_path = null;
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+            result_path = (SceneGraphPath)((List)test_request.foundPaths).get(0);
+        }
+        else
+        {
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+            result_path = (SceneGraphPath)test_request.foundPaths;
+        }
+
+        assertNotNull(result_path, "No scene graph path actually collected");
+        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+        assertEquals(result_path.getTerminalNode(), mock_proxy, "Target not in the path");
+
+        Matrix4d result_matrix = new Matrix4d();
+
+        result_path.getTransform(result_matrix);
+        assertIdentityMatrix(result_matrix);
+
+        result_path.getInverseTransform(result_matrix);
+        assertIdentityMatrix(result_matrix);
+    }
+
 
     // ------- Point Picking Tests -------------------------------------------
 
