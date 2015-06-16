@@ -337,6 +337,43 @@ public class DefaultPickingHandlerTest
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllSingleWithNoChildren(int geometryType, float[] origin, float[] destination, float additionalData,
+                                            int sortType, int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        SinglePickTarget mock_target = mock(SinglePickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChild()).thenReturn(null);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 0, "Should not have any picks found");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
     public void testAllSingleWithLeafChild(int geometryType, float[] origin, float[] destination, float additionalData,
                                            int sortType, int pickType) throws Exception
     {
@@ -593,6 +630,100 @@ public class DefaultPickingHandlerTest
 //        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
 //        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
     }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllGroupWithNoChildren(int geometryType,
+                                           float[] origin,
+                                           float[] destination,
+                                           float additionalData,
+                                           int sortType,
+                                           int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        GroupPickTarget mock_target = mock(GroupPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChildren()).thenReturn(new PickTarget[0]);
+        when(mock_target.numPickableChildren()).thenReturn(0);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 0, "Should not have found any intersections");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testAllGroupWithNoChildIntersection(int geometryType,
+                                                    float[] origin,
+                                                    float[] destination,
+                                                    float additionalData,
+                                                    int sortType,
+                                                    int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        // Run these all in reverse order so that each path will pick up a different child
+        // first for the purposes of checking all code paths.
+        PickTarget mock_child = mock(LeafPickTarget.class);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingVoid());
+
+        PickTarget[] test_group_children = { mock_child };
+
+        GroupPickTarget mock_target = mock(GroupPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.GROUP_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChildren()).thenReturn(test_group_children);
+        when(mock_target.numPickableChildren()).thenReturn(test_group_children.length);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 0, "Should not have found any intersections");
+    }
+
 
     @Test(groups = "unit", dataProvider = "pick options")
     public void testAllGroupWithLeafChild(int geometryType, float[] origin, float[] destination, float additionalData,
@@ -1510,8 +1641,52 @@ public class DefaultPickingHandlerTest
         assertIdentityMatrix(result_matrix);
     }
 
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testBoundingGeometryPickGeometryNotPickTarget(int geometryType,
+                                                              float[] origin,
+                                                              float[] destination,
+                                                              float additionalData,
+                                                              int sortType,
+                                                              int pickType) throws Exception
+    {
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
 
-    // ------- Point Picking Tests -------------------------------------------
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        BoundingVolume test_proxy_bounds = new BoundingBox();
+        Node mock_proxy = mock(Node.class);
+        when((mock_proxy).getBounds()).thenReturn(test_proxy_bounds);
+
+        BoundingGeometry test_bounds = new BoundingGeometry();
+        test_bounds.setProxyGeometry(mock_proxy);
+
+        PickTarget mock_target = mockPickTarget(LeafPickTarget.class);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(test_bounds);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 0, "Should not have found any intersections");
+    }
 
     @Test(groups = "unit")
     public void testPointSinglePickNoChildren() throws Exception
@@ -1532,32 +1707,7 @@ public class DefaultPickingHandlerTest
         assertEquals(test_request.pickCount, 0, "Should not have an intersection");
     }
 
-    @Test(groups = "unit")
-    public void testPointLeafPick() throws Exception
-    {
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_POINT;
-        test_request.pickSortType = PickRequest.SORT_ANY;
-        test_request.pickType = PickRequest.FIND_ALL;
-
-        PickTarget mock_target = mock(LeafPickTarget.class);
-        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.pickSingle(mock_target, test_request);
-
-        assertEquals(test_request.pickCount, 1, "Expected an intersection");
-        assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Not instance of scene graph path");
-
-
-        // Can't test this as the mock does not implement both PickTarget and Node, so the
-        // check in the SceneGraphPath update() method will ignore the mocked object.
-//        SceneGraphPath result_path = (SceneGraphPath)test_request.foundPaths;
-//        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
-//        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
-    }
+    // ------- Point Picking Tests -------------------------------------------
 
     // ------  Ray Picking Tests ---------------------------------------------
 
@@ -1580,26 +1730,6 @@ public class DefaultPickingHandlerTest
         class_under_test.pickSingle(mock_target, test_request);
 
         assertEquals(test_request.pickCount, 0, "Should not have found intersection");
-    }
-
-    @Test(groups = "unit")
-    public void testRaySinglePickNoChildren() throws Exception
-    {
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_RAY;
-        test_request.pickSortType = PickRequest.SORT_ANY;
-        test_request.pickType = PickRequest.FIND_ALL;
-        test_request.destination[1] = 1.0f;
-
-        PickTarget mock_target = mock(SinglePickTarget.class);
-        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.pickSingle(mock_target, test_request);
-
-        assertEquals(test_request.pickCount, 0, "Should not have an intersection");
     }
 
     // ------  Line Segment Picking Tests ------------------------------------
@@ -1625,25 +1755,6 @@ public class DefaultPickingHandlerTest
         assertEquals(test_request.pickCount, 0, "Should not have found intersection");
     }
 
-    @Test(groups = "unit")
-    public void testLineSegmentSinglePickNoChildren() throws Exception
-    {
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_LINE_SEGMENT;
-        test_request.pickSortType = PickRequest.SORT_ANY;
-        test_request.pickType = PickRequest.FIND_ALL;
-        test_request.destination[1] = 1.0f;
-
-        PickTarget mock_target = mock(SinglePickTarget.class);
-        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.pickSingle(mock_target, test_request);
-
-        assertEquals(test_request.pickCount, 0, "Should not have an intersection");
-    }
 
     @DataProvider(name = "pick types")
     public Object[][] generatePickTypeOptions()
