@@ -14,6 +14,7 @@
 
 package org.j3d.aviatrix3d;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
@@ -56,5 +57,112 @@ public class BoundingSphereTest
         assertEquals(max[2], 1.0f, "Max extents Z coordinate incorrect");
 
         assertNotNull(class_under_test.toString(), "No string representation available");
+    }
+
+    @Test(groups = "unit", dataProvider = "point tests")
+    public void testPointIntersection(float[] centre,
+                                      float radius,
+                                      float[] testPoint,
+                                      boolean expectedResult)
+    {
+        BoundingSphere class_under_test = new BoundingSphere(centre, radius);
+
+        assertEquals(class_under_test.checkIntersectionPoint(testPoint),
+                     expectedResult,
+                     "Point intersection incorrect");
+    }
+
+    @Test(groups = "unit", dataProvider = "ray tests")
+    public void testRayIntersection(float[] centre,
+                                    float radius,
+                                    float[] testPoint,
+                                    float[] testDirection,
+                                    boolean expectedResult)
+    {
+        BoundingSphere class_under_test = new BoundingSphere(centre, radius);
+
+        assertEquals(class_under_test.checkIntersectionRay(testPoint, testDirection),
+                     expectedResult,
+                     "Ray intersection incorrect");
+    }
+
+    @DataProvider(name = "point tests")
+    public Object[][] generatePointTestsData()
+    {
+        Object[][] ret_val = new Object[4][4];
+
+        ret_val[0][0] = new float[] { 0, 0, 0 };
+        ret_val[0][1] = 1;
+        ret_val[0][2] = new float[] {  0.1f, 0.0f, 0.0f };
+        ret_val[0][3] = true;
+
+        ret_val[1][0] = new float[] { 0, 0, 0 };
+        ret_val[1][1] = 1;
+        ret_val[1][2] = new float[] {  2.5f, 0.0f, 0.0f };
+        ret_val[1][3] = false;
+
+        ret_val[2][0] = new float[] { -2.0f, -2.0f, -2.0f };
+        ret_val[2][1] = 1;
+        ret_val[2][2] = new float[] {  0, 0, 0 };
+        ret_val[2][3] = false;
+
+        ret_val[3][0] = new float[] { 2.0f, 2.0f, 2.0f };
+        ret_val[3][1] = 0.5f;
+        ret_val[3][2] = new float[] {  -0.5f, 0, 0 };
+        ret_val[3][3] = false;
+
+        return ret_val;
+    }
+
+    @DataProvider(name = "ray tests")
+    public Object[][] generateRayTestsData()
+    {
+        Object[][] ret_val = new Object[7][5];
+
+        // Ray starts inside sphere, pointing out
+        ret_val[0][0] = new float[] { 0, 0, 0 };
+        ret_val[0][1] = 1;
+        ret_val[0][2] = new float[] {  0.0f, 0.0f, 0.0f };
+        ret_val[0][3] = new float[] {  1.0f, 0.0f, 0.0f };
+        ret_val[0][4] = true;
+
+        ret_val[1][0] = new float[] { 0, 0, 0 };
+        ret_val[1][1] = 1;
+        ret_val[1][2] = new float[] {  0.0f, 0.0f, 0.0f };
+        ret_val[1][3] = new float[] {  0.0f, 1.0f, 0.0f };
+        ret_val[1][4] = true;
+
+        ret_val[2][0] = new float[] { 0, 0, 0 };
+        ret_val[2][1] = 1;
+        ret_val[2][2] = new float[] {  0.0f, 0.0f, 0.0f };
+        ret_val[2][3] = new float[] {  0.0f, 0.0f, 1.0f };
+        ret_val[2][4] = true;
+
+        // Ray outside the sphere pointing through
+        ret_val[3][0] = new float[] { 0, 0, 0 };
+        ret_val[3][1] = 1;
+        ret_val[3][2] = new float[] { -3.0f, 0.0f, 0.0f };
+        ret_val[3][3] = new float[] {  1.0f, 0.0f, 0.0f };
+        ret_val[3][4] = true;
+
+        ret_val[4][0] = new float[] { 0, 0, 0 };
+        ret_val[4][1] = 1;
+        ret_val[4][2] = new float[] { -3.0f, 0.0f, 0.0f };
+        ret_val[4][3] = new float[] { -1.0f, 0.0f, 0.0f };
+        ret_val[4][4] = false;
+
+        ret_val[5][0] = new float[] { 0, 0, 0 };
+        ret_val[5][1] = 1;
+        ret_val[5][2] = new float[] { -3.0f, 0.0f, 0.0f };
+        ret_val[5][3] = new float[] {  0.0f, 1.0f, 0.0f };
+        ret_val[5][4] = false;
+
+        ret_val[6][0] = new float[] { 0, 0, 0 };
+        ret_val[6][1] = 1;
+        ret_val[6][2] = new float[] { -3.0f, 0.0f, 0.0f };
+        ret_val[6][3] = new float[] {  0.0f, 0.0f, 1.0f };
+        ret_val[6][4] = false;
+
+        return ret_val;
     }
 }
