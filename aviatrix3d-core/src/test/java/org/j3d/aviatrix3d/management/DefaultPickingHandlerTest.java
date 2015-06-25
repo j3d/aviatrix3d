@@ -14,10 +14,10 @@
 
 package org.j3d.aviatrix3d.management;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 import org.j3d.util.ErrorReporter;
 import org.j3d.util.I18nManager;
 import org.j3d.util.MatrixUtils;
@@ -187,12 +187,12 @@ public class DefaultPickingHandlerTest
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
-    public void testPickTransformHandling(int geometryType,
-                                          float[] origin,
-                                          float[] destination,
-                                          float additionalData,
-                                          int sortType,
-                                          int pickType) throws Exception
+    public void testPickSingleTransformHandling(int geometryType,
+                                                float[] origin,
+                                                float[] destination,
+                                                float additionalData,
+                                                int sortType,
+                                                int pickType) throws Exception
     {
         PickRequest test_request = new PickRequest();
         test_request.pickGeometryType = geometryType;
@@ -221,7 +221,6 @@ public class DefaultPickingHandlerTest
         Matrix4d test_matrix = new Matrix4d();
         test_matrix.m00 = 1.0;
         test_matrix.m01 = 2.0;
-
 
         PickTarget mock_target = mockPickTransformTarget(LeafPickTarget.class, test_matrix);
         when(mock_target.checkPickMask(pickType)).thenReturn(true);
@@ -258,6 +257,97 @@ public class DefaultPickingHandlerTest
         Matrix4d inv_matrix = new Matrix4d();
         MatrixUtils utils = new MatrixUtils();
         utils.inverse(test_matrix, inv_matrix);
+
+        result_path.getInverseTransform(result_matrix);
+        assertEqualsMatrix(result_matrix, inv_matrix, "inverse");
+    }
+
+    @Test(groups = "unit", dataProvider = "pick options")
+    public void testPickNestedTransformHandling(int geometryType,
+                                                float[] origin,
+                                                float[] destination,
+                                                float additionalData,
+                                                int sortType,
+                                                int pickType) throws Exception
+    {
+        // Only check that the matrices are correctly multiplied out. This does not
+        // check the transform versus pick target handling and that the right things
+        // are multiplied through to the pick bounds objects.
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = sortType;
+        test_request.pickType = pickType;
+
+        // Need this true so that the matrix is created properly
+        test_request.generateVWorldMatrix = true;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        Matrix4d test_matrix_top = new Matrix4d();
+        test_matrix_top.m00 = 1.0;
+        test_matrix_top.m01 = 2.0;
+
+        Matrix4d test_matrix_bottom = new Matrix4d();
+        test_matrix_bottom.m00 = 1.0;
+        test_matrix_bottom.m01 = 6.0;
+
+        PickTarget mock_child = mockPickTransformTarget(LeafPickTarget.class, test_matrix_bottom);
+        when(mock_child.checkPickMask(pickType)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
+
+        SinglePickTarget mock_target = mockPickTransformTarget(SinglePickTarget.class, test_matrix_top);
+        when(mock_target.checkPickMask(pickType)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
+        when(mock_target.getPickableChild()).thenReturn(mock_child);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        assertEquals(test_request.pickCount, 1, "Expected an intersection");
+
+        SceneGraphPath result_path = null;
+
+        if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
+        {
+            assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+            result_path = (SceneGraphPath)((List)test_request.foundPaths).get(0);
+        }
+        else
+        {
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+            result_path = (SceneGraphPath)test_request.foundPaths;
+        }
+
+        assertNotNull(result_path, "No scene graph path actually collected");
+        assertEquals(result_path.getNodeCount(), 2, "Wrong number of nodes in path");
+        assertEquals(result_path.getTerminalNode(), mock_child, "Target not in the path");
+
+        Matrix4d result_matrix = new Matrix4d();
+        Matrix4d expected_matrix = new Matrix4d();
+        expected_matrix.mul(test_matrix_top, test_matrix_bottom);
+
+        result_path.getTransform(result_matrix);
+        assertEqualsMatrix(result_matrix, expected_matrix, "forward");
+
+        Matrix4d inv_matrix = new Matrix4d();
+        MatrixUtils utils = new MatrixUtils();
+        utils.inverse(expected_matrix, inv_matrix);
 
         result_path.getInverseTransform(result_matrix);
         assertEqualsMatrix(result_matrix, inv_matrix, "inverse");
@@ -335,6 +425,86 @@ public class DefaultPickingHandlerTest
         result_path.getInverseTransform(result_matrix);
         assertIdentityMatrix(result_matrix);
     }
+
+    @Test(groups = "unit", dataProvider = "pick intersections")
+    public void testTransformedPickers(int geometryType,
+                                        float[] origin,
+                                        float[] destination,
+                                        float additionalData,
+                                        Matrix4d geomTransform,
+                                        boolean intersectionExpected) throws Exception
+    {
+        // Validates that we correctly transform the pick input based on the
+        // object's transformation. Typically we start with the picker not
+        // intersecting an object if the object was transformed with an identity
+        // matrix and ensure that we correctly manipulate the picker setup
+        // to detect the intersection
+        //
+        // Always use a unit bounding box for the leaf and set up the parent
+        // bounding box to ensure it covers enough area
+        PickRequest test_request = new PickRequest();
+        test_request.pickGeometryType = geometryType;
+        test_request.pickSortType = PickRequest.SORT_ANY;
+        test_request.pickType = PickRequest.FIND_ALL;
+
+        // Need this true so that the matrix is created properly
+        test_request.generateVWorldMatrix = true;
+
+        if(origin != null)
+        {
+            test_request.origin[0] = origin[0];
+            test_request.origin[1] = origin[1];
+            test_request.origin[2] = origin[2];
+        }
+
+        if(destination != null)
+        {
+            test_request.destination[0] = destination[0];
+            test_request.destination[1] = destination[1];
+            test_request.destination[2] = destination[2];
+        }
+
+        test_request.additionalData = additionalData;
+
+        float[] min = { -1, -1, -1 };
+        float[] max = { 1, 1, 1 };
+
+        PickTarget mock_child = mockPickTarget(LeafPickTarget.class);
+        when(mock_child.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
+        when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
+        when(mock_child.getPickableBounds()).thenReturn(new BoundingBox(min, max));
+
+        MatrixUtils matrix_utils = new MatrixUtils();
+        float scale = (float)matrix_utils.getUniformScale(geomTransform);
+
+        // radius to the corner of a 2x2x2 cube from the centre is sqrt(3);
+        float bounds_radius = (float)(scale * Math.sqrt(3) * 2);
+
+        SinglePickTarget mock_target = mockPickTransformTarget(SinglePickTarget.class, geomTransform);
+        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
+        when(mock_target.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
+        when(mock_target.getPickableBounds()).thenReturn(new BoundingSphere(bounds_radius));
+        when(mock_target.getPickableChild()).thenReturn(mock_child);
+
+        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
+        class_under_test.pickSingle(mock_target, test_request);
+
+        if(intersectionExpected)
+        {
+            assertEquals(test_request.pickCount, 1, "Expected an intersection");
+            assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+            SceneGraphPath result_path = (SceneGraphPath) test_request.foundPaths;
+
+            assertNotNull(result_path, "No scene graph path actually collected");
+            assertEquals(result_path.getNodeCount(), 2, "Wrong number of nodes in path");
+            assertEquals(result_path.getTerminalNode(), mock_child, "Target not in the path");
+        }
+        else
+        {
+            assertEquals(test_request.pickCount, 0, "Unexpected intersection");
+        }
+    }
+
 
     @Test(groups = "unit", dataProvider = "pick options")
     public void testAllSingleWithNoChildren(int geometryType, float[] origin, float[] destination, float additionalData,
@@ -956,7 +1126,7 @@ public class DefaultPickingHandlerTest
 
         // Run these all in reverse order so that each path will pick up a different child
         // first for the purposes of checking all code paths.
-        final PickTarget mock_child = mock(LeafPickTarget.class);
+        final PickTarget mock_child = mockPickTarget(LeafPickTarget.class);
         when(mock_child.checkPickMask(pickType)).thenReturn(true);
         when(mock_child.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
         when(mock_child.getPickableBounds()).thenReturn(new BoundingBox());
@@ -999,23 +1169,23 @@ public class DefaultPickingHandlerTest
         DefaultPickingHandler class_under_test = new DefaultPickingHandler();
         class_under_test.pickSingle(mock_target, test_request);
 
+        SceneGraphPath result_path;
 
         if(sortType == PickRequest.SORT_ALL || sortType == PickRequest.SORT_ORDERED)
         {
             assertEquals(test_request.pickCount, 1, "Wrong number of intersections found");
             assertTrue(test_request.foundPaths instanceof List, "Bulk sort should return a list of paths");
+            result_path = (SceneGraphPath)((List)test_request.foundPaths).get(0);
         }
         else
         {
             assertEquals(test_request.pickCount, 1, "Expected an intersection");
             assertTrue(test_request.foundPaths instanceof SceneGraphPath, "Single sort should return a path");
+            result_path = (SceneGraphPath)test_request.foundPaths;
         }
 
-        // Can't test this as the mock does not implement both PickTarget and Node, so the
-        // check in the SceneGraphPath update() method will ignore the mocked object.
-//        SceneGraphPath result_path = (SceneGraphPath)test_request.foundPaths;
-//        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
-//        assertEquals(result_path.getNode(0), mock_target, "Target not in the path");
+        assertEquals(result_path.getNodeCount(), 1, "Wrong number of nodes in path");
+        assertEquals(result_path.getTerminalNode(), mock_child, "Target not in the path");
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
@@ -1355,7 +1525,7 @@ public class DefaultPickingHandlerTest
     }
 
     @Test(groups = "unit", dataProvider = "pick options")
-    public void testAllCustomNochildren(int geometryType, float[] origin, float[] destination, float additionalData,
+    public void testAllCustomNoChildren(int geometryType, float[] origin, float[] destination, float additionalData,
                                         int sortType, int pickType) throws Exception
     {
         // Tests single level custom picker. Need separate test for nested custom pick
@@ -1528,6 +1698,8 @@ public class DefaultPickingHandlerTest
         test_request.pickGeometryType = geometryType;
         test_request.pickSortType = PickRequest.SORT_ANY;
         test_request.pickType = PickRequest.FIND_ALL;
+        // make origin array much bigger for the frustum handling
+        test_request.origin = new float[24];
         test_request.destination[1] = 1.0f;
         test_request.additionalData = 0.5f;
         test_request.foundPaths = new Object();
@@ -1550,6 +1722,8 @@ public class DefaultPickingHandlerTest
         test_request.pickGeometryType = geometryType;
         test_request.pickSortType = PickRequest.SORT_ALL;
         test_request.pickType = PickRequest.FIND_ALL;
+        // make origin array much bigger for the frustum handling
+        test_request.origin = new float[24];
         test_request.destination[1] = 1.0f;
         test_request.additionalData = 0.5f;
         test_request.foundPaths = new Object();
@@ -1688,74 +1862,6 @@ public class DefaultPickingHandlerTest
         assertEquals(test_request.pickCount, 0, "Should not have found any intersections");
     }
 
-    @Test(groups = "unit")
-    public void testPointSinglePickNoChildren() throws Exception
-    {
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_POINT;
-        test_request.pickSortType = PickRequest.SORT_ANY;
-        test_request.pickType = PickRequest.FIND_ALL;
-
-        PickTarget mock_target = mock(SinglePickTarget.class);
-        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.SINGLE_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.pickSingle(mock_target, test_request);
-
-        assertEquals(test_request.pickCount, 0, "Should not have an intersection");
-    }
-
-    // ------- Point Picking Tests -------------------------------------------
-
-    // ------  Ray Picking Tests ---------------------------------------------
-
-    @Test(groups = "unit")
-    public void testRayPickNoIntersection() throws Exception
-    {
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_RAY;
-        test_request.pickSortType = PickRequest.SORT_ANY;
-        test_request.pickType = PickRequest.FIND_ALL;
-        test_request.origin[0] = 3.0f;  // outside the +/- 1.0 bounding box
-        test_request.destination[1] = 1.0f;
-
-        PickTarget mock_target = mock(LeafPickTarget.class);
-        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.pickSingle(mock_target, test_request);
-
-        assertEquals(test_request.pickCount, 0, "Should not have found intersection");
-    }
-
-    // ------  Line Segment Picking Tests ------------------------------------
-
-    @Test(groups = "unit")
-    public void testLineSegmentPickNoIntersection() throws Exception
-    {
-        PickRequest test_request = new PickRequest();
-        test_request.pickGeometryType = PickRequest.PICK_LINE_SEGMENT;
-        test_request.pickSortType = PickRequest.SORT_ANY;
-        test_request.pickType = PickRequest.FIND_ALL;
-        test_request.origin[0] = 3.0f;  // outside the +/- 1.0 bounding box
-        test_request.destination[1] = 1.0f;
-
-        PickTarget mock_target = mock(LeafPickTarget.class);
-        when(mock_target.checkPickMask(PickRequest.FIND_ALL)).thenReturn(true);
-        when(mock_target.getPickTargetType()).thenReturn(PickTarget.LEAF_PICK_TYPE);
-        when(mock_target.getPickableBounds()).thenReturn(new BoundingBox());
-
-        DefaultPickingHandler class_under_test = new DefaultPickingHandler();
-        class_under_test.pickSingle(mock_target, test_request);
-
-        assertEquals(test_request.pickCount, 0, "Should not have found intersection");
-    }
-
-
     @DataProvider(name = "pick types")
     public Object[][] generatePickTypeOptions()
     {
@@ -1765,11 +1871,71 @@ public class DefaultPickingHandlerTest
             { PickRequest.PICK_CONE },
             { PickRequest.PICK_CONE_SEGMENT },
             { PickRequest.PICK_CYLINDER },
-//            { PickRequest.PICK_FRUSTUM },
+            { PickRequest.PICK_FRUSTUM },
             { PickRequest.PICK_LINE_SEGMENT },
             { PickRequest.PICK_POINT },
             { PickRequest.PICK_RAY },
             { PickRequest.PICK_SPHERE }
+        };
+    }
+
+    @DataProvider(name = "pick intersections")
+    public Object[][] generatePickIntersectionOptions()
+    {
+        // Generic setups
+        float[] direction_up = { 0, 1, 0 };
+        float[] box_top = { 1, 1, 1};
+        float[] origin = { 0, 0, 0 };
+        float[] box_border = { 1, 0, 0 };
+        float[] just_outside = { 1.5f, 0, 0 };
+        float[] outside_box = { 10, 0, 0 };
+
+        // Specific configs for picking a particular geometry type
+        float[] box_all_inside = { 0.5f, 0.5f, 0.5f};
+        float[] box_all_outside = { 1.5f, 1.5f, 1.5f};
+        float[] box_no_overlap = { 1.25f, 1.25f, 1.25f};
+
+        Matrix4d identity_matrix = new Matrix4d();
+        identity_matrix.setIdentity();
+
+        Vector3d translation = new Vector3d();
+        translation.x = 0.5;
+        translation.y = 0.5;
+        translation.z = 0.5;
+
+        Matrix4d offset_matrix = new Matrix4d();
+        offset_matrix.setIdentity();
+        offset_matrix.setTranslation(translation);
+
+        // arguments in order are
+        // pick type, req.origin, req.destination, req.additionalData, parent1 geom transform, intersectionexpected?
+        // These assume a default BoundingBox is used when trying to determine if an intersection should happen
+        return new Object[][]
+        {
+            { PickRequest.PICK_BOX, origin, box_top, 0, identity_matrix, true },
+            { PickRequest.PICK_BOX, origin, box_all_inside, 0, identity_matrix, true },
+            { PickRequest.PICK_BOX, origin, box_all_outside, 0, identity_matrix, true },
+            { PickRequest.PICK_BOX, box_no_overlap, box_all_outside, 0, identity_matrix, false },
+            { PickRequest.PICK_BOX, box_no_overlap, box_all_outside, 0, offset_matrix, true },
+//            { PickRequest.PICK_CONE },
+//            { PickRequest.PICK_CONE_SEGMENT },
+//            { PickRequest.PICK_CYLINDER },
+//            { PickRequest.PICK_FRUSTUM },
+            { PickRequest.PICK_LINE_SEGMENT, origin, just_outside, 0, identity_matrix, true },
+            { PickRequest.PICK_LINE_SEGMENT, just_outside, outside_box, 0, identity_matrix, false },
+            { PickRequest.PICK_LINE_SEGMENT, just_outside, outside_box, 0, offset_matrix, true },
+            { PickRequest.PICK_POINT, origin, null, 0, identity_matrix, true },
+            { PickRequest.PICK_POINT, box_border, null, 0, identity_matrix, true },
+            { PickRequest.PICK_POINT, outside_box, null, 0, identity_matrix, false },
+            { PickRequest.PICK_POINT, just_outside, null, 0, offset_matrix, true },
+            { PickRequest.PICK_RAY, origin, direction_up, 0, identity_matrix, true },
+            { PickRequest.PICK_RAY, just_outside, direction_up, 0, identity_matrix, false },
+            { PickRequest.PICK_RAY, just_outside, direction_up, 0, offset_matrix, true },
+            { PickRequest.PICK_SPHERE, origin, null, 0.5f, identity_matrix, true },
+            { PickRequest.PICK_SPHERE, origin, null, 1.0f, identity_matrix, true },
+            { PickRequest.PICK_SPHERE, origin, null, 1.5f, identity_matrix, true },
+            { PickRequest.PICK_SPHERE, just_outside, null, 0.25f, identity_matrix, false },
+            { PickRequest.PICK_SPHERE, just_outside, null, 0.25f, offset_matrix, true },
         };
     }
 
@@ -1937,7 +2103,6 @@ public class DefaultPickingHandlerTest
         final Matrix4d inv_matrix = new Matrix4d();
         MatrixUtils matrix_utils = new MatrixUtils();
         matrix_utils.inverse(matrix, inv_matrix);
-
 
         doAnswer(
             new Answer()
