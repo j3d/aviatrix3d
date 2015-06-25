@@ -181,9 +181,23 @@ public class BoundingSphere extends BoundingVolume
      */
     @Override
     public boolean checkIntersectionSegment(float[] start, float[] end)
-
     {
-        return false;
+        float tmp_dir_x = end[0] - start[0];
+        float tmp_dir_y = end[1] - start[1];
+        float tmp_dir_z = end[2] - start[2];
+
+        float[] tmp = { tmp_dir_x, tmp_dir_y, tmp_dir_z };
+
+        if(!raySphere(start, tmp))
+        {
+            return false;
+        }
+
+        tmp[0] = -tmp_dir_x;
+        tmp[1] = -tmp_dir_y;
+        tmp[2] = -tmp_dir_z;
+
+        return raySphere(end, tmp);
     }
 
     /**
@@ -451,7 +465,31 @@ public class BoundingSphere extends BoundingVolume
         // compute discriminant
         double disc = b * b - 4 * a * c;
 
-        return (disc >= 0);
+//        return (disc >= 0);
+        if(disc < 0)
+        {
+            return false;
+        }
+        else if(disc > 0)
+        {
+            // Closest intersection point with. If the t0 (subtraction)
+            // is greater than zero then that's the intersection point,
+            // if not then compute t1 which is the addition.
+            double sqrt_disc = Math.sqrt(disc);
+            double u = (-b - sqrt_disc) / 2;
+
+            if(u < 0)
+            {
+                // Origin inside the sphere?
+                u = (-b + sqrt_disc) / 2;
+                if(u < 0)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
 	/**
