@@ -84,16 +84,13 @@ class DefaultPickingHandler
     private int lastPathIndex;
 
     /** Distance for the closest object found to date */
-    private float closestDistance;
+    private float scalar;
 
     /** The working vector for start location or direction */
     private float[] start;
 
     /** The working vector for finish location or direction */
     private float[] end;
-
-    /** Place to fetch the intersection point data for the line picking */
-    private float[] vertexPickData;
 
     /** The matrix to set everything in and then invert it. */
     private Matrix4d vworldMatrix;
@@ -129,7 +126,6 @@ class DefaultPickingHandler
         start[3] = 1;
         end[3] = 1;
 
-        vertexPickData = new float[3];
         pickPath = new PickTarget[LIST_START_SIZE];
         transformPath = new Matrix4d[LIST_START_SIZE];
         validTransform = new boolean[LIST_START_SIZE];
@@ -351,6 +347,11 @@ class DefaultPickingHandler
      */
     private void pickPoint(PickTarget root, PickRequest req)
     {
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
@@ -382,7 +383,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionPoint(req.origin))
+        if(bounds == null || !bounds.checkIntersectionPoint(start))
         {
             return;
         }
@@ -404,10 +405,11 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        // Store locally to avoid GC cost of creating new arrays.
+        float x = start[0];
+        float y = start[1];
+        float z = start[2];
+        float w = start[3];
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -415,6 +417,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
 
             validTransform[lastPathIndex] = true;
@@ -472,6 +475,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
 
@@ -492,7 +496,12 @@ class DefaultPickingHandler
                 break;
         }
 
+        // restore everything on the stack
         lastPathIndex--;
+        start[0] = x;
+        start[1] = y;
+        start[2] = z;
+        start[3] = w;
     }
 
     /**
@@ -512,7 +521,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionPoint(req.origin))
+        if(bounds == null || !bounds.checkIntersectionPoint(start))
         {
             return;
         }
@@ -534,10 +543,10 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float x = start[0];
+        float y = start[1];
+        float z = start[2];
+        float w = start[3];
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -545,6 +554,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
 
             validTransform[lastPathIndex] = true;
@@ -600,6 +610,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
 
@@ -620,6 +631,10 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = x;
+        start[1] = y;
+        start[2] = z;
+        start[3] = w;
     }
 
     // ----------------------- Line Picking ------------------------------
@@ -634,6 +649,16 @@ class DefaultPickingHandler
      */
     private void pickLineSegment(PickTarget root, PickRequest req)
     {
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        end[0] = req.destination[0];
+        end[1] = req.destination[1];
+        end[2] = req.destination[2];
+        end[3] = 1;
+
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
@@ -667,7 +692,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionSegment(req.origin, req.destination))
+        if(bounds == null || !bounds.checkIntersectionSegment(start, end))
         {
             return;
         }
@@ -687,15 +712,16 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
+
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -703,6 +729,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
             transform(invertedMatrix, end);
 
@@ -761,6 +788,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
 
@@ -782,6 +810,15 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     /**
@@ -803,7 +840,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionSegment(req.origin, req.destination))
+        if(bounds == null || !bounds.checkIntersectionSegment(start, end))
         {
             return;
         }
@@ -823,15 +860,15 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -839,6 +876,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
             transform(invertedMatrix, end);
 
@@ -895,6 +933,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
 
@@ -915,6 +954,15 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     // ----------------------- Ray Picking ------------------------------
@@ -929,6 +977,16 @@ class DefaultPickingHandler
      */
     private void pickRay(PickTarget root, PickRequest req)
     {
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        end[0] = req.destination[0];
+        end[1] = req.destination[1];
+        end[2] = req.destination[2];
+        end[3] = 0;
+
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
@@ -962,7 +1020,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionRay(req.origin, req.destination))
+        if(bounds == null || !bounds.checkIntersectionRay(start, end))
         {
             return;
         }
@@ -982,15 +1040,15 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 0;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -998,6 +1056,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
             transformNormal(invertedMatrix, end);
 
@@ -1056,6 +1115,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
 
@@ -1077,6 +1137,15 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     /**
@@ -1098,7 +1167,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionRay(req.origin, req.destination))
+        if(bounds == null || !bounds.checkIntersectionRay(start, end))
         {
             return;
         }
@@ -1118,15 +1187,15 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 0;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -1134,6 +1203,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
             transformNormal(invertedMatrix, end);
 
@@ -1190,6 +1260,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
 
@@ -1210,6 +1281,15 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     // ----------------------- Cylinder Picking ------------------------------
@@ -1224,6 +1304,18 @@ class DefaultPickingHandler
      */
     private void pickCylinder(PickTarget root, PickRequest req)
     {
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        end[0] = req.destination[0];
+        end[1] = req.destination[1];
+        end[2] = req.destination[2];
+        end[3] = 1;
+
+        scalar = req.additionalData;
+
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
@@ -1257,9 +1349,9 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        float x = req.origin[0] - req.destination[0];
-        float y = req.origin[1] - req.destination[1];
-        float z = req.origin[2] - req.destination[2];
+        float x = start[0] - end[0];
+        float y = start[1] - end[1];
+        float z = start[2] - end[2];
 
         float height = (float)Math.sqrt(x * x + y * y + z * z);
 
@@ -1268,10 +1360,20 @@ class DefaultPickingHandler
             return;
         }
 
-        // Start will be the center and end will be the axis vector
-        start[0] = (req.origin[0] + req.destination[0]) * 0.5f;
-        start[1] = (req.origin[1] + req.destination[0]) * 0.5f;
-        start[2] = (req.origin[2] + req.destination[0]) * 0.5f;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
+
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
+
+        // Temporarily highjack start and end. Start will be the center and end will be the axis vector
+        start[0] = (start[0] + end[0]) * 0.5f;
+        start[1] = (start[1] + end[1]) * 0.5f;
+        start[2] = (start[2] + end[2]) * 0.5f;
         start[3] = 1;
 
         end[0] = x;
@@ -1279,7 +1381,7 @@ class DefaultPickingHandler
         end[2] = z;
         end[3] = 1;
 
-        float radius = req.additionalData;
+        float radius = scalar;
         if(bounds == null || !bounds.checkIntersectionCylinder(start, end, radius, height))
         {
             return;
@@ -1300,19 +1402,30 @@ class DefaultPickingHandler
             }
         }
 
+        // Reset them to the local meaning before sending down a level
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
+
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
         {
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
-            transformNormal(invertedMatrix, end);
+            transform(invertedMatrix, end);
 
             // need to scale the radius and height as well.
             float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
-            radius *= scale;
-            height *= scale;
+            scalar *= scale;
 
             validTransform[lastPathIndex] = true;
         }
@@ -1369,6 +1482,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
 
@@ -1390,6 +1504,17 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
+
+        scalar = radius;
     }
 
     /**
@@ -1411,9 +1536,9 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        float x = req.origin[0] - req.destination[0];
-        float y = req.origin[1] - req.destination[1];
-        float z = req.origin[2] - req.destination[2];
+        float x = start[0] - end[0];
+        float y = start[1] - end[1];
+        float z = start[2] - end[2];
 
         float height = (float)Math.sqrt(x * x + y * y + z * z);
 
@@ -1422,10 +1547,20 @@ class DefaultPickingHandler
             return;
         }
 
-        // Start will be the center and end will be the axis vector
-        start[0] = (req.origin[0] + req.destination[0]) * 0.5f;
-        start[1] = (req.origin[1] + req.destination[0]) * 0.5f;
-        start[2] = (req.origin[2] + req.destination[0]) * 0.5f;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
+
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
+
+        // Temporarily highjack start and end. Start will be the center and end will be the axis vector
+        start[0] = (start[0] + end[0]) * 0.5f;
+        start[1] = (start[1] + end[1]) * 0.5f;
+        start[2] = (start[2] + end[2]) * 0.5f;
         start[3] = 1;
 
         end[0] = x;
@@ -1433,7 +1568,7 @@ class DefaultPickingHandler
         end[2] = z;
         end[3] = 1;
 
-        float radius = req.additionalData;
+        float radius = scalar;
 
         if(bounds == null || !bounds.checkIntersectionCylinder(start, end, radius, height))
         {
@@ -1455,19 +1590,30 @@ class DefaultPickingHandler
             }
         }
 
+
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
+
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
         {
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
-            transformNormal(invertedMatrix, end);
+            transform(invertedMatrix, end);
 
             // need to scale the radius and height as well.
             float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
-            radius *= scale;
-            height *= scale;
+            scalar *= scale;
 
             validTransform[lastPathIndex] = true;
         }
@@ -1522,6 +1668,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
 
@@ -1542,6 +1689,16 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
+        scalar = radius;
     }
 
     // ----------------------- Cone Picking ------------------------------
@@ -1556,6 +1713,16 @@ class DefaultPickingHandler
      */
     private void pickCone(PickTarget root, PickRequest req)
     {
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        end[0] = req.destination[0];
+        end[1] = req.destination[1];
+        end[2] = req.destination[2];
+        end[3] = 0;
+
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
@@ -1589,7 +1756,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionCone(req.origin, req.destination, req.additionalData))
+        if(bounds == null || !bounds.checkIntersectionCone(start, end, req.additionalData))
         {
             return;
         }
@@ -1609,15 +1776,15 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 0;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -1625,6 +1792,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
             transformNormal(invertedMatrix, end);
 
@@ -1683,6 +1851,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
 
@@ -1704,6 +1873,15 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     /**
@@ -1725,7 +1903,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionCone(req.origin, req.destination, req.additionalData))
+        if(bounds == null || !bounds.checkIntersectionCone(start, end, req.additionalData))
         {
             return;
         }
@@ -1745,15 +1923,15 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 0;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -1761,6 +1939,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
             transformNormal(invertedMatrix, end);
 
@@ -1817,6 +1996,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
 
@@ -1837,6 +2017,15 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     // ----------------------- Box Picking -------------------------------
@@ -1851,6 +2040,16 @@ class DefaultPickingHandler
      */
     private void pickBox(PickTarget root, PickRequest req)
     {
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        end[0] = req.destination[0];
+        end[1] = req.destination[1];
+        end[2] = req.destination[2];
+        end[3] = 1;
+
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
@@ -1884,7 +2083,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionBox(req.origin, req.destination))
+        if(bounds == null || !bounds.checkIntersectionBox(start, end))
         {
             return;
         }
@@ -1904,15 +2103,15 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 0;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -1920,6 +2119,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
             transform(invertedMatrix, end);
             fixExtents(start, end);
@@ -1979,6 +2179,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                         transform(invertedMatrix, end);
                         fixExtents(start, end);
@@ -2002,6 +2203,15 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     /**
@@ -2023,7 +2233,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionBox(req.origin, req.destination))
+        if(bounds == null || !bounds.checkIntersectionBox(start, end))
         {
             return;
         }
@@ -2043,15 +2253,15 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 0;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -2059,6 +2269,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
             transformNormal(invertedMatrix, end);
             fixExtents(start, end);
@@ -2116,6 +2327,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                         transform(invertedMatrix, end);
                         fixExtents(start, end);
@@ -2138,6 +2350,15 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     // ----------------------- Frustum Picking ------------------------------
@@ -2194,6 +2415,8 @@ class DefaultPickingHandler
         frustumPlanes[5].z = req.origin[22];
         frustumPlanes[5].w = req.origin[23];
 
+        transformPath[lastPathIndex].setIdentity();
+
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
@@ -2228,7 +2451,7 @@ class DefaultPickingHandler
         BoundingVolume bounds = root.getPickableBounds();
 
         if(bounds == null ||
-            bounds.checkIntersectionFrustum(frustumPlanes, transformPath[lastPathIndex-1]) != BoundingVolume.FRUSTUM_ALLOUT)
+            bounds.checkIntersectionFrustum(frustumPlanes, transformPath[lastPathIndex]) != BoundingVolume.FRUSTUM_ALLOUT)
         {
             return;
         }
@@ -2254,6 +2477,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
             transform(invertedMatrix, end);
             fixExtents(start, end);
@@ -2313,6 +2537,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                         transform(invertedMatrix, end);
                         fixExtents(start, end);
@@ -2358,7 +2583,7 @@ class DefaultPickingHandler
         BoundingVolume bounds = root.getPickableBounds();
 
         if(bounds == null ||
-           bounds.checkIntersectionFrustum(frustumPlanes, transformPath[lastPathIndex-1]) != BoundingVolume.FRUSTUM_ALLOUT)
+           bounds.checkIntersectionFrustum(frustumPlanes, transformPath[lastPathIndex]) != BoundingVolume.FRUSTUM_ALLOUT)
         {
             return;
         }
@@ -2385,6 +2610,7 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
             transformNormal(invertedMatrix, end);
             fixExtents(start, end);
@@ -2442,6 +2668,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                         transform(invertedMatrix, end);
                         fixExtents(start, end);
@@ -2478,6 +2705,13 @@ class DefaultPickingHandler
      */
     private void pickSphere(PickTarget root, PickRequest req)
     {
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        scalar = req.additionalData;
+
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
@@ -2511,7 +2745,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionSphere(req.origin, req.additionalData))
+        if(bounds == null || !bounds.checkIntersectionSphere(start, scalar))
         {
             return;
         }
@@ -2531,12 +2765,12 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float origin_x = start[0];
+        float origin_y = start[1];
+        float origin_z = start[2];
+        float origin_w = start[3];
 
-        float radius = req.additionalData;
+        float radius = scalar;
 
         // reset the transform at the top of the stack
         if(target_node instanceof TransformPickTarget)
@@ -2544,10 +2778,11 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
 
             float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
-            radius *= scale;
+            scalar *= scale;
 
             validTransform[lastPathIndex] = true;
         }
@@ -2605,6 +2840,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
 
                         float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
@@ -2629,6 +2865,12 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = origin_x;
+        start[1] = origin_y;
+        start[2] = origin_z;
+        start[3] = origin_w;
+
+        scalar = radius;
     }
 
     /**
@@ -2650,7 +2892,7 @@ class DefaultPickingHandler
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null || !bounds.checkIntersectionSphere(req.origin, req.additionalData))
+        if(bounds == null || !bounds.checkIntersectionSphere(start, scalar))
         {
             return;
         }
@@ -2670,12 +2912,12 @@ class DefaultPickingHandler
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float origin_x = start[0];
+        float origin_y = start[1];
+        float origin_z = start[2];
+        float origin_w = start[3];
 
-        float radius = req.additionalData;
+        float radius = scalar;
 
         // reset the transform at the top of the stack
         resizePath();
@@ -2684,10 +2926,11 @@ class DefaultPickingHandler
             TransformPickTarget tg = (TransformPickTarget)target_node;
             tg.getTransform(transformPath[lastPathIndex]);
             tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
             transform(invertedMatrix, start);
 
             float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
-            radius *= scale;
+            scalar *= scale;
 
             validTransform[lastPathIndex] = true;
         }
@@ -2742,6 +2985,7 @@ class DefaultPickingHandler
                         transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
                         matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
 
                         float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
@@ -2765,6 +3009,12 @@ class DefaultPickingHandler
         }
 
         lastPathIndex--;
+        start[0] = origin_x;
+        start[1] = origin_y;
+        start[2] = origin_z;
+        start[3] = origin_w;
+
+        scalar = radius;
     }
 
     /**
