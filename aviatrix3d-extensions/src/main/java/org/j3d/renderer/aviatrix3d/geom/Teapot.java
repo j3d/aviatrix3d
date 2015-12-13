@@ -10,8 +10,8 @@
 package org.j3d.renderer.aviatrix3d.geom;
 
 // External imports
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.Geometry;

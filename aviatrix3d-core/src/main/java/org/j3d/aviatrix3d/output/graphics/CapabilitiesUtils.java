@@ -16,9 +16,9 @@ package org.j3d.aviatrix3d.output.graphics;
 
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
 
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLCapabilitiesImmutable;
-import javax.media.opengl.GLProfile;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLCapabilitiesImmutable;
+import com.jogamp.opengl.GLProfile;
 
 /**
  * Internal utility class for manipulating GLCapabilities from one form to another

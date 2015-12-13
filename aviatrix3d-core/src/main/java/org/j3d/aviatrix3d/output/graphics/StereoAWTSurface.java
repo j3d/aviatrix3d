@@ -13,9 +13,9 @@
 package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
-import javax.media.opengl.*;
-import javax.media.opengl.awt.GLCanvas;
-import javax.media.opengl.awt.GLJPanel;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.awt.GLJPanel;
 
 import java.awt.Component;
 import java.text.Format;
@@ -350,20 +350,24 @@ public class StereoAWTSurface extends BaseAWTSurface
     @Override
     public void setStereoRenderingPolicy(int policy)
     {
+        // TODO:
+        // Need to understand where the shared context went to in the
+        // constructor
         GLContext shared_context = null;
 
         if(sharedSurface != null)
+        {
             shared_context = sharedSurface.canvasContext;
+        }
 
         if(lightweight)
-            canvas = new GLJPanel(requestedCapabilities,
-                                  requestedChooser,
-                                  shared_context);
+        {
+            canvas = new GLJPanel(requestedCapabilities, requestedChooser);
+        }
         else
-            canvas = new GLCanvas(requestedCapabilities,
-                                  requestedChooser,
-                                  shared_context,
-                                  null);
+        {
+            canvas = new GLCanvas(requestedCapabilities, requestedChooser, null);
+        }
 
         GLAutoDrawable gld = (GLAutoDrawable)canvas;
         Component comp = (Component)canvas;

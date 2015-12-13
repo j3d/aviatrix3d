@@ -13,9 +13,9 @@
 package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
-import javax.media.opengl.*;
-import javax.media.opengl.awt.GLCanvas;
-import javax.media.opengl.awt.GLJPanel;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.awt.GLJPanel;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
@@ -404,7 +404,7 @@ public class DebugAWTSurface extends BaseAWTSurface
 
         if(lightweight)
         {
-            canvas = new GLJPanel(jogl_caps, jogl_chooser, shared_context);
+            canvas = new GLJPanel(jogl_caps, jogl_chooser);
 
             // Don't fetch context here because the JOGL code doesn't
             // generate a valid context until the window has been drawn and
@@ -412,7 +412,7 @@ public class DebugAWTSurface extends BaseAWTSurface
         }
         else
         {
-            canvas = new GLCanvas(jogl_caps, jogl_chooser, shared_context, null);
+            canvas = new GLCanvas(jogl_caps, jogl_chooser, null);
             ((GLCanvas)canvas).setAutoSwapBufferMode(false);
 
             canvasContext = ((GLAutoDrawable)canvas).getContext();

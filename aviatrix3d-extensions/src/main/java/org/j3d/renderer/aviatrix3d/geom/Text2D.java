@@ -23,8 +23,8 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.util.ArrayList;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 
 import org.j3d.geom.CharacterCreator;
 import org.j3d.geom.CharacterData;

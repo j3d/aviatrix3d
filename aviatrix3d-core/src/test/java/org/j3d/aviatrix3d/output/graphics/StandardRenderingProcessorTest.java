@@ -14,9 +14,9 @@
 
 package org.j3d.aviatrix3d.output.graphics;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLDrawable;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GLContext;
+import com.jogamp.opengl.GLDrawable;
 
 import org.j3d.util.ErrorReporter;
 import org.j3d.util.I18nManager;

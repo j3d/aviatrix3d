@@ -23,7 +23,7 @@ import org.j3d.aviatrix3d.pipeline.graphics.GraphicsProfilingData;
 
 import org.j3d.util.ErrorReporter;
 
-import javax.media.opengl.awt.GLJPanel;
+import com.jogamp.opengl.awt.GLJPanel;
 
 /**
  * Implementation of the most basic drawable surface extended to provide

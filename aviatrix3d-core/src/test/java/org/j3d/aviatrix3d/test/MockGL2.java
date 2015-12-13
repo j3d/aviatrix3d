@@ -16,7 +16,7 @@ package org.j3d.aviatrix3d.test;
 
 import java.nio.*;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 import com.jogamp.common.nio.PointerBuffer;
 
@@ -88,7 +88,7 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glAttachObjectARB(int containerObj, int obj)
+    public void glAttachObjectARB(long containerObj, long obj)
     {
         CallDetails details = getMethodDetails("glAttachObjectARB");
         details.foundArguments.add(new Object[] { containerObj, obj });
@@ -115,6 +115,12 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glBeginPerfMonitorAMD(int monitor)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glBeginPerfQueryINTEL(int queryHandle)
     {
         throw new UnsupportedOperationException();
     }
@@ -151,6 +157,20 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glBindBufferRange");
         details.foundArguments.add(new Object[] { target, index, buffer, offset, size });
+    }
+
+    @Override
+    public void glBindImageTexture(int unit, int texture, int level, boolean layered, int layer, int access, int format)
+    {
+        CallDetails details = getMethodDetails("glBindImageTexture");
+        details.foundArguments.add(new Object[] { unit, texture, level, layered, layer, access, format });
+    }
+
+    @Override
+    public void glBindTransformFeedback(int target, int id)
+    {
+        CallDetails details = getMethodDetails("glBindTransformFeedback");
+        details.foundArguments.add(new Object[] { target, id });
     }
 
     @Override
@@ -402,6 +422,20 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glClearIndex");
         details.foundArguments.add(new Object[] { c });
+    }
+
+    @Override
+    public void glClearNamedBufferData(int buffer, int internalformat, int format, int type, Buffer data)
+    {
+        CallDetails details = getMethodDetails("glClearNamedBufferData");
+        details.foundArguments.add(new Object[] { buffer, internalformat, format, type, data });
+    }
+
+    @Override
+    public void glClearNamedBufferSubData(int buffer, int internalformat, long offset, long size, int format, int type, Buffer data)
+    {
+        CallDetails details = getMethodDetails("glClearNamedBufferSubData");
+        details.foundArguments.add(new Object[] { buffer, internalformat, offset, size, format, type, data, type, data });
     }
 
     @Override
@@ -874,7 +908,7 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glCompileShaderARB(int shaderObj)
+    public void glCompileShaderARB(long shaderObj)
     {
         CallDetails details = getMethodDetails("glCompileShaderARB");
         details.foundArguments.add(new Object[] { shaderObj });
@@ -1042,6 +1076,20 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glDeleteTransformFeedbacks(int n, IntBuffer ids)
+    {
+        CallDetails details = getMethodDetails("glDeleteTransformFeedbacks");
+        details.foundArguments.add(new Object[] { n, ids });
+    }
+
+    @Override
+    public void glDeleteTransformFeedbacks(int n, int[] ids, int ids_offset)
+    {
+        CallDetails details = getMethodDetails("glDeleteTransformFeedbacks");
+        details.foundArguments.add(new Object[] { n, ids, ids_offset });
+    }
+
+    @Override
     public void glCopyColorSubTable(int target, int start, int x, int y, int width)
     {
         CallDetails details = getMethodDetails("glCopyColorSubTable");
@@ -1111,12 +1159,6 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glCopyPathNV(int resultPath, int srcPath)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void glCopyPixels(int x, int y, int width, int height, int type)
     {
         CallDetails details = getMethodDetails("glCopyPixels");
@@ -1159,49 +1201,46 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glCoverFillPathInstancedNV(int numPaths, int pathNameType, Buffer paths, int pathBase, int coverMode, int transformType, FloatBuffer transformValues)
+    public void glCoverageModulationNV(int components)
+    {
+        CallDetails details = getMethodDetails("glCoverageModulationNV");
+        details.foundArguments.add(new Object[] { components });
+    }
+
+    @Override
+    public void glCoverageModulationTableNV(int n, FloatBuffer v)
+    {
+        CallDetails details = getMethodDetails("glCoverageModulationTableNV");
+        details.foundArguments.add(new Object[] { n, v });
+    }
+
+    @Override
+    public void glCoverageModulationTableNV(int n, float[] v, int v_offset)
+    {
+        CallDetails details = getMethodDetails("glCoverageModulationTableNV");
+        details.foundArguments.add(new Object[] { n, v, v_offset });
+    }
+
+    @Override
+    public void glCreatePerfQueryINTEL(int queryId, IntBuffer queryHandle)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void glCoverFillPathInstancedNV(int numPaths, int pathNameType, Buffer paths, int pathBase, int coverMode, int transformType, float[] transformValues, int transformValues_offset)
+    public void glCreatePerfQueryINTEL(int queryId, int[] queryHandle, int queryHandle_offset)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void glCoverFillPathNV(int path, int coverMode)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glCoverStrokePathInstancedNV(int numPaths, int pathNameType, Buffer paths, int pathBase, int coverMode, int transformType, FloatBuffer transformValues)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glCoverStrokePathInstancedNV(int numPaths, int pathNameType, Buffer paths, int pathBase, int coverMode, int transformType, float[] transformValues, int transformValues_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glCoverStrokePathNV(int path, int coverMode)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int glCreateProgramObjectARB()
+    public long glCreateProgramObjectARB()
     {
         return 0;
     }
 
     @Override
-    public int glCreateShaderObjectARB(int shaderType)
+    public long glCreateShaderObjectARB(int shaderType)
     {
         return 0;
     }
@@ -1235,34 +1274,10 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glCurrentPaletteMatrix(int index)
+    public void glCurrentPaletteMatrixARB(int index)
     {
-        CallDetails details = getMethodDetails("glCurrentPaletteMatrix");
-        details.foundArguments.add(new Object[] { index });
-    }
-
-    @Override
-    public void glDeleteFencesAPPLE(int n, IntBuffer fences)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glDeleteFencesAPPLE(int n, int[] fences, int fences_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glDeleteFencesNV(int n, IntBuffer fences)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glDeleteFencesNV(int n, int[] fences, int fences_offset)
-    {
-        throw new UnsupportedOperationException();
+        CallDetails details = getMethodDetails("glCurrentPaletteMatrixARB");
+        details.foundArguments.add(new Object[]{index});
     }
 
     @Override
@@ -1285,7 +1300,7 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glDeleteObjectARB(int obj)
+    public void glDeleteObjectARB(long obj)
     {
         CallDetails details = getMethodDetails("glDeleteObjectARB");
         details.foundArguments.add(new Object[] { obj });
@@ -1304,12 +1319,6 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glDeletePathsNV(int path, int range)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void glDeletePerfMonitorsAMD(int n, IntBuffer monitors)
     {
         throw new UnsupportedOperationException();
@@ -1317,6 +1326,12 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glDeletePerfMonitorsAMD(int n, int[] monitors, int monitors_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glDeletePerfQueryINTEL(int queryHandle)
     {
         throw new UnsupportedOperationException();
     }
@@ -1376,7 +1391,7 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glDetachObjectARB(int containerObj, int attachedObj)
+    public void glDetachObjectARB(long containerObj, long attachedObj)
     {
         CallDetails details = getMethodDetails("glDetachObjectARB");
         details.foundArguments.add(new Object[] { containerObj, attachedObj });
@@ -1456,6 +1471,18 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glDrawBuffers");
         details.foundArguments.add(new Object[] { n, bufs, bufs_offset });
+    }
+
+    @Override
+    public void glDrawElementsInstancedBaseInstance(int mode, int count, int type, long indices_buffer_offset, int instancecount, int baseinstance)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glDrawElementsInstancedBaseVertexBaseInstance(int mode, int count, int type, long indices_buffer_offset, int instancecount, int basevertex, int baseinstance)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -1647,10 +1674,23 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glEndPerfQueryINTEL(int queryHandle)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glEndTransformFeedback()
     {
         CallDetails details = getMethodDetails("glEndTransformFeedback");
         details.foundArguments.add(new Object[0]);
+    }
+
+    @Override
+    public void glFramebufferParameteri(int target, int pname, int param)
+    {
+        CallDetails details = getMethodDetails("glFramebufferParameteri");
+        details.foundArguments.add(new Object[] { target, pname, param });
     }
 
     @Override
@@ -1799,24 +1839,6 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glFinishFenceAPPLE(int fence)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glFinishFenceNV(int fence)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glFinishObjectAPPLE(int object, int name)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void glFinishTextureSUNX()
     {
         throw new UnsupportedOperationException();
@@ -1837,12 +1859,6 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glFlushVertexArrayRangeAPPLE(int length, Buffer pointer)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glFlushVertexArrayRangeNV()
     {
         throw new UnsupportedOperationException();
     }
@@ -1946,6 +1962,13 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glFragmentCoverageColorNV(int color)
+    {
+        CallDetails details = getMethodDetails("glFragmentCoverageColorNV");
+        details.foundArguments.add(new Object[] { color });
+    }
+
+    @Override
     public void glFrameTerminatorGREMEDY()
     {
         CallDetails details = getMethodDetails("glFrameTerminatorGREMEDY");
@@ -1981,6 +2004,20 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glFramebufferSampleLocationsfvNV(int target, int start, int count, FloatBuffer v)
+    {
+        CallDetails details = getMethodDetails("glFramebufferSampleLocationsfvNV");
+        details.foundArguments.add(new Object[] { target, start, count, v });
+    }
+
+    @Override
+    public void glFramebufferSampleLocationsfvNV(int target, int start, int count, float[] v, int v_offset)
+    {
+        CallDetails details = getMethodDetails("glFramebufferSampleLocationsfvNV");
+        details.foundArguments.add(new Object[] { target, start, count, v, v_offset });
+    }
+
+    @Override
     public void glFramebufferTextureEXT(int target, int attachment, int texture, int level)
     {
         CallDetails details = getMethodDetails("glFramebufferTextureEXT");
@@ -2002,34 +2039,17 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glFramebufferTextureLayerEXT(int target, int attachment, int texture, int level, int layer)
+    public void glGenTransformFeedbacks(int n, IntBuffer ids)
     {
-        CallDetails details = getMethodDetails("glFramebufferTextureLayerEXT");
-        details.foundArguments.add(new Object[] { target, attachment, texture, level, layer });
+        CallDetails details = getMethodDetails("glGenTransformFeedbacks");
+        details.foundArguments.add(new Object[] { n, ids });
     }
 
     @Override
-    public void glGenFencesAPPLE(int n, IntBuffer fences)
+    public void glGenTransformFeedbacks(int n, int[] ids, int ids_offset)
     {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGenFencesAPPLE(int n, int[] fences, int fences_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGenFencesNV(int n, IntBuffer fences)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGenFencesNV(int n, int[] fences, int fences_offset)
-    {
-        throw new UnsupportedOperationException();
+        CallDetails details = getMethodDetails("glGenTransformFeedbacks");
+        details.foundArguments.add(new Object[] { n, ids, ids_offset });
     }
 
     @Override
@@ -2058,12 +2078,6 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glGenOcclusionQueriesNV(int n, int[] ids, int ids_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int glGenPathsNV(int range)
     {
         throw new UnsupportedOperationException();
     }
@@ -2147,17 +2161,31 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glGetActiveUniformARB(int programObj, int index, int maxLength, IntBuffer length, IntBuffer size, IntBuffer type, ByteBuffer name)
+    public void glGetActiveUniformARB(long programObj, int index, int maxLength, IntBuffer length, IntBuffer size, IntBuffer type, ByteBuffer name)
     {
         CallDetails details = getMethodDetails("glGetActiveUniformARB");
         details.foundArguments.add(new Object[] { programObj, index, maxLength, length, size, type, name });
     }
 
     @Override
-    public void glGetActiveUniformARB(int programObj, int index, int maxLength, int[] length, int length_offset, int[] size, int size_offset, int[] type, int type_offset, byte[] name, int name_offset)
+    public void glGetActiveUniformARB(long programObj, int index, int maxLength, int[] length, int length_offset, int[] size, int size_offset, int[] type, int type_offset, byte[] name, int name_offset)
     {
         CallDetails details = getMethodDetails("glGetActiveUniformARB");
         details.foundArguments.add(new Object[] { programObj, index, maxLength, length, length_offset, size, size_offset, type, type_offset, name, name_offset });
+    }
+
+    @Override
+    public void glGetAttachedObjectsARB(long containerObj, int maxCount, IntBuffer count, LongBuffer obj)
+    {
+        CallDetails details = getMethodDetails("glGetAttachedObjectsARB");
+        details.foundArguments.add(new Object[] { containerObj, maxCount, count, obj });
+    }
+
+    @Override
+    public void glGetAttachedObjectsARB(long containerObj, int maxCount, int[] count, int count_offset, long[] obj, int obj_offset)
+    {
+        CallDetails details = getMethodDetails("glGetAttachedObjectsARB");
+        details.foundArguments.add(new Object[] { containerObj, maxCount, count, count_offset, obj, obj_offset });
     }
 
     @Override
@@ -2200,20 +2228,6 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glGetActiveUniformsiv");
         details.foundArguments.add(new Object[] { program, uniformCount, uniformIndices, pname, params, params_offset });
-    }
-
-    @Override
-    public void glGetAttachedObjectsARB(int containerObj, int maxCount, IntBuffer count, IntBuffer obj)
-    {
-        CallDetails details = getMethodDetails("glGetAttachedObjectsARB");
-        details.foundArguments.add(new Object[] { containerObj, maxCount, count, obj });
-    }
-
-    @Override
-    public void glGetAttachedObjectsARB(int containerObj, int maxCount, int[] count, int count_offset, int[] obj, int obj_offset)
-    {
-        CallDetails details = getMethodDetails("glGetAttachedObjectsARB");
-        details.foundArguments.add(new Object[] { containerObj, maxCount, count, count_offset, obj, obj_offset });
     }
 
     @Override
@@ -2357,6 +2371,20 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glGetCoverageModulationTableNV(int bufsize, FloatBuffer v)
+    {
+        CallDetails details = getMethodDetails("glGetCoverageModulationTableNV");
+        details.foundArguments.add(new Object[] { bufsize, v });
+    }
+
+    @Override
+    public void glGetCoverageModulationTableNV(int bufsize, float[] v, int v_offset)
+    {
+        CallDetails details = getMethodDetails("glGetCoverageModulationTableNV");
+        details.foundArguments.add(new Object[] { bufsize, v, v_offset });
+    }
+
+    @Override
     public void glGetDoubleIndexedvEXT(int target, int index, DoubleBuffer data)
     {
         CallDetails details = getMethodDetails("glGetDoubleIndexedvEXT");
@@ -2385,15 +2413,15 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glGetFenceivNV(int fence, int pname, IntBuffer params)
+    public void glGetFirstPerfQueryIdINTEL(IntBuffer queryId)
     {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
-    public void glGetFenceivNV(int fence, int pname, int[] params, int params_offset)
+    public void glGetFirstPerfQueryIdINTEL(int[] queryId, int queryId_offset)
     {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
@@ -2431,6 +2459,20 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glGetFramebufferParameteriv(int target, int pname, IntBuffer params)
+    {
+        CallDetails details = getMethodDetails("glGetFramebufferParameteriv");
+        details.foundArguments.add(new Object[] { target, pname, params });
+    }
+
+    @Override
+    public void glGetFramebufferParameteriv(int target, int pname, int[] params, int params_offset)
+    {
+        CallDetails details = getMethodDetails("glGetFramebufferParameteriv");
+        details.foundArguments.add(new Object[] { target, pname, params, params_offset });
+    }
+
+    @Override
     public void glGetFramebufferParameterivEXT(int framebuffer, int pname, IntBuffer params)
     {
         CallDetails details = getMethodDetails("glGetFramebufferParameterivEXT");
@@ -2445,7 +2487,7 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public int glGetHandleARB(int pname)
+    public long glGetHandleARB(int pname)
     {
         return 0;
     }
@@ -2493,23 +2535,17 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public long glGetImageHandleNV(int texture, int level, boolean layered, int layer, int format)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetInfoLogARB(int obj, int maxLength, IntBuffer length, ByteBuffer infoLog)
+    public void glGetInfoLogARB(long obj, int maxLength, IntBuffer length, ByteBuffer infoLog)
     {
         CallDetails details = getMethodDetails("glGetInfoLogARB");
         details.foundArguments.add(new Object[] { obj, maxLength, length, infoLog });
     }
 
     @Override
-    public void glGetInfoLogARB(int obj, int maxLength, int[] length, int length_offset, byte[] infoLog, int infoLog_offset)
+    public void glGetInfoLogARB(long obj, int maxLength, int[] length, int length_offset, byte[] infoLog, int infoLog_offset)
     {
         CallDetails details = getMethodDetails("glGetInfoLogARB");
-        details.foundArguments.add(new Object[] { obj, maxLength, length, infoLog, infoLog_offset });
+        details.foundArguments.add(new Object[] { obj, maxLength, length, length_offset, infoLog, infoLog_offset });
     }
 
     @Override
@@ -3013,6 +3049,20 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glGetNamedFramebufferParameteriv(int framebuffer, int pname, IntBuffer param)
+    {
+        CallDetails details = getMethodDetails("glGetNamedFramebufferAttachmentParameteriv");
+        details.foundArguments.add(new Object[] { framebuffer, pname, param });
+    }
+
+    @Override
+    public void glGetNamedFramebufferParameteriv(int framebuffer, int pname, int[] param, int param_offset)
+    {
+        CallDetails details = getMethodDetails("glGetNamedFramebufferAttachmentParameteriv");
+        details.foundArguments.add(new Object[] { framebuffer, pname, param, param_offset });
+    }
+
+    @Override
     public void glGetNamedProgramLocalParameterIivEXT(int program, int target, int index, IntBuffer params)
     {
         CallDetails details = getMethodDetails("glGetNamedProgramLocalParameterIivEXT");
@@ -3104,14 +3154,26 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glGetObjectParameterfvARB(int obj, int pname, FloatBuffer params)
+    public void glGetNextPerfQueryIdINTEL(int queryId, IntBuffer nextQueryId)
+    {
+
+    }
+
+    @Override
+    public void glGetNextPerfQueryIdINTEL(int queryId, int[] nextQueryId, int nextQueryId_offset)
+    {
+
+    }
+
+    @Override
+    public void glGetObjectParameterfvARB(long obj, int pname, FloatBuffer params)
     {
         CallDetails details = getMethodDetails("glGetObjectParameterfvARB");
         details.foundArguments.add(new Object[] { obj, pname, params });
     }
 
     @Override
-    public void glGetObjectParameterfvARB(int obj, int pname, float[] params, int params_offset)
+    public void glGetObjectParameterfvARB(long obj, int pname, float[] params, int params_offset)
     {
         CallDetails details = getMethodDetails("glGetObjectParameterfvARB");
         details.foundArguments.add(new Object[] { obj, pname, params, params_offset });
@@ -3130,14 +3192,14 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glGetObjectParameterivARB(int obj, int pname, IntBuffer params)
+    public void glGetObjectParameterivARB(long obj, int pname, IntBuffer params)
     {
         CallDetails details = getMethodDetails("glGetObjectParameterivARB");
         details.foundArguments.add(new Object[] { obj, pname, params });
     }
 
     @Override
-    public void glGetObjectParameterivARB(int obj, int pname, int[] params, int params_offset)
+    public void glGetObjectParameterivARB(long obj, int pname, int[] params, int params_offset)
     {
         CallDetails details = getMethodDetails("glGetObjectParameterivARB");
         details.foundArguments.add(new Object[] { obj, pname, params, params_offset });
@@ -3168,151 +3230,13 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glGetPathColorGenfvNV(int color, int pname, FloatBuffer value)
+    public void glGetPerfCounterInfoINTEL(int queryId, int counterId, int counterNameLength, ByteBuffer counterName, int counterDescLength, ByteBuffer counterDesc, IntBuffer counterOffset, IntBuffer counterDataSize, IntBuffer counterTypeEnum, IntBuffer counterDataTypeEnum, LongBuffer rawCounterMaxValue)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void glGetPathColorGenfvNV(int color, int pname, float[] value, int value_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathColorGenivNV(int color, int pname, IntBuffer value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathColorGenivNV(int color, int pname, int[] value, int value_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathCommandsNV(int path, ByteBuffer commands)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathCommandsNV(int path, byte[] commands, int commands_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathCoordsNV(int path, FloatBuffer coords)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathCoordsNV(int path, float[] coords, int coords_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathDashArrayNV(int path, FloatBuffer dashArray)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathDashArrayNV(int path, float[] dashArray, int dashArray_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public float glGetPathLengthNV(int path, int startSegment, int numSegments)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathMetricRangeNV(int metricQueryMask, int firstPathName, int numPaths, int stride, FloatBuffer metrics)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathMetricRangeNV(int metricQueryMask, int firstPathName, int numPaths, int stride, float[] metrics, int metrics_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathMetricsNV(int metricQueryMask, int numPaths, int pathNameType, Buffer paths, int pathBase, int stride, FloatBuffer metrics)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathMetricsNV(int metricQueryMask, int numPaths, int pathNameType, Buffer paths, int pathBase, int stride, float[] metrics, int metrics_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathParameterfvNV(int path, int pname, FloatBuffer value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathParameterfvNV(int path, int pname, float[] value, int value_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathParameterivNV(int path, int pname, IntBuffer value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathParameterivNV(int path, int pname, int[] value, int value_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathSpacingNV(int pathListMode, int numPaths, int pathNameType, Buffer paths, int pathBase, float advanceScale, float kerningScale, int transformType, FloatBuffer returnedSpacing)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathSpacingNV(int pathListMode, int numPaths, int pathNameType, Buffer paths, int pathBase, float advanceScale, float kerningScale, int transformType, float[] returnedSpacing, int returnedSpacing_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathTexGenfvNV(int texCoordSet, int pname, FloatBuffer value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathTexGenfvNV(int texCoordSet, int pname, float[] value, int value_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathTexGenivNV(int texCoordSet, int pname, IntBuffer value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glGetPathTexGenivNV(int texCoordSet, int pname, int[] value, int value_offset)
+    public void glGetPerfCounterInfoINTEL(int queryId, int counterId, int counterNameLength, byte[] counterName, int counterName_offset, int counterDescLength, byte[] counterDesc, int counterDesc_offset, int[] counterOffset, int counterOffset_offset, int[] counterDataSize, int counterDataSize_offset, int[] counterTypeEnum, int counterTypeEnum_offset, int[] counterDataTypeEnum, int counterDataTypeEnum_offset, long[] rawCounterMaxValue, int rawCounterMaxValue_offset)
     {
         throw new UnsupportedOperationException();
     }
@@ -3379,6 +3303,42 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glGetPerfMonitorGroupsAMD(int[] numGroups, int numGroups_offset, int groupsSize, int[] groups, int groups_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glGetPerfQueryDataINTEL(int queryHandle, int flags, int dataSize, Buffer data, IntBuffer bytesWritten)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glGetPerfQueryDataINTEL(int queryHandle, int flags, int dataSize, Buffer data, int[] bytesWritten, int bytesWritten_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glGetPerfQueryIdByNameINTEL(ByteBuffer queryName, IntBuffer queryId)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glGetPerfQueryIdByNameINTEL(byte[] queryName, int queryName_offset, int[] queryId, int queryId_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glGetPerfQueryInfoINTEL(int queryId, int queryNameLength, ByteBuffer queryName, IntBuffer dataSize, IntBuffer noCounters, IntBuffer noInstances, IntBuffer capsMask)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glGetPerfQueryInfoINTEL(int queryId, int queryNameLength, byte[] queryName, int queryName_offset, int[] dataSize, int dataSize_offset, int[] noCounters, int noCounters_offset, int[] noInstances, int noInstances_offset, int[] capsMask, int capsMask_offset)
     {
         throw new UnsupportedOperationException();
     }
@@ -3682,14 +3642,14 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glGetShaderSourceARB(int obj, int maxLength, IntBuffer length, ByteBuffer source)
+    public void glGetShaderSourceARB(long obj, int maxLength, IntBuffer length, ByteBuffer source)
     {
         CallDetails details = getMethodDetails("glGetShaderSourceARB");
         details.foundArguments.add(new Object[] { obj, maxLength, length, source });
     }
 
     @Override
-    public void glGetShaderSourceARB(int obj, int maxLength, int[] length, int length_offset, byte[] source, int source_offset)
+    public void glGetShaderSourceARB(long obj, int maxLength, int[] length, int length_offset, byte[] source, int source_offset)
     {
         CallDetails details = getMethodDetails("glGetShaderSourceARB");
         details.foundArguments.add(new Object[] { obj, maxLength, length, length_offset, source, source_offset });
@@ -3713,12 +3673,6 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glGetTexGendv");
         details.foundArguments.add(new Object[] { coord, pname, params, params_offset });
-    }
-
-    @Override
-    public long glGetTextureHandleNV(int texture)
-    {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -3813,12 +3767,6 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public long glGetTextureSamplerHandleNV(int texture, int sampler)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void glGetTransformFeedbackVarying(int program, int index, int bufSize, IntBuffer length, IntBuffer size, IntBuffer type, ByteBuffer name)
     {
         CallDetails details = getMethodDetails("glGetTransformFeedbackVarying");
@@ -3845,6 +3793,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public int glGetUniformLocationARB(long programObj, String name)
+    {
+        return 0;
+    }
+
+    @Override
     public void glGetUniformIndices(int program, int uniformCount, String[] uniformNames, IntBuffer uniformIndices)
     {
         CallDetails details = getMethodDetails("glGetUniformIndices");
@@ -3859,40 +3813,48 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public int glGetUniformLocationARB(int programObj, String name)
-    {
-        return 0;
-    }
-
-    @Override
     public long glGetUniformOffsetEXT(int program, int location)
     {
         return 0;
     }
 
     @Override
-    public void glGetUniformfvARB(int programObj, int location, FloatBuffer params)
+    public void glGetUniformi64vNV(int program, int location, LongBuffer params)
+    {
+        CallDetails details = getMethodDetails("glGetUniformi64vNV");
+        details.foundArguments.add(new Object[] { program, location, params });
+    }
+
+    @Override
+    public void glGetUniformi64vNV(int program, int location, long[] params, int params_offset)
+    {
+        CallDetails details = getMethodDetails("glGetUniformi64vNV");
+        details.foundArguments.add(new Object[] { program, location, params, params_offset });
+    }
+
+    @Override
+    public void glGetUniformfvARB(long programObj, int location, FloatBuffer params)
     {
         CallDetails details = getMethodDetails("glGetUniformfvARB");
         details.foundArguments.add(new Object[] { programObj, location, params });
     }
 
     @Override
-    public void glGetUniformfvARB(int programObj, int location, float[] params, int params_offset)
+    public void glGetUniformfvARB(long programObj, int location, float[] params, int params_offset)
     {
         CallDetails details = getMethodDetails("glGetUniformfvARB");
         details.foundArguments.add(new Object[] { programObj, location, params, params_offset });
     }
 
     @Override
-    public void glGetUniformivARB(int programObj, int location, IntBuffer params)
+    public void glGetUniformivARB(long programObj, int location, IntBuffer params)
     {
         CallDetails details = getMethodDetails("glGetUniformivARB");
         details.foundArguments.add(new Object[] { programObj, location, params });
     }
 
     @Override
-    public void glGetUniformivARB(int programObj, int location, int[] params, int params_offset)
+    public void glGetUniformivARB(long programObj, int location, int[] params, int params_offset)
     {
         CallDetails details = getMethodDetails("glGetUniformivARB");
         details.foundArguments.add(new Object[] { programObj, location, params, params_offset });
@@ -4039,6 +4001,36 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glInvalidateFramebuffer(int target, int numAttachments, IntBuffer attachments)
+    {
+
+    }
+
+    @Override
+    public void glInvalidateFramebuffer(int target, int numAttachments, int[] attachments, int attachments_offset)
+    {
+
+    }
+
+    @Override
+    public void glInvalidateSubFramebuffer(int target, int numAttachments, IntBuffer attachments, int x, int y, int width, int height)
+    {
+
+    }
+
+    @Override
+    public void glInvalidateSubFramebuffer(int target, int numAttachments, int[] attachments, int attachments_offset, int x, int y, int width, int height)
+    {
+
+    }
+
+    @Override
+    public boolean glIsTransformFeedback(int id)
+    {
+        return false;
+    }
+
+    @Override
     public void glGetVertexAttribIuivEXT(int index, int pname, IntBuffer params)
     {
         CallDetails details = getMethodDetails("glGetVertexAttribIuivEXT");
@@ -4116,6 +4108,12 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glAccum");
         details.foundArguments.add(new Object[] { index, pname, params, params_offset });
+    }
+
+    @Override
+    public void glBlendBarrier()
+    {
+
     }
 
     @Override
@@ -4475,33 +4473,9 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glInterpolatePathsNV(int resultPath, int pathA, int pathB, float weight)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean glIsEnabledIndexed(int target, int index)
     {
         return false;
-    }
-
-    @Override
-    public boolean glIsFenceAPPLE(int fence)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glIsFenceNV(int fence)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glIsImageHandleResidentNV(long handle)
-    {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -4523,33 +4497,345 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public boolean glIsPathNV(int path)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glIsPointInFillPathNV(int path, int mask, float x, float y)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glIsPointInStrokePathNV(int path, float x, float y)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean glIsProgramARB(int program)
     {
         return false;
     }
 
     @Override
-    public boolean glIsTextureHandleResidentNV(long handle)
+    public void glUniform1i64ARB(int location, long x)
     {
-        throw new UnsupportedOperationException();
+
+    }
+
+    @Override
+    public void glUniform2i64ARB(int location, long x, long y)
+    {
+
+    }
+
+    @Override
+    public void glUniform3i64ARB(int location, long x, long y, long z)
+    {
+
+    }
+
+    @Override
+    public void glUniform4i64ARB(int location, long x, long y, long z, long w)
+    {
+
+    }
+
+    @Override
+    public void glUniform1i64vARB(int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glUniform1i64vARB(int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glUniform2i64vARB(int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glUniform2i64vARB(int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glUniform3i64vARB(int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glUniform3i64vARB(int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glUniform4i64vARB(int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glUniform4i64vARB(int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glUniform1ui64ARB(int location, long x)
+    {
+
+    }
+
+    @Override
+    public void glUniform2ui64ARB(int location, long x, long y)
+    {
+
+    }
+
+    @Override
+    public void glUniform3ui64ARB(int location, long x, long y, long z)
+    {
+
+    }
+
+    @Override
+    public void glUniform4ui64ARB(int location, long x, long y, long z, long w)
+    {
+
+    }
+
+    @Override
+    public void glUniform1ui64vARB(int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glUniform1ui64vARB(int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glUniform2ui64vARB(int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glUniform2ui64vARB(int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glUniform3ui64vARB(int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glUniform3ui64vARB(int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glUniform4ui64vARB(int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glUniform4ui64vARB(int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glGetUniformi64vARB(int program, int location, LongBuffer params)
+    {
+
+    }
+
+    @Override
+    public void glGetUniformi64vARB(int program, int location, long[] params, int params_offset)
+    {
+
+    }
+
+    @Override
+    public void glGetUniformui64vARB(int program, int location, LongBuffer params)
+    {
+
+    }
+
+    @Override
+    public void glGetUniformui64vARB(int program, int location, long[] params, int params_offset)
+    {
+
+    }
+
+    @Override
+    public void glGetnUniformi64vARB(int program, int location, int bufSize, LongBuffer params)
+    {
+
+    }
+
+    @Override
+    public void glGetnUniformi64vARB(int program, int location, int bufSize, long[] params, int params_offset)
+    {
+
+    }
+
+    @Override
+    public void glGetnUniformui64vARB(int program, int location, int bufSize, LongBuffer params)
+    {
+
+    }
+
+    @Override
+    public void glGetnUniformui64vARB(int program, int location, int bufSize, long[] params, int params_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1i64ARB(int program, int location, long x)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2i64ARB(int program, int location, long x, long y)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3i64ARB(int program, int location, long x, long y, long z)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4i64ARB(int program, int location, long x, long y, long z, long w)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1i64vARB(int program, int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1i64vARB(int program, int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2i64vARB(int program, int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2i64vARB(int program, int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3i64vARB(int program, int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3i64vARB(int program, int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4i64vARB(int program, int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4i64vARB(int program, int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1ui64ARB(int program, int location, long x)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2ui64ARB(int program, int location, long x, long y)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3ui64ARB(int program, int location, long x, long y, long z)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4ui64ARB(int program, int location, long x, long y, long z, long w)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1ui64vARB(int program, int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1ui64vARB(int program, int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2ui64vARB(int program, int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2ui64vARB(int program, int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3ui64vARB(int program, int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3ui64vARB(int program, int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4ui64vARB(int program, int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4ui64vARB(int program, int location, int count, long[] value, int value_offset)
+    {
+
     }
 
     @Override
@@ -4568,6 +4854,18 @@ public class MockGL2 extends MockGL implements GL2
     public boolean glIsVertexArray(int array)
     {
         return false;
+    }
+
+    @Override
+    public void glMemoryBarrier(int barriers)
+    {
+
+    }
+
+    @Override
+    public void glPauseTransformFeedback()
+    {
+
     }
 
     @Override
@@ -4626,7 +4924,7 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glLinkProgramARB(int programObj)
+    public void glLinkProgramARB(long programObj)
     {
         CallDetails details = getMethodDetails("glLinkProgramARB");
         details.foundArguments.add(new Object[] { programObj });
@@ -4693,30 +4991,6 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glLockArraysEXT");
         details.foundArguments.add(new Object[] { first, count });
-    }
-
-    @Override
-    public void glMakeImageHandleNonResidentNV(long handle)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glMakeImageHandleResidentNV(long handle, int access)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glMakeTextureHandleNonResidentNV(long handle)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glMakeTextureHandleResidentNV(long handle)
-    {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -4934,10 +5208,53 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glMatrixIndexPointer(int size, int type, int stride, Buffer pointer)
+    public void glMatrixIndexPointerARB(int size, int type, int stride, Buffer pointer)
     {
-        CallDetails details = getMethodDetails("glMatrixIndexPointer");
+        CallDetails details = getMethodDetails("glMatrixIndexPointerARB");
         details.foundArguments.add(new Object[] { size, type, stride, pointer });
+    }
+
+    @Override
+    public void glMatrixIndexPointerARB(int size, int type, int stride, long pointer_buffer_offset)
+    {
+        CallDetails details = getMethodDetails("glMatrixIndexPointerARB");
+        details.foundArguments.add(new Object[] { size, type, stride, pointer_buffer_offset });
+    }
+
+    @Override
+    public void glMaxShaderCompilerThreadsARB(int count)
+    {
+
+    }
+
+    @Override
+    public void glFramebufferSampleLocationsfvARB(int target, int start, int count, FloatBuffer v)
+    {
+
+    }
+
+    @Override
+    public void glFramebufferSampleLocationsfvARB(int target, int start, int count, float[] v, int v_offset)
+    {
+
+    }
+
+    @Override
+    public void glNamedFramebufferSampleLocationsfvARB(int framebuffer, int start, int count, FloatBuffer v)
+    {
+
+    }
+
+    @Override
+    public void glNamedFramebufferSampleLocationsfvARB(int framebuffer, int start, int count, float[] v, int v_offset)
+    {
+
+    }
+
+    @Override
+    public void glEvaluateDepthValuesARB()
+    {
+
     }
 
     @Override
@@ -5211,6 +5528,186 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glMultTransposeMatrixf");
         details.foundArguments.add(new Object[] { m, m_offset });
+    }
+
+    @Override
+    public void glMultiDrawArraysIndirectBindlessCountNV(int mode, Buffer indirect, int drawCount, int maxDrawCount, int stride, int vertexBufferCount)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glMultiDrawArraysIndirectBindlessNV(int mode, Buffer indirect, int drawCount, int stride, int vertexBufferCount)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glMultiDrawElementsIndirectBindlessCountNV(int mode, int type, Buffer indirect, int drawCount, int maxDrawCount, int stride, int vertexBufferCount)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glCreateStatesNV(int n, IntBuffer states)
+    {
+
+    }
+
+    @Override
+    public void glCreateStatesNV(int n, int[] states, int states_offset)
+    {
+
+    }
+
+    @Override
+    public void glDeleteStatesNV(int n, IntBuffer states)
+    {
+
+    }
+
+    @Override
+    public void glDeleteStatesNV(int n, int[] states, int states_offset)
+    {
+
+    }
+
+    @Override
+    public boolean glIsStateNV(int state)
+    {
+        return false;
+    }
+
+    @Override
+    public void glStateCaptureNV(int state, int mode)
+    {
+
+    }
+
+    @Override
+    public int glGetCommandHeaderNV(int tokenID, int size)
+    {
+        return 0;
+    }
+
+    @Override
+    public short glGetStageIndexNV(int shadertype)
+    {
+        return 0;
+    }
+
+    @Override
+    public void glDrawCommandsNV(int primitiveMode, int buffer, PointerBuffer indirects, IntBuffer sizes, int count)
+    {
+
+    }
+
+    @Override
+    public void glDrawCommandsNV(int primitiveMode, int buffer, PointerBuffer indirects, int[] sizes, int sizes_offset, int count)
+    {
+
+    }
+
+    @Override
+    public void glDrawCommandsAddressNV(int primitiveMode, LongBuffer indirects, IntBuffer sizes, int count)
+    {
+
+    }
+
+    @Override
+    public void glDrawCommandsAddressNV(int primitiveMode, long[] indirects, int indirects_offset, int[] sizes, int sizes_offset, int count)
+    {
+
+    }
+
+    @Override
+    public void glDrawCommandsStatesNV(int buffer, PointerBuffer indirects, IntBuffer sizes, IntBuffer states, IntBuffer fbos, int count)
+    {
+
+    }
+
+    @Override
+    public void glDrawCommandsStatesNV(int buffer, PointerBuffer indirects, int[] sizes, int sizes_offset, int[] states, int states_offset, int[] fbos, int fbos_offset, int count)
+    {
+
+    }
+
+    @Override
+    public void glDrawCommandsStatesAddressNV(LongBuffer indirects, IntBuffer sizes, IntBuffer states, IntBuffer fbos, int count)
+    {
+
+    }
+
+    @Override
+    public void glDrawCommandsStatesAddressNV(long[] indirects, int indirects_offset, int[] sizes, int sizes_offset, int[] states, int states_offset, int[] fbos, int fbos_offset, int count)
+    {
+
+    }
+
+    @Override
+    public void glCreateCommandListsNV(int n, IntBuffer lists)
+    {
+
+    }
+
+    @Override
+    public void glCreateCommandListsNV(int n, int[] lists, int lists_offset)
+    {
+
+    }
+
+    @Override
+    public void glDeleteCommandListsNV(int n, IntBuffer lists)
+    {
+
+    }
+
+    @Override
+    public void glDeleteCommandListsNV(int n, int[] lists, int lists_offset)
+    {
+
+    }
+
+    @Override
+    public boolean glIsCommandListNV(int list)
+    {
+        return false;
+    }
+
+    @Override
+    public void glListDrawCommandsStatesClientNV(int list, int segment, PointerBuffer indirects, IntBuffer sizes, IntBuffer states, IntBuffer fbos, int count)
+    {
+
+    }
+
+    @Override
+    public void glListDrawCommandsStatesClientNV(int list, int segment, PointerBuffer indirects, int[] sizes, int sizes_offset, int[] states, int states_offset, int[] fbos, int fbos_offset, int count)
+    {
+
+    }
+
+    @Override
+    public void glCommandListSegmentsNV(int list, int segments)
+    {
+
+    }
+
+    @Override
+    public void glCompileCommandListNV(int list)
+    {
+
+    }
+
+    @Override
+    public void glCallCommandListNV(int list)
+    {
+
+    }
+
+    @Override
+    public void glMultiDrawElementsIndirectBindlessNV(int mode, int type, Buffer indirect, int drawCount, int stride, int vertexBufferCount)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -5956,6 +6453,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glNamedBufferStorageEXT(int buffer, long size, Buffer data, int flags)
+    {
+
+    }
+
+    @Override
     public void glNamedBufferSubDataEXT(int buffer, long offset, long size, Buffer data)
     {
         CallDetails details = getMethodDetails("glNamedBufferSubDataEXT");
@@ -5970,10 +6473,31 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glNamedFramebufferParameteri(int framebuffer, int pname, int param)
+    {
+        CallDetails details = getMethodDetails("glNamedFramebufferParameteri");
+        details.foundArguments.add(new Object[] { framebuffer, pname, param });
+    }
+
+    @Override
     public void glNamedFramebufferRenderbufferEXT(int framebuffer, int attachment, int renderbuffertarget, int renderbuffer)
     {
         CallDetails details = getMethodDetails("glNamedFramebufferRenderbufferEXT");
         details.foundArguments.add(new Object[] { framebuffer, attachment, renderbuffertarget, renderbuffer });
+    }
+
+    @Override
+    public void glNamedFramebufferSampleLocationsfvNV(int framebuffer, int start, int count, FloatBuffer v)
+    {
+        CallDetails details = getMethodDetails("glNamedFramebufferSampleLocationsfvNV");
+        details.foundArguments.add(new Object[] { framebuffer, start, count, v });
+    }
+
+    @Override
+    public void glNamedFramebufferSampleLocationsfvNV(int framebuffer, int start, int count, float[] v, int v_offset)
+    {
+        CallDetails details = getMethodDetails("glNamedFramebufferSampleLocationsfvNV");
+        details.foundArguments.add(new Object[] { framebuffer, start, count, v, v_offset });
     }
 
     @Override
@@ -6330,156 +6854,6 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glPathColorGenNV(int color, int genMode, int colorFormat, FloatBuffer coeffs)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathColorGenNV(int color, int genMode, int colorFormat, float[] coeffs, int coeffs_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathCommandsNV(int path, int numCommands, ByteBuffer commands, int numCoords, int coordType, Buffer coords)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathCommandsNV(int path, int numCommands, byte[] commands, int commands_offset, int numCoords, int coordType, Buffer coords)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathCoordsNV(int path, int numCoords, int coordType, Buffer coords)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathCoverDepthFuncNV(int func)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathDashArrayNV(int path, int dashCount, FloatBuffer dashArray)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathDashArrayNV(int path, int dashCount, float[] dashArray, int dashArray_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathFogGenNV(int genMode)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathGlyphRangeNV(int firstPathName, int fontTarget, Buffer fontName, int fontStyle, int firstGlyph, int numGlyphs, int handleMissingGlyphs, int pathParameterTemplate, float emScale)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathGlyphsNV(int firstPathName, int fontTarget, Buffer fontName, int fontStyle, int numGlyphs, int type, Buffer charcodes, int handleMissingGlyphs, int pathParameterTemplate, float emScale)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathParameterfNV(int path, int pname, float value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathParameterfvNV(int path, int pname, FloatBuffer value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathParameterfvNV(int path, int pname, float[] value, int value_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathParameteriNV(int path, int pname, int value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathParameterivNV(int path, int pname, IntBuffer value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathParameterivNV(int path, int pname, int[] value, int value_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathStencilDepthOffsetNV(float factor, float units)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathStencilFuncNV(int func, int ref, int mask)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathStringNV(int path, int format, int length, Buffer pathString)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathSubCommandsNV(int path, int commandStart, int commandsToDelete, int numCommands, ByteBuffer commands, int numCoords, int coordType, Buffer coords)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathSubCommandsNV(int path, int commandStart, int commandsToDelete, int numCommands, byte[] commands, int commands_offset, int numCoords, int coordType, Buffer coords)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathSubCoordsNV(int path, int coordStart, int numCoords, int coordType, Buffer coords)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathTexGenNV(int texCoordSet, int genMode, int components, FloatBuffer coeffs)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glPathTexGenNV(int texCoordSet, int genMode, int components, float[] coeffs, int coeffs_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void glPauseTransformFeedbackNV()
     {
         throw new UnsupportedOperationException();
@@ -6618,13 +6992,7 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public boolean glPointAlongPathNV(int path, int startSegment, int numSegments, float distance, FloatBuffer x, FloatBuffer y, FloatBuffer tangentX, FloatBuffer tangentY)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glPointAlongPathNV(int path, int startSegment, int numSegments, float distance, float[] x, int x_offset, float[] y, int y_offset, float[] tangentX, int tangentX_offset, float[] tangentY, int tangentY_offset)
+    public void glPolygonOffsetClampEXT(float factor, float units, float clamp)
     {
         throw new UnsupportedOperationException();
     }
@@ -6985,189 +7353,327 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glProgramUniform1uiEXT(int program, int location, int v0)
+    public void glProgramUniform1dEXT(int program, int location, double x)
     {
-        CallDetails details = getMethodDetails("glProgramUniform1uiEXT");
-        details.foundArguments.add(new Object[] { program, location, v0 });
+
     }
 
     @Override
-    public void glProgramUniform1uivEXT(int program, int location, int count, IntBuffer value)
+    public void glProgramUniform1dvEXT(int program, int location, int count, DoubleBuffer value)
     {
-        CallDetails details = getMethodDetails("glProgramUniform1uivEXT");
-        details.foundArguments.add(new Object[] { program, location, count, value });
+
     }
 
     @Override
-    public void glProgramUniform1uivEXT(int program, int location, int count, int[] value, int value_offset)
+    public void glProgramUniform1dvEXT(int program, int location, int count, double[] value, int value_offset)
     {
-        CallDetails details = getMethodDetails("glProgramUniform1uivEXT");
-        details.foundArguments.add(new Object[] { program, location, count, value, value_offset });
+
     }
 
     @Override
-    public void glProgramUniform2uiEXT(int program, int location, int v0, int v1)
+    public void glProgramUniform1i64NV(int program, int location, long x)
     {
-        CallDetails details = getMethodDetails("glProgramUniform2uiEXT");
-        details.foundArguments.add(new Object[] { program, location, v0, v1 });
+
     }
 
     @Override
-    public void glProgramUniform2uivEXT(int program, int location, int count, IntBuffer value)
+    public void glProgramUniform1i64vNV(int program, int location, int count, LongBuffer value)
     {
-        CallDetails details = getMethodDetails("glProgramUniform2uivEXT");
-        details.foundArguments.add(new Object[] { program, location, count, value });
+
     }
 
     @Override
-    public void glProgramUniform2uivEXT(int program, int location, int count, int[] value, int value_offset)
+    public void glProgramUniform1i64vNV(int program, int location, int count, long[] value, int value_offset)
     {
-        CallDetails details = getMethodDetails("glProgramUniform2uivEXT");
-        details.foundArguments.add(new Object[] { program, location, count, value, value_offset });
+
     }
 
     @Override
-    public void glProgramUniform3uiEXT(int program, int location, int v0, int v1, int v2)
+    public void glProgramUniform1ui64NV(int program, int location, long x)
     {
-        CallDetails details = getMethodDetails("glProgramUniform3uiEXT");
-        details.foundArguments.add(new Object[] { program, location, v0, v1, v2 });
+
     }
 
     @Override
-    public void glProgramUniform3uivEXT(int program, int location, int count, IntBuffer value)
+    public void glProgramUniform1ui64vNV(int program, int location, int count, LongBuffer value)
     {
-        CallDetails details = getMethodDetails("glProgramUniform3uivEXT");
-        details.foundArguments.add(new Object[] { program, location, count, value });
+
     }
 
     @Override
-    public void glProgramUniform3uivEXT(int program, int location, int count, int[] value, int value_offset)
+    public void glProgramUniform1ui64vNV(int program, int location, int count, long[] value, int value_offset)
     {
-        CallDetails details = getMethodDetails("glProgramUniform3uivEXT");
-        details.foundArguments.add(new Object[] { program, location, count, value, value_offset });
+
     }
 
     @Override
-    public void glProgramUniform4uiEXT(int program, int location, int v0, int v1, int v2, int v3)
+    public void glProgramUniform2dEXT(int program, int location, double x, double y)
     {
-        CallDetails details = getMethodDetails("glProgramUniform4uiEXT");
-        details.foundArguments.add(new Object[] { program, location, v0, v1, v3 });
+
     }
 
     @Override
-    public void glProgramUniform4uivEXT(int program, int location, int count, IntBuffer value)
+    public void glProgramUniform2dvEXT(int program, int location, int count, DoubleBuffer value)
     {
-        CallDetails details = getMethodDetails("glProgramUniform4uivEXT");
-        details.foundArguments.add(new Object[] { program, location, count, value });
+
     }
 
     @Override
-    public void glProgramUniform4uivEXT(int program, int location, int count, int[] value, int value_offset)
+    public void glProgramUniform2dvEXT(int program, int location, int count, double[] value, int value_offset)
     {
-        CallDetails details = getMethodDetails("glProgramUniform4uivEXT");
-        details.foundArguments.add(new Object[] { program, location, count, value, value_offset });
+
     }
 
     @Override
-    public void glProgramUniformHandleui64NV(int program, int location, long value)
+    public void glProgramUniform2i64NV(int program, int location, long x, long y)
     {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
-    public void glProgramUniformHandleui64vNV(int program, int location, int count, LongBuffer values)
+    public void glProgramUniform2i64vNV(int program, int location, int count, LongBuffer value)
     {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
-    public void glProgramUniformHandleui64vNV(int program, int location, int count, long[] values, int values_offset)
+    public void glProgramUniform2i64vNV(int program, int location, int count, long[] value, int value_offset)
     {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
-    public void glProgramUniformMatrix2x3fvEXT(int program, int location, int count, boolean transpose, FloatBuffer value)
+    public void glProgramUniform2ui64NV(int program, int location, long x, long y)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix2x3fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value });
+
     }
 
     @Override
-    public void glProgramUniformMatrix2x3fvEXT(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    public void glProgramUniform2ui64vNV(int program, int location, int count, LongBuffer value)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix2x3fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value, value_offset });
+
     }
 
     @Override
-    public void glProgramUniformMatrix2x4fvEXT(int program, int location, int count, boolean transpose, FloatBuffer value)
+    public void glProgramUniform2ui64vNV(int program, int location, int count, long[] value, int value_offset)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix2x4fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value });
+
     }
 
     @Override
-    public void glProgramUniformMatrix2x4fvEXT(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    public void glProgramUniform3dEXT(int program, int location, double x, double y, double z)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix2x4fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value, value_offset });
+
     }
 
     @Override
-    public void glProgramUniformMatrix3x2fvEXT(int program, int location, int count, boolean transpose, FloatBuffer value)
+    public void glProgramUniform3dvEXT(int program, int location, int count, DoubleBuffer value)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix3x2fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value });
+
     }
 
     @Override
-    public void glProgramUniformMatrix3x2fvEXT(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    public void glProgramUniform3dvEXT(int program, int location, int count, double[] value, int value_offset)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix3x2fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value, value_offset });
+
     }
 
     @Override
-    public void glProgramUniformMatrix3x4fvEXT(int program, int location, int count, boolean transpose, FloatBuffer value)
+    public void glProgramUniform3i64NV(int program, int location, long x, long y, long z)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix3x4fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value });
+
     }
 
     @Override
-    public void glProgramUniformMatrix3x4fvEXT(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    public void glProgramUniform3i64vNV(int program, int location, int count, LongBuffer value)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix3x4fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value, value_offset });
+
     }
 
     @Override
-    public void glProgramUniformMatrix4x2fvEXT(int program, int location, int count, boolean transpose, FloatBuffer value)
+    public void glProgramUniform3i64vNV(int program, int location, int count, long[] value, int value_offset)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix4x2fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value });
+
     }
 
     @Override
-    public void glProgramUniformMatrix4x2fvEXT(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    public void glProgramUniform3ui64NV(int program, int location, long x, long y, long z)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix4x2fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value, value_offset });
+
     }
 
     @Override
-    public void glProgramUniformMatrix4x3fvEXT(int program, int location, int count, boolean transpose, FloatBuffer value)
+    public void glProgramUniform3ui64vNV(int program, int location, int count, LongBuffer value)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix4x3fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value });
+
     }
 
     @Override
-    public void glProgramUniformMatrix4x3fvEXT(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    public void glProgramUniform3ui64vNV(int program, int location, int count, long[] value, int value_offset)
     {
-        CallDetails details = getMethodDetails("glProgramUniformMatrix4x3fvEXT");
-        details.foundArguments.add(new Object[] { program, location, count, transpose, value, value_offset });
+
+    }
+
+    @Override
+    public void glProgramUniform4dEXT(int program, int location, double x, double y, double z, double w)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4dvEXT(int program, int location, int count, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4dvEXT(int program, int location, int count, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4i64NV(int program, int location, long x, long y, long z, long w)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4i64vNV(int program, int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4i64vNV(int program, int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4ui64NV(int program, int location, long x, long y, long z, long w)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4ui64vNV(int program, int location, int count, LongBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4ui64vNV(int program, int location, int count, long[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2dvEXT(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2dvEXT(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x3dvEXT(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x3dvEXT(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x4dvEXT(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x4dvEXT(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3dvEXT(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3dvEXT(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x2dvEXT(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x2dvEXT(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x4dvEXT(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x4dvEXT(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4dvEXT(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4dvEXT(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x2dvEXT(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x2dvEXT(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x3dvEXT(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x3dvEXT(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
     }
 
     @Override
@@ -7221,6 +7727,12 @@ public class MockGL2 extends MockGL implements GL2
     public int glQueryMatrixxOES(int[] mantissa, int mantissa_offset, int[] exponent, int exponent_offset)
     {
         return 0;
+    }
+
+    @Override
+    public void glQueryObjectParameteruiAMD(int target, int id, int pname, int param)
+    {
+
     }
 
     @Override
@@ -7476,10 +7988,28 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glRasterSamplesEXT(int samples, boolean fixedsamplelocations)
+    {
+
+    }
+
+    @Override
     public void glReadBuffer(int mode)
     {
         CallDetails details = getMethodDetails("glReadBuffer");
         details.foundArguments.add(new Object[] { mode });
+    }
+
+    @Override
+    public void glResumeTransformFeedback()
+    {
+
+    }
+
+    @Override
+    public void glTexStorage2DMultisample(int target, int samples, int internalformat, int width, int height, boolean fixedsamplelocations)
+    {
+
     }
 
     @Override
@@ -7597,6 +8127,12 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glResetMinmax");
         details.foundArguments.add(new Object[] { target });
+    }
+
+    @Override
+    public void glResolveDepthValuesNV()
+    {
+
     }
 
     @Override
@@ -7862,18 +8398,6 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glSetFenceAPPLE(int fence)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glSetFenceNV(int fence, int condition)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void glSetInvariantEXT(int id, int type, Buffer addr)
     {
         CallDetails details = getMethodDetails("glSetInvariantEXT");
@@ -7909,14 +8433,14 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glShaderSourceARB(int shaderObj, int count, String[] string, IntBuffer length)
+    public void glShaderSourceARB(long shaderObj, int count, String[] string, IntBuffer length)
     {
         CallDetails details = getMethodDetails("glShaderSourceARB");
         details.foundArguments.add(new Object[] { shaderObj, count, string, length });
     }
 
     @Override
-    public void glShaderSourceARB(int shaderObj, int count, String[] string, int[] length, int length_offset)
+    public void glShaderSourceARB(long shaderObj, int count, String[] string, int[] length, int length_offset)
     {
         CallDetails details = getMethodDetails("glShaderSourceARB");
         details.foundArguments.add(new Object[] { shaderObj, count, string, length, length_offset });
@@ -7930,46 +8454,22 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glStencilFillPathInstancedNV(int numPaths, int pathNameType, Buffer paths, int pathBase, int fillMode, int mask, int transformType, FloatBuffer transformValues)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glStencilFillPathInstancedNV(int numPaths, int pathNameType, Buffer paths, int pathBase, int fillMode, int mask, int transformType, float[] transformValues, int transformValues_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glStencilFillPathNV(int path, int fillMode, int mask)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glStencilStrokePathInstancedNV(int numPaths, int pathNameType, Buffer paths, int pathBase, int reference, int mask, int transformType, FloatBuffer transformValues)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glStencilStrokePathInstancedNV(int numPaths, int pathNameType, Buffer paths, int pathBase, int reference, int mask, int transformType, float[] transformValues, int transformValues_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glStencilStrokePathNV(int path, int reference, int mask)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void glStringMarkerGREMEDY(int len, Buffer string)
     {
         CallDetails details = getMethodDetails("glStringMarkerGREMEDY");
         details.foundArguments.add(new Object[] { len, string });
+    }
+
+    @Override
+    public void glSubpixelPrecisionBiasNV(int xbits, int ybits)
+    {
+
+    }
+
+    @Override
+    public void glConservativeRasterParameterfNV(int pname, float value)
+    {
+
     }
 
     @Override
@@ -7981,24 +8481,6 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glSyncTextureINTEL(int texture)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glTestFenceAPPLE(int fence)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glTestFenceNV(int fence)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glTestObjectAPPLE(int object, int name)
     {
         throw new UnsupportedOperationException();
     }
@@ -8558,6 +9040,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glTextureImage1DEXT(int texture, int target, int level, int internalformat, int width, int border, int format, int type, long pixels_buffer_offset)
+    {
+
+    }
+
+    @Override
     public void glTextureImage2DEXT(int texture, int target, int level, int internalformat, int width, int height, int border, int format, int type, Buffer pixels)
     {
         CallDetails details = getMethodDetails("glTextureImage2DEXT");
@@ -8565,10 +9053,22 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glTextureImage2DEXT(int texture, int target, int level, int internalformat, int width, int height, int border, int format, int type, long pixels_buffer_offset)
+    {
+
+    }
+
+    @Override
     public void glTextureImage3DEXT(int texture, int target, int level, int internalformat, int width, int height, int depth, int border, int format, int type, Buffer pixels)
     {
         CallDetails details = getMethodDetails("glTextureImage2DEXT");
         details.foundArguments.add(new Object[] { texture, target, level, internalformat, width, height, depth, border, format, type, pixels });
+    }
+
+    @Override
+    public void glTextureImage3DEXT(int texture, int target, int level, int internalformat, int width, int height, int depth, int border, int format, int type, long pixels_buffer_offset)
+    {
+
     }
 
     @Override
@@ -8590,6 +9090,13 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glTextureNormalEXT");
         details.foundArguments.add(new Object[] { mode });
+    }
+
+    @Override
+    public void glTexturePageCommitmentEXT(int texture, int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth, boolean resident)
+    {
+        CallDetails details = getMethodDetails("glTextureParameterIivEXT");
+        details.foundArguments.add(new Object[] { texture, level, xoffset, yoffset, zoffset, width, height, depth, resident });
     }
 
     @Override
@@ -8676,6 +9183,18 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glTextureStorage2DMultisampleEXT(int texture, int target, int samples, int internalformat, int width, int height, boolean fixedsamplelocations)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glTextureStorage3DMultisampleEXT(int texture, int target, int samples, int internalformat, int width, int height, int depth, boolean fixedsamplelocations)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glTextureStorageSparseAMD(int texture, int target, int internalFormat, int width, int height, int depth, int layers, int flags)
     {
         throw new UnsupportedOperationException();
@@ -8689,10 +9208,22 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glTextureSubImage1DEXT(int texture, int target, int level, int xoffset, int width, int format, int type, long pixels_buffer_offset)
+    {
+
+    }
+
+    @Override
     public void glTextureSubImage2DEXT(int texture, int target, int level, int xoffset, int yoffset, int width, int height, int format, int type, Buffer pixels)
     {
         CallDetails details = getMethodDetails("glTextureSubImage2DEXT");
         details.foundArguments.add(new Object[] { texture, target, level, xoffset, yoffset, width, height, format, type, pixels });
+    }
+
+    @Override
+    public void glTextureSubImage2DEXT(int texture, int target, int level, int xoffset, int yoffset, int width, int height, int format, int type, long pixels_buffer_offset)
+    {
+
     }
 
     @Override
@@ -8703,22 +9234,16 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glTextureSubImage3DEXT(int texture, int target, int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth, int format, int type, long pixels_buffer_offset)
+    {
+
+    }
+
+    @Override
     public void glTransformFeedbackVaryings(int program, int count, String[] varyings, int bufferMode)
     {
         CallDetails details = getMethodDetails("glTransformFeedbackVaryings");
         details.foundArguments.add(new Object[] { program, count, varyings, bufferMode });
-    }
-
-    @Override
-    public void glTransformPathNV(int resultPath, int srcPath, int transformType, FloatBuffer transformValues)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glTransformPathNV(int resultPath, int srcPath, int transformType, float[] transformValues, int transformValues_offset)
-    {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -8750,6 +9275,24 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glUniform1i64NV(int location, long x)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform1i64vNV(int location, int count, LongBuffer value)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform1i64vNV(int location, int count, long[] value, int value_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glUniform1iARB(int location, int v0)
     {
         CallDetails details = getMethodDetails("glUniform1iARB");
@@ -8768,6 +9311,24 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glUniform1ivARB");
         details.foundArguments.add(new Object[] { location, count, value, value_offset });
+    }
+
+    @Override
+    public void glUniform1ui64NV(int location, long x)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform1ui64vNV(int location, int count, LongBuffer value)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform1ui64vNV(int location, int count, long[] value, int value_offset)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -8813,6 +9374,24 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glUniform2i64NV(int location, long x, long y)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform2i64vNV(int location, int count, LongBuffer value)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform2i64vNV(int location, int count, long[] value, int value_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glUniform2iARB(int location, int v0, int v1)
     {
         CallDetails details = getMethodDetails("glUniform2iARB");
@@ -8831,6 +9410,24 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glUniform2ivARB");
         details.foundArguments.add(new Object[] { location, count, value, value_offset });
+    }
+
+    @Override
+    public void glUniform2ui64NV(int location, long x, long y)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform2ui64vNV(int location, int count, LongBuffer value)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform2ui64vNV(int location, int count, long[] value, int value_offset)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -8876,6 +9473,24 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glUniform3i64NV(int location, long x, long y, long z)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform3i64vNV(int location, int count, LongBuffer value)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform3i64vNV(int location, int count, long[] value, int value_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glUniform3iARB(int location, int v0, int v1, int v2)
     {
         CallDetails details = getMethodDetails("glUniform3iARB");
@@ -8894,6 +9509,24 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glUniform3ivARB");
         details.foundArguments.add(new Object[] { location, count, value, value_offset });
+    }
+
+    @Override
+    public void glUniform3ui64NV(int location, long x, long y, long z)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform3ui64vNV(int location, int count, LongBuffer value)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform3ui64vNV(int location, int count, long[] value, int value_offset)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -8939,6 +9572,24 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glUniform4i64NV(int location, long x, long y, long z, long w)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform4i64vNV(int location, int count, LongBuffer value)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform4i64vNV(int location, int count, long[] value, int value_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glUniform4iARB(int location, int v0, int v1, int v2, int v3)
     {
         CallDetails details = getMethodDetails("glUniform4iARB");
@@ -8957,6 +9608,24 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glUniform4ivARB");
         details.foundArguments.add(new Object[] { location, count, value, value_offset });
+    }
+
+    @Override
+    public void glUniform4ui64NV(int location, long x, long y, long z, long w)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform4ui64vNV(int location, int count, LongBuffer value)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glUniform4ui64vNV(int location, int count, long[] value, int value_offset)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -8992,24 +9661,6 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glUniformBufferEXT");
         details.foundArguments.add(new Object[] { program, location, buffer });
-    }
-
-    @Override
-    public void glUniformHandleui64NV(int location, long value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glUniformHandleui64vNV(int location, int count, LongBuffer value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glUniformHandleui64vNV(int location, int count, long[] value, int value_offset)
-    {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -9139,6 +9790,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glVertexAttribDivisor(int index, int divisor)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glUnlockArraysEXT()
     {
         CallDetails details = getMethodDetails("glUnlockArraysEXT");
@@ -9158,7 +9815,7 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glUseProgramObjectARB(int programObj)
+    public void glUseProgramObjectARB(long programObj)
     {
         CallDetails details = getMethodDetails("glUseProgramObjectARB");
         details.foundArguments.add(new Object[] { programObj });
@@ -9189,7 +9846,7 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glVDPAUIsSurfaceNV(long surface)
+    public boolean glVDPAUIsSurfaceNV(long surface)
     {
         throw new UnsupportedOperationException();
     }
@@ -9243,7 +9900,7 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glValidateProgramARB(int programObj)
+    public void glValidateProgramARB(long programObj)
     {
         CallDetails details = getMethodDetails("glValidateProgramARB");
         details.foundArguments.add(new Object[] { programObj });
@@ -9376,10 +10033,10 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glVertex2bOES(byte x)
+    public void glVertex2bOES(byte x, byte y)
     {
         CallDetails details = getMethodDetails("glVertex2bOES");
-        details.foundArguments.add(new Object[] { x });
+        details.foundArguments.add(new Object[] { x, y });
     }
 
     @Override
@@ -9502,10 +10159,10 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glVertex3bOES(byte x, byte y)
+    public void glVertex3bOES(byte x, byte y, byte z)
     {
         CallDetails details = getMethodDetails("glVertex3bOES");
-        details.foundArguments.add(new Object[] { x, y });
+        details.foundArguments.add(new Object[] { x, y, z });
     }
 
     @Override
@@ -9628,10 +10285,10 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glVertex4bOES(byte x, byte y, byte z)
+    public void glVertex4bOES(byte x, byte y, byte z, byte w)
     {
         CallDetails details = getMethodDetails("glVertex4bOES");
-        details.foundArguments.add(new Object[] { x, y, z });
+        details.foundArguments.add(new Object[] { x, y, z, w });
     }
 
     @Override
@@ -9803,12 +10460,6 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glVertexArrayRangeAPPLE(int length, Buffer pointer)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glVertexArrayRangeNV(int length, Buffer pointer)
     {
         throw new UnsupportedOperationException();
     }
@@ -10626,13 +11277,13 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public boolean glIsPBOPackEnabled()
+    public boolean isPBOPackBound()
     {
         return false;
     }
 
     @Override
-    public boolean glIsPBOUnpackEnabled()
+    public boolean isPBOUnpackBound()
     {
         return false;
     }
@@ -10958,6 +11609,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glFramebufferTextureMultiviewOVR(int target, int attachment, int texture, int level, int baseViewIndex, int numViews)
+    {
+
+    }
+
+    @Override
     public void glVideoCaptureStreamParameterfvNV(int video_capture_slot, int stream, int pname, FloatBuffer params)
     {
         throw new UnsupportedOperationException();
@@ -10982,22 +11639,17 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glWeightPathsNV(int resultPath, int numPaths, IntBuffer paths, FloatBuffer weights)
+    public void glWeightPointerARB(int size, int type, int stride, Buffer pointer)
     {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glWeightPathsNV(int resultPath, int numPaths, int[] paths, int paths_offset, float[] weights, int weights_offset)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void glWeightPointer(int size, int type, int stride, Buffer pointer)
-    {
-        CallDetails details = getMethodDetails("glWeightPointer");
+        CallDetails details = getMethodDetails("glWeightPointerARB");
         details.foundArguments.add(new Object[] { size, type, stride, pointer });
+    }
+
+    @Override
+    public void glWeightPointerARB(int size, int type, int stride, long pointer_buffer_offset)
+    {
+        CallDetails details = getMethodDetails("glWeightPointerARB");
+        details.foundArguments.add(new Object[] { size, type, stride, pointer_buffer_offset });
     }
 
     @Override
@@ -11288,15 +11940,16 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public ByteBuffer glAllocateMemoryNV(int size, float readFrequency, float writeFrequency, float priority)
+    public GLBufferStorage mapNamedBufferEXT(int bufferName, int access) throws GLException
     {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
-    public void glFreeMemoryNV(ByteBuffer pointer)
+    public GLBufferStorage mapNamedBufferRangeEXT(int bufferName, long offset, long length, int access) throws
+                                                                                                        GLException
     {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
@@ -11461,6 +12114,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glBeginQueryIndexed(int target, int index, int id)
+    {
+
+    }
+
+    @Override
     public void glBindFragDataLocation(int program, int color, String name)
     {
         CallDetails details = getMethodDetails("glBindFragDataLocation");
@@ -11468,9 +12127,39 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glBlendEquationSeparatei(int buf, int modeRGB, int modeAlpha)
+    {
+
+    }
+
+    @Override
+    public void glBlendEquationi(int buf, int mode)
+    {
+
+    }
+
+    @Override
+    public void glBlendFuncSeparatei(int buf, int srcRGB, int dstRGB, int srcAlpha, int dstAlpha)
+    {
+
+    }
+
+    @Override
+    public void glBlendFunci(int buf, int src, int dst)
+    {
+
+    }
+
+    @Override
     public void glBufferAddressRangeNV(int pname, int index, long address, long length)
     {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glBufferPageCommitmentARB(int target, long offset, long size, boolean commit)
+    {
+
     }
 
     @Override
@@ -11481,17 +12170,17 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glClearNamedBufferDataEXT(int buffer, int internalformat, int format, int type, Buffer data)
+    public void glClearBufferData(int target, int internalformat, int format, int type, Buffer data)
     {
-        CallDetails details = getMethodDetails("glClearNamedBufferDataEXT");
-        details.foundArguments.add(new Object[] { buffer, internalformat, format, type, data });
+        CallDetails details = getMethodDetails("glClearBufferData");
+        details.foundArguments.add(new Object[] { target, internalformat, format, type, data });
     }
 
     @Override
-    public void glClearNamedBufferSubDataEXT(int buffer, int internalformat, int format, int type, long offset, long size, Buffer data)
+    public void glClearBufferSubData(int target, int internalformat, long offset, long size, int format, int type, Buffer data)
     {
-        CallDetails details = getMethodDetails("glClearNamedBufferSubDataEXT");
-        details.foundArguments.add(new Object[] { buffer, internalformat, format, type, offset, size, data });
+        CallDetails details = getMethodDetails("glClearBufferSubData");
+        details.foundArguments.add(new Object[] { target, internalformat, offset, size, format, type, data });
     }
 
     @Override
@@ -11505,20 +12194,6 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glColorMaski");
         details.foundArguments.add(new Object[] { index, r, g, b, a });
-    }
-
-    @Override
-    public void glCompileShaderIncludeARB(int shader, int count, String[] path, IntBuffer length)
-    {
-        CallDetails details = getMethodDetails("glCompileShaderIncludeARB");
-        details.foundArguments.add(new Object[] { shader, count, path, length });
-    }
-
-    @Override
-    public void glCompileShaderIncludeARB(int shader, int count, String[] path, int[] length, int length_offset)
-    {
-        CallDetails details = getMethodDetails("glCompileShaderIncludeARB");
-        details.foundArguments.add(new Object[] { shader, count, path, length, length_offset });
     }
 
     @Override
@@ -11564,12 +12239,6 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public long glCreateSyncFromCLeventARB(long context, long event, int flags)
-    {
-        return 0;
-    }
-
-    @Override
     public void glDebugMessageEnableAMD(int category, int severity, int count, IntBuffer ids, boolean enabled)
     {
         throw new UnsupportedOperationException();
@@ -11588,13 +12257,6 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glDeleteNamedStringARB(int namelen, String name)
-    {
-        CallDetails details = getMethodDetails("glDeleteNamedStringARB");
-        details.foundArguments.add(new Object[] { namelen, name });
-    }
-
-    @Override
     public void glDisablei(int target, int index)
     {
         CallDetails details = getMethodDetails("glDisablei");
@@ -11609,6 +12271,18 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glDrawTransformFeedback(int mode, int id)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glDrawTransformFeedbackStream(int mode, int id, int stream)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glEdgeFlagFormatNV(int stride)
     {
         throw new UnsupportedOperationException();
@@ -11619,6 +12293,12 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glEnablei");
         details.foundArguments.add(new Object[] { target, index });
+    }
+
+    @Override
+    public void glEndQueryIndexed(int target, int index)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -11642,24 +12322,15 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glFramebufferTextureARB(int target, int attachment, int texture, int level)
+    public void glGetActiveAtomicCounterBufferiv(int program, int bufferIndex, int pname, IntBuffer params)
     {
-        CallDetails details = getMethodDetails("glFramebufferTextureARB");
-        details.foundArguments.add(new Object[] { target, attachment, texture, level });
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public void glFramebufferTextureFaceARB(int target, int attachment, int texture, int level, int face)
+    public void glGetActiveAtomicCounterBufferiv(int program, int bufferIndex, int pname, int[] params, int params_offset)
     {
-        CallDetails details = getMethodDetails("glFramebufferTextureFaceARB");
-        details.foundArguments.add(new Object[] { target, attachment, texture, level, face });
-    }
-
-    @Override
-    public void glFramebufferTextureLayerARB(int target, int attachment, int texture, int level, int layer)
-    {
-        CallDetails details = getMethodDetails("glFramebufferTextureLayerARB");
-        details.foundArguments.add(new Object[] { target, attachment, texture, level, layer });
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -11774,6 +12445,18 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glGetInternalformati64v(int target, int internalformat, int pname, int bufSize, LongBuffer params)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glGetInternalformati64v(int target, int internalformat, int pname, int bufSize, long[] params, int params_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glGetNamedBufferParameterui64vNV(int buffer, int pname, LongBuffer params)
     {
         throw new UnsupportedOperationException();
@@ -11786,45 +12469,15 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glGetNamedFramebufferParameterivEXT(int framebuffer, int pname, IntBuffer params)
+    public void glGetQueryIndexediv(int target, int index, int pname, IntBuffer params)
     {
-        CallDetails details = getMethodDetails("glGetNamedFramebufferParameterivEXT");
-        details.foundArguments.add(new Object[] { framebuffer, pname, params });
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public void glGetNamedFramebufferParameterivEXT(int framebuffer, int pname, int[] params, int params_offset)
+    public void glGetQueryIndexediv(int target, int index, int pname, int[] params, int params_offset)
     {
-        CallDetails details = getMethodDetails("glGetNamedFramebufferParameterivEXT");
-        details.foundArguments.add(new Object[] { framebuffer, pname, params, params_offset });
-    }
-
-    @Override
-    public void glGetNamedStringARB(int namelen, String name, int bufSize, IntBuffer stringlen, ByteBuffer string)
-    {
-        CallDetails details = getMethodDetails("glGetNamedStringARB");
-        details.foundArguments.add(new Object[] { namelen, name, bufSize, stringlen, string });
-    }
-
-    @Override
-    public void glGetNamedStringARB(int namelen, String name, int bufSize, int[] stringlen, int stringlen_offset, byte[] string, int string_offset)
-    {
-        CallDetails details = getMethodDetails("glGetNamedStringARB");
-        details.foundArguments.add(new Object[] { namelen, name, bufSize, stringlen, stringlen_offset, string, string_offset });
-    }
-
-    @Override
-    public void glGetNamedStringivARB(int namelen, String name, int pname, IntBuffer params)
-    {
-        CallDetails details = getMethodDetails("glGetNamedStringivARB");
-        details.foundArguments.add(new Object[] { namelen, name, pname, params });
-    }
-
-    @Override
-    public void glGetNamedStringivARB(int namelen, String name, int pname, int[] params, int params_offset)
-    {
-        CallDetails details = getMethodDetails("glGetNamedStringivARB");
-        details.foundArguments.add(new Object[] { namelen, name, pname, params, params_offset});
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -11839,6 +12492,18 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glGetQueryObjectiv");
         details.foundArguments.add(new Object[] { id, pname, params, params_offset });
+    }
+
+    @Override
+    public void glGetQueryObjectui64v(int id, int pname, LongBuffer params)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glGetQueryObjectui64v(int id, int pname, long[] params, int params_offset)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -11924,6 +12589,18 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glGetVertexAttribLdv(int index, int pname, DoubleBuffer params)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glGetVertexAttribLdv(int index, int pname, double[] params, int params_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glGetVertexAttribdv(int index, int pname, DoubleBuffer params)
     {
         CallDetails details = getMethodDetails("glGetVertexAttribdv");
@@ -11980,6 +12657,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glPrimitiveBoundingBox(float minX, float minY, float minZ, float minW, float maxX, float maxY, float maxZ, float maxW)
+    {
+
+    }
+
+    @Override
     public long glImportSyncEXT(int external_sync_type, long external_sync, int flags)
     {
         return 0;
@@ -11987,6 +12670,30 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glIndexFormatNV(int type, int stride)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glInvalidateBufferData(int buffer)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glInvalidateBufferSubData(int buffer, long offset, long length)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glInvalidateTexImage(int texture, int level)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glInvalidateTexSubImage(int texture, int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth)
     {
         throw new UnsupportedOperationException();
     }
@@ -12007,12 +12714,6 @@ public class MockGL2 extends MockGL implements GL2
     public boolean glIsNamedBufferResidentNV(int buffer)
     {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glIsNamedStringARB(int namelen, String name)
-    {
-        return false;
     }
 
     @Override
@@ -12042,6 +12743,12 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glMakeNamedBufferResidentNV(int buffer, int access)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glMinSampleShading(float value)
     {
         throw new UnsupportedOperationException();
     }
@@ -12080,17 +12787,15 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glNamedFramebufferParameteriEXT(int framebuffer, int pname, int param)
+    public void glNamedBufferPageCommitmentARB(int buffer, long offset, long size, boolean commit)
     {
-        CallDetails details = getMethodDetails("glNamedFramebufferParameteriEXT");
-        details.foundArguments.add(new Object[] { framebuffer, pname, param });
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public void glNamedStringARB(int type, int namelen, String name, int stringlen, String string)
+    public void glNamedBufferPageCommitmentEXT(int buffer, long offset, long size, boolean commit)
     {
-        CallDetails details = getMethodDetails("glNamedStringARB");
-        details.foundArguments.add(new Object[] { type, namelen, name, stringlen, string });
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -12184,10 +12889,183 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
-    public void glProgramParameteriARB(int program, int pname, int value)
+    public void glProgramUniform1d(int program, int location, double v0)
     {
-        CallDetails details = getMethodDetails("glProgramParameteriARB");
-        details.foundArguments.add(new Object[] { program, pname, value });
+
+    }
+
+    @Override
+    public void glProgramUniform1dv(int program, int location, int count, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1dv(int program, int location, int count, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2d(int program, int location, double v0, double v1)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2dv(int program, int location, int count, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2dv(int program, int location, int count, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3d(int program, int location, double v0, double v1, double v2)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3dv(int program, int location, int count, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3dv(int program, int location, int count, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4d(int program, int location, double v0, double v1, double v2, double v3)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4dv(int program, int location, int count, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4dv(int program, int location, int count, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2dv(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2dv(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x3dv(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x3dv(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x4dv(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x4dv(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3dv(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3dv(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x2dv(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x2dv(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x4dv(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x4dv(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4dv(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4dv(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x2dv(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x2dv(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x3dv(int program, int location, int count, boolean transpose, DoubleBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x3dv(int program, int location, int count, boolean transpose, double[] value, int value_offset)
+    {
+
     }
 
     @Override
@@ -12204,6 +13082,12 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glProgramUniformui64vNV(int program, int location, int count, long[] value, int value_offset)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glProvokingVertex(int mode)
     {
         throw new UnsupportedOperationException();
     }
@@ -12279,6 +13163,18 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public void glTexImage3DMultisampleCoverageNV(int target, int coverageSamples, int colorSamples, int internalFormat, int width, int height, int depth, boolean fixedSampleLocations)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glTexPageCommitmentARB(int target, int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth, boolean resident)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void glTexStorage3DMultisample(int target, int samples, int internalformat, int width, int height, int depth, boolean fixedsamplelocations)
     {
         throw new UnsupportedOperationException();
     }
@@ -12389,6 +13285,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glVertexArrayVertexAttribDivisorEXT(int vaobj, int index, int divisor)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void glVertexArrayVertexAttribFormatEXT(int vaobj, int attribindex, int size, int type, boolean normalized, int relativeoffset)
     {
         CallDetails details = getMethodDetails("glVertexArrayVertexAttribFormatEXT");
@@ -12407,6 +13309,13 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glVertexArrayVertexAttribLFormatEXT");
         details.foundArguments.add(new Object[] { vaobj, attribindex, size, type, relativeoffset });
+    }
+
+    @Override
+    public void glVertexArrayVertexAttribLOffsetEXT(int vaobj, int buffer, int index, int size, int type, int stride, long offset)
+    {
+        CallDetails details = getMethodDetails("glVertexArrayVertexAttribLOffsetEXT");
+        details.foundArguments.add(new Object[] { vaobj, buffer, index, size, type, stride, offset });
     }
 
     @Override
@@ -12940,6 +13849,84 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glVertexAttribL1d(int index, double x)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL1dv(int index, DoubleBuffer v)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL1dv(int index, double[] v, int v_offset)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL2d(int index, double x, double y)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL2dv(int index, DoubleBuffer v)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL2dv(int index, double[] v, int v_offset)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL3d(int index, double x, double y, double z)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL3dv(int index, DoubleBuffer v)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL3dv(int index, double[] v, int v_offset)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL4d(int index, double x, double y, double z, double w)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL4dv(int index, DoubleBuffer v)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribL4dv(int index, double[] v, int v_offset)
+    {
+
+    }
+
+    @Override
+    public void glVertexAttribLPointer(int index, int size, int type, int stride, long pointer_buffer_offset)
+    {
+
+    }
+
+    @Override
     public void glVertexFormatNV(int size, int type, int stride)
     {
         throw new UnsupportedOperationException();
@@ -13044,6 +14031,18 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glDrawElements(int mode, int count, int type, Buffer indices)
+    {
+
+    }
+
+    @Override
+    public void glActiveShaderProgram(int pipeline, int program)
+    {
+
+    }
+
+    @Override
     public void glAttachShader(int program, int shader)
     {
         CallDetails details = getMethodDetails("glAttachShader");
@@ -13062,6 +14061,12 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glBindAttribLocation");
         details.foundArguments.add(new Object[] { program, index, name });
+    }
+
+    @Override
+    public void glBindProgramPipeline(int pipeline)
+    {
+
     }
 
     @Override
@@ -13107,6 +14112,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glCopyImageSubData(int srcName, int srcTarget, int srcLevel, int srcX, int srcY, int srcZ, int dstName, int dstTarget, int dstLevel, int dstX, int dstY, int dstZ, int srcWidth, int srcHeight, int srcDepth)
+    {
+
+    }
+
+    @Override
     public void glCopyTexSubImage3D(int target, int level, int xoffset, int yoffset, int zoffset, int x, int y, int width, int height)
     {
         CallDetails details = getMethodDetails("glCopyTexSubImage3D");
@@ -13121,6 +14132,12 @@ public class MockGL2 extends MockGL implements GL2
 
     @Override
     public int glCreateShader(int type)
+    {
+        return 0;
+    }
+
+    @Override
+    public int glCreateShaderProgramv(int type, int count, String[] strings)
     {
         return 0;
     }
@@ -13151,6 +14168,18 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glDeleteProgram");
         details.foundArguments.add(new Object[] { program });
+    }
+
+    @Override
+    public void glDeleteProgramPipelines(int n, IntBuffer pipelines)
+    {
+
+    }
+
+    @Override
+    public void glDeleteProgramPipelines(int n, int[] pipelines, int pipelines_offset)
+    {
+
     }
 
     @Override
@@ -13189,6 +14218,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glDrawArraysInstancedBaseInstance(int mode, int first, int count, int instancecount, int baseinstance)
+    {
+
+    }
+
+    @Override
     public void glEnableVertexAttribArray(int index)
     {
         CallDetails details = getMethodDetails("glEnableVertexAttribArray");
@@ -13207,6 +14242,18 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glFramebufferTexture3D");
         details.foundArguments.add(new Object[] { target, attachment, textarget, texture, level, zoffset });
+    }
+
+    @Override
+    public void glGenProgramPipelines(int n, IntBuffer pipelines)
+    {
+
+    }
+
+    @Override
+    public void glGenProgramPipelines(int n, int[] pipelines, int pipelines_offset)
+    {
+
     }
 
     @Override
@@ -13284,6 +14331,18 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glGetMultisamplefv(int pname, int index, FloatBuffer val)
+    {
+
+    }
+
+    @Override
+    public void glGetMultisamplefv(int pname, int index, float[] val, int val_offset)
+    {
+
+    }
+
+    @Override
     public void glGetObjectLabel(int identifier, int name, int bufSize, IntBuffer length, ByteBuffer label)
     {
         CallDetails details = getMethodDetails("glGetObjectLabel");
@@ -13340,6 +14399,30 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glGetProgramPipelineInfoLog(int pipeline, int bufSize, IntBuffer length, ByteBuffer infoLog)
+    {
+
+    }
+
+    @Override
+    public void glGetProgramPipelineInfoLog(int pipeline, int bufSize, int[] length, int length_offset, byte[] infoLog, int infoLog_offset)
+    {
+
+    }
+
+    @Override
+    public void glGetProgramPipelineiv(int pipeline, int pname, IntBuffer params)
+    {
+
+    }
+
+    @Override
+    public void glGetProgramPipelineiv(int pipeline, int pname, int[] params, int params_offset)
+    {
+
+    }
+
+    @Override
     public void glGetProgramiv(int program, int pname, IntBuffer params)
     {
         CallDetails details = getMethodDetails("glGetProgramiv");
@@ -13351,6 +14434,18 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glGetProgramiv");
         details.foundArguments.add(new Object[] { program, pname, params, params_offset });
+    }
+
+    @Override
+    public void glGetQueryObjecti64v(int id, int pname, LongBuffer params)
+    {
+
+    }
+
+    @Override
+    public void glGetQueryObjecti64v(int id, int pname, long[] params, int params_offset)
+    {
+
     }
 
     @Override
@@ -13379,6 +14474,30 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glGetQueryiv");
         details.foundArguments.add(new Object[] { target, pname, params, params_offset });
+    }
+
+    @Override
+    public void glGetSamplerParameterIiv(int sampler, int pname, IntBuffer params)
+    {
+
+    }
+
+    @Override
+    public void glGetSamplerParameterIiv(int sampler, int pname, int[] params, int params_offset)
+    {
+
+    }
+
+    @Override
+    public void glGetSamplerParameterIuiv(int sampler, int pname, IntBuffer params)
+    {
+
+    }
+
+    @Override
+    public void glGetSamplerParameterIuiv(int sampler, int pname, int[] params, int params_offset)
+    {
+
     }
 
     @Override
@@ -13492,6 +14611,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public boolean glIsProgramPipeline(int pipeline)
+    {
+        return false;
+    }
+
+    @Override
     public boolean glIsQuery(int id)
     {
         return false;
@@ -13553,6 +14678,342 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glProgramParameteri(int program, int pname, int value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1f(int program, int location, float v0)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1fv(int program, int location, int count, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1fv(int program, int location, int count, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1i(int program, int location, int v0)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1iv(int program, int location, int count, IntBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1iv(int program, int location, int count, int[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1ui(int program, int location, int v0)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1uiv(int program, int location, int count, IntBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform1uiv(int program, int location, int count, int[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2f(int program, int location, float v0, float v1)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2fv(int program, int location, int count, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2fv(int program, int location, int count, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2i(int program, int location, int v0, int v1)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2iv(int program, int location, int count, IntBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2iv(int program, int location, int count, int[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2ui(int program, int location, int v0, int v1)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2uiv(int program, int location, int count, IntBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform2uiv(int program, int location, int count, int[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3f(int program, int location, float v0, float v1, float v2)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3fv(int program, int location, int count, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3fv(int program, int location, int count, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3i(int program, int location, int v0, int v1, int v2)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3iv(int program, int location, int count, IntBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3iv(int program, int location, int count, int[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3ui(int program, int location, int v0, int v1, int v2)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3uiv(int program, int location, int count, IntBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform3uiv(int program, int location, int count, int[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4f(int program, int location, float v0, float v1, float v2, float v3)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4fv(int program, int location, int count, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4fv(int program, int location, int count, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4i(int program, int location, int v0, int v1, int v2, int v3)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4iv(int program, int location, int count, IntBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4iv(int program, int location, int count, int[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4ui(int program, int location, int v0, int v1, int v2, int v3)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4uiv(int program, int location, int count, IntBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniform4uiv(int program, int location, int count, int[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2fv(int program, int location, int count, boolean transpose, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2fv(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x3fv(int program, int location, int count, boolean transpose, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x3fv(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x4fv(int program, int location, int count, boolean transpose, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2x4fv(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3fv(int program, int location, int count, boolean transpose, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3fv(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x2fv(int program, int location, int count, boolean transpose, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x2fv(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x4fv(int program, int location, int count, boolean transpose, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x4fv(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4fv(int program, int location, int count, boolean transpose, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4fv(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x2fv(int program, int location, int count, boolean transpose, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x2fv(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x3fv(int program, int location, int count, boolean transpose, FloatBuffer value)
+    {
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x3fv(int program, int location, int count, boolean transpose, float[] value, int value_offset)
+    {
+
+    }
+
+    @Override
+    public void glApplyFramebufferAttachmentCMAAINTEL()
+    {
+
+    }
+
+    @Override
     public void glPushDebugGroup(int source, int id, int length, ByteBuffer message)
     {
         CallDetails details = getMethodDetails("glPushDebugGroup");
@@ -13564,6 +15025,42 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glPushDebugGroup");
         details.foundArguments.add(new Object[] { source, id, length, message, message_offset });
+    }
+
+    @Override
+    public void glQueryCounter(int id, int target)
+    {
+
+    }
+
+    @Override
+    public void glSampleMaski(int index, int mask)
+    {
+
+    }
+
+    @Override
+    public void glSamplerParameterIiv(int sampler, int pname, IntBuffer param)
+    {
+
+    }
+
+    @Override
+    public void glSamplerParameterIiv(int sampler, int pname, int[] param, int param_offset)
+    {
+
+    }
+
+    @Override
+    public void glSamplerParameterIuiv(int sampler, int pname, IntBuffer param)
+    {
+
+    }
+
+    @Override
+    public void glSamplerParameterIuiv(int sampler, int pname, int[] param, int param_offset)
+    {
+
     }
 
     @Override
@@ -13602,6 +15099,12 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glTexImage2DMultisample(int target, int samples, int internalformat, int width, int height, boolean fixedsamplelocations)
+    {
+
+    }
+
+    @Override
     public void glTexImage3D(int target, int level, int internalformat, int width, int height, int depth, int border, int format, int type, Buffer pixels)
     {
         CallDetails details = getMethodDetails("glTexImage3D");
@@ -13613,6 +15116,12 @@ public class MockGL2 extends MockGL implements GL2
     {
         CallDetails details = getMethodDetails("glTexImage3D");
         details.foundArguments.add(new Object[] { target, level, internalformat, width, height, depth, border, format, type,  pixels_buffer_offset });
+    }
+
+    @Override
+    public void glTexImage3DMultisample(int target, int samples, int internalformat, int width, int height, int depth, boolean fixedsamplelocations)
+    {
+
     }
 
     @Override
@@ -13847,10 +15356,22 @@ public class MockGL2 extends MockGL implements GL2
     }
 
     @Override
+    public void glUseProgramStages(int pipeline, int stages, int program)
+    {
+
+    }
+
+    @Override
     public void glValidateProgram(int program)
     {
         CallDetails details = getMethodDetails("glValidateProgram");
         details.foundArguments.add(new Object[] { program });
+    }
+
+    @Override
+    public void glValidateProgramPipeline(int pipeline)
+    {
+
     }
 
     @Override

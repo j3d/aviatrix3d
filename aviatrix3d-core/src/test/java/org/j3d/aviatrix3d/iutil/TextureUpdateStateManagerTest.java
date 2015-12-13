@@ -14,7 +14,7 @@
 
 package org.j3d.aviatrix3d.iutil;
 
-import javax.media.opengl.GL;
+import com.jogamp.opengl.GL;
 
 import org.j3d.util.I18nManager;
 import org.testng.annotations.BeforeMethod;

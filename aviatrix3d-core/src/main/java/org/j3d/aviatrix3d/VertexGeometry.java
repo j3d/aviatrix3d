@@ -22,9 +22,10 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.HashMap;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 
+import com.jogamp.opengl.GLException;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -2913,7 +2914,7 @@ public abstract class VertexGeometry extends Geometry
                 setVertexStateVBO(gl);
                 return;
             }
-            catch(javax.media.opengl.GLException gle)
+            catch(GLException gle)
             {
                 I18nManager intl_mgr = I18nManager.getManager();
                 String msg = intl_mgr.getString(NO_VBO_PROP);

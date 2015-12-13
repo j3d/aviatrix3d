@@ -22,8 +22,8 @@ import java.security.PrivilegedAction;
 import java.text.MessageFormat;
 import java.util.Locale;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;

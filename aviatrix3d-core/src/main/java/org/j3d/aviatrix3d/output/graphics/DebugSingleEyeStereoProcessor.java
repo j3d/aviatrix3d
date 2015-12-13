@@ -14,8 +14,8 @@
 package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
-import javax.media.opengl.*;
-import javax.media.opengl.glu.GLU;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.glu.GLU;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.*;
@@ -249,8 +249,8 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
             // cleared.
             GLDrawable drawable = localContext.getGLDrawable();
 
-            int w = drawable.getWidth();
-            int h = drawable.getHeight();
+            int w = drawable.getSurfaceWidth();
+            int h = drawable.getSurfaceHeight();
 
             gl.glViewport(0, 0, w, h);
             gl.glScissor(0, 0, w, h);

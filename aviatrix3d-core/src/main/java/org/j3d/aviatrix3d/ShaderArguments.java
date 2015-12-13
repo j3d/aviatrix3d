@@ -19,7 +19,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.HashMap;
 
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL2;
 
 import org.j3d.util.HashSet;
 import org.j3d.util.I18nManager;

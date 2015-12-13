@@ -15,8 +15,8 @@ package org.j3d.aviatrix3d;
 // External imports
 import java.util.HashMap;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.ShaderSourceRenderable;
@@ -36,7 +36,7 @@ public class ShaderObject extends SceneGraphObject
     private String[] sourceStrings;
 
     /** The ID of the shader object that has been allocated here */
-    private HashMap<GL, Integer> objectIdMap;
+    private HashMap<GL, Long> objectIdMap;
 
     /** Is this a fragment or vertex program being represented here? */
     private boolean vertexSource;
@@ -64,8 +64,8 @@ public class ShaderObject extends SceneGraphObject
         vertexSource = isVertexShader;
         logRequested = false;
         confirmCompile = false;
-        compiled = new HashMap<GL, Boolean>();
-        objectIdMap = new HashMap<GL, Integer>();
+        compiled = new HashMap<>();
+        objectIdMap = new HashMap<>();
     }
 
     //---------------------------------------------------------------
@@ -110,8 +110,8 @@ public class ShaderObject extends SceneGraphObject
             return;
 
         // Do we need to create a shader object first?
-        Integer o_id = objectIdMap.get(gl);
-        int object_id = 0;
+        Long o_id = objectIdMap.get(gl);
+        long object_id = 0;
 
         if(o_id == null)
         {
@@ -120,7 +120,7 @@ public class ShaderObject extends SceneGraphObject
                        GL2.GL_FRAGMENT_SHADER;
 
             object_id = gl.glCreateShaderObjectARB(type);
-            objectIdMap.put(gl, new Integer(object_id));
+            objectIdMap.put(gl, object_id);
         }
         else
             object_id = o_id.intValue();
@@ -155,7 +155,7 @@ public class ShaderObject extends SceneGraphObject
     @Override
     public void fetchLogInfo(GL2 gl)
     {
-        Integer o_id = objectIdMap.get(gl);
+        Long o_id = objectIdMap.get(gl);
         if(o_id == null)
             return;
 
@@ -424,9 +424,9 @@ public class ShaderObject extends SceneGraphObject
      * @param gl The GL context to used for the caller
      * @return The object_id of the compiled source or 0 if not compiled yet
      */
-    protected int getShaderId(GL gl)
+    protected long getShaderId(GL gl)
     {
-        Integer o_id = (Integer)objectIdMap.get(gl);
+        Long o_id = objectIdMap.get(gl);
 
         return (o_id == null) ? 0 : o_id.intValue();
     }

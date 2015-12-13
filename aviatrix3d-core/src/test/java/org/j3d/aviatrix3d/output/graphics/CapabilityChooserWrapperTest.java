@@ -17,10 +17,10 @@ package org.j3d.aviatrix3d.output.graphics;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.nativewindow.Capabilities;
-import javax.media.nativewindow.CapabilitiesImmutable;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLProfile;
+import com.jogamp.nativewindow.Capabilities;
+import com.jogamp.nativewindow.CapabilitiesImmutable;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLProfile;
 
 import org.mockito.ArgumentCaptor;
 import org.testng.annotations.Test;
@@ -122,7 +122,7 @@ public class CapabilityChooserWrapperTest
         GLCapabilities testDesiredCaps = new GLCapabilities(GLProfile.getDefault());
         generateRandomCapabilities(testDesiredCaps);
 
-        List<CapabilitiesImmutable> testAvailableList = new ArrayList<CapabilitiesImmutable>();
+        List<CapabilitiesImmutable> testAvailableList = new ArrayList<>();
 
         GLCapabilities caps = new GLCapabilities(GLProfile.getDefault());
         generateRandomCapabilities(caps);
