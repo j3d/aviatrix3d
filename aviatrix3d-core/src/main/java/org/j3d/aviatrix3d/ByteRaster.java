@@ -15,8 +15,8 @@ package org.j3d.aviatrix3d;
 // External imports
 import java.nio.ByteBuffer;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 
 import org.j3d.util.I18nManager;
 

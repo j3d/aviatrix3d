@@ -16,10 +16,8 @@ package org.j3d.aviatrix3d.test;
 
 import java.util.*;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
 import static org.testng.Assert.*;
@@ -34,7 +32,7 @@ import static org.testng.Assert.*;
  *
  * @author justin
  */
-public abstract class MockGLBase implements GLBase
+public class MockGLBase implements GLBase
 {
     protected static class CallDetails
     {
@@ -137,6 +135,12 @@ public abstract class MockGLBase implements GLBase
     }
 
     @Override
+    public boolean isGL2ES3()
+    {
+        return false;
+    }
+
+    @Override
     public boolean isGL3ES3()
     {
         return false;
@@ -180,6 +184,18 @@ public abstract class MockGLBase implements GLBase
 
     @Override
     public boolean isGLES3Compatible()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean isGLES31Compatible()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean isGLES32Compatible()
     {
         return false;
     }
@@ -264,6 +280,12 @@ public abstract class MockGLBase implements GLBase
 
     @Override
     public GL2ES2 getGL2ES2() throws GLException
+    {
+        return null;
+    }
+
+    @Override
+    public GL2ES3 getGL2ES3() throws GLException
     {
         return null;
     }
@@ -380,25 +402,37 @@ public abstract class MockGLBase implements GLBase
     }
 
     @Override
-    public int glGetBoundBuffer(int target)
+    public int getBoundBuffer(int target)
+    {
+        return 0;
+    }
+
+    @Override
+    public GLBufferStorage getBufferStorage(int bufferName)
+    {
+        return null;
+    }
+
+    @Override
+    public GLBufferStorage mapBuffer(int target, int access) throws GLException
+    {
+        return null;
+    }
+
+    @Override
+    public GLBufferStorage mapBufferRange(int target, long offset, long length, int access) throws GLException
+    {
+        return null;
+    }
+
+    @Override
+    public boolean isVBOArrayBound()
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public long glGetBufferSize(int buffer)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glIsVBOArrayEnabled()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean glIsVBOElementArrayEnabled()
+    public boolean isVBOElementArrayBound()
     {
         throw new UnsupportedOperationException();
     }

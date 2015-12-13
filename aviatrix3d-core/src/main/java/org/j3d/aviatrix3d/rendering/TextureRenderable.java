@@ -13,8 +13,8 @@
 package org.j3d.aviatrix3d.rendering;
 
 // External imports
-import javax.media.opengl.GL;
-import javax.media.opengl.GLContext;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GLContext;
 
 // Local imports
 // None

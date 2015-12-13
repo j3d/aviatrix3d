@@ -252,6 +252,11 @@ public class BoundingSphere extends BoundingVolume
                                              float radius,
                                              float height)
     {
+        // Based on details from the folowing paper:
+        // https://www10.informatik.uni-erlangen.de/Publications/Theses/2010/Suenkel_BA_10.pdf
+
+        // Move the sphere into the local coordinate system of the cylinder
+
         return false;
     }
 

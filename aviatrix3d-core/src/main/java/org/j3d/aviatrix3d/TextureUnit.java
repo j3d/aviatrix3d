@@ -13,9 +13,9 @@
 package org.j3d.aviatrix3d;
 
 // External imports
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GLContext;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLContext;
 
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;

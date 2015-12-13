@@ -19,8 +19,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLAutoDrawable;
 
 // Local imports
 import org.j3d.util.DefaultErrorReporter;

@@ -16,7 +16,7 @@ package org.j3d.aviatrix3d.test;
 
 import java.nio.*;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 /**
  * Pretend Mock of the GL2 interface. This exists because CGLIB cannot
@@ -288,13 +288,6 @@ public class MockGL extends MockGLBase implements GL
     {
         CallDetails details = getMethodDetails("glDrawArrays");
         details.foundArguments.add(new Object[] { mode, first, count });
-    }
-
-    @Override
-    public void glDrawElements(int mode, int count, int type, Buffer indices)
-    {
-        CallDetails details = getMethodDetails("glDrawElements");
-        details.foundArguments.add(new Object[] { mode, count, type, indices });
     }
 
     @Override
@@ -673,6 +666,13 @@ public class MockGL extends MockGLBase implements GL
     }
 
     @Override
+    public void glRenderbufferStorageMultisample(int target, int samples, int internalformat, int width, int height)
+    {
+        CallDetails details = getMethodDetails("glRenderbufferStorageMultisample");
+        details.foundArguments.add(new Object[] { target, internalformat, width, height });
+    }
+
+    @Override
     public void glSampleCoverage(float value, boolean invert)
     {
         CallDetails details = getMethodDetails("glSampleCoverage");
@@ -799,24 +799,24 @@ public class MockGL extends MockGLBase implements GL
     }
 
     @Override
-    public void glTextureStorage1D(int texture, int target, int levels, int internalformat, int width)
+    public void glTextureStorage1DEXT(int texture, int target, int levels, int internalformat, int width)
     {
-        CallDetails details = getMethodDetails("glTextureStorage1D");
+        CallDetails details = getMethodDetails("glTextureStorage1DEXT");
         details.foundArguments.add(new Object[] { texture, target, levels, internalformat, width });
     }
 
     @Override
-    public void glTextureStorage2D(int texture, int target, int levels, int internalformat, int width, int height)
+    public void glTextureStorage2DEXT(int texture, int target, int levels, int internalformat, int width, int height)
     {
-        CallDetails details = getMethodDetails("glTextureStorage2D");
+        CallDetails details = getMethodDetails("glTextureStorage2DEXT");
         details.foundArguments.add(new Object[] { texture, target, levels, internalformat, width, height });
     }
 
     @Override
-    public void glTextureStorage3D(int texture, int target, int levels, int internalformat, int width, int height, int depth)
+    public void glTextureStorage3DEXT(int texture, int target, int levels, int internalformat, int width, int height, int depth)
     {
-        CallDetails details = getMethodDetails("glTextureStorage3D");
-        details.foundArguments.add(new Object[] { texture, target, levels, internalformat, width, depth });
+        CallDetails details = getMethodDetails("glTextureStorage1DEXT");
+        details.foundArguments.add(new Object[] { texture, target, levels, internalformat, width, height, depth });
     }
 
     @Override
@@ -830,5 +830,41 @@ public class MockGL extends MockGLBase implements GL
     {
         CallDetails details = getMethodDetails("glViewport");
         details.foundArguments.add(new Object[] { x, y, width, height });
+    }
+
+    @Override
+    public boolean isGL2ES3()
+    {
+        return false;
+    }
+
+    @Override
+    public GL2ES3 getGL2ES3() throws GLException
+    {
+        return null;
+    }
+
+    @Override
+    public int getBoundBuffer(int target)
+    {
+        return 0;
+    }
+
+    @Override
+    public GLBufferStorage getBufferStorage(int bufferName)
+    {
+        return null;
+    }
+
+    @Override
+    public GLBufferStorage mapBuffer(int target, int access) throws GLException
+    {
+        return null;
+    }
+
+    @Override
+    public GLBufferStorage mapBufferRange(int target, long offset, long length, int access) throws GLException
+    {
+        return null;
     }
 }

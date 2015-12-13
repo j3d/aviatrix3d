@@ -19,8 +19,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.DeletableRenderable;
@@ -88,11 +88,11 @@ public class ShaderProgram extends NodeComponent
     {
         logRequested = false;
         confirmLink = false;
-        currentObjects = new ArrayList<ShaderObject>();
-        attributeNames = new HashMap<String, Integer>();
-        programIdMap = new HashMap<GL, Integer>();
+        currentObjects = new ArrayList<>();
+        attributeNames = new HashMap<>();
+        programIdMap = new HashMap<>();
 
-        linked = new HashMap<GL, Boolean>();
+        linked = new HashMap<>();
     }
 
     //---------------------------------------------------------------
@@ -181,7 +181,7 @@ public class ShaderProgram extends NodeComponent
 
         initialize(gl);
 
-        Integer p_id = (Integer)programIdMap.get(gl);
+        Integer p_id = programIdMap.get(gl);
 
         if(p_id == null)
             return;
@@ -229,8 +229,8 @@ public class ShaderProgram extends NodeComponent
 
         if(p_id == null)
         {
-            program_id = gl.glCreateProgramObjectARB();
-            programIdMap.put(gl, new Integer(program_id));
+            program_id = gl.glCreateProgram();
+            programIdMap.put(gl, program_id);
             new_program = true;
         }
         else
@@ -240,9 +240,8 @@ public class ShaderProgram extends NodeComponent
         if(!new_program && pendingDeletes != null)
         {
             int size = pendingDeletes.size();
-            for(int i = 0; i < size; i++)
+            for (ShaderObject obj : pendingDeletes)
             {
-                ShaderObject obj = (ShaderObject)pendingDeletes.get(i);
                 gl.glDetachObjectARB(program_id, obj.getShaderId(gl));
             }
 
@@ -253,10 +252,9 @@ public class ShaderProgram extends NodeComponent
         if(!new_program && pendingAdds != null)
         {
             int size = pendingAdds.size();
-            for(int i = 0; i < size; i++)
+            for (ShaderObject obj : pendingAdds)
             {
-                ShaderObject obj = (ShaderObject)pendingAdds.get(i);
-                if(!obj.isCompiled(gl))
+                if (!obj.isCompiled(gl))
                     obj.initialize(gl);
 
                 gl.glAttachObjectARB(program_id, obj.getShaderId(gl));
@@ -283,12 +281,9 @@ public class ShaderProgram extends NodeComponent
         // Assign the attribute names and indices
         if(attributeNames.size() != 0)
         {
-            Set attribs = attributeNames.entrySet();
-            for (Object attrib : attribs) {
-                Map.Entry e = (Map.Entry) attrib;
-                gl.glBindAttribLocation(program_id,
-                        ((Integer) e.getValue()).intValue(),
-                        (String) e.getKey());
+            for (Map.Entry<String, Integer> attrib : attributeNames.entrySet())
+            {
+                gl.glBindAttribLocation(program_id, attrib.getValue(), attrib.getKey());
             }
         }
 
@@ -387,12 +382,9 @@ public class ShaderProgram extends NodeComponent
 
         super.setUpdateHandler(handler);
 
-        int size = currentObjects.size();
-
-        for(int i = 0; i < size; i++)
+        for (ShaderObject currentObject : currentObjects)
         {
-            ShaderObject obj = (ShaderObject)currentObjects.get(i);
-            obj.setUpdateHandler(updateHandler);
+            currentObject.setUpdateHandler(updateHandler);
         }
 
         if((linked.size() == 0) && (updateHandler != null))
@@ -419,11 +411,8 @@ public class ShaderProgram extends NodeComponent
 
         if((liveCount == 0) || !alive)
         {
-            int size = currentObjects.size();
-
-            for(int i = 0; i < size; i++)
+            for (ShaderObject obj : currentObjects)
             {
-                ShaderObject obj = currentObjects.get(i);
                 obj.setLive(state);
             }
 
@@ -469,10 +458,7 @@ public class ShaderProgram extends NodeComponent
     @Override
     public boolean equals(Object o)
     {
-        if(!(o instanceof ShaderProgram))
-            return false;
-        else
-            return equals((ShaderProgram)o);
+        return o instanceof ShaderProgram && equals((ShaderProgram) o);
     }
 
     //---------------------------------------------------------------
@@ -624,7 +610,7 @@ public class ShaderProgram extends NodeComponent
            !updateHandler.isDataWritePermitted(this))
             throw new InvalidWriteTimingException(getDataWriteTimingMessage());
 
-        attributeNames.put(name, new Integer(index));
+        attributeNames.put(name, index);
     }
 
     /**

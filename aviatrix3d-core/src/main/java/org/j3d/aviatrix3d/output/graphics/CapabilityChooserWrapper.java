@@ -18,9 +18,9 @@ package org.j3d.aviatrix3d.output.graphics;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.nativewindow.CapabilitiesImmutable;
-import javax.media.opengl.GLCapabilitiesChooser;
-import javax.media.opengl.GLCapabilitiesImmutable;
+import com.jogamp.nativewindow.CapabilitiesImmutable;
+import com.jogamp.opengl.GLCapabilitiesChooser;
+import com.jogamp.opengl.GLCapabilitiesImmutable;
 
 // Local imports
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;

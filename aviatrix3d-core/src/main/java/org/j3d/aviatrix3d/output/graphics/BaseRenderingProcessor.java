@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Point3d;

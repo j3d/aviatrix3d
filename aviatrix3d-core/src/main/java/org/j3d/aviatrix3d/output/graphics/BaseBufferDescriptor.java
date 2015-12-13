@@ -13,9 +13,9 @@
 package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
-import javax.media.opengl.GL;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLException;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GLContext;
+import com.jogamp.opengl.GLException;
 
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;

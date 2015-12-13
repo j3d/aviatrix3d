@@ -13,7 +13,7 @@
 package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.BufferSetupData;

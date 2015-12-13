@@ -276,9 +276,9 @@ class DebugPickingHandler
 
         if(dumpNow)
         {
-            System.out.println("Pick mask check root has 0x" +
-                                   root.checkPickMask(req.pickType) + " request has 0x" +
-                                   req.pickType);
+            System.out.println("Pick mask check root result " +
+                               root.checkPickMask(req.pickType) + " request has 0x" +
+                               req.pickType);
         }
 
         if(root == null || !root.checkPickMask(req.pickType))
@@ -451,6 +451,11 @@ class DebugPickingHandler
 
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -601,6 +606,11 @@ class DebugPickingHandler
 
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -780,6 +790,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -935,6 +950,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -1122,6 +1142,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -1276,6 +1301,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -1465,6 +1495,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -1660,6 +1695,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -1888,6 +1928,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -2043,6 +2088,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -2231,6 +2281,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -2388,6 +2443,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -2612,6 +2672,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -2749,6 +2814,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -2917,6 +2987,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -3071,6 +3146,11 @@ class DebugPickingHandler
     {
         if(!root.checkPickMask(req.pickType))
         {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return;
         }
 
@@ -3228,7 +3308,14 @@ class DebugPickingHandler
 
 
         if(!node.checkPickMask(request.pickType))
+        {
+            if(dumpNow)
+            {
+                System.out.println("Failed Pick mask check");
+            }
+
             return false;
+        }
 
         // Since we need the transform from the root to here, build it now.
         buildVWorldTransform();

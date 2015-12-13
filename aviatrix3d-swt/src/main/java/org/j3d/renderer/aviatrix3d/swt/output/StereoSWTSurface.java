@@ -13,7 +13,7 @@
 package org.j3d.renderer.aviatrix3d.swt.output;
 
 // External imports
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 import java.text.Format;
 import java.text.MessageFormat;
@@ -405,7 +405,7 @@ public class StereoSWTSurface extends BaseSWTSurface
         if(sharedSurface != null)
             shared_context = sharedSurface.getGLContext();
 
-        swtCanvas = new GLCanvas(parentWidget, swtStyle, requestedCapabilities, requestedChooser, shared_context);
+        swtCanvas = new GLCanvas(parentWidget, swtStyle, requestedCapabilities, requestedChooser);
         swtCanvas.addControlListener(resizer);
 
         canvas = swtCanvas.getDelegatedDrawable();

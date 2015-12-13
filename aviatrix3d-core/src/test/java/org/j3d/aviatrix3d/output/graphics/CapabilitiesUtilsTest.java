@@ -14,10 +14,9 @@
 
 package org.j3d.aviatrix3d.output.graphics;
 
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLProfile;
 import org.testng.annotations.Test;
-
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLProfile;
 
 import static org.testng.Assert.*;
 import static org.testng.Assert.assertEquals;
@@ -35,7 +34,7 @@ public class CapabilitiesUtilsTest
     @Test(groups = "unit")
     public void testToJOGLConversion() throws Exception
     {
-        GLProfile testProfile = GLProfile.getMinimum(true);
+        GLProfile testProfile = GLProfile.getDefault();
 
         GraphicsRenderingCapabilities testCapabilities = new GraphicsRenderingCapabilities();
         testCapabilities.doubleBuffered = false;

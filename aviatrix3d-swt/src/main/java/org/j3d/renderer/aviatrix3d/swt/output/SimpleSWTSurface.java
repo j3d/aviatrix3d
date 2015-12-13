@@ -13,10 +13,10 @@
 package org.j3d.renderer.aviatrix3d.swt.output;
 
 // External imports
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLCapabilitiesChooser;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLProfile;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLCapabilitiesChooser;
+import com.jogamp.opengl.GLContext;
+import com.jogamp.opengl.GLProfile;
 
 import com.jogamp.opengl.swt.GLCanvas;
 import org.eclipse.swt.widgets.Composite;
@@ -251,7 +251,7 @@ public class SimpleSWTSurface extends BaseSWTSurface
         GLCapabilities jogl_caps = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
         GLCapabilitiesChooser jogl_chooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
 
-        swtCanvas = new GLCanvas(parent, style, jogl_caps, jogl_chooser, shared_context);
+        swtCanvas = new GLCanvas(parent, style, jogl_caps, jogl_chooser);
         swtCanvas.addControlListener(resizer);
 
         canvas = swtCanvas.getDelegatedDrawable();
