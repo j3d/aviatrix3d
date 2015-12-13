@@ -47,6 +47,7 @@
 
     <properties>
         <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
+        <maven.source.plugin.version>2.2.1</maven.source.plugin.version>
         <maven.javadoc.plugin.version>2.9.1</maven.javadoc.plugin.version>
         <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
         <javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
@@ -116,9 +117,27 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven.source.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven.javadoc.plugin.version}</version>
                 <configuration>
+                    <!-- Following two do the same, dependent on Java8 or Java 7 and below -->
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <failOnError>false</failOnError>
+
+                    <encoding>UTF-8</encoding>
                     <docfilessubdirs>true</docfilessubdirs>
                     <windowtitle>Aviatrix3d Library ${project.version}</windowtitle>
                     <doctitle>Aviatrix3D API ${project.version}</doctitle>
@@ -159,6 +178,13 @@
                             <sourcepath>${project.build.sourceDirectory}/../generated</sourcepath>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -187,17 +213,33 @@
                     <check/>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.5</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.2</version>
+            </plugin>
         </plugins>
     </build>
 
     <distributionManagement>
         <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
+            <id>ossrh</id>
             <name>Sonatype Nexus snapshot repository</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
-            <id>sonatype-nexus-staging</id>
+            <id>ossrh</id>
             <name>Sonatype Nexus release repository</name>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
@@ -263,7 +305,7 @@
 
     <profiles>
         <profile>
-            <id>release-sign-artifacts</id>
+            <id>ossrh</id>
             <activation>
                 <property>
                     <name>performRelease</name>
@@ -275,6 +317,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>

@@ -13,24 +13,29 @@
 package org.j3d.aviatrix3d.management;
 
 // External imports
+
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Locale;
 
-import org.j3d.maths.vector.*;
-import org.j3d.util.I18nManager;
-
-// Local imports
-import org.j3d.aviatrix3d.*;
-import org.j3d.aviatrix3d.picking.*;
-
-import org.j3d.aviatrix3d.rendering.BoundingVolume;
-
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
+import org.j3d.maths.vector.Vector4d;
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
+import org.j3d.util.I18nManager;
 import org.j3d.util.MatrixUtils;
+
+import org.j3d.aviatrix3d.BoundingGeometry;
+import org.j3d.aviatrix3d.Node;
+import org.j3d.aviatrix3d.SceneGraphPath;
+import org.j3d.aviatrix3d.picking.*;
+import org.j3d.aviatrix3d.rendering.BoundingVolume;
+
+// Local imports
 
 /**
  * The default internal implementation of the pick handling system.
@@ -44,9 +49,9 @@ import org.j3d.util.MatrixUtils;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.15 $
  */
-public class DebugPickingHandler
+class DebugPickingHandler
     implements PickingManager
 {
     /** Message when the PickRequest doesn't have one of the required types */
@@ -56,11 +61,6 @@ public class DebugPickingHandler
     /** Message when the PickRequest doesn't have one of the required types */
     private static final String NO_SORT_TYPE_PROP =
         "org.j3d.aviatrix3d.management.DebugPickingHandler.unknownSortTypeMsg";
-
-    /** Message when the proxy geometry is not a known picking type */
-    private static final String UNKNOWN_PROXY_TYPE_PROP =
-        "org.j3d.aviatrix3d.management.DebugPickingHandler.unknownProxyTypeMsg";
-
 
     /** The initial size of the children list */
     private static final int LIST_START_SIZE = 32;
@@ -83,14 +83,14 @@ public class DebugPickingHandler
     /** Last index of valid items on the path */
     private int lastPathIndex;
 
+    /** Distance for the closest object found to date */
+    private float scalar;
+
     /** The working vector for start location or direction */
     private float[] start;
 
     /** The working vector for finish location or direction */
     private float[] end;
-
-    /** Place to fetch the intersection point data for the line picking */
-    private float[] vertexPickData;
 
     /** The matrix to set everything in and then invert it. */
     private Matrix4d vworldMatrix;
@@ -135,7 +135,6 @@ public class DebugPickingHandler
         start[3] = 1;
         end[3] = 1;
 
-        vertexPickData = new float[3];
         pickPath = new PickTarget[LIST_START_SIZE];
         transformPath = new Matrix4d[LIST_START_SIZE];
         validTransform = new boolean[LIST_START_SIZE];
@@ -173,6 +172,7 @@ public class DebugPickingHandler
      *
      * @param reporter The instance to use or null
      */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         if(reporter == null)
@@ -180,7 +180,10 @@ public class DebugPickingHandler
         else
             errorReporter = reporter;
 
-        batchPicker.setErrorReporter(errorReporter);
+        if(batchPicker != null)
+        {
+            batchPicker.setErrorReporter(errorReporter);
+        }
     }
 
     /**
@@ -193,6 +196,7 @@ public class DebugPickingHandler
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public synchronized void pickBatch(PickTarget root,
                                        PickRequest[] req,
                                        int numRequests)
@@ -210,8 +214,9 @@ public class DebugPickingHandler
         // Weed out the common cases first.
         if(numRequests == 0 || root == null || req == null || req.length == 0)
         {
-            if(dumpNow)
+            if (dumpNow)
                 System.out.println("No data to pick against. Exiting");
+
             return;
         }
 
@@ -219,7 +224,8 @@ public class DebugPickingHandler
         {
             if(dumpNow)
                 System.out.println("Pick single implied");
-            pickSingleDebugChecked(root, req[0]);
+
+            pickSingle(root, req[0]);
         }
         else
         {
@@ -227,7 +233,10 @@ public class DebugPickingHandler
                 System.out.println("Beginning batch picking");
 
             if(batchPicker == null)
+            {
                 batchPicker = new DefaultBatchPickingHandler();
+                batchPicker.setErrorReporter(errorReporter);
+            }
 
             batchPicker.processPick(root, req, numRequests);
         }
@@ -245,6 +254,7 @@ public class DebugPickingHandler
      * @throws NotPickableException This object has been marked as non pickable,
      *   but you decided to try to call the method anyway
      */
+    @Override
     public synchronized void pickSingle(PickTarget root, PickRequest req)
         throws NotPickableException
     {
@@ -254,55 +264,65 @@ public class DebugPickingHandler
             dumpNow = true;
         }
 
-        pickSingleDebugChecked(root, req);
-    }
-
-    //---------------------------------------------------------------
-    // Local Methods
-    //---------------------------------------------------------------
-
-    /**
-     * Set the debug frame counter to the new number. This number of calls to
-     * the picking manager will be printed out.
-     *
-     * @param count number of calls to process
-     */
-    public void traceNextFrames(int count)
-    {
-        dumpNextFrameCount = count;
-    }
-
-    /**
-     * Check for all intersections against this geometry and it's children to
-     * see if there is an intersection with the given set of requests.
-     *
-     * @param root The root point to start the pick processing from
-     * @param req The details of the pick to be made
-     * @throws NotPickableException This object has been marked as non pickable,
-     *   but you decided to try to call the method anyway
-     */
-    private void pickSingleDebugChecked(PickTarget root, PickRequest req)
-        throws NotPickableException
-    {
-        if(dumpNow)
-            System.out.println("Starting pickSingle");
-
-        if(root == null || req == null)
+        if(req == null)
         {
             if(dumpNow)
-                System.out.println("No root data found");
+                System.out.println("No request data found");
+
             return;
         }
 
-        if(dumpNow)
-            System.out.println("Pick mask check root has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
+        req.pickCount = 0;
 
-        if(!root.checkPickMask(req.pickType))
+        if(dumpNow)
         {
-            req.pickCount = 0;
+            System.out.println("Pick mask check root has 0x" +
+                                   root.checkPickMask(req.pickType) + " request has 0x" +
+                                   req.pickType);
+        }
+
+        if(root == null || !root.checkPickMask(req.pickType))
+        {
+            if(dumpNow)
+                System.out.println("No root data found");
+
             return;
+        }
+
+        switch(req.pickSortType)
+        {
+            case PickRequest.SORT_ALL:
+            case PickRequest.SORT_ORDERED:
+                if(!(req.foundPaths instanceof Collection))
+                {
+                    req.foundPaths = new ArrayList<SceneGraphPath>();
+                }
+
+                break;
+
+            case PickRequest.SORT_ANY:
+            case PickRequest.SORT_CLOSEST:
+                if(!(req.foundPaths instanceof SceneGraphPath))
+                {
+                    req.foundPaths = new SceneGraphPath();
+                }
+                break;
+
+            default:
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
+
+                Locale lcl = intl_mgr.getFoundLocale();
+
+                NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
+
+                Object[] msg_args = { req.pickSortType };
+                Format[] fmts = { n_fmt };
+                MessageFormat msg_fmt = new MessageFormat(msg_pattern, lcl);
+                msg_fmt.setFormats(fmts);
+                String msg = msg_fmt.format(msg_args);
+                errorReporter.warningReport(msg, null);
+                return;
         }
 
         switch(req.pickGeometryType)
@@ -342,19 +362,19 @@ public class DebugPickingHandler
                 break;
 
             default:
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(NO_PICK_TYPE_PROP);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(NO_PICK_TYPE_PROP);
 
-				Locale lcl = intl_mgr.getFoundLocale();
+                Locale lcl = intl_mgr.getFoundLocale();
 
-				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
+                NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-				Object[] msg_args = { new Integer(req.pickGeometryType) };
-				Format[] fmts = { n_fmt };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				msg_fmt.setFormats(fmts);
-				String msg = msg_fmt.format(msg_args);
+                Object[] msg_args = { req.pickGeometryType };
+                Format[] fmts = { n_fmt };
+                MessageFormat msg_fmt =
+                    new MessageFormat(msg_pattern, lcl);
+                msg_fmt.setFormats(fmts);
+                String msg = msg_fmt.format(msg_args);
                 errorReporter.warningReport(msg, null);
         }
 
@@ -371,6 +391,17 @@ public class DebugPickingHandler
     // Misc Internal methods
     //---------------------------------------------------------------
 
+    /**
+     * Set the debug frame counter to the new number. This number of calls to
+     * the picking manager will be printed out.
+     *
+     * @param count number of calls to process
+     */
+    public void traceNextFrames(int count)
+    {
+        dumpNextFrameCount = count;
+    }
+
     // ----------------------- Point Picking ------------------------------
 
     /**
@@ -386,6 +417,11 @@ public class DebugPickingHandler
         if(dumpNow)
             System.out.println("Point picking selected");
 
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
@@ -397,22 +433,6 @@ public class DebugPickingHandler
             case PickRequest.SORT_CLOSEST:
                 pickSinglePoint(root, req);
                 break;
-
-            default:
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
-
-				Locale lcl = intl_mgr.getFoundLocale();
-
-				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
-
-				Object[] msg_args = { new Integer(req.pickSortType) };
-				Format[] fmts = { n_fmt };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				msg_fmt.setFormats(fmts);
-				String msg = msg_fmt.format(msg_args);
-                errorReporter.warningReport(msg, null);
         }
     }
 
@@ -429,56 +449,68 @@ public class DebugPickingHandler
         if(dumpNow)
             System.out.println("pickSinglePoint begin");
 
-        SceneGraphPath output_path = null;
-
-        if(req.foundPaths instanceof SceneGraphPath)
-            output_path = (SceneGraphPath)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_path = new SceneGraphPath();
-            req.foundPaths = output_path;
+            return;
         }
-
-        boolean found = false;
-
-        PickTarget target_node = root;
 
         BoundingVolume bounds = root.getPickableBounds();
 
-        if(bounds == null ||
-           !bounds.checkIntersectionPoint(req.origin))
+        if(bounds == null || !bounds.checkIntersectionPoint(start))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " point " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2]);
+                                   " point " + start[0] + " " + start[1] + " " + start[2]);
+            }
 
-            req.pickCount = 0;
             return;
         }
+
+        PickTarget target_node = root;
 
         if(bounds instanceof BoundingGeometry)
         {
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        // Store locally to avoid GC cost of creating new arrays.
+        float x = start[0];
+        float y = start[1];
+        float z = start[2];
+        float w = start[3];
 
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
+
+        boolean found = false;
         switch(target_node.getPickTargetType())
         {
             case PickTarget.GROUP_PICK_TYPE:
@@ -487,628 +519,71 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(target_node instanceof TransformPickTarget)
-                    {
-                        TransformPickTarget tg = (TransformPickTarget)target_node;
-                        tg.getTransform(transformPath[0]);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids && !found; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSinglePoint((GroupPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSinglePoint((SinglePickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSinglePoint((LeafPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSinglePoint((CustomPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-
-                                break;
-                        }
+                        pickSinglePoint(kids[i], req);
+                        found = req.pickCount != 0;
                     }
                 }
                 break;
 
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSinglePoint((LeafPickTarget)target_node,
-                                        req,
-                                        start,
-                                        output_path,
-                                        req.generateVWorldMatrix);
+                updatePathAfterSuccess((LeafPickTarget)root, req);
                 break;
 
             case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-                found = pickSinglePoint((SinglePickTarget)target_node,
-                                        req,
-                                        start,
-                                        output_path,
-                                        req.generateVWorldMatrix);
+                if(target_node != null)
+                {
+                    pickSinglePoint(target_node, req);
+                }
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
                 if(pickCustom((CustomPickTarget)target_node, req))
                 {
-                    num_kids = pickInstructions.numChildren;
-
-                    // reset the transform at the top of the stack
+                    // reset the transform at the top of the stack based on our local
                     if(pickInstructions.hasTransform)
                     {
-                        transformPath[0].set(pickInstructions.localTransform);
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
-                        matrixUtils.inverse(transformPath[0], invertedMatrix);
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
                     }
-                    else
-                        transformPath[0].setIdentity();
 
-                    validTransform[0] = true;
-                    pickPath[0] = target_node;
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
 
-                    // Make sure to clone the array locally
-                    PickTarget[] kids =
-                        (PickTarget[])pickInstructions.children.clone();
-
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids && !found; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSinglePoint((GroupPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSinglePoint((SinglePickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSinglePoint((LeafPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSinglePoint((CustomPickTarget)kids[i],
-                                                        req,
-                                                        start,
-                                                        output_path,
-                                                        req.generateVWorldMatrix);
-                                break;
-                        }
+                        pickSinglePoint(kids[i], req);
+                        found = req.pickCount != 0;
                     }
                 }
                 break;
         }
 
-        req.pickCount = found ? 1 : 0;
-    }
-
-    /**
-     * Recurse a single-child node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param loc The location of the point to pick with in local coords
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSinglePoint(SinglePickTarget root,
-                                    PickRequest req,
-                                    float[] loc,
-                                    SceneGraphPath path,
-                                    boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single point -> single) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return false;
-
-        boolean found = false;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickSinglePoint((GroupPickTarget)child,
-                                        req,
-                                        loc,
-                                        path,
-                                        needTransform);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickSinglePoint((SinglePickTarget)child,
-                                        req,
-                                        loc,
-                                        path,
-                                        needTransform);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickSinglePoint((LeafPickTarget)child,
-                                        req,
-                                        loc,
-                                        path,
-                                        needTransform);
-                break;
-
-            case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickSinglePoint((CustomPickTarget)child,
-                                        req,
-                                        loc,
-                                        path,
-                                        needTransform);
-        }
-
+        // restore everything on the stack
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = x;
+        start[1] = y;
+        start[2] = z;
+        start[3] = w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param req flags to compare against for picking
-     */
-    private boolean pickSinglePoint(GroupPickTarget root,
-                                    PickRequest req,
-                                    float[] loc,
-                                    SceneGraphPath path,
-                                    boolean needTransform)
-    {
         if(dumpNow)
-            System.out.println("Pick mask check (single point -> group) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionPoint(loc))
-        {
-            if(dumpNow)
-                System.out.println("failed bounds check bounds " + bounds +
-                    " point " + loc[0] + " " + loc[1] + " " + loc[2]);
-
-            return false;
-        }
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSinglePoint((GroupPickTarget)target_node,
-                    req,
-                    loc,
-                    path,
-                    needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSinglePoint((SinglePickTarget)target_node,
-                    req,
-                    loc,
-                    path,
-                    needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSinglePoint((LeafPickTarget)target_node,
-                    req,
-                    loc,
-                    path,
-                    needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSinglePoint((CustomPickTarget)target_node,
-                    req,
-                    loc,
-                    path,
-                    needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float old_x = loc[0];
-            float old_y = loc[1];
-            float old_z = loc[2];
-
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, loc);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSinglePoint((GroupPickTarget)kids[i],
-                                                req,
-                                                loc,
-                                                path,
-                                                needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSinglePoint((SinglePickTarget)kids[i],
-                                                req,
-                                                loc,
-                                                path,
-                                                needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSinglePoint((LeafPickTarget)kids[i],
-                                                req,
-                                                loc,
-                                                path,
-                                                needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSinglePoint((CustomPickTarget)kids[i],
-                                                req,
-                                                loc,
-                                                path,
-                                                needTransform);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            loc[0] = old_x;
-            loc[1] = old_y;
-            loc[2] = old_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point from a
-     * custom pickable.
-     *
-     * @param req flags to compare against for picking
-     */
-    private boolean pickSinglePoint(CustomPickTarget root,
-                                    PickRequest req,
-                                    float[] loc,
-                                    SceneGraphPath path,
-                                    boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single point -> custom) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionPoint(loc))
-        {
-            if(dumpNow)
-                System.out.println("failed bounds check bounds " + bounds +
-                    " point " + loc[0] + " " + loc[1] + " " + loc[2]);
-
-            return false;
-        }
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSinglePoint((GroupPickTarget)target_node,
-                                       req,
-                                       loc,
-                                       path,
-                                       needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSinglePoint((SinglePickTarget)target_node,
-                                       req,
-                                       loc,
-                                       path,
-                                       needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSinglePoint((LeafPickTarget)target_node,
-                                       req,
-                                       loc,
-                                       path,
-                                       needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSinglePoint((CustomPickTarget)target_node,
-                                       req,
-                                       loc,
-                                       path,
-                                       needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float old_x = loc[0];
-            float old_y = loc[1];
-            float old_z = loc[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(transformPath[lastPathIndex], invertedMatrix);
-                transform(invertedMatrix, start);
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-
-            // Make sure to clone the array locally
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            // now that the setup is done, walk down the tree.
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSinglePoint((GroupPickTarget)kids[i],
-                                                req,
-                                                start,
-                                                path,
-                                                req.generateVWorldMatrix);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSinglePoint((SinglePickTarget)kids[i],
-                                                req,
-                                                start,
-                                                path,
-                                                req.generateVWorldMatrix);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSinglePoint((LeafPickTarget)kids[i],
-                                                req,
-                                                start,
-                                                path,
-                                                req.generateVWorldMatrix);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSinglePoint((CustomPickTarget)kids[i],
-                                                req,
-                                                start,
-                                                path,
-                                                req.generateVWorldMatrix);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            loc[0] = old_x;
-            loc[1] = old_y;
-            loc[2] = old_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param req flags to compare against for picking
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     */
-    private boolean pickSinglePoint(LeafPickTarget leaf,
-                                    PickRequest req,
-                                    float[] loc,
-                                    SceneGraphPath path,
-                                    boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single point -> leaf) has 0x" +
-                                leaf.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(leaf.checkPickMask(req.pickType))
-            return false;
-
-        boolean found = false;
-        BoundingVolume bounds = leaf.getPickableBounds();
-
-        if(bounds.checkIntersectionPoint(loc))
-        {
-            resizePath();
-            pickPath[lastPathIndex] = leaf;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            if(needTransform)
-                buildVWorldTransform();
-            else
-                vworldMatrix.setIdentity();
-
-            path.updatePath(pickPath,
-                            lastPathIndex,
-                            vworldMatrix,
-                            invertedMatrix);
-
-            found = true;
-            lastPathIndex--;
-        }
-        else
-        {
-            if(dumpNow)
-                System.out.println("failed bounds check bounds " + bounds +
-                    " point " + loc[0] + " " + loc[1] + " " + loc[2]);
-        }
-
-        return found;
+            System.out.println("pickSinglePoint end");
     }
 
     /**
@@ -1124,55 +599,65 @@ public class DebugPickingHandler
         if(dumpNow)
             System.out.println("pickAllPoint begin");
 
-        int found = 0;
-        ArrayList<SceneGraphPath> output_list = null;
-
-        if(req.foundPaths instanceof ArrayList)
+        if(!root.checkPickMask(req.pickType))
         {
-            output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
-            output_list.clear();
+            return;
         }
-        else
+
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionPoint(start))
         {
-            output_list = new ArrayList<SceneGraphPath>();
-            req.foundPaths = output_list;
+            if(dumpNow)
+            {
+                System.out.println("failed bounds check bounds " + bounds +
+                                       " point " + start[0] + " " + start[1] + " " + start[2]);
+            }
+
+            return;
         }
 
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
-
-        if(bounds == null || !bounds.checkIntersectionPoint(req.origin))
-        {
-            if(dumpNow)
-                System.out.println("failed bounds check bounds " + bounds +
-                    " point " + req.origin[0] + " " + req.origin[1] +
-                    " " + req.origin[2]);
-
-            req.pickCount = 0;
-            return;
-        }
 
         if(bounds instanceof BoundingGeometry)
         {
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float x = start[0];
+        float y = start[1];
+        float z = start[2];
+        float w = start[3];
+
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
 
         switch(target_node.getPickTargetType())
         {
@@ -1182,582 +667,69 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found += pickAllPoint((GroupPickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      output_list,
-                                                      found,
-                                                      req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found += pickAllPoint((SinglePickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      output_list,
-                                                      found,
-                                                      req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found += pickAllPoint((LeafPickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      output_list,
-                                                      found,
-                                                      req.generateVWorldMatrix);
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found += pickAllPoint((CustomPickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      output_list,
-                                                      found,
-                                                      req.generateVWorldMatrix);
-
-                                break;
-                        }
+                        pickAllPoint(kids[i], req);
                     }
-
-                    req.pickCount = found;
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllPoint((SinglePickTarget)target_node,
-                    req,
-                    start,
-                    output_list,
-                    0,
-                    req.generateVWorldMatrix);
-
-                req.pickCount = found;
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = (LeafPickTarget)target_node;
-                lastPathIndex = 1;
-
-                found += pickAllPoint((LeafPickTarget)target_node,
-                                      req,
-                                      start,
-                                      output_list,
-                                      0,
-                                      req.generateVWorldMatrix);
-
-                req.pickCount = found;
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
-        }
-    }
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param req flags to compare against for picking
-     */
-    private int pickAllPoint(GroupPickTarget root,
-                             PickRequest req,
-                             float[] loc,
-                             ArrayList<SceneGraphPath> paths,
-                             int currentPath,
-                             boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all point -> group) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionPoint(loc))
-        {
-            if(dumpNow)
-                System.out.println("failed bounds check bounds " + bounds +
-                    " point " + loc[0] + " " + loc[1] + " " + loc[2]);
-
-            return 0;
-        }
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllPoint((GroupPickTarget)target_node,
-                                    req,
-                                    loc,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllPoint((SinglePickTarget)target_node,
-                                    req,
-                                    loc,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllPoint((LeafPickTarget)target_node,
-                                    req,
-                                    loc,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllPoint((CustomPickTarget)target_node,
-                                    req,
-                                    loc,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float old_x = loc[0];
-            float old_y = loc[1];
-            float old_z = loc[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, loc);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(target_node != null)
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllPoint((GroupPickTarget)kids[i],
-                                              req,
-                                              loc,
-                                              paths,
-                                              currentPath + found,
-                                              needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllPoint((SinglePickTarget)kids[i],
-                                              req,
-                                              loc,
-                                              paths,
-                                              currentPath + found,
-                                              needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllPoint((LeafPickTarget)kids[i],
-                                              req,
-                                              loc,
-                                              paths,
-                                              currentPath + found,
-                                              needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllPoint((CustomPickTarget)kids[i],
-                                              req,
-                                              loc,
-                                              paths,
-                                              currentPath + found,
-                                              needTransform);
-                        break;
+                    pickAllPoint(target_node, req);
                 }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            loc[0] = old_x;
-            loc[1] = old_y;
-            loc[2] = old_z;
-        }
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param loc The location of the point to pick with in local coords
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllPoint(SinglePickTarget root,
-                             PickRequest req,
-                             float[] loc,
-                             ArrayList<SceneGraphPath> paths,
-                             int currentPath,
-                             boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (a point -> single) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return 0;
-
-        int found = 0;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickAllPoint((GroupPickTarget)child,
-                                     req,
-                                     loc,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickAllPoint((SinglePickTarget)child,
-                                     req,
-                                     loc,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickAllPoint((LeafPickTarget)child,
-                                     req,
-                                     loc,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickAllPoint((CustomPickTarget)child,
-                                     req,
-                                     loc,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
+
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickAllPoint(kids[i], req);
+                    }
+                }
                 break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = x;
+        start[1] = y;
+        start[2] = z;
+        start[3] = w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param req flags to compare against for picking
-     */
-    private int pickAllPoint(CustomPickTarget root,
-                             PickRequest req,
-                             float[] loc,
-                             ArrayList<SceneGraphPath> paths,
-                             int currentPath,
-                             boolean needTransform)
-    {
         if(dumpNow)
-            System.out.println("Pick mask check (all point -> custom) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
+            System.out.println("pickAllPoint end");
 
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionPoint(loc))
-        {
-            if(dumpNow)
-                System.out.println("failed bounds check bounds " + bounds +
-                    " point " + loc[0] + " " + loc[1] + " " + loc[2]);
-
-            return 0;
-        }
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllPoint((GroupPickTarget)target_node,
-                                    req,
-                                    loc,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllPoint((SinglePickTarget)target_node,
-                                    req,
-                                    loc,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllPoint((LeafPickTarget)target_node,
-                                    req,
-                                    loc,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllPoint((CustomPickTarget)target_node,
-                                    req,
-                                    loc,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-            float old_x = loc[0];
-            float old_y = loc[1];
-            float old_z = loc[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, loc);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllPoint((GroupPickTarget)kids[i],
-                                              req,
-                                              loc,
-                                              paths,
-                                              currentPath + found,
-                                              needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllPoint((SinglePickTarget)kids[i],
-                                              req,
-                                              loc,
-                                              paths,
-                                              currentPath + found,
-                                              needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllPoint((LeafPickTarget)kids[i],
-                                              req,
-                                              loc,
-                                              paths,
-                                              currentPath + found,
-                                              needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllPoint((CustomPickTarget)kids[i],
-                                              req,
-                                              loc,
-                                              paths,
-                                              currentPath + found,
-                                              needTransform);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            loc[0] = old_x;
-            loc[1] = old_y;
-            loc[2] = old_z;
-        }
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param req flags to compare against for picking
-     * @param paths A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     */
-    private int pickAllPoint(LeafPickTarget geom,
-                             PickRequest req,
-                             float[] loc,
-                             ArrayList<SceneGraphPath> paths,
-                             int currentPath,
-                             boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all point -> leaf) has 0x" +
-                                geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return 0;
-
-        int found = 0;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionPoint(loc))
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            SceneGraphPath p;
-
-            if(currentPath >= paths.size())
-            {
-                p = new SceneGraphPath();
-                paths.add(p);
-            }
-            else
-                p = (SceneGraphPath)paths.get(currentPath);
-
-            if(needTransform)
-                buildVWorldTransform();
-            else
-                vworldMatrix.setIdentity();
-
-
-            p.updatePath(pickPath,
-                         lastPathIndex,
-                         vworldMatrix,
-                         invertedMatrix);
-
-            found = 1;
-            lastPathIndex--;
-        }
-
-        return found;
     }
 
     // ----------------------- Line Picking ------------------------------
@@ -1772,42 +744,27 @@ public class DebugPickingHandler
      */
     private void pickLineSegment(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("Line picking selected");
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        end[0] = req.destination[0];
+        end[1] = req.destination[1];
+        end[2] = req.destination[2];
+        end[3] = 1;
 
         switch(req.pickSortType)
         {
             case PickRequest.SORT_ALL:
+            case PickRequest.SORT_ORDERED:
                 pickAllLineSegment(root, req);
                 break;
 
-            case PickRequest.SORT_ORDERED:
-                pickAllLineSegmentSorted(root, req);
-                break;
-
             case PickRequest.SORT_ANY:
+            case PickRequest.SORT_CLOSEST:
                 pickSingleLineSegment(root, req);
                 break;
-
-            case PickRequest.SORT_CLOSEST:
-                pickSingleLineSegmentSorted(root, req);
-                break;
-
-            default:
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
-
-				Locale lcl = intl_mgr.getFoundLocale();
-
-				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
-
-				Object[] msg_args = { new Integer(req.pickSortType) };
-				Format[] fmts = { n_fmt };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				msg_fmt.setFormats(fmts);
-				String msg = msg_fmt.format(msg_args);
-                errorReporter.warningReport(msg, null);
         }
     }
 
@@ -1821,34 +778,24 @@ public class DebugPickingHandler
      */
     private void pickSingleLineSegment(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickSingleLineSegment begin");
-
-        SceneGraphPath output_path = null;
-
-        if(req.foundPaths instanceof SceneGraphPath)
-            output_path = (SceneGraphPath)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_path = new SceneGraphPath();
-            req.foundPaths = output_path;
+            return;
         }
 
-        boolean found = false;
-
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
 
-        if(bounds == null ||
-           !bounds.checkIntersectionSegment(req.origin, req.destination))
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionSegment(start, end))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " p2 " + req.destination[0] + " " +
-                    + req.destination[1] + " " + + req.destination[2]);
+                                   " line from " + start[0] + " " + start[1] + " " + start[2] +
+                                   " to " + end[0] + " " + end[1] + " " + end[2]);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -1857,28 +804,49 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
+
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transform(invertedMatrix, end);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
+
+        boolean found = false;
         switch(target_node.getPickTargetType())
         {
             case PickTarget.GROUP_PICK_TYPE:
@@ -1887,679 +855,72 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        transform(invertedMatrix, end);
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids && !found; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSingleLineSegment((GroupPickTarget)kids[i],
-                                                              req,
-                                                              start,
-                                                              end,
-                                                              output_path,
-                                                              req.generateVWorldMatrix,
-                                                              req.useGeometry);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSingleLineSegment((SinglePickTarget)kids[i],
-                                                              req,
-                                                              start,
-                                                              end,
-                                                              output_path,
-                                                              req.generateVWorldMatrix,
-                                                              req.useGeometry);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSingleLineSegment((LeafPickTarget)kids[i],
-                                                              req,
-                                                              start,
-                                                              end,
-                                                              output_path,
-                                                              req.generateVWorldMatrix,
-                                                              req.useGeometry,
-                                                              false);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSingleLineSegment((CustomPickTarget)kids[i],
-                                                              req,
-                                                              start,
-                                                              end,
-                                                              output_path,
-                                                              req.generateVWorldMatrix,
-                                                              req.useGeometry);
-                                break;
-                        }
+                        pickSingleLineSegment(kids[i], req);
+                        found = req.pickCount != 0;
                     }
                 }
-
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleLineSegment((SinglePickTarget)target_node,
-                                              req,
-                                              start,
-                                              end,
-                                              output_path,
-                                              req.generateVWorldMatrix,
-                                              req.useGeometry);
                 break;
 
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleLineSegment((LeafPickTarget)target_node,
-                                              req,
-                                              start,
-                                              end,
-                                              output_path,
-                                              req.generateVWorldMatrix,
-                                              req.useGeometry,
-                                              false);
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
-        }
 
-        req.pickCount = found ? 1 : 0;
-    }
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-    /**
-     * Recurse the tree looking for intersections with a single line segment.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleLineSegment(GroupPickTarget root,
-                                          PickRequest req,
-                                          float[] p1,
-                                          float[] p2,
-                                          SceneGraphPath path,
-                                          boolean needTransform,
-                                          boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single line -> group) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionSegment(p1, p2))
-        {
-            if(dumpNow)
-                System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " p2 " + req.destination[0] + " " +
-                    + req.destination[1] + " " + + req.destination[2]);
-
-            return false;
-        }
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleLineSegment((GroupPickTarget)target_node,
-                                             req,
-                                             p1,
-                                             p2,
-                                             path,
-                                             needTransform,
-                                             useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleLineSegment((SinglePickTarget)target_node,
-                                             req,
-                                             p1,
-                                             p2,
-                                             path,
-                                             needTransform,
-                                             useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleLineSegment((LeafPickTarget)target_node,
-                                             req,
-                                             p1,
-                                             p2,
-                                             path,
-                                             needTransform,
-                                             useGeom,
-                                             false);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleLineSegment((CustomPickTarget)target_node,
-                                             req,
-                                             p1,
-                                             p2,
-                                             path,
-                                             needTransform,
-                                             useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, p1);
-                transform(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(target_node != null)
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleLineSegment((GroupPickTarget)kids[i],
-                                                      req,
-                                                      p1,
-                                                      p2,
-                                                      path,
-                                                      needTransform,
-                                                      useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleLineSegment((SinglePickTarget)kids[i],
-                                                      req,
-                                                      p1,
-                                                      p2,
-                                                      path,
-                                                      needTransform,
-                                                      useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleLineSegment((LeafPickTarget)kids[i],
-                                                      req,
-                                                      p1,
-                                                      p2,
-                                                      path,
-                                                      needTransform,
-                                                      useGeom,
-                                                      false);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleLineSegment((CustomPickTarget)kids[i],
-                                                      req,
-                                                      p1,
-                                                      p2,
-                                                      path,
-                                                      needTransform,
-                                                      useGeom);
-                        break;
+                    pickSingleLineSegment(target_node, req);
                 }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleLineSegment(SinglePickTarget root,
-                                          PickRequest req,
-                                          float[] p1,
-                                          float[] p2,
-                                          SceneGraphPath path,
-                                          boolean needTransform,
-                                          boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single line -> single) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return false;
-
-        boolean found = false;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickSingleLineSegment((GroupPickTarget)child,
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickSingleLineSegment((SinglePickTarget)child,
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickSingleLineSegment((LeafPickTarget)child,
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom,
-                                              false);
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickSingleLineSegment((CustomPickTarget)child,
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom);
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
+
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids && !found; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickSingleLineSegment(kids[i], req);
+                        found = req.pickCount != 0;
+                    }
+                }
                 break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single line segment.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleLineSegment(CustomPickTarget root,
-                                          PickRequest req,
-                                          float[] p1,
-                                          float[] p2,
-                                          SceneGraphPath path,
-                                          boolean needTransform,
-                                          boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single line -> custom) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionSegment(p1, p2))
-            return false;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleLineSegment((GroupPickTarget)target_node,
-                                             req,
-                                             p1,
-                                             p2,
-                                             path,
-                                             needTransform,
-                                             useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleLineSegment((SinglePickTarget)target_node,
-                                             req,
-                                             p1,
-                                             p2,
-                                             path,
-                                             needTransform,
-                                             useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleLineSegment((LeafPickTarget)target_node,
-                                             req,
-                                             p1,
-                                             p2,
-                                             path,
-                                             needTransform,
-                                             useGeom,
-                                             false);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleLineSegment((CustomPickTarget)target_node,
-                                             req,
-                                             p1,
-                                             p2,
-                                             path,
-                                             needTransform,
-                                             useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, p1);
-                transform(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleLineSegment((GroupPickTarget)kids[i],
-                                                      req,
-                                                      p1,
-                                                      p2,
-                                                      path,
-                                                      needTransform,
-                                                      useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleLineSegment((SinglePickTarget)kids[i],
-                                                      req,
-                                                      p1,
-                                                      p2,
-                                                      path,
-                                                      needTransform,
-                                                      useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleLineSegment((LeafPickTarget)kids[i],
-                                                      req,
-                                                      p1,
-                                                      p2,
-                                                      path,
-                                                      needTransform,
-                                                      useGeom,
-                                                      false);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleLineSegment((CustomPickTarget)kids[i],
-                                                      req,
-                                                      p1,
-                                                      p2,
-                                                      path,
-                                                      needTransform,
-                                                      useGeom);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Look at a specific Shape instance for intersections with a single line
-     * segment.
-     *
-     * @param geom The geom we are picking against
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     * @param needClosest true if every triangle should be searched to find
-     *    the real one that is closest. Only used if useGeom is true
-     */
-    private boolean pickSingleLineSegment(LeafPickTarget geom,
-                                          PickRequest req,
-                                          float[] p1,
-                                          float[] p2,
-                                          SceneGraphPath path,
-                                          boolean needTransform,
-                                          boolean useGeom,
-                                          boolean needClosest)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single line -> leaf) has 0x" +
-                               geom.checkPickMask(req.pickType) + " request has 0x" +
-                               req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return false;
-
-        boolean found = false;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionSegment(p1, p2))
-        {
-            if(useGeom)
-            {
-                if(geom.pickLineSegment(p1, p2, needClosest, vertexPickData, 0))
-                {
-                    resizePath();
-                    pickPath[lastPathIndex] = geom;
-                    validTransform[lastPathIndex] = false;
-                    lastPathIndex++;
-
-                    if(needTransform)
-                        buildVWorldTransform();
-                    else
-                        vworldMatrix.setIdentity();
-
-                    path.updatePath(pickPath,
-                                    lastPathIndex,
-                                    vworldMatrix,
-                                    invertedMatrix);
-
-                    found = true;
-                    lastPathIndex--;
-                }
-            }
-            else
-            {
-                resizePath();
-                pickPath[lastPathIndex] = geom;
-                validTransform[lastPathIndex] = false;
-                lastPathIndex++;
-
-                if(needTransform)
-                    buildVWorldTransform();
-                else
-                    vworldMatrix.setIdentity();
-
-                path.updatePath(pickPath,
-                                lastPathIndex,
-                                vworldMatrix,
-                                invertedMatrix);
-
-                found = true;
-                lastPathIndex--;
-            }
-        }
-
-        return found;
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     /**
@@ -2572,33 +933,24 @@ public class DebugPickingHandler
      */
     private void pickAllLineSegment(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickAllLineSegment begin");
-
-        int found = 0;
-        ArrayList<SceneGraphPath> output_list = null;
-
-        if(req.foundPaths instanceof ArrayList)
-            output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_list = new ArrayList<SceneGraphPath>();
-            req.foundPaths = output_list;
+            return;
         }
 
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
 
-        if(bounds == null ||
-           !bounds.checkIntersectionSegment(req.origin, req.destination))
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionSegment(start, end))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " p2 " + req.destination[0] + " " +
-                    + req.destination[1] + " " + + req.destination[2]);
+                                       " line from " + start[0] + " " + start[1] + " " + start[2] +
+                                       " to " + end[0] + " " + end[1] + " " + end[2]);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -2607,27 +959,46 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
+
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transform(invertedMatrix, end);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
 
         switch(target_node.getPickTargetType())
         {
@@ -2637,1389 +1008,70 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        transform(invertedMatrix, end);
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found += pickAllLineSegment((GroupPickTarget)kids[i],
-                                                            req,
-                                                            start,
-                                                            end,
-                                                            output_list,
-                                                            found,
-                                                            req.generateVWorldMatrix,
-                                                            req.useGeometry);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found += pickAllLineSegment((SinglePickTarget)kids[i],
-                                                            req,
-                                                            start,
-                                                            end,
-                                                            output_list,
-                                                            found,
-                                                            req.generateVWorldMatrix,
-                                                            req.useGeometry);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found += pickAllLineSegment((LeafPickTarget)kids[i],
-                                                            req,
-                                                            start,
-                                                            end,
-                                                            output_list,
-                                                            found,
-                                                            req.generateVWorldMatrix,
-                                                            req.useGeometry,
-                                                            false);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found += pickAllLineSegment((CustomPickTarget)kids[i],
-                                                            req,
-                                                            start,
-                                                            end,
-                                                            output_list,
-                                                            found,
-                                                            req.generateVWorldMatrix,
-                                                            req.useGeometry);
-                                break;
-                        }
+                        pickAllLineSegment(kids[i], req);
                     }
-
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllLineSegment((SinglePickTarget)target_node,
-                                            req,
-                                            start,
-                                            end,
-                                            output_list,
-                                            0,
-                                            req.generateVWorldMatrix,
-                                            req.useGeometry);
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllLineSegment((LeafPickTarget)target_node,
-                                            req,
-                                            start,
-                                            end,
-                                            output_list,
-                                            0,
-                                            req.generateVWorldMatrix,
-                                            req.useGeometry,
-                                            false);
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
-        }
 
-        req.pickCount = found;
-    }
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param paths Array of paths place to set the results in
-     * @param currentPath Active index in the paths array
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private int pickAllLineSegment(GroupPickTarget root,
-                                   PickRequest req,
-                                   float[] p1,
-                                   float[] p2,
-                                   ArrayList<SceneGraphPath> paths,
-                                   int currentPath,
-                                   boolean needTransform,
-                                   boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all line -> group) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionSegment(p1, p2))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllLineSegment((GroupPickTarget)target_node,
-                                          req,
-                                          p1,
-                                          p2,
-                                          paths,
-                                          currentPath,
-                                          needTransform,
-                                          useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllLineSegment((SinglePickTarget)target_node,
-                                          req,
-                                          p1,
-                                          p2,
-                                          paths,
-                                          currentPath,
-                                          needTransform,
-                                          useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllLineSegment((LeafPickTarget)target_node,
-                                          req,
-                                          p1,
-                                          p2,
-                                          paths,
-                                          currentPath,
-                                          needTransform,
-                                          useGeom,
-                                          false);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllLineSegment((CustomPickTarget)target_node,
-                                          req,
-                                          p1,
-                                          p2,
-                                          paths,
-                                          currentPath,
-                                          needTransform,
-                                          useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, p1);
-                transform(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(target_node != null)
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllLineSegment((GroupPickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    paths,
-                                                    currentPath + found,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllLineSegment((SinglePickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    paths,
-                                                    currentPath + found,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllLineSegment((LeafPickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    paths,
-                                                    currentPath + found,
-                                                    needTransform,
-                                                    useGeom,
-                                                    false);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllLineSegment((CustomPickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    paths,
-                                                    currentPath + found,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
+                    pickAllLineSegment(target_node, req);
                 }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param paths Array of paths place to set the results in
-     * @param currentPath Active index in the paths array
-     * @param needTransform true if we should calc vworld information
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private int pickAllLineSegment(SinglePickTarget root,
-                                   PickRequest req,
-                                   float[] p1,
-                                   float[] p2,
-                                   ArrayList<SceneGraphPath> paths,
-                                   int currentPath,
-                                   boolean needTransform,
-                                   boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all line -> single) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return 0;
-
-        int found = 0;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickAllLineSegment((GroupPickTarget)child,
-                                           req,
-                                           p1,
-                                           p2,
-                                           paths,
-                                           currentPath,
-                                           needTransform,
-                                           useGeom);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickAllLineSegment((SinglePickTarget)child,
-                                           req,
-                                           p1,
-                                           p2,
-                                           paths,
-                                           currentPath,
-                                           needTransform,
-                                           useGeom);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickAllLineSegment((LeafPickTarget)child,
-                                           req,
-                                           p1,
-                                           p2,
-                                           paths,
-                                           currentPath,
-                                           needTransform,
-                                           useGeom,
-                                           false);
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickAllLineSegment((CustomPickTarget)child,
-                                           req,
-                                           p1,
-                                           p2,
-                                           paths,
-                                           currentPath,
-                                           needTransform,
-                                           useGeom);
-                break;
-        }
-
-        lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param paths Array of paths place to set the results in
-     * @param currentPath Active index in the paths array
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private int pickAllLineSegment(CustomPickTarget root,
-                                   PickRequest req,
-                                   float[] p1,
-                                   float[] p2,
-                                   ArrayList<SceneGraphPath> paths,
-                                   int currentPath,
-                                   boolean needTransform,
-                                   boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all line -> custom) has 0x" +
-                                root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionSegment(p1, p2))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllLineSegment((GroupPickTarget)target_node,
-                                          req,
-                                          p1,
-                                          p2,
-                                          paths,
-                                          currentPath,
-                                          needTransform,
-                                          useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllLineSegment((SinglePickTarget)target_node,
-                                          req,
-                                          p1,
-                                          p2,
-                                          paths,
-                                          currentPath,
-                                          needTransform,
-                                          useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllLineSegment((LeafPickTarget)target_node,
-                                          req,
-                                          p1,
-                                          p2,
-                                          paths,
-                                          currentPath,
-                                          needTransform,
-                                          useGeom,
-                                          false);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllLineSegment((CustomPickTarget)target_node,
-                                          req,
-                                          p1,
-                                          p2,
-                                          paths,
-                                          currentPath,
-                                          needTransform,
-                                          useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, p1);
-                transform(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(pickCustom((CustomPickTarget)target_node, req))
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllLineSegment((GroupPickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    paths,
-                                                    currentPath + found,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllLineSegment((SinglePickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    paths,
-                                                    currentPath + found,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllLineSegment((LeafPickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    paths,
-                                                    currentPath + found,
-                                                    needTransform,
-                                                    useGeom,
-                                                    false);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllLineSegment((CustomPickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    paths,
-                                                    currentPath + found,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param req flags to compare against for picking
-     * @param paths A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     */
-    private int pickAllLineSegment(LeafPickTarget geom,
-                                   PickRequest req,
-                                   float[] p1,
-                                   float[] p2,
-                                   ArrayList<SceneGraphPath> paths,
-                                   int currentPath,
-                                   boolean needTransform,
-                                   boolean useGeom,
-                                   boolean needClosest)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all line -> leaf) has 0x" +
-                                geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return 0;
-
-        int found = 0;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionSegment(p1, p2))
-        {
-            if(useGeom)
-            {
-                if(geom.pickLineSegment(p1, p2, needClosest, vertexPickData, 0))
-                {
-                    resizePath();
-                    pickPath[lastPathIndex] = geom;
-                    validTransform[lastPathIndex] = false;
-                    lastPathIndex++;
-
-                    SceneGraphPath p;
-
-                    if(currentPath >= paths.size())
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
                     {
-                        p = new SceneGraphPath();
-                        paths.add(p);
-                    }
-                    else
-                        p = (SceneGraphPath)paths.get(currentPath);
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
-                    if(needTransform)
-                        buildVWorldTransform();
-                    else
-                        vworldMatrix.setIdentity();
-
-
-                    p.updatePath(pickPath,
-                                 lastPathIndex,
-                                 vworldMatrix,
-                                 invertedMatrix);
-
-                    found = 1;
-                    lastPathIndex--;
-                }
-            }
-            else
-            {
-                resizePath();
-                pickPath[lastPathIndex] = geom;
-                validTransform[lastPathIndex] = false;
-                lastPathIndex++;
-
-                SceneGraphPath p;
-
-                if(currentPath >= paths.size())
-                {
-                    p = new SceneGraphPath();
-                    paths.add(p);
-                }
-                else
-                    p = (SceneGraphPath)paths.get(currentPath);
-
-                if(needTransform)
-                    buildVWorldTransform();
-                else
-                    vworldMatrix.setIdentity();
-
-
-                p.updatePath(pickPath,
-                             lastPathIndex,
-                             vworldMatrix,
-                             invertedMatrix);
-
-                found = 1;
-                lastPathIndex--;
-            }
-        }
-
-        return found;
-    }
-
-    /**
-     * Check for all intersections against this geometry and it's children to
-     * see if there is an intersection with the given ray. Return the first
-     * found.
-     *
-     * @param root The root point to start the pick processing from
-     * @param req The list of picks to be made, starting at this object
-     */
-    private void pickSingleLineSegmentSorted(PickTarget root,
-        PickRequest req)
-    {
-        if(dumpNow)
-            System.out.println("pickSingleLineSegmentSorted begin");
-
-        SceneGraphPath output_path = null;
-
-        if(req.foundPaths instanceof SceneGraphPath)
-            output_path = (SceneGraphPath)req.foundPaths;
-        else
-        {
-            output_path = new SceneGraphPath();
-            req.foundPaths = output_path;
-        }
-
-        boolean found = false;
-
-        PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
-
-        if(bounds == null ||
-           !bounds.checkIntersectionSegment(req.origin, req.destination))
-        {
-            req.pickCount = 0;
-            return;
-        }
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node geom = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
-            else
-            {
-                req.pickCount = 0;
-                return;
-            }
-        }
-
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
-
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
-
-        switch(target_node.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                GroupPickTarget g = (GroupPickTarget)target_node;
-                int num_kids = g.numPickableChildren();
-
-                if(num_kids != 0)
-                {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
-                        transform(invertedMatrix, end);
                     }
-                    else
-                        transformPath[0].setIdentity();
 
-                    validTransform[0] = true;
-                    pickPath[0] = g;
-                    PickTarget[] kids = g.getPickableChildren();
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
 
-                    // now that the setup is done, walk down the tree.
-                    for(int i = 0; i < num_kids && !found; i++)
+                    for(int i = 0; i < num_kids; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSingleLineSegmentSorted((GroupPickTarget)kids[i],
-                                                                    req,
-                                                                    start,
-                                                                    end,
-                                                                    output_path,
-                                                                    req.generateVWorldMatrix,
-                                                                    req.useGeometry);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSingleLineSegmentSorted((SinglePickTarget)kids[i],
-                                                                    req,
-                                                                    start,
-                                                                    end,
-                                                                    output_path,
-                                                                    req.generateVWorldMatrix,
-                                                                    req.useGeometry);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSingleLineSegment((LeafPickTarget)kids[i],
-                                                              req,
-                                                              start,
-                                                              end,
-                                                              output_path,
-                                                              req.generateVWorldMatrix,
-                                                              req.useGeometry,
-                                                              true);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSingleLineSegmentSorted((CustomPickTarget)kids[i],
-                                                                    req,
-                                                                    start,
-                                                                    end,
-                                                                    output_path,
-                                                                    req.generateVWorldMatrix,
-                                                                    req.useGeometry);
-                                break;
-                        }
+                        pickAllLineSegment(kids[i], req);
                     }
                 }
                 break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleLineSegmentSorted((SinglePickTarget)target_node,
-                                                    req,
-                                                    start,
-                                                    end,
-                                                    output_path,
-                                                    req.generateVWorldMatrix,
-                                                    req.useGeometry);
-
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleLineSegment((LeafPickTarget)target_node,
-                                               req,
-                                               start,
-                                               end,
-                                               output_path,
-                                               req.generateVWorldMatrix,
-                                               req.useGeometry,
-                                               false);
-                break;
-        }
-
-        req.pickCount = found ? 1 : 0;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleLineSegmentSorted(SinglePickTarget root,
-                                                PickRequest req,
-                                                float[] p1,
-                                                float[] p2,
-                                                SceneGraphPath path,
-                                                boolean needTransform,
-                                                boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (sorted single line -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return false;
-
-        boolean found = false;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickSingleLineSegmentSorted((GroupPickTarget)child,
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    path,
-                                                    needTransform,
-                                                    useGeom);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickSingleLineSegmentSorted((SinglePickTarget)child,
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    path,
-                                                    needTransform,
-                                                    useGeom);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickSingleLineSegment((LeafPickTarget)child,
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom,
-                                              true);
-                break;
-
-            case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickSingleLineSegmentSorted((CustomPickTarget)child,
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    path,
-                                                    needTransform,
-                                                    useGeom);
-                break;
-
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleLineSegmentSorted(GroupPickTarget root,
-                                                PickRequest req,
-                                                float[] p1,
-                                                float[] p2,
-                                                SceneGraphPath path,
-                                                boolean needTransform,
-                                                boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (sorted single line -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionSegment(p1, p2))
-            return false;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleLineSegmentSorted((GroupPickTarget)target_node,
-                                                  req,
-                                                  p1,
-                                                  p2,
-                                                  path,
-                                                  needTransform,
-                                                  useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleLineSegmentSorted((SinglePickTarget)target_node,
-                                                   req,
-                                                   p1,
-                                                   p2,
-                                                   path,
-                                                   needTransform,
-                                                   useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleLineSegment((LeafPickTarget)target_node,
-                                             req,
-                                             p1,
-                                             p2,
-                                             path,
-                                             needTransform,
-                                             useGeom,
-                                             true);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleLineSegmentSorted((CustomPickTarget)target_node,
-                                                   req,
-                                                   p1,
-                                                   p2,
-                                                   path,
-                                                   needTransform,
-                                                   useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, p1);
-                transform(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleLineSegmentSorted((GroupPickTarget)kids[i],
-                                                            req,
-                                                            p1,
-                                                            p2,
-                                                            path,
-                                                            needTransform,
-                                                            useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleLineSegmentSorted((SinglePickTarget)kids[i],
-                                                            req,
-                                                            p1,
-                                                            p2,
-                                                            path,
-                                                            needTransform,
-                                                            useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleLineSegment((LeafPickTarget)kids[i],
-                                                      req,
-                                                      p1,
-                                                      p2,
-                                                      path,
-                                                      needTransform,
-                                                      useGeom,
-                                                      true);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleLineSegmentSorted((CustomPickTarget)kids[i],
-                                                            req,
-                                                            p1,
-                                                            p2,
-                                                            path,
-                                                            needTransform,
-                                                            useGeom);
-                        break;
-
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleLineSegmentSorted(CustomPickTarget root,
-                                                PickRequest req,
-                                                float[] p1,
-                                                float[] p2,
-                                                SceneGraphPath path,
-                                                boolean needTransform,
-                                                boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (sorted single line -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionSegment(p1, p2))
-            return false;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleLineSegmentSorted((GroupPickTarget)target_node,
-                                                  req,
-                                                  p1,
-                                                  p2,
-                                                  path,
-                                                  needTransform,
-                                                  useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleLineSegmentSorted((SinglePickTarget)target_node,
-                                                   req,
-                                                   p1,
-                                                   p2,
-                                                   path,
-                                                   needTransform,
-                                                   useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleLineSegment((LeafPickTarget)target_node,
-                                             req,
-                                             p1,
-                                             p2,
-                                             path,
-                                             needTransform,
-                                             useGeom,
-                                             true);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleLineSegmentSorted((CustomPickTarget)target_node,
-                                                   req,
-                                                   p1,
-                                                   p2,
-                                                   path,
-                                                   needTransform,
-                                                   useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, p1);
-                transform(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleLineSegmentSorted((GroupPickTarget)kids[i],
-                                                            req,
-                                                            p1,
-                                                            p2,
-                                                            path,
-                                                            needTransform,
-                                                            useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleLineSegmentSorted((SinglePickTarget)kids[i],
-                                                            req,
-                                                            p1,
-                                                            p2,
-                                                            path,
-                                                            needTransform,
-                                                            useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleLineSegment((LeafPickTarget)kids[i],
-                                                      req,
-                                                      p1,
-                                                      p2,
-                                                      path,
-                                                      needTransform,
-                                                      useGeom,
-                                                      true);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleLineSegmentSorted((CustomPickTarget)kids[i],
-                                                            req,
-                                                            p1,
-                                                            p2,
-                                                            path,
-                                                            needTransform,
-                                                            useGeom);
-                        break;
-
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Check for all intersections against this geometry and it's children to
-     * see if there is an intersection with the given ray. Return the first
-     * found.
-     *
-     * @param root The root point to start the pick processing from
-     * @param req The list of picks to be made, starting at this object
-     */
-    private void pickAllLineSegmentSorted(PickTarget root, PickRequest req)
-    {
-        if(dumpNow)
-            System.out.println("pickAllLineSegmentSorted seems to be unimplemented");
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     // ----------------------- Ray Picking ------------------------------
@@ -4034,8 +1086,15 @@ public class DebugPickingHandler
      */
     private void pickRay(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("Ray picking selected");
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        end[0] = req.destination[0];
+        end[1] = req.destination[1];
+        end[2] = req.destination[2];
+        end[3] = 0;
 
         switch(req.pickSortType)
         {
@@ -4048,22 +1107,6 @@ public class DebugPickingHandler
             case PickRequest.SORT_CLOSEST:
                 pickSingleRay(root, req);
                 break;
-
-            default:
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
-
-				Locale lcl = intl_mgr.getFoundLocale();
-
-				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
-
-				Object[] msg_args = { new Integer(req.pickSortType) };
-				Format[] fmts = { n_fmt };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				msg_fmt.setFormats(fmts);
-				String msg = msg_fmt.format(msg_args);
-                errorReporter.warningReport(msg, null);
         }
     }
 
@@ -4077,34 +1120,24 @@ public class DebugPickingHandler
      */
     private void pickSingleRay(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickSingleRay begin");
-
-        SceneGraphPath output_path = null;
-
-        if(req.foundPaths instanceof SceneGraphPath)
-            output_path = (SceneGraphPath)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_path = new SceneGraphPath();
-            req.foundPaths = output_path;
+            return;
         }
 
-        boolean found = false;
-
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
 
-        if(bounds == null ||
-           !bounds.checkIntersectionRay(req.origin, req.destination))
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionRay(start, end))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " p2 " + req.destination[0] + " " +
-                    + req.destination[1] + " " + + req.destination[2]);
+                                       " line from " + start[0] + " " + start[1] + " " + start[2] +
+                                       " direction " + end[0] + " " + end[1] + " " + end[2]);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -4113,28 +1146,48 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transformNormal(invertedMatrix, end);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
+
+        boolean found = false;
         switch(target_node.getPickTargetType())
         {
             case PickTarget.GROUP_PICK_TYPE:
@@ -4143,672 +1196,72 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[lastPathIndex];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        transformNormal(invertedMatrix, end);
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids && !found; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSingleRay((GroupPickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      end,
-                                                      output_path,
-                                                      req.generateVWorldMatrix,
-                                                      req.useGeometry);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSingleRay((SinglePickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      end,
-                                                      output_path,
-                                                      req.generateVWorldMatrix,
-                                                      req.useGeometry);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSingleRay((LeafPickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      end,
-                                                      output_path,
-                                                      req.generateVWorldMatrix,
-                                                      req.useGeometry,
-                                                      false);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSingleRay((CustomPickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      end,
-                                                      output_path,
-                                                      req.generateVWorldMatrix,
-                                                      req.useGeometry);
-                                break;
-                        }
+                        pickSingleRay(kids[i], req);
+                        found = req.pickCount != 0;
                     }
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleRay((SinglePickTarget)target_node,
-                                      req,
-                                      start,
-                                      end,
-                                      output_path,
-                                      req.generateVWorldMatrix,
-                                      req.useGeometry);
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleRay((LeafPickTarget)target_node,
-                                      req,
-                                      start,
-                                      end,
-                                      output_path,
-                                      req.generateVWorldMatrix,
-                                      req.useGeometry,
-                                      false);
-        }
-
-        req.pickCount = found ? 1 : 0;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleRay(SinglePickTarget root,
-                                  PickRequest req,
-                                  float[] p1,
-                                  float[] p2,
-                                  SceneGraphPath path,
-                                  boolean needTransform,
-                                  boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single ray -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        PickTarget child = root.getPickableChild();
-
-        if(child == null)
-            return false;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        boolean found = false;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickSingleRay((GroupPickTarget)child,
-                                      req,
-                                      p1,
-                                      p2,
-                                      path,
-                                      needTransform,
-                                      useGeom);
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
 
             case PickTarget.SINGLE_PICK_TYPE:
-                found = pickSingleRay((SinglePickTarget)child,
-                                      req,
-                                      p1,
-                                      p2,
-                                      path,
-                                      needTransform,
-                                      useGeom);
-                break;
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickSingleRay((LeafPickTarget)child,
-                                      req,
-                                      p1,
-                                      p2,
-                                      path,
-                                      needTransform,
-                                      useGeom,
-                                      true);
+                if(target_node != null)
+                {
+                    pickSingleRay(target_node, req);
+                }
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickSingleRay((CustomPickTarget)child,
-                                      req,
-                                      p1,
-                                      p2,
-                                      path,
-                                      needTransform,
-                                      useGeom);
-                break;
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids && !found; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickSingleRay(kids[i], req);
+                        found = req.pickCount != 0;
+                    }
+                }
+                break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single line segment.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleRay(GroupPickTarget root,
-                                  PickRequest req,
-                                  float[] p1,
-                                  float[] p2,
-                                  SceneGraphPath path,
-                                  boolean needTransform,
-                                  boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single ray -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionRay(p1, p2))
-            return false;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleRay((GroupPickTarget)target_node,
-                                      req,
-                                      p1,
-                                      p2,
-                                      path,
-                                      needTransform,
-                                      useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleRay((SinglePickTarget)target_node,
-                                     req,
-                                     p1,
-                                     p2,
-                                     path,
-                                     needTransform,
-                                     useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleRay((LeafPickTarget)target_node,
-                                     req,
-                                     p1,
-                                     p2,
-                                     path,
-                                     needTransform,
-                                     useGeom,
-                                     false);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleRay((CustomPickTarget)target_node,
-                                     req,
-                                     p1,
-                                     p2,
-                                     path,
-                                     needTransform,
-                                     useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, p1);
-                transformNormal(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleRay((GroupPickTarget)kids[i],
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleRay((SinglePickTarget)kids[i],
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleRay((LeafPickTarget)kids[i],
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom,
-                                              false);
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleRay((CustomPickTarget)kids[i],
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom);
-                        break;
-
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Look at a specific Shape instance for intersections with a single line
-     * segment.
-     *
-     * @param geom The geom we are picking against
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     * @param needClosest true if every triangle should be searched to find
-     *    the real one that is closest. Only used if useGeom is true
-     */
-    private boolean pickSingleRay(LeafPickTarget geom,
-                                  PickRequest req,
-                                  float[] p1,
-                                  float[] p2,
-                                  SceneGraphPath path,
-                                  boolean needTransform,
-                                  boolean useGeom,
-                                  boolean needClosest)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single ray -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return false;
-
-        boolean found = false;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionRay(p1, p2))
-        {
-            if(useGeom)
-            {
-                if(geom.pickLineRay(p1, p2, needClosest, vertexPickData, 0))
-                {
-                    resizePath();
-                    pickPath[lastPathIndex] = geom;
-                    validTransform[lastPathIndex] = false;
-                    lastPathIndex++;
-
-                    if(needTransform)
-                        buildVWorldTransform();
-                    else
-                        vworldMatrix.setIdentity();
-
-                    path.updatePath(pickPath,
-                        lastPathIndex,
-                        vworldMatrix,
-                        invertedMatrix);
-
-                    found = true;
-                    lastPathIndex--;
-                }
-            }
-            else
-            {
-                resizePath();
-                pickPath[lastPathIndex] = geom;
-                validTransform[lastPathIndex] = false;
-                lastPathIndex++;
-
-                if(needTransform)
-                    buildVWorldTransform();
-                else
-                    vworldMatrix.setIdentity();
-
-                path.updatePath(pickPath,
-                                lastPathIndex,
-                                vworldMatrix,
-                                invertedMatrix);
-
-                found = true;
-                lastPathIndex--;
-            }
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single line segment.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleRay(CustomPickTarget root,
-                                  PickRequest req,
-                                  float[] p1,
-                                  float[] p2,
-                                  SceneGraphPath path,
-                                  boolean needTransform,
-                                  boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single ray -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionRay(p1, p2))
-            return false;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleRay((GroupPickTarget)target_node,
-                                      req,
-                                      p1,
-                                      p2,
-                                      path,
-                                      needTransform,
-                                      useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleRay((SinglePickTarget)target_node,
-                                     req,
-                                     p1,
-                                     p2,
-                                     path,
-                                     needTransform,
-                                     useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleRay((LeafPickTarget)target_node,
-                                     req,
-                                     p1,
-                                     p2,
-                                     path,
-                                     needTransform,
-                                     useGeom,
-                                     false);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleRay((CustomPickTarget)target_node,
-                                     req,
-                                     p1,
-                                     p2,
-                                     path,
-                                     needTransform,
-                                     useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, p1);
-                transformNormal(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleRay((GroupPickTarget)kids[i],
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleRay((SinglePickTarget)kids[i],
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleRay((LeafPickTarget)kids[i],
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom,
-                                              false);
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleRay((CustomPickTarget)kids[i],
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom);
-                        break;
-
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     /**
@@ -4821,33 +1274,24 @@ public class DebugPickingHandler
      */
     private void pickAllRay(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickAllRay begin");
-
-        int found = 0;
-        ArrayList<SceneGraphPath> output_list = null;
-
-        if(req.foundPaths instanceof ArrayList)
-            output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_list = new ArrayList<SceneGraphPath>();
-            req.foundPaths = output_list;
+            return;
         }
 
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
 
-        if(bounds == null ||
-           !bounds.checkIntersectionRay(req.origin, req.destination))
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionRay(start, end))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " p2 " + req.destination[0] + " " +
-                    + req.destination[1] + " " + + req.destination[2]);
+                                       " line from " + start[0] + " " + start[1] + " " + start[2] +
+                                       " direction " + end[0] + " " + end[1] + " " + end[2]);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -4856,27 +1300,46 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
+
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transformNormal(invertedMatrix, end);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
 
         switch(target_node.getPickTargetType())
         {
@@ -4886,1372 +1349,70 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        transformNormal(invertedMatrix, end);
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found += pickAllRay((GroupPickTarget)kids[i],
-                                                    req,
-                                                    start,
-                                                    end,
-                                                    output_list,
-                                                    found,
-                                                    req.generateVWorldMatrix,
-                                                    req.useGeometry);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found += pickAllRay((SinglePickTarget)kids[i],
-                                                    req,
-                                                    start,
-                                                    end,
-                                                    output_list,
-                                                    found,
-                                                    req.generateVWorldMatrix,
-                                                    req.useGeometry);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found += pickAllRay((LeafPickTarget)kids[i],
-                                                    req,
-                                                    start,
-                                                    end,
-                                                    output_list,
-                                                    found,
-                                                    req.generateVWorldMatrix,
-                                                    req.useGeometry,
-                                                    false);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found += pickAllRay((CustomPickTarget)kids[i],
-                                                    req,
-                                                    start,
-                                                    end,
-                                                    output_list,
-                                                    found,
-                                                    req.generateVWorldMatrix,
-                                                    req.useGeometry);
-                                break;
-                        }
+                        pickAllRay(kids[i], req);
                     }
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllRay((SinglePickTarget)target_node,
-                                    req,
-                                    start,
-                                    end,
-                                    output_list,
-                                    0,
-                                    req.generateVWorldMatrix,
-                                    req.useGeometry);
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllRay((LeafPickTarget)target_node,
-                                    req,
-                                    start,
-                                    end,
-                                    output_list,
-                                    0,
-                                    req.generateVWorldMatrix,
-                                    req.useGeometry,
-                                    false);
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
-        }
 
-        req.pickCount = found;
-    }
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param paths Array of paths place to set the results in
-     * @param currentPath Active index in the paths array
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private int pickAllRay(GroupPickTarget root,
-                           PickRequest req,
-                           float[] p1,
-                           float[] p2,
-                           ArrayList<SceneGraphPath> paths,
-                           int currentPath,
-                           boolean needTransform,
-                           boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all ray -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionRay(p1, p2))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllRay((GroupPickTarget)target_node,
-                                  req,
-                                  p1,
-                                  p2,
-                                  paths,
-                                  currentPath,
-                                  needTransform,
-                                  useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllRay((SinglePickTarget)target_node,
-                                  req,
-                                  p1,
-                                  p2,
-                                  paths,
-                                  currentPath,
-                                  needTransform,
-                                  useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllRay((LeafPickTarget)target_node,
-                                  req,
-                                  p1,
-                                  p2,
-                                  paths,
-                                  currentPath,
-                                  needTransform,
-                                  useGeom,
-                                  false);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllRay((CustomPickTarget)target_node,
-                                  req,
-                                  p1,
-                                  p2,
-                                  paths,
-                                  currentPath,
-                                  needTransform,
-                                  useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            resizePath();
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, p1);
-                transformNormal(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(target_node != null)
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllRay((GroupPickTarget)kids[i],
-                                            req,
-                                            p1,
-                                            p2,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform,
-                                            useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllRay((SinglePickTarget)kids[i],
-                                            req,
-                                            p1,
-                                            p2,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform,
-                                            useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllRay((LeafPickTarget)kids[i],
-                                            req,
-                                            p1,
-                                            p2,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform,
-                                            useGeom,
-                                            false);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllRay((CustomPickTarget)kids[i],
-                                            req,
-                                            p1,
-                                            p2,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform,
-                                            useGeom);
-                        break;
+                    pickAllRay(target_node, req);
                 }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param paths Array of paths place to set the results in
-     * @param currentPath Active index in the paths array
-     * @param needTransform true if we should calc vworld information
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private int pickAllRay(SinglePickTarget root,
-                           PickRequest req,
-                           float[] p1,
-                           float[] p2,
-                           ArrayList<SceneGraphPath> paths,
-                           int currentPath,
-                           boolean needTransform,
-                           boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all ray -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        PickTarget child = root.getPickableChild();
-
-        if(child == null)
-            return 0;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        int found = 0;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickAllRay((GroupPickTarget)child,
-                                   req,
-                                   p1,
-                                   p2,
-                                   paths,
-                                   currentPath,
-                                   needTransform,
-                                   useGeom);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickAllRay((SinglePickTarget)child,
-                                   req,
-                                   p1,
-                                   p2,
-                                   paths,
-                                   currentPath,
-                                   needTransform,
-                                   useGeom);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickAllRay((LeafPickTarget)child,
-                                   req,
-                                   p1,
-                                   p2,
-                                   paths,
-                                   currentPath,
-                                   needTransform,
-                                   useGeom,
-                                   false);
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickAllRay((CustomPickTarget)child,
-                                   req,
-                                   p1,
-                                   p2,
-                                   paths,
-                                   currentPath,
-                                   needTransform,
-                                   useGeom);
-                break;
-        }
-
-        lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param paths Array of paths place to set the results in
-     * @param currentPath Active index in the paths array
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private int pickAllRay(CustomPickTarget root,
-                           PickRequest req,
-                           float[] p1,
-                           float[] p2,
-                           ArrayList<SceneGraphPath> paths,
-                           int currentPath,
-                           boolean needTransform,
-                           boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all ray -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionRay(p1, p2))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllRay((GroupPickTarget)target_node,
-                                  req,
-                                  p1,
-                                  p2,
-                                  paths,
-                                  currentPath,
-                                  needTransform,
-                                  useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllRay((SinglePickTarget)target_node,
-                                  req,
-                                  p1,
-                                  p2,
-                                  paths,
-                                  currentPath,
-                                  needTransform,
-                                  useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllRay((LeafPickTarget)target_node,
-                                  req,
-                                  p1,
-                                  p2,
-                                  paths,
-                                  currentPath,
-                                  needTransform,
-                                  useGeom,
-                                  false);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllRay((CustomPickTarget)target_node,
-                                  req,
-                                  p1,
-                                  p2,
-                                  paths,
-                                  currentPath,
-                                  needTransform,
-                                  useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            resizePath();
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, p1);
-                transformNormal(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(pickCustom((CustomPickTarget)target_node, req))
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllRay((GroupPickTarget)kids[i],
-                                            req,
-                                            p1,
-                                            p2,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform,
-                                            useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllRay((SinglePickTarget)kids[i],
-                                            req,
-                                            p1,
-                                            p2,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform,
-                                            useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllRay((LeafPickTarget)kids[i],
-                                            req,
-                                            p1,
-                                            p2,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform,
-                                            useGeom,
-                                            false);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param req flags to compare against for picking
-     * @param paths A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private int pickAllRay(LeafPickTarget geom,
-                           PickRequest req,
-                           float[] p1,
-                           float[] p2,
-                           ArrayList<SceneGraphPath> paths,
-                           int currentPath,
-                           boolean needTransform,
-                           boolean useGeom,
-                           boolean needClosest)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all ray -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return 0;
-
-        int found = 0;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionRay(p1, p2))
-        {
-            if(useGeom)
-            {
-                if(geom.pickLineRay(p1, p2, needClosest, vertexPickData, 0))
-                {
-                    resizePath();
-                    pickPath[lastPathIndex] = geom;
-                    validTransform[lastPathIndex] = false;
-                    lastPathIndex++;
-                    SceneGraphPath p;
-
-                    if(currentPath >= paths.size())
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
                     {
-                        p = new SceneGraphPath();
-                        paths.add(p);
-                    }
-                    else
-                        p = (SceneGraphPath)paths.get(currentPath);
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
-                    if(needTransform)
-                        buildVWorldTransform();
-                    else
-                        vworldMatrix.setIdentity();
-
-
-                    p.updatePath(pickPath,
-                                 lastPathIndex,
-                                 vworldMatrix,
-                                 invertedMatrix);
-
-                    found = 1;
-                    lastPathIndex--;
-                }
-            }
-            else
-            {
-                resizePath();
-                pickPath[lastPathIndex] = geom;
-                validTransform[lastPathIndex] = false;
-                lastPathIndex++;
-
-                SceneGraphPath p;
-
-                if(currentPath >= paths.size())
-                {
-                    p = new SceneGraphPath();
-                    paths.add(p);
-                }
-                else
-                    p = (SceneGraphPath)paths.get(currentPath);
-
-                if(needTransform)
-                    buildVWorldTransform();
-                else
-                    vworldMatrix.setIdentity();
-
-                p.updatePath(pickPath,
-                             lastPathIndex,
-                             vworldMatrix,
-                             invertedMatrix);
-
-                found = 1;
-                lastPathIndex--;
-            }
-        }
-
-        return found;
-    }
-
-    /**
-     * Check for all intersections against this geometry and it's children to
-     * see if there is an intersection with the given ray. Return the first
-     * found.
-     *
-     * @param root The root point to start the pick processing from
-     * @param req The list of picks to be made, starting at this object
-     */
-    private void pickSingleRaySorted(PickTarget root, PickRequest req)
-    {
-        if(dumpNow)
-            System.out.println("pickSingleRaySorted begin");
-
-        SceneGraphPath output_path = null;
-
-        if(req.foundPaths instanceof SceneGraphPath)
-            output_path = (SceneGraphPath)req.foundPaths;
-        else
-        {
-            output_path = new SceneGraphPath();
-            req.foundPaths = output_path;
-        }
-
-        boolean found = false;
-
-        PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
-
-        if(bounds == null ||
-           !bounds.checkIntersectionRay(req.origin, req.destination))
-        {
-            if(dumpNow)
-                System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " p2 " + req.destination[0] + " " +
-                    + req.destination[1] + " " + + req.destination[2]);
-
-            req.pickCount = 0;
-            return;
-        }
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node geom = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
-            if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
-            else
-            {
-                req.pickCount = 0;
-                return;
-            }
-        }
-
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
-
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
-
-        switch(target_node.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                GroupPickTarget g = (GroupPickTarget)target_node;
-                int num_kids = g.numPickableChildren();
-
-                if(num_kids != 0)
-                {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
                         transform(invertedMatrix, start);
-                        transform(invertedMatrix, end);
                     }
-                    else
-                        transformPath[0].setIdentity();
 
-                    validTransform[0] = true;
-                    pickPath[0] = g;
-                    PickTarget[] kids = g.getPickableChildren();
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
 
-                    // now that the setup is done, walk down the tree.
-                    for(int i = 0; i < num_kids && !found; i++)
+                    for(int i = 0; i < num_kids; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSingleRaySorted((GroupPickTarget)kids[i],
-                                                            req,
-                                                            start,
-                                                            end,
-                                                            output_path,
-                                                            req.generateVWorldMatrix,
-                                                            req.useGeometry);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSingleRaySorted((SinglePickTarget)kids[i],
-                                                            req,
-                                                            start,
-                                                            end,
-                                                            output_path,
-                                                            req.generateVWorldMatrix,
-                                                            req.useGeometry);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSingleRay((LeafPickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      end,
-                                                      output_path,
-                                                      req.generateVWorldMatrix,
-                                                      req.useGeometry,
-                                                      true);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSingleRaySorted((CustomPickTarget)kids[i],
-                                                            req,
-                                                            start,
-                                                            end,
-                                                            output_path,
-                                                            req.generateVWorldMatrix,
-                                                            req.useGeometry);
-                                break;
-                        }
+                        pickAllRay(kids[i], req);
                     }
                 }
                 break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleRaySorted((SinglePickTarget)target_node,
-                                            req,
-                                            start,
-                                            end,
-                                            output_path,
-                                            req.generateVWorldMatrix,
-                                            req.useGeometry);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleRay((LeafPickTarget)target_node,
-                                      req,
-                                      start,
-                                      end,
-                                      output_path,
-                                      req.generateVWorldMatrix,
-                                      req.useGeometry,
-                                      false);
-                break;
-        }
-
-        req.pickCount = found ? 1 : 0;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleRaySorted(GroupPickTarget root,
-                                        PickRequest req,
-                                        float[] p1,
-                                        float[] p2,
-                                        SceneGraphPath path,
-                                        boolean needTransform,
-                                        boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (sorted single ray -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionRay(p1, p2))
-            return false;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleRaySorted((GroupPickTarget)target_node,
-                                           req,
-                                           p1,
-                                           p2,
-                                           path,
-                                           needTransform,
-                                           useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleRaySorted((SinglePickTarget)target_node,
-                                           req,
-                                           p1,
-                                           p2,
-                                           path,
-                                           needTransform,
-                                           useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleRay((LeafPickTarget)target_node,
-                                     req,
-                                     p1,
-                                     p2,
-                                     path,
-                                     needTransform,
-                                     useGeom,
-                                     true);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleRaySorted((CustomPickTarget)target_node,
-                                           req,
-                                           p1,
-                                           p2,
-                                           path,
-                                           needTransform,
-                                           useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, p1);
-                transform(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleRaySorted((GroupPickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    path,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleRaySorted((SinglePickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    path,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleRay((LeafPickTarget)kids[i],
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom,
-                                              true);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleRaySorted((CustomPickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    path,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleRaySorted(SinglePickTarget root,
-                                        PickRequest req,
-                                        float[] p1,
-                                        float[] p2,
-                                        SceneGraphPath path,
-                                        boolean needTransform,
-                                        boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (sorted single ray -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return false;
-
-        boolean found = false;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickSingleRaySorted((GroupPickTarget)child,
-                                            req,
-                                            p1,
-                                            p2,
-                                            path,
-                                            needTransform,
-                                            useGeom);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickSingleRaySorted((SinglePickTarget)child,
-                                            req,
-                                            p1,
-                                            p2,
-                                            path,
-                                            needTransform,
-                                            useGeom);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickSingleRay((LeafPickTarget)child,
-                                      req,
-                                      p1,
-                                      p2,
-                                      path,
-                                      needTransform,
-                                      useGeom,
-                                      true);
-
-                break;
-
-            case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickSingleRaySorted((CustomPickTarget)child,
-                                            req,
-                                            p1,
-                                            p2,
-                                            path,
-                                            needTransform,
-                                            useGeom);
-                break;
-
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The now that is acting as the local root to work through
-     * @param req flags to compare against for picking
-     * @param p1 The first point of the segment
-     * @param p2 The second point of the segment
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     * @param useGeom true if this should check the results based on geometry
-     *    rather than just bounds
-     */
-    private boolean pickSingleRaySorted(CustomPickTarget root,
-                                        PickRequest req,
-                                        float[] p1,
-                                        float[] p2,
-                                        SceneGraphPath path,
-                                        boolean needTransform,
-                                        boolean useGeom)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (sorted single ray -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionRay(p1, p2))
-            return false;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleRaySorted((GroupPickTarget)target_node,
-                                           req,
-                                           p1,
-                                           p2,
-                                           path,
-                                           needTransform,
-                                           useGeom);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleRaySorted((SinglePickTarget)target_node,
-                                           req,
-                                           p1,
-                                           p2,
-                                           path,
-                                           needTransform,
-                                           useGeom);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleRay((LeafPickTarget)target_node,
-                                     req,
-                                     p1,
-                                     p2,
-                                     path,
-                                     needTransform,
-                                     useGeom,
-                                     true);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleRaySorted((CustomPickTarget)target_node,
-                                           req,
-                                           p1,
-                                           p2,
-                                           path,
-                                           needTransform,
-                                           useGeom);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float p1_x = p1[0];
-            float p1_y = p1[1];
-            float p1_z = p1[2];
-
-            float p2_x = p2[0];
-            float p2_y = p2[1];
-            float p2_z = p2[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, p1);
-                transform(invertedMatrix, p2);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleRaySorted((GroupPickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    path,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleRaySorted((SinglePickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    path,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleRay((LeafPickTarget)kids[i],
-                                              req,
-                                              p1,
-                                              p2,
-                                              path,
-                                              needTransform,
-                                              useGeom,
-                                              true);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleRaySorted((CustomPickTarget)kids[i],
-                                                    req,
-                                                    p1,
-                                                    p2,
-                                                    path,
-                                                    needTransform,
-                                                    useGeom);
-                        break;
-
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            p1[0] = p1_x;
-            p1[1] = p1_y;
-            p1[2] = p1_z;
-
-            p2[0] = p2_x;
-            p2[1] = p2_y;
-            p2[2] = p2_z;
-        }
-
-        return found;
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     // ----------------------- Cylinder Picking ------------------------------
@@ -6266,8 +1427,17 @@ public class DebugPickingHandler
      */
     private void pickCylinder(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("Cylinder picking selected");
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        end[0] = req.destination[0];
+        end[1] = req.destination[1];
+        end[2] = req.destination[2];
+        end[3] = 1;
+
+        scalar = req.additionalData;
 
         switch(req.pickSortType)
         {
@@ -6280,22 +1450,6 @@ public class DebugPickingHandler
             case PickRequest.SORT_CLOSEST:
                 pickSingleCylinder(root, req);
                 break;
-
-            default:
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
-
-				Locale lcl = intl_mgr.getFoundLocale();
-
-				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
-
-				Object[] msg_args = { new Integer(req.pickSortType) };
-				Format[] fmts = { n_fmt };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				msg_fmt.setFormats(fmts);
-				String msg = msg_fmt.format(msg_args);
-                errorReporter.warningReport(msg, null);
         }
     }
 
@@ -6309,40 +1463,40 @@ public class DebugPickingHandler
      */
     private void pickSingleCylinder(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickSingleCylinder begin");
-
-        SceneGraphPath output_path = null;
-
-        if(req.foundPaths instanceof SceneGraphPath)
-            output_path = (SceneGraphPath)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_path = new SceneGraphPath();
-            req.foundPaths = output_path;
+            return;
         }
 
-        boolean found = false;
-
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
 
-        float x = req.origin[0] - req.destination[0];
-        float y = req.origin[1] - req.destination[1];
-        float z = req.origin[2] - req.destination[2];
+        BoundingVolume bounds = root.getPickableBounds();
+
+        float x = start[0] - end[0];
+        float y = start[1] - end[1];
+        float z = start[2] - end[2];
 
         float height = (float)Math.sqrt(x * x + y * y + z * z);
 
         if(height == 0)
         {
-            req.pickCount = 0;
             return;
         }
 
-        // Start will be the center and end will be the axis vector
-        start[0] = (req.origin[0] + req.destination[0]) * 0.5f;
-        start[1] = (req.origin[1] + req.destination[0]) * 0.5f;
-        start[2] = (req.origin[2] + req.destination[0]) * 0.5f;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
+
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
+
+        // Temporarily highjack start and end. Start will be the center and end will be the axis vector
+        start[0] = (start[0] + end[0]) * 0.5f;
+        start[1] = (start[1] + end[1]) * 0.5f;
+        start[2] = (start[2] + end[2]) * 0.5f;
         start[3] = 1;
 
         end[0] = x;
@@ -6350,18 +1504,17 @@ public class DebugPickingHandler
         end[2] = z;
         end[3] = 1;
 
-        float radius = req.additionalData;
-
-        if(bounds == null ||
-           !bounds.checkIntersectionCylinder(start, end, radius, height))
+        float radius = scalar;
+        if(bounds == null || !bounds.checkIntersectionCylinder(start, end, radius, height))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + start[0] + " " + start[1] + " " + start[2] +
-                    " p2 " + end[0] + " " + end[1] + " " + end[2] +
-                    " radius " + radius + " height " + height);
+                                   " center " + start[0] + " " + start[1] + " " + start[2] +
+                                   " direction " + end[0] + " " + end[1] + " " + end[2] +
+                                   " radius " + radius + " height " + height);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -6370,18 +1523,53 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
+        // Reset them to the local meaning before sending down a level
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
+
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transform(invertedMatrix, end);
+
+            // need to scale the radius and height as well.
+            float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+            scalar *= scale;
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
+
+        boolean found = false;
         switch(target_node.getPickTargetType())
         {
             case PickTarget.GROUP_PICK_TYPE:
@@ -6390,646 +1578,74 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        transformNormal(invertedMatrix, end);
-
-                        // need to scale the radius and height as well.
-                        float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
-                        radius *= scale;
-                        height *= scale;
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids && !found; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSingleCylinder((GroupPickTarget)kids[i],
-                                                           req,
-                                                           start,
-                                                           end,
-                                                           radius,
-                                                           height,
-                                                           output_path,
-                                                           req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSingleCylinder((SinglePickTarget)kids[i],
-                                                           req,
-                                                           start,
-                                                           end,
-                                                           radius,
-                                                           height,
-                                                           output_path,
-                                                           req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSingleCylinder((LeafPickTarget)kids[i],
-                                                           req,
-                                                           start,
-                                                           end,
-                                                           radius,
-                                                           height,
-                                                           output_path,
-                                                           req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSingleCylinder((CustomPickTarget)kids[i],
-                                                           req,
-                                                           start,
-                                                           end,
-                                                           radius,
-                                                           height,
-                                                           output_path,
-                                                           req.generateVWorldMatrix);
-                                break;
-                        }
+                        pickSingleCylinder(kids[i], req);
+                        found = req.pickCount != 0;
                     }
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleCylinder((SinglePickTarget)target_node,
-                                           req,
-                                           start,
-                                           end,
-                                           radius,
-                                           height,
-                                           output_path,
-                                           req.generateVWorldMatrix);
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleCylinder((LeafPickTarget)target_node,
-                                           req,
-                                           start,
-                                           end,
-                                           radius,
-                                           height,
-                                           output_path,
-                                           req.generateVWorldMatrix);
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
-        }
 
-        req.pickCount = found ? 1 : 0;
-    }
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and recurse into
-     * @param req flags to compare against for picking
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleCylinder(GroupPickTarget root,
-                                       PickRequest req,
-                                       float[] center,
-                                       float[] axis,
-                                       float radius,
-                                       float height,
-                                       SceneGraphPath path,
-                                       boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single cylinder -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionCylinder(center, axis, radius, height))
-            return false;
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleCylinder((GroupPickTarget)target_node,
-                                          req,
-                                          center,
-                                          axis,
-                                          radius,
-                                          height,
-                                          path,
-                                          needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleCylinder((SinglePickTarget)target_node,
-                                          req,
-                                          center,
-                                          axis,
-                                          radius,
-                                          height,
-                                          path,
-                                          needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleCylinder((LeafPickTarget)target_node,
-                                          req,
-                                          center,
-                                          axis,
-                                          radius,
-                                          height,
-                                          path,
-                                          needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleCylinder((CustomPickTarget)target_node,
-                                          req,
-                                          center,
-                                          axis,
-                                          radius,
-                                          height,
-                                          path,
-                                          needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float center_x = center[0];
-            float center_y = center[1];
-            float center_z = center[2];
-
-            float axis_x = axis[0];
-            float axis_y = axis[1];
-            float axis_z = axis[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, center);
-                transformNormal(invertedMatrix, axis);
-
-                // need to scale the radius and height as well.
-                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
-                radius *= scale;
-                height *= scale;
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(target_node != null)
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleCylinder((GroupPickTarget)kids[i],
-                                                   req,
-                                                   center,
-                                                   axis,
-                                                   radius,
-                                                   height,
-                                                   path,
-                                                   needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleCylinder((SinglePickTarget)kids[i],
-                                                   req,
-                                                   center,
-                                                   axis,
-                                                   radius,
-                                                   height,
-                                                   path,
-                                                   needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleCylinder((LeafPickTarget)kids[i],
-                                                   req,
-                                                   center,
-                                                   axis,
-                                                   radius,
-                                                   height,
-                                                   path,
-                                                   needTransform);
-                        break;
+                    pickSingleCylinder(target_node, req);
                 }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            center[0] = center_x;
-            center[1] = center_y;
-            center[2] = center_z;
-
-            axis[0] = axis_x;
-            axis[1] = axis_y;
-            axis[2] = axis_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleCylinder(SinglePickTarget root,
-                                       PickRequest req,
-                                       float[] center,
-                                       float[] axis,
-                                       float radius,
-                                       float height,
-                                       SceneGraphPath path,
-                                       boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single cylinder -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return false;
-
-        boolean found = false;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickSingleCylinder((GroupPickTarget)child,
-                                           req,
-                                           center,
-                                           axis,
-                                           radius,
-                                           height,
-                                           path,
-                                           needTransform);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickSingleCylinder((SinglePickTarget)child,
-                                           req,
-                                           center,
-                                           axis,
-                                           radius,
-                                           height,
-                                           path,
-                                           needTransform);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickSingleCylinder((LeafPickTarget)child,
-                                           req,
-                                           center,
-                                           axis,
-                                           radius,
-                                           height,
-                                           path,
-                                           needTransform);
-
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickSingleCylinder((CustomPickTarget)child,
-                                           req,
-                                           center,
-                                           axis,
-                                           radius,
-                                           height,
-                                           path,
-                                           needTransform);
-                break;
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids && !found; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickSingleCylinder(kids[i], req);
+                        found = req.pickCount != 0;
+                    }
+                }
+                break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and recurse into
-     * @param req flags to compare against for picking
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleCylinder(CustomPickTarget root,
-                                       PickRequest req,
-                                       float[] center,
-                                       float[] axis,
-                                       float radius,
-                                       float height,
-                                       SceneGraphPath path,
-                                       boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single cylinder -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
 
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionCylinder(center, axis, radius, height))
-            return false;
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleCylinder((GroupPickTarget)target_node,
-                                          req,
-                                          center,
-                                          axis,
-                                          radius,
-                                          height,
-                                          path,
-                                          needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleCylinder((SinglePickTarget)target_node,
-                                          req,
-                                          center,
-                                          axis,
-                                          radius,
-                                          height,
-                                          path,
-                                          needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleCylinder((LeafPickTarget)target_node,
-                                          req,
-                                          center,
-                                          axis,
-                                          radius,
-                                          height,
-                                          path,
-                                          needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleCylinder((CustomPickTarget)target_node,
-                                          req,
-                                          center,
-                                          axis,
-                                          radius,
-                                          height,
-                                          path,
-                                          needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float center_x = center[0];
-            float center_y = center[1];
-            float center_z = center[2];
-
-            float axis_x = axis[0];
-            float axis_y = axis[1];
-            float axis_z = axis[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, center);
-                transformNormal(invertedMatrix, axis);
-
-                // need to scale the radius and height as well.
-                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
-                radius *= scale;
-                height *= scale;
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleCylinder((GroupPickTarget)kids[i],
-                                                   req,
-                                                   center,
-                                                   axis,
-                                                   radius,
-                                                   height,
-                                                   path,
-                                                   needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleCylinder((SinglePickTarget)kids[i],
-                                                   req,
-                                                   center,
-                                                   axis,
-                                                   radius,
-                                                   height,
-                                                   path,
-                                                   needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleCylinder((LeafPickTarget)kids[i],
-                                                   req,
-                                                   center,
-                                                   axis,
-                                                   radius,
-                                                   height,
-                                                   path,
-                                                   needTransform);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            center[0] = center_x;
-            center[1] = center_y;
-            center[2] = center_z;
-
-            axis[0] = axis_x;
-            axis[1] = axis_y;
-            axis[2] = axis_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param geom The geom node to test against
-     * @param req flags to compare against for picking
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     */
-    private boolean pickSingleCylinder(LeafPickTarget geom,
-                                       PickRequest req,
-                                       float[] center,
-                                       float[] axis,
-                                       float radius,
-                                       float height,
-                                       SceneGraphPath path,
-                                       boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single cylinder -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return false;
-
-        boolean found = false;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionCylinder(center, axis, radius, height))
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            if(needTransform)
-                buildVWorldTransform();
-            else
-                vworldMatrix.setIdentity();
-
-            path.updatePath(pickPath,
-                            lastPathIndex,
-                            vworldMatrix,
-                            invertedMatrix);
-
-            found = true;
-            lastPathIndex--;
-        }
-
-        return found;
+        scalar = radius;
     }
 
     /**
@@ -7042,39 +1658,40 @@ public class DebugPickingHandler
      */
     private void pickAllCylinder(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickAllCylinder begin");
-
-        int found = 0;
-        ArrayList<SceneGraphPath> output_list = null;
-
-        if(req.foundPaths instanceof ArrayList)
-            output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_list = new ArrayList<SceneGraphPath>();
-            req.foundPaths = output_list;
+            return;
         }
 
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
 
-        float x = req.origin[0] - req.destination[0];
-        float y = req.origin[1] - req.destination[1];
-        float z = req.origin[2] - req.destination[2];
+        BoundingVolume bounds = root.getPickableBounds();
+
+        float x = start[0] - end[0];
+        float y = start[1] - end[1];
+        float z = start[2] - end[2];
 
         float height = (float)Math.sqrt(x * x + y * y + z * z);
 
         if(height == 0)
         {
-            req.pickCount = 0;
             return;
         }
 
-        // Start will be the center and end will be the axis vector
-        start[0] = (req.origin[0] + req.destination[0]) * 0.5f;
-        start[1] = (req.origin[1] + req.destination[0]) * 0.5f;
-        start[2] = (req.origin[2] + req.destination[0]) * 0.5f;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
+
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
+
+        // Temporarily highjack start and end. Start will be the center and end will be the axis vector
+        start[0] = (start[0] + end[0]) * 0.5f;
+        start[1] = (start[1] + end[1]) * 0.5f;
+        start[2] = (start[2] + end[2]) * 0.5f;
         start[3] = 1;
 
         end[0] = x;
@@ -7082,12 +1699,18 @@ public class DebugPickingHandler
         end[2] = z;
         end[3] = 1;
 
-        float radius = req.additionalData;
+        float radius = scalar;
 
-        if(bounds == null ||
-           !bounds.checkIntersectionCylinder(start, end, radius, height))
+        if(bounds == null || !bounds.checkIntersectionCylinder(start, end, radius, height))
         {
-            req.pickCount = 0;
+            if(dumpNow)
+            {
+                System.out.println("failed bounds check bounds " + bounds +
+                                       " center " + start[0] + " " + start[1] + " " + start[2] +
+                                       " direction " + end[0] + " " + end[1] + " " + end[2] +
+                                       " radius " + radius + " height " + height);
+            }
+
             return;
         }
 
@@ -7096,17 +1719,51 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
+
+
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
+
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
+
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transform(invertedMatrix, end);
+
+            // need to scale the radius and height as well.
+            float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+            scalar *= scale;
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
 
         switch(target_node.getPickTargetType())
         {
@@ -7116,643 +1773,71 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        transformNormal(invertedMatrix, end);
-
-                        // need to scale the radius and height as well.
-                        float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
-                        radius *= scale;
-                        height *= scale;
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
+                        pickAllCylinder(kids[i], req);
+                    }
+                }
+                break;
 
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found += pickAllCylinder((GroupPickTarget)kids[i],
-                                                         req,
-                                                         start,
-                                                         end,
-                                                         radius,
-                                                         height,
-                                                         output_list,
-                                                         found,
-                                                         req.generateVWorldMatrix);
-                                break;
+            case PickTarget.LEAF_PICK_TYPE:
+                updatePathAfterSuccess((LeafPickTarget) root, req);
+                break;
 
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found += pickAllCylinder((SinglePickTarget)kids[i],
-                                                         req,
-                                                         start,
-                                                         end,
-                                                         radius,
-                                                         height,
-                                                         output_list,
-                                                         found,
-                                                         req.generateVWorldMatrix);
-                                break;
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found += pickAllCylinder((LeafPickTarget)kids[i],
-                                                         req,
-                                                         start,
-                                                         end,
-                                                         radius,
-                                                         height,
-                                                         output_list,
-                                                         found,
-                                                         req.generateVWorldMatrix);
-                                break;
+                if(target_node != null)
+                {
+                    pickAllCylinder(target_node, req);
+                }
+                break;
 
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found += pickAllCylinder((CustomPickTarget)kids[i],
-                                                         req,
-                                                         start,
-                                                         end,
-                                                         radius,
-                                                         height,
-                                                         output_list,
-                                                         found,
-                                                         req.generateVWorldMatrix);
-                                break;
-                        }
+            case PickTarget.CUSTOM_PICK_TYPE:
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
+
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
                     }
 
-                    req.pickCount = found;
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickAllCylinder(kids[i], req);
+                    }
                 }
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllCylinder((SinglePickTarget)target_node,
-                                         req,
-                                         start,
-                                         end,
-                                         radius,
-                                         height,
-                                         output_list,
-                                         0,
-                                         req.generateVWorldMatrix);
-
-                req.pickCount = found;
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllCylinder((LeafPickTarget)target_node,
-                                         req,
-                                         start,
-                                         end,
-                                         radius,
-                                         height,
-                                         output_list,
-                                         0,
-                                         req.generateVWorldMatrix);
-
-                req.pickCount = found;
-                break;
-        }
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and descend into
-     * @param req flags to compare against for picking
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllCylinder(GroupPickTarget root,
-                                PickRequest req,
-                                float[] center,
-                                float[] axis,
-                                float radius,
-                                float height,
-                                ArrayList<SceneGraphPath> paths,
-                                int currentPath,
-                                boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all cylinder -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionCylinder(center, axis, radius, height))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllCylinder((GroupPickTarget)target_node,
-                                       req,
-                                       center,
-                                       axis,
-                                       radius,
-                                       height,
-                                       paths,
-                                       currentPath,
-                                       needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllCylinder((SinglePickTarget)target_node,
-                                       req,
-                                       center,
-                                       axis,
-                                       radius,
-                                       height,
-                                       paths,
-                                       currentPath,
-                                       needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllCylinder((LeafPickTarget)target_node,
-                                       req,
-                                       center,
-                                       axis,
-                                       radius,
-                                       height,
-                                       paths,
-                                       currentPath,
-                                       needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float center_x = center[0];
-            float center_y = center[1];
-            float center_z = center[2];
-
-            float axis_x = axis[0];
-            float axis_y = axis[1];
-            float axis_z = axis[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, center);
-                transformNormal(invertedMatrix, axis);
-
-                // need to scale the radius and height as well.
-                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
-                radius *= scale;
-                height *= scale;
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllCylinder((GroupPickTarget)kids[i],
-                                                 req,
-                                                 center,
-                                                 axis,
-                                                 radius,
-                                                 height,
-                                                 paths,
-                                                 currentPath + found,
-                                                 needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllCylinder((SinglePickTarget)kids[i],
-                                                 req,
-                                                 center,
-                                                 axis,
-                                                 radius,
-                                                 height,
-                                                 paths,
-                                                 currentPath + found,
-                                                 needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllCylinder((LeafPickTarget)kids[i],
-                                                 req,
-                                                 center,
-                                                 axis,
-                                                 radius,
-                                                 height,
-                                                 paths,
-                                                 currentPath + found,
-                                                 needTransform);
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            center[0] = center_x;
-            center[1] = center_y;
-            center[2] = center_z;
-
-            axis[0] = axis_x;
-            axis[1] = axis_y;
-            axis[2] = axis_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllCylinder(SinglePickTarget root,
-                                PickRequest req,
-                                float[] center,
-                                float[] axis,
-                                float radius,
-                                float height,
-                                ArrayList<SceneGraphPath> paths,
-                                int currentPath,
-                                boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all cylinder -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return 0;
-
-        int found = 0;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickAllCylinder((GroupPickTarget)child,
-                                        req,
-                                        center,
-                                        axis,
-                                        radius,
-                                        height,
-                                        paths,
-                                        currentPath,
-                                        needTransform);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickAllCylinder((SinglePickTarget)child,
-                                        req,
-                                        center,
-                                        axis,
-                                        radius,
-                                        height,
-                                        paths,
-                                        currentPath,
-                                        needTransform);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickAllCylinder((LeafPickTarget)child,
-                                        req,
-                                        center,
-                                        axis,
-                                        radius,
-                                        height,
-                                        paths,
-                                        currentPath,
-                                        needTransform);
                 break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and descend into
-     * @param req flags to compare against for picking
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllCylinder(CustomPickTarget root,
-                                PickRequest req,
-                                float[] center,
-                                float[] axis,
-                                float radius,
-                                float height,
-                                ArrayList<SceneGraphPath> paths,
-                                int currentPath,
-                                boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all cylinder -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionCylinder(center, axis, radius, height))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllCylinder((GroupPickTarget)target_node,
-                                       req,
-                                       center,
-                                       axis,
-                                       radius,
-                                       height,
-                                       paths,
-                                       currentPath,
-                                       needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllCylinder((SinglePickTarget)target_node,
-                                       req,
-                                       center,
-                                       axis,
-                                       radius,
-                                       height,
-                                       paths,
-                                       currentPath,
-                                       needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllCylinder((LeafPickTarget)target_node,
-                                       req,
-                                       center,
-                                       axis,
-                                       radius,
-                                       height,
-                                       paths,
-                                       currentPath,
-                                       needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float center_x = center[0];
-            float center_y = center[1];
-            float center_z = center[2];
-
-            float axis_x = axis[0];
-            float axis_y = axis[1];
-            float axis_z = axis[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, center);
-                transformNormal(invertedMatrix, axis);
-
-                // need to scale the radius and height as well.
-                float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
-                radius *= scale;
-                height *= scale;
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllCylinder((GroupPickTarget)kids[i],
-                                                 req,
-                                                 center,
-                                                 axis,
-                                                 radius,
-                                                 height,
-                                                 paths,
-                                                 currentPath + found,
-                                                 needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllCylinder((SinglePickTarget)kids[i],
-                                                 req,
-                                                 center,
-                                                 axis,
-                                                 radius,
-                                                 height,
-                                                 paths,
-                                                 currentPath + found,
-                                                 needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllCylinder((LeafPickTarget)kids[i],
-                                                 req,
-                                                 center,
-                                                 axis,
-                                                 radius,
-                                                 height,
-                                                 paths,
-                                                 currentPath + found,
-                                                 needTransform);
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            center[0] = center_x;
-            center[1] = center_y;
-            center[2] = center_z;
-
-            axis[0] = axis_x;
-            axis[1] = axis_y;
-            axis[2] = axis_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param geom The geom node to test against
-     * @param req flags to compare against for picking
-     * @param paths A place to set the results in
-     * @param needTransform True if the minal to v-world transform needs
-     *    calculating
-     */
-    private int pickAllCylinder(LeafPickTarget geom,
-                                PickRequest req,
-                                float[] center,
-                                float[] axis,
-                                float radius,
-                                float height,
-                                ArrayList<SceneGraphPath> paths,
-                                int currentPath,
-                                boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all cylinder -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return 0;
-
-        int found = 0;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionCylinder(center, axis, radius, height))
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            SceneGraphPath p;
-
-            if(currentPath >= paths.size())
-            {
-                p = new SceneGraphPath();
-                paths.add(p);
-            }
-            else
-                p = (SceneGraphPath)paths.get(currentPath);
-
-            if(needTransform)
-                buildVWorldTransform();
-            else
-                vworldMatrix.setIdentity();
-
-
-            p.updatePath(pickPath,
-                         lastPathIndex,
-                         vworldMatrix,
-                         invertedMatrix);
-
-            found = 1;
-            lastPathIndex--;
-        }
-
-        return found;
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
+        scalar = radius;
     }
 
     // ----------------------- Cone Picking ------------------------------
@@ -7764,12 +1849,18 @@ public class DebugPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickCone(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("Cone picking selected");
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        end[0] = req.destination[0];
+        end[1] = req.destination[1];
+        end[2] = req.destination[2];
+        end[3] = 0;
 
         switch(req.pickSortType)
         {
@@ -7782,22 +1873,6 @@ public class DebugPickingHandler
             case PickRequest.SORT_CLOSEST:
                 pickSingleCone(root, req);
                 break;
-
-            default:
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
-
-				Locale lcl = intl_mgr.getFoundLocale();
-
-				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
-
-				Object[] msg_args = { new Integer(req.pickSortType) };
-				Format[] fmts = { n_fmt };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				msg_fmt.setFormats(fmts);
-				String msg = msg_fmt.format(msg_args);
-                errorReporter.warningReport(msg, null);
         }
     }
 
@@ -7811,37 +1886,25 @@ public class DebugPickingHandler
      */
     private void pickSingleCone(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickSingleCone begin");
-
-        SceneGraphPath output_path = null;
-
-        if(req.foundPaths instanceof SceneGraphPath)
-            output_path = (SceneGraphPath)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_path = new SceneGraphPath();
-            req.foundPaths = output_path;
+            return;
         }
 
-        boolean found = false;
-
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
-        float angle = req.additionalData;
 
-        if(bounds == null ||
-           !bounds.checkIntersectionCone(req.origin,
-            req.destination,
-            req.additionalData))
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionCone(start, end, req.additionalData))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " p2 " + req.destination[0] + " " +
-                    + req.destination[1] + " " + + req.destination[2]);
+                                       " center " + start[0] + " " + start[1] + " " + start[2] +
+                                       " direction " + end[0] + " " + end[1] + " " + end[2] +
+                                       " angle " + req.additionalData);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -7850,28 +1913,48 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transformNormal(invertedMatrix, end);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
+
+        boolean found = false;
         switch(target_node.getPickTargetType())
         {
             case PickTarget.GROUP_PICK_TYPE:
@@ -7880,575 +1963,72 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        transformNormal(invertedMatrix, end);
-
-                        // Angle does not need to be changed.
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids && !found; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSingleCone((GroupPickTarget)kids[i],
-                                                       req,
-                                                       start,
-                                                       end,
-                                                       angle,
-                                                       output_path,
-                                                       req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSingleCone((SinglePickTarget)kids[i],
-                                                       req,
-                                                       start,
-                                                       end,
-                                                       angle,
-                                                       output_path,
-                                                       req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSingleCone((LeafPickTarget)kids[i],
-                                                       req,
-                                                       start,
-                                                       end,
-                                                       angle,
-                                                       output_path,
-                                                       req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSingleCone((CustomPickTarget)kids[i],
-                                                       req,
-                                                       start,
-                                                       end,
-                                                       angle,
-                                                       output_path,
-                                                       req.generateVWorldMatrix);
-                                break;
-                        }
+                        pickSingleCone(kids[i], req);
+                        found = req.pickCount != 0;
                     }
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleCone((SinglePickTarget)target_node,
-                                       req,
-                                       start,
-                                       end,
-                                       angle,
-                                       output_path,
-                                       req.generateVWorldMatrix);
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleCone((LeafPickTarget)target_node,
-                                       req,
-                                       start,
-                                       end,
-                                       angle,
-                                       output_path,
-                                       req.generateVWorldMatrix);
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
-        }
 
-        req.pickCount = found ? 1 : 0;
-    }
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and recurse into
-     * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleCone(GroupPickTarget root,
-                                   PickRequest req,
-                                   float[] vertex,
-                                   float[] axis,
-                                   float angle,
-                                   SceneGraphPath path,
-                                   boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single cone -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionCone(vertex, axis, angle))
-            return false;
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleCone((GroupPickTarget)target_node,
-                                      req,
-                                      vertex,
-                                      axis,
-                                      angle,
-                                      path,
-                                      needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleCone((SinglePickTarget)target_node,
-                                      req,
-                                      vertex,
-                                      axis,
-                                      angle,
-                                      path,
-                                      needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleCone((LeafPickTarget)target_node,
-                                      req,
-                                      vertex,
-                                      axis,
-                                      angle,
-                                      path,
-                                      needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float vertex_x = vertex[0];
-            float vertex_y = vertex[1];
-            float vertex_z = vertex[2];
-
-            float axis_x = axis[0];
-            float axis_y = axis[1];
-            float axis_z = axis[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, vertex);
-                transformNormal(invertedMatrix, axis);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(target_node != null)
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleCone((GroupPickTarget)kids[i],
-                                               req,
-                                               vertex,
-                                               axis,
-                                               angle,
-                                               path,
-                                               needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleCone((SinglePickTarget)kids[i],
-                                               req,
-                                               vertex,
-                                               axis,
-                                               angle,
-                                               path,
-                                               needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleCone((LeafPickTarget)kids[i],
-                                               req,
-                                               vertex,
-                                               axis,
-                                               angle,
-                                               path,
-                                               needTransform);
+                    pickSingleCone(target_node, req);
                 }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            vertex[0] = vertex_x;
-            vertex[1] = vertex_y;
-            vertex[2] = vertex_z;
-
-            axis[0] = axis_x;
-            axis[1] = axis_y;
-            axis[2] = axis_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleCone(SinglePickTarget root,
-                                   PickRequest req,
-                                   float[] vertex,
-                                   float[] axis,
-                                   float angle,
-                                   SceneGraphPath path,
-                                   boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single cone -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return false;
-
-        boolean found = false;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickSingleCone((GroupPickTarget)child,
-                                       req,
-                                       vertex,
-                                       axis,
-                                       angle,
-                                       path,
-                                       needTransform);
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickSingleCone((SinglePickTarget)child,
-                                       req,
-                                       vertex,
-                                       axis,
-                                       angle,
-                                       path,
-                                       needTransform);
-                break;
+            case PickTarget.CUSTOM_PICK_TYPE:
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickSingleCone((LeafPickTarget)child,
-                                       req,
-                                       vertex,
-                                       axis,
-                                       angle,
-                                       path,
-                                       needTransform);
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids && !found; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickSingleCone(kids[i], req);
+                        found = req.pickCount != 0;
+                    }
+                }
+                break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and recurse into
-     * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleCone(CustomPickTarget root,
-                                   PickRequest req,
-                                   float[] vertex,
-                                   float[] axis,
-                                   float angle,
-                                   SceneGraphPath path,
-                                   boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single cone -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionCone(vertex, axis, angle))
-            return false;
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleCone((GroupPickTarget)target_node,
-                                      req,
-                                      vertex,
-                                      axis,
-                                      angle,
-                                      path,
-                                      needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleCone((SinglePickTarget)target_node,
-                                      req,
-                                      vertex,
-                                      axis,
-                                      angle,
-                                      path,
-                                      needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleCone((LeafPickTarget)target_node,
-                                      req,
-                                      vertex,
-                                      axis,
-                                      angle,
-                                      path,
-                                      needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float vertex_x = vertex[0];
-            float vertex_y = vertex[1];
-            float vertex_z = vertex[2];
-
-            float axis_x = axis[0];
-            float axis_y = axis[1];
-            float axis_z = axis[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, vertex);
-                transformNormal(invertedMatrix, axis);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleCone((GroupPickTarget)kids[i],
-                                               req,
-                                               vertex,
-                                               axis,
-                                               angle,
-                                               path,
-                                               needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleCone((SinglePickTarget)kids[i],
-                                               req,
-                                               vertex,
-                                               axis,
-                                               angle,
-                                               path,
-                                               needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleCone((LeafPickTarget)kids[i],
-                                               req,
-                                               vertex,
-                                               axis,
-                                               angle,
-                                               path,
-                                               needTransform);
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            vertex[0] = vertex_x;
-            vertex[1] = vertex_y;
-            vertex[2] = vertex_z;
-
-            axis[0] = axis_x;
-            axis[1] = axis_y;
-            axis[2] = axis_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param geom The geom node to test against
-     * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     */
-    private boolean pickSingleCone(LeafPickTarget geom,
-                                   PickRequest req,
-                                   float[] vertex,
-                                   float[] axis,
-                                   float angle,
-                                   SceneGraphPath path,
-                                   boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single cone -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return false;
-
-        boolean found = false;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionCone(vertex, axis, angle))
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            if(needTransform)
-                buildVWorldTransform();
-            else
-                vworldMatrix.setIdentity();
-
-            path.updatePath(pickPath,
-                            lastPathIndex,
-                            vworldMatrix,
-                            invertedMatrix);
-
-            found = true;
-            lastPathIndex--;
-        }
-
-        return found;
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     /**
@@ -8461,36 +2041,25 @@ public class DebugPickingHandler
      */
     private void pickAllCone(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickAllCone begin");
-
-        int found = 0;
-        ArrayList<SceneGraphPath> output_list = null;
-
-        if(req.foundPaths instanceof ArrayList)
-            output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_list = new ArrayList<SceneGraphPath>();
-            req.foundPaths = output_list;
+            return;
         }
 
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
-        float angle = req.additionalData;
 
-        if(bounds == null ||
-           !bounds.checkIntersectionCone(req.origin,
-                                         req.destination,
-                                         req.additionalData))
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionCone(start, end, req.additionalData))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " p2 " + req.destination[0] + " " +
-                    + req.destination[1] + " " + + req.destination[2]);
+                                       " center " + start[0] + " " + start[1] + " " + start[2] +
+                                       " direction " + end[0] + " " + end[1] + " " + end[2] +
+                                       " angle " + req.additionalData);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -8499,27 +2068,46 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
+
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transformNormal(invertedMatrix, end);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
 
         switch(target_node.getPickTargetType())
         {
@@ -8529,674 +2117,70 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        transformNormal(invertedMatrix, end);
-
-                        // keep angle unmodified.
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found += pickAllCone((GroupPickTarget)kids[i],
-                                                     req,
-                                                     start,
-                                                     end,
-                                                     angle,
-                                                     output_list,
-                                                     found,
-                                                     req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found += pickAllCone((SinglePickTarget)kids[i],
-                                                     req,
-                                                     start,
-                                                     end,
-                                                     angle,
-                                                     output_list,
-                                                     found,
-                                                     req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found += pickAllCone((LeafPickTarget)kids[i],
-                                                     req,
-                                                     start,
-                                                     end,
-                                                     angle,
-                                                     output_list,
-                                                     found,
-                                                     req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found += pickAllCone((CustomPickTarget)kids[i],
-                                                     req,
-                                                     start,
-                                                     end,
-                                                     angle,
-                                                     output_list,
-                                                     found,
-                                                     req.generateVWorldMatrix);
-                                break;
-                        }
+                        pickAllCone(kids[i], req);
                     }
-
-                    req.pickCount = found;
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllCone((SinglePickTarget)target_node,
-                                     req,
-                                     start,
-                                     end,
-                                     angle,
-                                     output_list,
-                                     0,
-                                     req.generateVWorldMatrix);
-
-                req.pickCount = found;
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllCone((LeafPickTarget)target_node,
-                                     req,
-                                     start,
-                                     end,
-                                     angle,
-                                     output_list,
-                                     0,
-                                     req.generateVWorldMatrix);
-
-                req.pickCount = found;
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
-        }
-    }
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and descend into
-     * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllCone(GroupPickTarget root,
-                            PickRequest req,
-                            float[] vertex,
-                            float[] axis,
-                            float angle,
-                            ArrayList<SceneGraphPath> paths,
-                            int currentPath,
-                            boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all cone -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionCone(vertex, axis, angle))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllCone((GroupPickTarget)target_node,
-                                   req,
-                                   vertex,
-                                   axis,
-                                   angle,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllCone((SinglePickTarget)target_node,
-                                   req,
-                                   vertex,
-                                   axis,
-                                   angle,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllCone((LeafPickTarget)target_node,
-                                   req,
-                                   vertex,
-                                   axis,
-                                   angle,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllCone((CustomPickTarget)target_node,
-                                   req,
-                                   vertex,
-                                   axis,
-                                   angle,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float vertex_x = vertex[0];
-            float vertex_y = vertex[1];
-            float vertex_z = vertex[2];
-
-            float axis_x = axis[0];
-            float axis_y = axis[1];
-            float axis_z = axis[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, vertex);
-                transformNormal(invertedMatrix, axis);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(target_node != null)
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllCone((GroupPickTarget)kids[i],
-                                             req,
-                                             vertex,
-                                             axis,
-                                             angle,
-                                             paths,
-                                             currentPath + found,
-                                             needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllCone((SinglePickTarget)kids[i],
-                                             req,
-                                             vertex,
-                                             axis,
-                                             angle,
-                                             paths,
-                                             currentPath + found,
-                                             needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllCone((LeafPickTarget)kids[i],
-                                             req,
-                                             vertex,
-                                             axis,
-                                             angle,
-                                             paths,
-                                             currentPath + found,
-                                             needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllCone((CustomPickTarget)kids[i],
-                                             req,
-                                             vertex,
-                                             axis,
-                                             angle,
-                                             paths,
-                                             currentPath + found,
-                                             needTransform);
-                        break;
-
+                    pickAllCone(target_node, req);
                 }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            vertex[0] = vertex_x;
-            vertex[1] = vertex_y;
-            vertex[2] = vertex_z;
-
-            axis[0] = axis_x;
-            axis[1] = axis_y;
-            axis[2] = axis_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllCone(SinglePickTarget root,
-                            PickRequest req,
-                            float[] vertex,
-                            float[] axis,
-                            float angle,
-                            ArrayList<SceneGraphPath> paths,
-                            int currentPath,
-                            boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all cone -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child != null)
-            return 0;
-
-        int found = 0;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickAllCone((GroupPickTarget)child,
-                                    req,
-                                    vertex,
-                                    axis,
-                                    angle,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickAllCone((SinglePickTarget)child,
-                                    req,
-                                    vertex,
-                                    axis,
-                                    angle,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickAllCone((LeafPickTarget)child,
-                                    req,
-                                    vertex,
-                                    axis,
-                                    angle,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickAllCone((CustomPickTarget)child,
-                                    req,
-                                    vertex,
-                                    axis,
-                                    angle,
-                                    paths,
-                                    currentPath,
-                                    needTransform);
-                break;
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickAllCone(kids[i], req);
+                    }
+                }
+                break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and descend into
-     * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllCone(CustomPickTarget root,
-                            PickRequest req,
-                            float[] vertex,
-                            float[] axis,
-                            float angle,
-                            ArrayList<SceneGraphPath> paths,
-                            int currentPath,
-                            boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all cone -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionCone(vertex, axis, angle))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllCone((GroupPickTarget)target_node,
-                                   req,
-                                   vertex,
-                                   axis,
-                                   angle,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllCone((SinglePickTarget)target_node,
-                                   req,
-                                   vertex,
-                                   axis,
-                                   angle,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllCone((LeafPickTarget)target_node,
-                                   req,
-                                   vertex,
-                                   axis,
-                                   angle,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllCone((CustomPickTarget)target_node,
-                                   req,
-                                   vertex,
-                                   axis,
-                                   angle,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float vertex_x = vertex[0];
-            float vertex_y = vertex[1];
-            float vertex_z = vertex[2];
-
-            float axis_x = axis[0];
-            float axis_y = axis[1];
-            float axis_z = axis[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, vertex);
-                transformNormal(invertedMatrix, axis);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllCone((GroupPickTarget)kids[i],
-                                             req,
-                                             vertex,
-                                             axis,
-                                             angle,
-                                             paths,
-                                             currentPath + found,
-                                             needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllCone((SinglePickTarget)kids[i],
-                                             req,
-                                             vertex,
-                                             axis,
-                                             angle,
-                                             paths,
-                                             currentPath + found,
-                                             needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllCone((LeafPickTarget)kids[i],
-                                             req,
-                                             vertex,
-                                             axis,
-                                             angle,
-                                             paths,
-                                             currentPath + found,
-                                             needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllCone((CustomPickTarget)kids[i],
-                                             req,
-                                             vertex,
-                                             axis,
-                                             angle,
-                                             paths,
-                                             currentPath + found,
-                                             needTransform);
-                        break;
-
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            vertex[0] = vertex_x;
-            vertex[1] = vertex_y;
-            vertex[2] = vertex_z;
-
-            axis[0] = axis_x;
-            axis[1] = axis_y;
-            axis[2] = axis_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param geom The geom node to test against
-     * @param req flags to compare against for picking
-     * @param vertex The verteximum extents of the box in local coordinate space
-     * @param axis The axisimum extents of the box in local coordinate space
-     * @param paths A place to set the results in
-     * @param needTransform True if the vertexal to v-world transform needs
-     *    calculating
-     */
-    private int pickAllCone(LeafPickTarget geom,
-                            PickRequest req,
-                            float[] vertex,
-                            float[] axis,
-                            float angle,
-                            ArrayList<SceneGraphPath> paths,
-                            int currentPath,
-                            boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all cone -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return 0;
-
-        int found = 0;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionCone(vertex, axis, angle))
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            SceneGraphPath p;
-
-            if(currentPath >= paths.size())
-            {
-                p = new SceneGraphPath();
-                paths.add(p);
-            }
-            else
-                p = (SceneGraphPath)paths.get(currentPath);
-
-            if(needTransform)
-                buildVWorldTransform();
-            else
-                vworldMatrix.setIdentity();
-
-
-            p.updatePath(pickPath,
-                         lastPathIndex,
-                         vworldMatrix,
-                         invertedMatrix);
-
-            found = 1;
-            lastPathIndex--;
-        }
-
-        return found;
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     // ----------------------- Box Picking -------------------------------
@@ -9208,12 +2192,18 @@ public class DebugPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickBox(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("Box picking selected");
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        end[0] = req.destination[0];
+        end[1] = req.destination[1];
+        end[2] = req.destination[2];
+        end[3] = 1;
 
         switch(req.pickSortType)
         {
@@ -9226,22 +2216,6 @@ public class DebugPickingHandler
             case PickRequest.SORT_CLOSEST:
                 pickSingleBox(root, req);
                 break;
-
-            default:
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
-
-				Locale lcl = intl_mgr.getFoundLocale();
-
-				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
-
-				Object[] msg_args = { new Integer(req.pickSortType) };
-				Format[] fmts = { n_fmt };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				msg_fmt.setFormats(fmts);
-				String msg = msg_fmt.format(msg_args);
-                errorReporter.warningReport(msg, null);
         }
     }
 
@@ -9255,34 +2229,24 @@ public class DebugPickingHandler
      */
     private void pickSingleBox(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickSingleBox begin");
-
-        SceneGraphPath output_path = null;
-
-        if(req.foundPaths instanceof SceneGraphPath)
-            output_path = (SceneGraphPath)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_path = new SceneGraphPath();
-            req.foundPaths = output_path;
+            return;
         }
 
-        boolean found = false;
-
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
 
-        if(bounds == null ||
-           !bounds.checkIntersectionBox(req.origin, req.destination))
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionBox(start, end))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " p2 " + req.destination[0] + " " +
-                    + req.destination[1] + " " + + req.destination[2]);
+                                       " min " + start[0] + " " + start[1] + " " + start[2] +
+                                       " max " + end[0] + " " + end[1] + " " + end[2]);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -9291,28 +2255,49 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
 
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transform(invertedMatrix, end);
+            fixExtents(start, end);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
+
+        boolean found = false;
         switch(target_node.getPickTargetType())
         {
             case PickTarget.GROUP_PICK_TYPE:
@@ -9321,550 +2306,74 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        transform(invertedMatrix, end);
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids && !found; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSingleBox((GroupPickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      end,
-                                                      output_path,
-                                                      req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSingleBox((SinglePickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      end,
-                                                      output_path,
-                                                      req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSingleBox((LeafPickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      end,
-                                                      output_path,
-                                                      req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSingleBox((CustomPickTarget)kids[i],
-                                                      req,
-                                                      start,
-                                                      end,
-                                                      output_path,
-                                                      req.generateVWorldMatrix);
-                                break;
-                        }
+                        pickSingleBox(kids[i], req);
+                        found = req.pickCount != 0;
                     }
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleBox((SinglePickTarget)target_node,
-                                      req,
-                                      start,
-                                      end,
-                                      output_path,
-                                      req.generateVWorldMatrix);
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleBox((LeafPickTarget)target_node,
-                                      req,
-                                      start,
-                                      end,
-                                      output_path,
-                                      req.generateVWorldMatrix);
-
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
-        }
 
-        req.pickCount = found ? 1 : 0;
-    }
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and recurse into
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleBox(GroupPickTarget root,
-                                  PickRequest req,
-                                  float[] min,
-                                  float[] max,
-                                  SceneGraphPath path,
-                                  boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single box -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionBox(min, max))
-            return false;
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleBox((GroupPickTarget)target_node,
-                                     req,
-                                     min,
-                                     max,
-                                     path,
-                                     needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleBox((SinglePickTarget)target_node,
-                                     req,
-                                     min,
-                                     max,
-                                     path,
-                                     needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleBox((LeafPickTarget)target_node,
-                                     req,
-                                     min,
-                                     max,
-                                     path,
-                                     needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float min_x = min[0];
-            float min_y = min[1];
-            float min_z = min[2];
-
-            float max_x = max[0];
-            float max_y = max[1];
-            float max_z = max[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, min);
-                transform(invertedMatrix, max);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(target_node != null)
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleBox((GroupPickTarget)kids[i],
-                                              req,
-                                              min,
-                                              max,
-                                              path,
-                                              needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleBox((SinglePickTarget)kids[i],
-                                              req,
-                                              min,
-                                              max,
-                                              path,
-                                              needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleBox((LeafPickTarget)kids[i],
-                                              req,
-                                              min,
-                                              max,
-                                              path,
-                                              needTransform);
+                    pickSingleBox(target_node, req);
                 }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            min[0] = min_x;
-            min[1] = min_y;
-            min[2] = min_z;
-
-            max[0] = max_x;
-            max[1] = max_y;
-            max[2] = max_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleBox(SinglePickTarget root,
-                                  PickRequest req,
-                                  float[] min,
-                                  float[] max,
-                                  SceneGraphPath path,
-                                  boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single box -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        boolean found = false;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickSingleBox((GroupPickTarget)child,
-                                      req,
-                                      min,
-                                      max,
-                                      path,
-                                      needTransform);
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickSingleBox((SinglePickTarget)child,
-                                      req,
-                                      min,
-                                      max,
-                                      path,
-                                      needTransform);
-                break;
+            case PickTarget.CUSTOM_PICK_TYPE:
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickSingleBox((LeafPickTarget)child,
-                                      req,
-                                      min,
-                                      max,
-                                      path,
-                                      needTransform);
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+                        transform(invertedMatrix, end);
+                        fixExtents(start, end);
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids && !found; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickSingleBox(kids[i], req);
+                        found = req.pickCount != 0;
+                    }
+                }
                 break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and recurse into
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleBox(CustomPickTarget root,
-                                  PickRequest req,
-                                  float[] min,
-                                  float[] max,
-                                  SceneGraphPath path,
-                                  boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single box -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionBox(min, max))
-            return false;
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleBox((GroupPickTarget)target_node,
-                                     req,
-                                     min,
-                                     max,
-                                     path,
-                                     needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleBox((SinglePickTarget)target_node,
-                                     req,
-                                     min,
-                                     max,
-                                     path,
-                                     needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleBox((LeafPickTarget)target_node,
-                                     req,
-                                     min,
-                                     max,
-                                     path,
-                                     needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float min_x = min[0];
-            float min_y = min[1];
-            float min_z = min[2];
-
-            float max_x = max[0];
-            float max_y = max[1];
-            float max_z = max[2];
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, min);
-                transform(invertedMatrix, max);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleBox((GroupPickTarget)kids[i],
-                                              req,
-                                              min,
-                                              max,
-                                              path,
-                                              needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleBox((SinglePickTarget)kids[i],
-                                              req,
-                                              min,
-                                              max,
-                                              path,
-                                              needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleBox((LeafPickTarget)kids[i],
-                                              req,
-                                              min,
-                                              max,
-                                              path,
-                                              needTransform);
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            min[0] = min_x;
-            min[1] = min_y;
-            min[2] = min_z;
-
-            max[0] = max_x;
-            max[1] = max_y;
-            max[2] = max_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param geom The geom node to test against
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     */
-    private boolean pickSingleBox(LeafPickTarget geom,
-                                  PickRequest req,
-                                  float[] min,
-                                  float[] max,
-                                  SceneGraphPath path,
-                                  boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single box -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return false;
-
-        boolean found = false;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionBox(min, max))
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            if(needTransform)
-                buildVWorldTransform();
-            else
-                vworldMatrix.setIdentity();
-
-            path.updatePath(pickPath,
-                            lastPathIndex,
-                            vworldMatrix,
-                            invertedMatrix);
-
-            found = true;
-            lastPathIndex--;
-        }
-
-        return found;
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     /**
@@ -9877,33 +2386,24 @@ public class DebugPickingHandler
      */
     private void pickAllBox(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickAllBox begin");
-
-        int found = 0;
-        ArrayList<SceneGraphPath> output_list = null;
-
-        if(req.foundPaths instanceof ArrayList)
-            output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_list = new ArrayList<SceneGraphPath>();
-            req.foundPaths = output_list;
+            return;
         }
 
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
 
-        if(bounds == null ||
-           !bounds.checkIntersectionBox(req.origin, req.destination))
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionBox(start, end))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " p2 " + req.destination[0] + " " +
-                    + req.destination[1] + " " + + req.destination[2]);
+                                       " min " + start[0] + " " + start[1] + " " + start[2] +
+                                       " max " + end[0] + " " + end[1] + " " + end[2]);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -9912,27 +2412,47 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float start_x = start[0];
+        float start_y = start[1];
+        float start_z = start[2];
+        float start_w = start[3];
 
-        end[0] = req.destination[0];
-        end[1] = req.destination[1];
-        end[2] = req.destination[2];
-        end[3] = 1;
+        float end_x = end[0];
+        float end_y = end[1];
+        float end_z = end[2];
+        float end_w = end[3];
+
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transformNormal(invertedMatrix, end);
+            fixExtents(start, end);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
 
         switch(target_node.getPickTargetType())
         {
@@ -9942,585 +2462,72 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        transform(invertedMatrix, end);
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
+                        pickAllBox(kids[i], req);
+                    }
+                }
+                break;
 
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found += pickAllBox((GroupPickTarget)kids[i],
-                                                    req,
-                                                    start,
-                                                    end,
-                                                    output_list,
-                                                    found,
-                                                    req.generateVWorldMatrix);
-                                break;
+            case PickTarget.LEAF_PICK_TYPE:
+                updatePathAfterSuccess((LeafPickTarget) root, req);
+                break;
 
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found += pickAllBox((SinglePickTarget)kids[i],
-                                                    req,
-                                                    start,
-                                                    end,
-                                                    output_list,
-                                                    found,
-                                                    req.generateVWorldMatrix);
-                                break;
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found += pickAllBox((LeafPickTarget)kids[i],
-                                                    req,
-                                                    start,
-                                                    end,
-                                                    output_list,
-                                                    found,
-                                                    req.generateVWorldMatrix);
-                                break;
+                if(target_node != null)
+                {
+                    pickAllBox(target_node, req);
+                }
+                break;
 
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found += pickAllBox((CustomPickTarget)kids[i],
-                                                    req,
-                                                    start,
-                                                    end,
-                                                    output_list,
-                                                    found,
-                                                    req.generateVWorldMatrix);
-                                break;
-                        }
+            case PickTarget.CUSTOM_PICK_TYPE:
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
+
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+                        transform(invertedMatrix, end);
+                        fixExtents(start, end);
                     }
 
-                    req.pickCount = found;
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickAllBox(kids[i], req);
+                    }
                 }
                 break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllBox((SinglePickTarget)target_node,
-                                    req,
-                                    start,
-                                    end,
-                                    output_list,
-                                    0,
-                                    req.generateVWorldMatrix);
-
-                req.pickCount = found;
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllBox((LeafPickTarget)target_node,
-                                    req,
-                                    start,
-                                    end,
-                                    output_list,
-                                    0,
-                                    req.generateVWorldMatrix);
-
-                req.pickCount = found;
-                break;
-        }
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and descend into
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllBox(GroupPickTarget root,
-                           PickRequest req,
-                           float[] min,
-                           float[] max,
-                           ArrayList<SceneGraphPath> paths,
-                           int currentPath,
-                           boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all box -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionBox(min, max))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllBox((GroupPickTarget)target_node,
-                                  req,
-                                  min,
-                                  max,
-                                  paths,
-                                  currentPath,
-                                  needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllBox((SinglePickTarget)target_node,
-                                  req,
-                                  min,
-                                  max,
-                                  paths,
-                                  currentPath,
-                                  needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllBox((LeafPickTarget)target_node,
-                                  req,
-                                  min,
-                                  max,
-                                  paths,
-                                  currentPath,
-                                  needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float min_x = min[0];
-            float min_y = min[1];
-            float min_z = min[2];
-
-            float max_x = max[0];
-            float max_y = max[1];
-            float max_z = max[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, min);
-                transform(invertedMatrix, max);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllBox((GroupPickTarget)kids[i],
-                                            req,
-                                            min,
-                                            max,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllBox((SinglePickTarget)kids[i],
-                                            req,
-                                            min,
-                                            max,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllBox((LeafPickTarget)kids[i],
-                                            req,
-                                            min,
-                                            max,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform);
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            min[0] = min_x;
-            min[1] = min_y;
-            min[2] = min_z;
-
-            max[0] = max_x;
-            max[1] = max_y;
-            max[2] = max_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllBox(SinglePickTarget root,
-                           PickRequest req,
-                           float[] min,
-                           float[] max,
-                           ArrayList<SceneGraphPath> paths,
-                           int currentPath,
-                           boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all box -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return 0;
-
-        int found = 0;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickAllBox((GroupPickTarget)child,
-                                   req,
-                                   min,
-                                   max,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickAllBox((SinglePickTarget)child,
-                                   req,
-                                   min,
-                                   max,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickAllBox((LeafPickTarget)child,
-                                   req,
-                                   min,
-                                   max,
-                                   paths,
-                                   currentPath,
-                                   needTransform);
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = start_x;
+        start[1] = start_y;
+        start[2] = start_z;
+        start[3] = start_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and descend into
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllBox(CustomPickTarget root,
-                           PickRequest req,
-                           float[] min,
-                           float[] max,
-                           ArrayList<SceneGraphPath> paths,
-                           int currentPath,
-                           boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all box -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionBox(min, max))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllBox((GroupPickTarget)target_node,
-                                  req,
-                                  min,
-                                  max,
-                                  paths,
-                                  currentPath,
-                                  needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllBox((SinglePickTarget)target_node,
-                                  req,
-                                  min,
-                                  max,
-                                  paths,
-                                  currentPath,
-                                  needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllBox((LeafPickTarget)target_node,
-                                  req,
-                                  min,
-                                  max,
-                                  paths,
-                                  currentPath,
-                                  needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float min_x = min[0];
-            float min_y = min[1];
-            float min_z = min[2];
-
-            float max_x = max[0];
-            float max_y = max[1];
-            float max_z = max[2];
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, min);
-                transform(invertedMatrix, max);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllBox((GroupPickTarget)kids[i],
-                                            req,
-                                            min,
-                                            max,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllBox((SinglePickTarget)kids[i],
-                                            req,
-                                            min,
-                                            max,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllBox((LeafPickTarget)kids[i],
-                                            req,
-                                            min,
-                                            max,
-                                            paths,
-                                            currentPath + found,
-                                            needTransform);
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            min[0] = min_x;
-            min[1] = min_y;
-            min[2] = min_z;
-
-            max[0] = max_x;
-            max[1] = max_y;
-            max[2] = max_z;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param geom The geom node to test against
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param max The maximum extents of the box in local coordinate space
-     * @param paths A place to set the results in
-     * @param needTransform True if the minal to v-world transform needs
-     *    calculating
-     */
-    private int pickAllBox(LeafPickTarget geom,
-                           PickRequest req,
-                           float[] min,
-                           float[] max,
-                           ArrayList<SceneGraphPath> paths,
-                           int currentPath,
-                           boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all box -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return 0;
-
-        int found = 0;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionBox(min, max))
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            SceneGraphPath p;
-
-            if(currentPath >= paths.size())
-            {
-                p = new SceneGraphPath();
-                paths.add(p);
-            }
-            else
-                p = (SceneGraphPath)paths.get(currentPath);
-
-            if(needTransform)
-                buildVWorldTransform();
-            else
-                vworldMatrix.setIdentity();
-
-            p.updatePath(pickPath,
-                         lastPathIndex,
-                         vworldMatrix,
-                         invertedMatrix);
-
-            found = 1;
-            lastPathIndex--;
-        }
-
-        return found;
+        end[0] = end_x;
+        end[1] = end_y;
+        end[2] = end_z;
+        end[3] = end_w;
     }
 
     // ----------------------- Frustum Picking ------------------------------
@@ -10544,12 +2551,40 @@ public class DebugPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickFrustum(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("Frustum picking selected");
+        frustumPlanes[0].x = req.origin[0];
+        frustumPlanes[0].y = req.origin[1];
+        frustumPlanes[0].z = req.origin[2];
+        frustumPlanes[0].w = req.origin[3];
+
+        frustumPlanes[1].x = req.origin[4];
+        frustumPlanes[1].y = req.origin[5];
+        frustumPlanes[1].z = req.origin[6];
+        frustumPlanes[1].w = req.origin[7];
+
+        frustumPlanes[2].x = req.origin[8];
+        frustumPlanes[2].y = req.origin[9];
+        frustumPlanes[2].z = req.origin[10];
+        frustumPlanes[2].w = req.origin[11];
+
+        frustumPlanes[3].x = req.origin[12];
+        frustumPlanes[3].y = req.origin[13];
+        frustumPlanes[3].z = req.origin[14];
+        frustumPlanes[3].w = req.origin[15];
+
+        frustumPlanes[4].x = req.origin[16];
+        frustumPlanes[4].y = req.origin[17];
+        frustumPlanes[4].z = req.origin[18];
+        frustumPlanes[4].w = req.origin[19];
+
+        frustumPlanes[5].x = req.origin[20];
+        frustumPlanes[5].y = req.origin[21];
+        frustumPlanes[5].z = req.origin[22];
+        frustumPlanes[5].w = req.origin[23];
+
+        transformPath[lastPathIndex].setIdentity();
 
         switch(req.pickSortType)
         {
@@ -10562,22 +2597,6 @@ public class DebugPickingHandler
             case PickRequest.SORT_CLOSEST:
                 pickSingleFrustum(root, req);
                 break;
-
-            default:
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
-
-				Locale lcl = intl_mgr.getFoundLocale();
-
-				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
-
-				Object[] msg_args = { new Integer(req.pickSortType) };
-				Format[] fmts = { n_fmt };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				msg_fmt.setFormats(fmts);
-				String msg = msg_fmt.format(msg_args);
-                errorReporter.warningReport(msg, null);
         }
     }
 
@@ -10588,67 +2607,26 @@ public class DebugPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickSingleFrustum(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickSingleFrustum begin");
-
-        SceneGraphPath output_path = null;
-
-        if(req.foundPaths instanceof SceneGraphPath)
-            output_path = (SceneGraphPath)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_path = new SceneGraphPath();
-            req.foundPaths = output_path;
+            return;
         }
 
-        frustumPlanes[0].x = req.origin[0];
-        frustumPlanes[0].y = req.origin[1];
-        frustumPlanes[0].z = req.origin[2];
-        frustumPlanes[0].w = req.origin[3];
-
-        frustumPlanes[1].x = req.origin[4];
-        frustumPlanes[1].y = req.origin[5];
-        frustumPlanes[1].z = req.origin[6];
-        frustumPlanes[1].w = req.origin[7];
-
-        frustumPlanes[2].x = req.origin[8];
-        frustumPlanes[2].y = req.origin[9];
-        frustumPlanes[2].z = req.origin[10];
-        frustumPlanes[2].w = req.origin[11];
-
-        frustumPlanes[3].x = req.origin[12];
-        frustumPlanes[3].y = req.origin[13];
-        frustumPlanes[3].z = req.origin[14];
-        frustumPlanes[3].w = req.origin[15];
-
-        frustumPlanes[4].x = req.origin[16];
-        frustumPlanes[4].y = req.origin[17];
-        frustumPlanes[4].z = req.origin[18];
-        frustumPlanes[4].w = req.origin[19];
-
-        frustumPlanes[5].x = req.origin[20];
-        frustumPlanes[5].y = req.origin[21];
-        frustumPlanes[5].z = req.origin[22];
-        frustumPlanes[5].w = req.origin[23];
-
-        boolean found = false;
-
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
-        transformPath[0].setIdentity();
 
-        if(bounds.checkIntersectionFrustum(frustumPlanes,
-            transformPath[0]) ==
-            BoundingVolume.FRUSTUM_ALLOUT)
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null ||
+            bounds.checkIntersectionFrustum(frustumPlanes, transformPath[lastPathIndex]) != BoundingVolume.FRUSTUM_ALLOUT)
         {
             if(dumpNow)
-                System.out.println("failed bounds check bounds " + bounds);
+            {
+                System.out.println("failed bounds check bounds " + bounds + " frustum.... ");
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -10657,18 +2635,39 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transform(invertedMatrix, end);
+            fixExtents(start, end);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
+
+        boolean found = false;
         switch(target_node.getPickTargetType())
         {
             case PickTarget.GROUP_PICK_TYPE:
@@ -10677,500 +2676,65 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[lastPathIndex];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                    }
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids && !found; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSingleFrustum((GroupPickTarget)kids[i],
-                                                          req,
-                                                          output_path,
-                                                          req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSingleFrustum((SinglePickTarget)kids[i],
-                                                          req,
-                                                          output_path,
-                                                          req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSingleFrustum((LeafPickTarget)kids[i],
-                                                          req,
-                                                          output_path,
-                                                          req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSingleFrustum((CustomPickTarget)kids[i],
-                                                          req,
-                                                          output_path,
-                                                          req.generateVWorldMatrix);
-                                break;
-                        }
+                        pickSingleFrustum(kids[i], req);
+                        found = req.pickCount != 0;
                     }
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleFrustum((SinglePickTarget)target_node,
-                                          req,
-                                          output_path,
-                                          req.generateVWorldMatrix);
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleFrustum((LeafPickTarget)target_node,
-                                          req,
-                                          output_path,
-                                          req.generateVWorldMatrix);
-                break;
-        }
-
-        req.pickCount = found ? 1 : 0;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a frustum. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleFrustum(SinglePickTarget root,
-                                      PickRequest req,
-                                      SceneGraphPath path,
-                                      boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single frustum -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-
-        Matrix4d tx = transformPath[lastPathIndex - 1];
-        transformPath[lastPathIndex].set(tx);
-
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return false;
-
-        boolean found = false;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickSingleFrustum((GroupPickTarget)child,
-                                          req,
-                                          path,
-                                          needTransform);
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
 
             case PickTarget.SINGLE_PICK_TYPE:
-                found = pickSingleFrustum((SinglePickTarget)child,
-                                          req,
-                                          path,
-                                          needTransform);
-                break;
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickSingleFrustum((LeafPickTarget)child,
-                                          req,
-                                          path,
-                                          needTransform);
+                if(target_node != null)
+                {
+                    pickSingleFrustum(target_node, req);
+                }
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickSingleFrustum((CustomPickTarget)child,
-                                          req,
-                                          path,
-                                          needTransform);
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
+
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+                        transform(invertedMatrix, end);
+                        fixExtents(start, end);
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids && !found; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickSingleFrustum(kids[i], req);
+                        found = req.pickCount != 0;
+                    }
+                }
                 break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group to test against
-     * @param req flags to compare against for picking
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleFrustum(GroupPickTarget root,
-                                      PickRequest req,
-                                      SceneGraphPath path,
-                                      boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single frustum -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(bounds.checkIntersectionFrustum(frustumPlanes,
-            transformPath[lastPathIndex]) ==
-            BoundingVolume.FRUSTUM_ALLOUT)
-            return false;
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleFrustum((GroupPickTarget)target_node,
-                                         req,
-                                         path,
-                                         needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleFrustum((SinglePickTarget)target_node,
-                                         req,
-                                         path,
-                                         needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleFrustum((LeafPickTarget)target_node,
-                                         req,
-                                         path,
-                                         needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleFrustum((CustomPickTarget)target_node,
-                                         req,
-                                         path,
-                                         needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tx.mul(transformPath[lastPathIndex - 1], tx);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                Matrix4d tx = transformPath[lastPathIndex - 1];
-                transformPath[lastPathIndex].set(tx);
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleFrustum((GroupPickTarget)kids[i],
-                                                  req,
-                                                  path,
-                                                  needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleFrustum((SinglePickTarget)kids[i],
-                                                  req,
-                                                  path,
-                                                  needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleFrustum((LeafPickTarget)kids[i],
-                                                  req,
-                                                  path,
-                                                  needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleFrustum((CustomPickTarget)kids[i],
-                                                  req,
-                                                  path,
-                                                  needTransform);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group to test against
-     * @param req flags to compare against for picking
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleFrustum(CustomPickTarget root,
-                                      PickRequest req,
-                                      SceneGraphPath path,
-                                      boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single frustum -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(bounds.checkIntersectionFrustum(frustumPlanes,
-                                           transformPath[lastPathIndex]) ==
-            BoundingVolume.FRUSTUM_ALLOUT)
-            return false;
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleFrustum((GroupPickTarget)target_node,
-                                         req,
-                                         path,
-                                         needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleFrustum((SinglePickTarget)target_node,
-                                         req,
-                                         path,
-                                         needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleFrustum((LeafPickTarget)target_node,
-                                         req,
-                                         path,
-                                         needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleFrustum((CustomPickTarget)target_node,
-                                         req,
-                                         path,
-                                         needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                tx.set(pickInstructions.localTransform);
-                tx.mul(transformPath[lastPathIndex - 1], tx);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                Matrix4d tx = transformPath[lastPathIndex - 1];
-                transformPath[lastPathIndex].set(tx);
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleFrustum((GroupPickTarget)kids[i],
-                                                  req,
-                                                  path,
-                                                  needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleFrustum((SinglePickTarget)kids[i],
-                                                  req,
-                                                  path,
-                                                  needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleFrustum((LeafPickTarget)kids[i],
-                                                  req,
-                                                  path,
-                                                  needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleFrustum((CustomPickTarget)kids[i],
-                                                  req,
-                                                  path,
-                                                  needTransform);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     */
-    private boolean pickSingleFrustum(LeafPickTarget geom,
-                                      PickRequest req,
-                                      SceneGraphPath path,
-                                      boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single frustum -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return false;
-
-        boolean found = false;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionFrustum(frustumPlanes,
-            transformPath[lastPathIndex-1]) !=
-            BoundingVolume.FRUSTUM_ALLOUT)
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            // Note that the transform path is already pre-multiplied through
-            // here. Just and invert is all that needs to be done.
-            if(needTransform)
-                matrixUtils.inverse(transformPath[lastPathIndex - 2],
-                vworldMatrix);
-            else
-                vworldMatrix.setIdentity();
-
-            path.updatePath(pickPath,
-                            lastPathIndex,
-                            transformPath[lastPathIndex - 2],
-                            vworldMatrix);
-
-            found = true;
-            lastPathIndex--;
-        }
-
-        return found;
     }
 
     /**
@@ -11180,66 +2744,26 @@ public class DebugPickingHandler
      *
      * @param root The root point to start the pick processing from
      * @param req The list of picks to be made, starting at this object
-     * @return The number of intersections found
      */
     private void pickAllFrustum(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickAllFrustum begin");
-
-        int found = 0;
-        ArrayList<SceneGraphPath> output_list = null;
-
-        if(req.foundPaths instanceof ArrayList)
-            output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_list = new ArrayList<SceneGraphPath>();
-            req.foundPaths = output_list;
+            return;
         }
 
-        frustumPlanes[0].x = req.origin[0];
-        frustumPlanes[0].y = req.origin[1];
-        frustumPlanes[0].z = req.origin[2];
-        frustumPlanes[0].w = req.origin[3];
-
-        frustumPlanes[1].x = req.origin[4];
-        frustumPlanes[1].y = req.origin[5];
-        frustumPlanes[1].z = req.origin[6];
-        frustumPlanes[1].w = req.origin[7];
-
-        frustumPlanes[2].x = req.origin[8];
-        frustumPlanes[2].y = req.origin[9];
-        frustumPlanes[2].z = req.origin[10];
-        frustumPlanes[2].w = req.origin[11];
-
-        frustumPlanes[3].x = req.origin[12];
-        frustumPlanes[3].y = req.origin[13];
-        frustumPlanes[3].z = req.origin[14];
-        frustumPlanes[3].w = req.origin[15];
-
-        frustumPlanes[4].x = req.origin[16];
-        frustumPlanes[4].y = req.origin[17];
-        frustumPlanes[4].z = req.origin[18];
-        frustumPlanes[4].w = req.origin[19];
-
-        frustumPlanes[5].x = req.origin[20];
-        frustumPlanes[5].y = req.origin[21];
-        frustumPlanes[5].z = req.origin[22];
-        frustumPlanes[5].w = req.origin[23];
-
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
-        transformPath[0].setIdentity();
 
-        if(bounds.checkIntersectionFrustum(frustumPlanes,
-            transformPath[0]) ==
-            BoundingVolume.FRUSTUM_ALLOUT)
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null ||
+           bounds.checkIntersectionFrustum(frustumPlanes, transformPath[lastPathIndex]) != BoundingVolume.FRUSTUM_ALLOUT)
         {
             if(dumpNow)
-                System.out.println("failed bounds check bounds " + bounds);
+            {
+                System.out.println("failed bounds check bounds " + bounds + " frustum.... ");
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -11248,17 +2772,38 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
+
+
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+            transformNormal(invertedMatrix, end);
+            fixExtents(start, end);
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
 
         switch(target_node.getPickTargetType())
         {
@@ -11268,546 +2813,63 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                    }
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found += pickAllFrustum((GroupPickTarget)kids[i],
-                                                        req,
-                                                        output_list,
-                                                        found,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found += pickAllFrustum((SinglePickTarget)kids[i],
-                                                        req,
-                                                        output_list,
-                                                        found,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found += pickAllFrustum((LeafPickTarget)kids[i],
-                                                        req,
-                                                        output_list,
-                                                        found,
-                                                        req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickAllFrustum((CustomPickTarget)kids[i],
-                                                       req,
-                                                       output_list,
-                                                       found,
-                                                       req.generateVWorldMatrix);
-                                break;
-                        }
+                        pickAllFrustum(kids[i], req);
                     }
-
-                    req.pickCount = found;
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllFrustum((SinglePickTarget)target_node,
-                                        req,
-                                        output_list,
-                                        0,
-                                        req.generateVWorldMatrix);
-                req.pickCount = found;
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllFrustum((LeafPickTarget)target_node,
-                                        req,
-                                        output_list,
-                                        0,
-                                        req.generateVWorldMatrix);
-
-                req.pickCount = found;
-                break;
-        }
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a frustum. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param paths Array of paths place to set the results in
-     * @param currentPath Active index in the paths array
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllFrustum(SinglePickTarget root,
-                               PickRequest req,
-                               ArrayList<SceneGraphPath> paths,
-                               int currentPath,
-                               boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all frustum -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-
-        Matrix4d tx = transformPath[lastPathIndex - 1];
-        transformPath[lastPathIndex].set(tx);
-
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return 0;
-
-        int found = 0;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickAllFrustum((GroupPickTarget)child,
-                                       req,
-                                       paths,
-                                       currentPath,
-                                       needTransform);
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
 
             case PickTarget.SINGLE_PICK_TYPE:
-                found = pickAllFrustum((SinglePickTarget)child,
-                                       req,
-                                       paths,
-                                       currentPath,
-                                       needTransform);
-                break;
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickAllFrustum((LeafPickTarget)child,
-                                       req,
-                                       paths,
-                                       currentPath,
-                                       needTransform);
+                if(target_node != null)
+                {
+                    pickAllFrustum(target_node, req);
+                }
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickAllFrustum((CustomPickTarget)child,
-                                       req,
-                                       paths,
-                                       currentPath,
-                                       needTransform);
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
+
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+                        transform(invertedMatrix, end);
+                        fixExtents(start, end);
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickAllFrustum(kids[i], req);
+                    }
+                }
                 break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllFrustum(GroupPickTarget root,
-                               PickRequest req,
-                               ArrayList<SceneGraphPath> paths,
-                               int currentPath,
-                               boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all frustum -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(bounds.checkIntersectionFrustum(frustumPlanes,
-            transformPath[lastPathIndex-1]) ==
-            BoundingVolume.FRUSTUM_ALLOUT)
-        {
-            return 0;
-        }
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllFrustum((GroupPickTarget)target_node,
-                                      req,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllFrustum((SinglePickTarget)target_node,
-                                      req,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllFrustum((LeafPickTarget)target_node,
-                                      req,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllFrustum((CustomPickTarget)target_node,
-                                      req,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            resizePath();
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tx.mul(transformPath[lastPathIndex - 1], tx);
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                Matrix4d tx = transformPath[lastPathIndex - 1];
-                transformPath[lastPathIndex].set(tx);
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllFrustum((GroupPickTarget)kids[i],
-                                                req,
-                                                paths,
-                                                currentPath + found,
-                                                needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllFrustum((SinglePickTarget)kids[i],
-                                                req,
-                                                paths,
-                                                currentPath + found,
-                                                needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllFrustum((LeafPickTarget)kids[i],
-                                                req,
-                                                paths,
-                                                currentPath + found,
-                                                needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllFrustum((CustomPickTarget)kids[i],
-                                                req,
-                                                paths,
-                                                currentPath + found,
-                                                needTransform);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllFrustum(CustomPickTarget root,
-                               PickRequest req,
-                               ArrayList<SceneGraphPath> paths,
-                               int currentPath,
-                               boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all frustum -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(bounds.checkIntersectionFrustum(frustumPlanes,
-            transformPath[lastPathIndex-1]) ==
-            BoundingVolume.FRUSTUM_ALLOUT)
-        {
-            return 0;
-        }
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllFrustum((GroupPickTarget)target_node,
-                                      req,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllFrustum((SinglePickTarget)target_node,
-                                      req,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllFrustum((LeafPickTarget)target_node,
-                                      req,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllFrustum((CustomPickTarget)target_node,
-                                      req,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-                tx.set(pickInstructions.localTransform);
-                tx.mul(transformPath[lastPathIndex - 1], tx);
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                Matrix4d tx = transformPath[lastPathIndex - 1];
-                transformPath[lastPathIndex].set(tx);
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllFrustum((GroupPickTarget)kids[i],
-                                                req,
-                                                paths,
-                                                currentPath + found,
-                                                needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllFrustum((SinglePickTarget)kids[i],
-                                                req,
-                                                paths,
-                                                currentPath + found,
-                                                needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllFrustum((LeafPickTarget)kids[i],
-                                                req,
-                                                paths,
-                                                currentPath + found,
-                                                needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllFrustum((CustomPickTarget)kids[i],
-                                                req,
-                                                paths,
-                                                currentPath + found,
-                                                needTransform);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param req flags to compare against for picking
-     * @param paths Array of paths place to set the results in
-     * @param currentPath Active index in the paths array
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     */
-    private int pickAllFrustum(LeafPickTarget geom,
-                               PickRequest req,
-                               ArrayList<SceneGraphPath> paths,
-                               int currentPath,
-                               boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all frustum -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return 0;
-
-        int found = 0;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionFrustum(frustumPlanes,
-            transformPath[lastPathIndex-1]) !=
-            BoundingVolume.FRUSTUM_ALLOUT)
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            SceneGraphPath p;
-
-            if(currentPath >= paths.size())
-            {
-                p = new SceneGraphPath();
-                paths.add(p);
-            }
-            else
-                p = (SceneGraphPath)paths.get(currentPath);
-
-            // Note that the transform path is already pre-multiplied through
-            // here. Just and invert is all that needs to be done.
-            if(needTransform)
-                matrixUtils.inverse(transformPath[lastPathIndex - 2],
-                vworldMatrix);
-            else
-                vworldMatrix.setIdentity();
-
-            p.updatePath(pickPath,
-                         lastPathIndex,
-                         transformPath[lastPathIndex - 2],
-                         vworldMatrix);
-
-            found = 1;
-            lastPathIndex--;
-        }
-
-        return found;
     }
 
     // ----------------------- Sphere Picking -------------------------------
@@ -11822,8 +2884,12 @@ public class DebugPickingHandler
      */
     private void pickSphere(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("Sphere picking selected");
+        start[0] = req.origin[0];
+        start[1] = req.origin[1];
+        start[2] = req.origin[2];
+        start[3] = 1;
+
+        scalar = req.additionalData;
 
         switch(req.pickSortType)
         {
@@ -11836,22 +2902,6 @@ public class DebugPickingHandler
             case PickRequest.SORT_CLOSEST:
                 pickSingleSphere(root, req);
                 break;
-
-            default:
-				I18nManager intl_mgr = I18nManager.getManager();
-				String msg_pattern = intl_mgr.getString(NO_SORT_TYPE_PROP);
-
-				Locale lcl = intl_mgr.getFoundLocale();
-
-				NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
-
-				Object[] msg_args = { new Integer(req.pickSortType) };
-				Format[] fmts = { n_fmt };
-				MessageFormat msg_fmt =
-					new MessageFormat(msg_pattern, lcl);
-				msg_fmt.setFormats(fmts);
-				String msg = msg_fmt.format(msg_args);
-                errorReporter.warningReport(msg, null);
         }
     }
 
@@ -11865,33 +2915,24 @@ public class DebugPickingHandler
      */
     private void pickSingleSphere(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickSingleSphere begin");
-
-        SceneGraphPath output_path = null;
-
-        if(req.foundPaths instanceof SceneGraphPath)
-            output_path = (SceneGraphPath)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_path = new SceneGraphPath();
-            req.foundPaths = output_path;
+            return;
         }
 
-        boolean found = false;
-
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
 
-        if(bounds == null ||
-           !bounds.checkIntersectionSphere(req.origin, req.additionalData))
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionSphere(start, scalar))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " radius " + req.additionalData);
+                                       " center " + start[0] + " " + start[1] + " " + start[2] +
+                                       " radius " + scalar);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -11900,22 +2941,47 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float origin_x = start[0];
+        float origin_y = start[1];
+        float origin_z = start[2];
+        float origin_w = start[3];
+
+        float radius = scalar;
+
+        // reset the transform at the top of the stack
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+
+            float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+            scalar *= scale;
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
+
+        boolean found = false;
 
         switch(target_node.getPickTargetType())
         {
@@ -11925,588 +2991,72 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    float radius = req.additionalData;
-
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids && !found; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found = pickSingleSphere((GroupPickTarget)kids[i],
-                                                         req,
-                                                         start,
-                                                         radius,
-                                                         output_path,
-                                                         req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found = pickSingleSphere((SinglePickTarget)kids[i],
-                                                         req,
-                                                         start,
-                                                         radius,
-                                                         output_path,
-                                                         req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found = pickSingleSphere((LeafPickTarget)kids[i],
-                                                         req,
-                                                         start,
-                                                         radius,
-                                                         output_path,
-                                                         req.generateVWorldMatrix);
-                                 break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found = pickSingleSphere((CustomPickTarget)kids[i],
-                                                         req,
-                                                         start,
-                                                         radius,
-                                                         output_path,
-                                                         req.generateVWorldMatrix);
-                                break;
-
-                        }
+                        pickSingleSphere(kids[i], req);
+                        found = req.pickCount != 0;
                     }
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleSphere((SinglePickTarget)target_node,
-                                         req,
-                                         start,
-                                         req.additionalData,
-                                         output_path,
-                                         req.generateVWorldMatrix);
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found = pickSingleSphere((LeafPickTarget)target_node,
-                                         req,
-                                         start,
-                                         req.additionalData,
-                                         output_path,
-                                         req.generateVWorldMatrix);
-                break;
-        }
-
-        req.pickCount = found ? 1 : 0;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param radius The radius of the sphere
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleSphere(SinglePickTarget root,
-                                     PickRequest req,
-                                     float[] min,
-                                     float radius,
-                                     SceneGraphPath path,
-                                     boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single sphere -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return false;
-
-        boolean found = false;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickSingleSphere((GroupPickTarget)child,
-                                         req,
-                                         min,
-                                         radius,
-                                         path,
-                                         needTransform);
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
 
             case PickTarget.SINGLE_PICK_TYPE:
-                found = pickSingleSphere((SinglePickTarget)child,
-                                         req,
-                                         min,
-                                         radius,
-                                         path,
-                                         needTransform);
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
+
+                if(target_node != null)
+                {
+                    pickSingleSphere(target_node, req);
+                }
                 break;
 
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickSingleSphere((LeafPickTarget)child,
-                                         req,
-                                         min,
-                                         radius,
-                                         path,
-                                         needTransform);
+            case PickTarget.CUSTOM_PICK_TYPE:
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
+
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+
+                        float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+                        radius *= scale;
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids && !found; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickSingleSphere(kids[i], req);
+                        found = req.pickCount != 0;
+                    }
+                }
+                break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = origin_x;
+        start[1] = origin_y;
+        start[2] = origin_z;
+        start[3] = origin_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and recurse into
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param radius The radius of the sphere
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleSphere(GroupPickTarget root,
-                                     PickRequest req,
-                                     float[] min,
-                                     float radius,
-                                     SceneGraphPath path,
-                                     boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single sphere -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionSphere(min, radius))
-            return false;
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleSphere((GroupPickTarget)target_node,
-                                        req,
-                                        min,
-                                        radius,
-                                        path,
-                                        needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleSphere((SinglePickTarget)target_node,
-                                        req,
-                                        min,
-                                        radius,
-                                        path,
-                                        needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleSphere((LeafPickTarget)target_node,
-                                        req,
-                                        min,
-                                        radius,
-                                        path,
-                                        needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleSphere((CustomPickTarget)target_node,
-                                        req,
-                                        min,
-                                        radius,
-                                        path,
-                                        needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float min_x = min[0];
-            float min_y = min[1];
-            float min_z = min[2];
-
-            float old_radius = radius;
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                matrixUtils.inverse(tx, invertedMatrix);
-                transform(invertedMatrix, min);
-
-                radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleSphere((GroupPickTarget)kids[i],
-                                                 req,
-                                                 min,
-                                                 radius,
-                                                 path,
-                                                 needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleSphere((SinglePickTarget)kids[i],
-                                                 req,
-                                                 min,
-                                                 radius,
-                                                 path,
-                                                 needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleSphere((LeafPickTarget)kids[i],
-                                                 req,
-                                                 min,
-                                                 radius,
-                                                 path,
-                                                 needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleSphere((CustomPickTarget)kids[i],
-                                                 req,
-                                                 min,
-                                                 radius,
-                                                 path,
-                                                 needTransform);
-                        break;
-
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            min[0] = min_x;
-            min[1] = min_y;
-            min[2] = min_z;
-
-            radius = old_radius;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and recurse into
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param radius The radius of the sphere
-     * @param path The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private boolean pickSingleSphere(CustomPickTarget root,
-                                     PickRequest req,
-                                     float[] min,
-                                     float radius,
-                                     SceneGraphPath path,
-                                     boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single sphere -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return false;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionSphere(min, radius))
-            return false;
-
-        // Bounding check. If it has it, recurse on the bounding geometry
-        // rather than the real geometry.
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickSingleSphere((GroupPickTarget)target_node,
-                                        req,
-                                        min,
-                                        radius,
-                                        path,
-                                        needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickSingleSphere((SinglePickTarget)target_node,
-                                        req,
-                                        min,
-                                        radius,
-                                        path,
-                                        needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickSingleSphere((LeafPickTarget)target_node,
-                                        req,
-                                        min,
-                                        radius,
-                                        path,
-                                        needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickSingleSphere((CustomPickTarget)target_node,
-                                        req,
-                                        min,
-                                        radius,
-                                        path,
-                                        needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        boolean found = false;
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float min_x = min[0];
-            float min_y = min[1];
-            float min_z = min[2];
-
-            float old_radius = radius;
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, min);
-
-                radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids && !found; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found = pickSingleSphere((GroupPickTarget)kids[i],
-                                                 req,
-                                                 min,
-                                                 radius,
-                                                 path,
-                                                 needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found = pickSingleSphere((SinglePickTarget)kids[i],
-                                                 req,
-                                                 min,
-                                                 radius,
-                                                 path,
-                                                 needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found = pickSingleSphere((LeafPickTarget)kids[i],
-                                                 req,
-                                                 min,
-                                                 radius,
-                                                 path,
-                                                 needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found = pickSingleSphere((CustomPickTarget)kids[i],
-                                                 req,
-                                                 min,
-                                                 radius,
-                                                 path,
-                                                 needTransform);
-                        break;
-
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            min[0] = min_x;
-            min[1] = min_y;
-            min[2] = min_z;
-
-            radius = old_radius;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param geom The geom node to test against
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param radius The radius of the sphere
-     * @param path A place to set the results in
-     * @param needTransform True if the local to v-world transform needs
-     *    calculating
-     */
-    private boolean pickSingleSphere(LeafPickTarget geom,
-                                     PickRequest req,
-                                     float[] min,
-                                     float radius,
-                                     SceneGraphPath path,
-                                     boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (single sphere -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return false;
-
-        boolean found = false;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionSphere(min, radius))
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            if(needTransform)
-                buildVWorldTransform();
-            else
-                vworldMatrix.setIdentity();
-
-            path.updatePath(pickPath,
-                            lastPathIndex,
-                            vworldMatrix,
-                            invertedMatrix);
-
-            lastPathIndex--;
-            found = true;
-        }
-
-        return found;
+        scalar = radius;
     }
 
     /**
@@ -12519,32 +3069,24 @@ public class DebugPickingHandler
      */
     private void pickAllSphere(PickTarget root, PickRequest req)
     {
-        if(dumpNow)
-            System.out.println("pickAllSphere begin");
-
-        int found = 0;
-        ArrayList<SceneGraphPath> output_list = null;
-
-        if(req.foundPaths instanceof ArrayList)
-            output_list = (ArrayList<SceneGraphPath>)req.foundPaths;
-        else
+        if(!root.checkPickMask(req.pickType))
         {
-            output_list = new ArrayList<SceneGraphPath>();
-            req.foundPaths = output_list;
+            return;
         }
 
         PickTarget target_node = root;
-        BoundingVolume bounds = target_node.getPickableBounds();
 
-        if(bounds == null ||
-           !bounds.checkIntersectionSphere(req.origin, req.additionalData))
+        BoundingVolume bounds = root.getPickableBounds();
+
+        if(bounds == null || !bounds.checkIntersectionSphere(start, scalar))
         {
             if(dumpNow)
+            {
                 System.out.println("failed bounds check bounds " + bounds +
-                    " p1 " + req.origin[0] + " " + req.origin[1] + " " +
-                    req.origin[2] + " radius " + req.additionalData);
+                                       " center " + start[0] + " " + start[1] + " " + start[2] +
+                                       " radius " + scalar);
+            }
 
-            req.pickCount = 0;
             return;
         }
 
@@ -12553,22 +3095,46 @@ public class DebugPickingHandler
             BoundingGeometry bg = (BoundingGeometry)bounds;
             Node geom = bg.getProxyGeometry();
 
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + geom);
-
             if(geom instanceof PickTarget)
-                target_node = (PickTarget)geom;
+            {
+                target_node = (PickTarget) geom;
+            }
             else
             {
-                req.pickCount = 0;
                 return;
             }
         }
 
-        start[0] = req.origin[0];
-        start[1] = req.origin[1];
-        start[2] = req.origin[2];
-        start[3] = 1;
+        float origin_x = start[0];
+        float origin_y = start[1];
+        float origin_z = start[2];
+        float origin_w = start[3];
+
+        float radius = scalar;
+
+        // reset the transform at the top of the stack
+        resizePath();
+        if(target_node instanceof TransformPickTarget)
+        {
+            TransformPickTarget tg = (TransformPickTarget)target_node;
+            tg.getTransform(transformPath[lastPathIndex]);
+            tg.getInverseTransform(invertedMatrix);
+            invertedMatrix.transpose(invertedMatrix);
+            transform(invertedMatrix, start);
+
+            float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+            scalar *= scale;
+
+            validTransform[lastPathIndex] = true;
+        }
+        else
+        {
+            transformPath[lastPathIndex].setIdentity();
+            validTransform[lastPathIndex] = false;
+        }
+
+        pickPath[lastPathIndex] = target_node;
+        lastPathIndex++;
 
         switch(target_node.getPickTargetType())
         {
@@ -12578,636 +3144,70 @@ public class DebugPickingHandler
 
                 if(num_kids != 0)
                 {
-                    float radius = req.additionalData;
-
-                    // reset the transform at the top of the stack
-                    if(root instanceof TransformPickTarget)
-                    {
-                        Matrix4d tx = transformPath[0];
-
-                        TransformPickTarget tg = (TransformPickTarget)root;
-                        tg.getTransform(tx);
-                        tg.getInverseTransform(invertedMatrix);
-                        transform(invertedMatrix, start);
-                        radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
-                    }
-                    else
-                        transformPath[0].setIdentity();
-
-                    validTransform[0] = true;
-                    pickPath[0] = g;
                     PickTarget[] kids = g.getPickableChildren();
 
-                    // now that the setup is done, walk down the tree.
                     for(int i = 0; i < num_kids; i++)
                     {
                         if(kids[i] == null)
                             continue;
 
-                        lastPathIndex = 1;
-
-                        switch(kids[i].getPickTargetType())
-                        {
-                            case PickTarget.GROUP_PICK_TYPE:
-                                found += pickAllSphere((GroupPickTarget)kids[i],
-                                                       req,
-                                                       start,
-                                                       radius,
-                                                       output_list,
-                                                       found,
-                                                       req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.SINGLE_PICK_TYPE:
-                                found += pickAllSphere((SinglePickTarget)kids[i],
-                                                       req,
-                                                       start,
-                                                       radius,
-                                                       output_list,
-                                                       found,
-                                                       req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.LEAF_PICK_TYPE:
-                                found += pickAllSphere((LeafPickTarget)kids[i],
-                                                       req,
-                                                       start,
-                                                       radius,
-                                                       output_list,
-                                                       found,
-                                                       req.generateVWorldMatrix);
-                                break;
-
-                            case PickTarget.CUSTOM_PICK_TYPE:
-                                found += pickAllSphere((CustomPickTarget)kids[i],
-                                                       req,
-                                                       start,
-                                                       radius,
-                                                       output_list,
-                                                       found,
-                                                       req.generateVWorldMatrix);
-                                break;
-
-                        }
+                        pickAllSphere(kids[i], req);
                     }
-
-                    req.pickCount = found;
                 }
                 break;
 
-            case PickTarget.SINGLE_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllSphere((SinglePickTarget)target_node,
-                                       req,
-                                       start,
-                                       req.additionalData,
-                                       output_list,
-                                       0,
-                                       req.generateVWorldMatrix);
-
-                req.pickCount = found;
-                break;
-
             case PickTarget.LEAF_PICK_TYPE:
-                transformPath[0].setIdentity();
-                validTransform[0] = true;
-                pickPath[0] = target_node;
-                lastPathIndex = 1;
-
-                found += pickAllSphere((LeafPickTarget)target_node,
-                                       req,
-                                       start,
-                                       req.additionalData,
-                                       output_list,
-                                       0,
-                                       req.generateVWorldMatrix);
-
-                req.pickCount = found;
+                updatePathAfterSuccess((LeafPickTarget) root, req);
                 break;
-        }
-    }
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and descend into
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param radius The radius of the sphere
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllSphere(GroupPickTarget root,
-                              PickRequest req,
-                              float[] min,
-                              float radius,
-                              ArrayList<SceneGraphPath> paths,
-                              int currentPath,
-                              boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all sphere -> group) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
+            case PickTarget.SINGLE_PICK_TYPE:
+                target_node = ((SinglePickTarget)target_node).getPickableChild();
 
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionSphere(min, radius))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllSphere((GroupPickTarget)target_node,
-                                     req,
-                                     min,
-                                     radius,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllSphere((SinglePickTarget)target_node,
-                                     req,
-                                     min,
-                                     radius,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllSphere((LeafPickTarget)target_node,
-                                     req,
-                                     min,
-                                     radius,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllSphere((CustomPickTarget)target_node,
-                                     req,
-                                     min,
-                                     radius,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-        int num_kids = root.numPickableChildren();
-
-        if(num_kids != 0)
-        {
-            float min_x = min[0];
-            float min_y = min[1];
-            float min_z = min[2];
-
-            float old_radius = radius;
-
-            // reset the transform at the top of the stack
-            if(root instanceof TransformPickTarget)
-            {
-                Matrix4d tx = transformPath[lastPathIndex];
-
-                TransformPickTarget tg = (TransformPickTarget)root;
-                tg.getTransform(tx);
-                tg.getInverseTransform(invertedMatrix);
-                transform(invertedMatrix, min);
-                radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = root.getPickableChildren();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
+                if(target_node != null)
                 {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllSphere((GroupPickTarget)kids[i],
-                                               req,
-                                               min,
-                                               radius,
-                                               paths,
-                                               currentPath + found,
-                                               needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllSphere((SinglePickTarget)kids[i],
-                                               req,
-                                               min,
-                                               radius,
-                                               paths,
-                                               currentPath + found,
-                                               needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllSphere((LeafPickTarget)kids[i],
-                                               req,
-                                               min,
-                                               radius,
-                                               paths,
-                                               currentPath + found,
-                                               needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllSphere((CustomPickTarget)kids[i],
-                                               req,
-                                               min,
-                                               radius,
-                                               paths,
-                                               currentPath + found,
-                                               needTransform);
-                        break;
+                    pickAllSphere(target_node, req);
                 }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            min[0] = min_x;
-            min[1] = min_y;
-            min[2] = min_z;
-
-            radius = old_radius;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse a single-child shared node tree looking for
-     * intersections with a single point. Shared nodes are different to normal
-     * because we don't bother doing bounds tests as the bounds will be
-     * identical to their child. Skip the test and just head straight to the
-     * child node to test against.
-     *
-     * @param root The shared node to test against
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param radius The radius of the sphere
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllSphere(SinglePickTarget root,
-                              PickRequest req,
-                              float[] min,
-                              float radius,
-                              ArrayList<SceneGraphPath> paths,
-                              int currentPath,
-                              boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all sphere -> single) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        resizePath();
-        validTransform[lastPathIndex] = false;
-        pickPath[lastPathIndex] = root;
-        lastPathIndex++;
-
-        PickTarget child = root.getPickableChild();
-        if(child == null)
-            return 0;
-
-        int found = 0;
-
-        switch(child.getPickTargetType())
-        {
-            case PickTarget.GROUP_PICK_TYPE:
-                found = pickAllSphere((GroupPickTarget)child,
-                                      req,
-                                      min,
-                                      radius,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-                break;
-
-            case PickTarget.SINGLE_PICK_TYPE:
-                found = pickAllSphere((SinglePickTarget)child,
-                                      req,
-                                      min,
-                                      radius,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-                break;
-
-            case PickTarget.LEAF_PICK_TYPE:
-                found = pickAllSphere((LeafPickTarget)child,
-                                      req,
-                                      min,
-                                      radius,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
                 break;
 
             case PickTarget.CUSTOM_PICK_TYPE:
-                found = pickAllSphere((CustomPickTarget)child,
-                                      req,
-                                      min,
-                                      radius,
-                                      paths,
-                                      currentPath,
-                                      needTransform);
-                break;
+                if(pickCustom((CustomPickTarget)target_node, req))
+                {
+                    // reset the transform at the top of the stack based on our local
+                    if(pickInstructions.hasTransform)
+                    {
+                        transformPath[lastPathIndex - 1].set(pickInstructions.localTransform);
 
+                        matrixUtils.inverse(transformPath[lastPathIndex - 1], invertedMatrix);
+                        invertedMatrix.transpose(invertedMatrix);
+                        transform(invertedMatrix, start);
+
+                        float scale = (float)matrixUtils.getUniformScale(invertedMatrix);
+                        radius *= scale;
+                    }
+
+                    // Make sure to clone the array locally because if we are recursing the global
+                    // list will be overwritten each time we go down a level
+                    num_kids = pickInstructions.numChildren;
+                    PickTarget[] kids = pickInstructions.children.clone();
+
+                    for(int i = 0; i < num_kids; i++)
+                    {
+                        if(kids[i] == null)
+                            continue;
+
+                        pickAllSphere(kids[i], req);
+                    }
+                }
+                break;
         }
 
         lastPathIndex--;
-        pickPath[lastPathIndex] = null;
-        return found;
-    }
+        start[0] = origin_x;
+        start[1] = origin_y;
+        start[2] = origin_z;
+        start[3] = origin_w;
 
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param root The group node to test against and descend into
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param radius The radius of the sphere
-     * @param paths The place to put the results in
-     * @param needTransform true if we should calc vworld information
-     */
-    private int pickAllSphere(CustomPickTarget root,
-                              PickRequest req,
-                              float[] min,
-                              float radius,
-                              ArrayList<SceneGraphPath> paths,
-                              int currentPath,
-                              boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all sphere -> custom) " +
-                                "has 0x" + root.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!root.checkPickMask(req.pickType))
-            return 0;
-
-        BoundingVolume bounds = root.getPickableBounds();
-
-        if(!bounds.checkIntersectionSphere(min, radius))
-            return 0;
-
-        if(bounds instanceof BoundingGeometry)
-        {
-            BoundingGeometry bg = (BoundingGeometry)bounds;
-            Node target_node = bg.getProxyGeometry();
-
-            if(dumpNow)
-                System.out.println("Substituting proxy bounds " + target_node);
-
-            if(target_node instanceof GroupPickTarget)
-            {
-                return pickAllSphere((GroupPickTarget)target_node,
-                                     req,
-                                     min,
-                                     radius,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
-            }
-            else if(target_node instanceof SinglePickTarget)
-            {
-                return pickAllSphere((SinglePickTarget)target_node,
-                                     req,
-                                     min,
-                                     radius,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
-            }
-            else if(target_node instanceof LeafPickTarget)
-            {
-                return pickAllSphere((LeafPickTarget)target_node,
-                                     req,
-                                     min,
-                                     radius,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
-            }
-            else if(target_node instanceof CustomPickTarget)
-            {
-                return pickAllSphere((CustomPickTarget)target_node,
-                                     req,
-                                     min,
-                                     radius,
-                                     paths,
-                                     currentPath,
-                                     needTransform);
-            }
-            else if(target_node != null)
-            {
-                generateProxyWarning(target_node);
-            }
-        }
-
-        int found = 0;
-
-        if(pickCustom(root, req))
-        {
-            int num_kids = pickInstructions.numChildren;
-
-            float min_x = min[0];
-            float min_y = min[1];
-            float min_z = min[2];
-
-            float old_radius = radius;
-
-            // reset the transform at the top of the stack
-            if(pickInstructions.hasTransform)
-            {
-                transformPath[lastPathIndex].set(pickInstructions.localTransform);
-
-                matrixUtils.inverse(pickInstructions.localTransform,
-                                    invertedMatrix);
-                transform(invertedMatrix, min);
-                radius *= (float)matrixUtils.getUniformScale(invertedMatrix);
-
-                validTransform[lastPathIndex] = true;
-            }
-            else
-            {
-                // don't bother setting to identity, just mark it as non-valid.
-                // Assignment is a waste of CPU cycles.
-                validTransform[lastPathIndex] = false;
-            }
-
-            pickPath[lastPathIndex] = root;
-            lastPathIndex++;
-            PickTarget[] kids = (PickTarget[])pickInstructions.children.clone();
-
-            for(int i = 0; i < num_kids; i++)
-            {
-                if(kids[i] == null)
-                    continue;
-
-                switch(kids[i].getPickTargetType())
-                {
-                    case PickTarget.GROUP_PICK_TYPE:
-                        found += pickAllSphere((GroupPickTarget)kids[i],
-                                               req,
-                                               min,
-                                               radius,
-                                               paths,
-                                               currentPath + found,
-                                               needTransform);
-                        break;
-
-                    case PickTarget.SINGLE_PICK_TYPE:
-                        found += pickAllSphere((SinglePickTarget)kids[i],
-                                               req,
-                                               min,
-                                               radius,
-                                               paths,
-                                               currentPath + found,
-                                               needTransform);
-                        break;
-
-                    case PickTarget.LEAF_PICK_TYPE:
-                        found += pickAllSphere((LeafPickTarget)kids[i],
-                                               req,
-                                               min,
-                                               radius,
-                                               paths,
-                                               currentPath + found,
-                                               needTransform);
-                        break;
-
-                    case PickTarget.CUSTOM_PICK_TYPE:
-                        found += pickAllSphere((CustomPickTarget)kids[i],
-                                               req,
-                                               min,
-                                               radius,
-                                               paths,
-                                               currentPath + found,
-                                               needTransform);
-                        break;
-                }
-            }
-
-            lastPathIndex--;
-            pickPath[lastPathIndex] = null;
-
-            min[0] = min_x;
-            min[1] = min_y;
-            min[2] = min_z;
-
-            radius = old_radius;
-        }
-
-        return found;
-    }
-
-    /**
-     * Recurse the tree looking for intersections with a single point.
-     *
-     * @param geom The geom node to test against
-     * @param req flags to compare against for picking
-     * @param min The minimum extents of the box in local coordinate space
-     * @param radius The radius of the sphere
-     * @param paths A place to set the results in
-     * @param needTransform True if the minal to v-world transform needs
-     *    calculating
-     */
-    private int pickAllSphere(LeafPickTarget geom,
-                              PickRequest req,
-                              float[] min,
-                              float radius,
-                              ArrayList<SceneGraphPath> paths,
-                              int currentPath,
-                              boolean needTransform)
-    {
-        if(dumpNow)
-            System.out.println("Pick mask check (all sphere -> leaf) " +
-                                "has 0x" + geom.checkPickMask(req.pickType) + " request has 0x" +
-                                req.pickType);
-
-        if(!geom.checkPickMask(req.pickType))
-            return 0;
-
-        int found = 0;
-        BoundingVolume bounds = geom.getPickableBounds();
-
-        if(bounds.checkIntersectionSphere(min, radius))
-        {
-            resizePath();
-            pickPath[lastPathIndex] = geom;
-            validTransform[lastPathIndex] = false;
-            lastPathIndex++;
-
-            SceneGraphPath p;
-
-            if(currentPath >= paths.size())
-            {
-                p = new SceneGraphPath();
-                paths.add(p);
-            }
-            else
-                p = (SceneGraphPath)paths.get(currentPath);
-
-            if(needTransform)
-                buildVWorldTransform();
-            else
-                vworldMatrix.setIdentity();
-
-
-            p.updatePath(pickPath,
-                         lastPathIndex,
-                         vworldMatrix,
-                         invertedMatrix);
-
-            lastPathIndex--;
-            found = 1;
-        }
-
-        return found;
+        scalar = radius;
     }
 
     /**
@@ -13222,9 +3222,10 @@ public class DebugPickingHandler
     private boolean pickCustom(CustomPickTarget node, PickRequest request)
     {
         if(dumpNow)
-            System.out.println("Pick mask check (custom -> custom) " +
-                                "has 0x" + node.checkPickMask(request.pickType) + " request has 0x" +
-                                request.pickType);
+        {
+            System.out.println("begin custom pick");
+        }
+
 
         if(!node.checkPickMask(request.pickType))
             return false;
@@ -13233,6 +3234,12 @@ public class DebugPickingHandler
         buildVWorldTransform();
 
         node.pickChildren(pickInstructions, vworldMatrix, request);
+
+        if(dumpNow)
+        {
+            System.out.println("end custom pick result " + (pickInstructions.numChildren != 0));
+        }
+
 
         return pickInstructions.numChildren != 0;
     }
@@ -13306,7 +3313,6 @@ public class DebugPickingHandler
      */
     private void buildVWorldTransform()
     {
-        int last_valid = 0;
         vworldMatrix.set(transformPath[0]);
 
         for(int i = 1; i < lastPathIndex; i++)
@@ -13321,25 +3327,70 @@ public class DebugPickingHandler
     }
 
     /**
-     * Convenience method to generate a warning message when the target node in a
-     * pick traversal does not match a known option that the system can
-     * process. No error is directly generated, just a warning passed to the
-     * error reporter
+     * Common method to update or replace the path information in the current
+     * pick request after a pick has succeeded.
      *
-     * @param targetNode The node to isse the message about
+     * @param req The request object to fill in with the global details
      */
-    private void generateProxyWarning(Node targetNode)
+    private void updatePathAfterSuccess(LeafPickTarget geom, PickRequest req)
     {
-        I18nManager intl_mgr = I18nManager.getManager();
-        String msg_pattern = intl_mgr.getString(UNKNOWN_PROXY_TYPE_PROP);
+        resizePath();
 
-        Locale lcl = intl_mgr.getFoundLocale();
+        // Don't need these here because they will have been set before this method
+        // was called. We just need to update the matrix and set the stack into the
+        // path and we're done.
+        //pickPath[l    astPathIndex] = geom;
+        //validTransform[lastPathIndex] = false;
 
-        Object[] msg_args = { targetNode.getClass().getName() };
-        MessageFormat msg_fmt =
-                new MessageFormat(msg_pattern, lcl);
-        String msg = msg_fmt.format(msg_args);
-        errorReporter.warningReport(msg, null);
+        if(req.generateVWorldMatrix)
+        {
+            buildVWorldTransform();
+        }
+        else
+        {
+            vworldMatrix.setIdentity();
+            invertedMatrix.setIdentity();
+        }
+
+        if(req.foundPaths instanceof SceneGraphPath)
+        {
+            SceneGraphPath path = (SceneGraphPath) req.foundPaths;
+            path.updatePath(pickPath,
+                            lastPathIndex + 1,
+                            vworldMatrix,
+                            invertedMatrix);
+        }
+        else
+        {
+            SceneGraphPath path = new SceneGraphPath();
+            path.updatePath(pickPath,
+                            lastPathIndex + 1,
+                            vworldMatrix,
+                            invertedMatrix);
+
+            ((Collection<SceneGraphPath>)req.foundPaths).add(path);
+        }
+
+        req.pickCount++;
     }
 
+	/**
+	 * Ensure that bounding box extents are properly ordered
+	 * after they have been transformed
+	 *
+	 * @param minExtent The minimum bound
+	 * @param maxExtent The maximum bound
+	 */
+	private void fixExtents(float[] minExtent, float[] maxExtent)
+    {
+		for (int i = 0; i < 3; i++)
+        {
+			if(minExtent[i] > maxExtent[i])
+            {
+				float tmp = minExtent[i];
+				minExtent[i] = maxExtent[i];
+				maxExtent[i] = tmp;
+			}
+		}
+	}
 }
