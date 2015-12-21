@@ -18,8 +18,7 @@ import com.jogamp.opengl.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.jogamp.nativewindow.awt.AWTGraphicsDevice;
-import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
+import com.jogamp.nativewindow.AbstractGraphicsDevice;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Point3d;
 import org.j3d.util.DefaultErrorReporter;
@@ -896,7 +895,7 @@ public abstract class BaseSurface
     {
         GLDrawableFactory fac = GLDrawableFactory.getDesktopFactory();
 
-        AWTGraphicsDevice awt_device = AWTGraphicsDevice.createDefault();
+        AbstractGraphicsDevice awt_device = fac.getDefaultDevice();
         GLProfile profile = GLProfile.get(awt_device, GLProfile.GL2);
         canCreatePBuffers = fac.canCreateGLPbuffer(awt_device, profile);
 
