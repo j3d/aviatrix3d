@@ -84,12 +84,12 @@ public class BoundingBoxTest
         float[] result = new float[3];
         class_under_test.getMinimum(result);
 
-        assertEquals(Arrays.asList(result), Arrays.asList(TEST_MINIMUM), "Didn't set minimum properly");
+        assertEquals(result, TEST_MINIMUM, "Didn't set minimum properly");
 
         // Clear and check again
         result = new float[3];
         class_under_test.getExtents(result, new float[3]);
-        assertEquals(Arrays.asList(result), Arrays.asList(TEST_MINIMUM), "Didn't set minimum extent properly");
+        assertEquals(result, TEST_MINIMUM, "Didn't set minimum extent properly");
     }
 
     @Test(groups = "unit")
@@ -103,12 +103,12 @@ public class BoundingBoxTest
         float[] result = new float[3];
         class_under_test.getMaximum(result);
 
-        assertEquals(Arrays.asList(result), Arrays.asList(TEST_MAXIMUM), "Didn't set maximum properly");
+        assertEquals(result, TEST_MAXIMUM, "Didn't set maximum properly");
 
         // Clear and check again
         result = new float[3];
         class_under_test.getExtents(new float[3], result);
-        assertEquals(Arrays.asList(result), Arrays.asList(TEST_MAXIMUM), "Didn't set maximum extent properly");
+        assertEquals(result, TEST_MAXIMUM, "Didn't set maximum extent properly");
 
         result = new float[3];
         class_under_test.getSize(result);
