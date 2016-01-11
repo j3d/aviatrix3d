@@ -308,9 +308,6 @@ public class StereoSWTSurface extends BaseSWTSurface
     {
         super(sharedWith);
 
-        requestedCapabilities = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
-        requestedChooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
-
         useLightweight = lightweight;
         parentWidget = parent;
         swtStyle = style;
@@ -319,10 +316,9 @@ public class StereoSWTSurface extends BaseSWTSurface
         quadBuffersAvailable = false;
         eyeSeparation = 0.001f;
 
+        init(parent, style, caps, chooser);
 
         setStereoRenderingPolicy(policy);
-
-        init();
    }
 
     //---------------------------------------------------------------
@@ -400,17 +396,6 @@ public class StereoSWTSurface extends BaseSWTSurface
     @Override
     public void setStereoRenderingPolicy(int policy)
     {
-        GLContext shared_context = null;
-
-        if(sharedSurface != null)
-            shared_context = sharedSurface.getGLContext();
-
-        swtCanvas = new GLCanvas(parentWidget, swtStyle, requestedCapabilities, requestedChooser);
-        swtCanvas.addControlListener(resizer);
-
-        canvas = swtCanvas.getDelegatedDrawable();
-        canvasContext = swtCanvas.getContext();
-
         switch(policy)
         {
             case NO_STEREO:
@@ -555,23 +540,23 @@ public class StereoSWTSurface extends BaseSWTSurface
     }
 
     //---------------------------------------------------------------
-    // Local Methods
+    // Methods defined by BaseSWTSurface
     //---------------------------------------------------------------
 
-    /**
-     * Used during initialisation of the system for the first time. This is
-     * called just after the extension strings have been checked, but before
-     * we return back to the main rendering loop. The default implementation is
-     * empty.
-     * <p>
-     * The return value indicates success or failure in the ability to
-     * initialise this surface. Typically it will indicate failure if the
-     * underlying surface has been disposed of or a failure to find the
-     * capabilities needed. The default implementation returns true.
-     *
-     * @param gl An initialised, current gl context to play with
-     * @return true if the initialisation succeeded, or false if not
-     */
+    @Override
+    protected void initCanvas(Composite parent, int style, GLCapabilities caps, GLCapabilitiesChooser chooser)
+    {
+        swtCanvas = new GLCanvas(parentWidget, swtStyle, requestedCapabilities, requestedChooser);
+        swtCanvas.addControlListener(resizer);
+
+        canvas = swtCanvas.getDelegatedDrawable();
+        canvasContext = swtCanvas.getContext();
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by BaseSurface
+    //---------------------------------------------------------------
+
     @Override
     public boolean completeCanvasInitialisation(GL gl)
     {
@@ -581,15 +566,5 @@ public class StereoSWTSurface extends BaseSWTSurface
         quadBuffersAvailable = (params[0] == GL.GL_TRUE);
 
         return true;
-    }
-
-    /**
-     * Resynchronise the stereo rendering to be the next frame as the left
-     * eye view. Useful when the shutter glasses or other device needs to
-     * reset with the output.
-     */
-    public void resychronizeRenderTarget()
-    {
-        // TODO:
     }
 }

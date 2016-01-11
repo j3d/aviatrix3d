@@ -80,12 +80,6 @@ public class StereoAWTSurface extends BaseAWTSurface
     /** The current eye separation to use */
     private float eyeSeparation;
 
-    /** The user requested capabilities for this canvas */
-    private GLCapabilities requestedCapabilities;
-
-    /** The user-defined capabilities chooser for this canvas */
-    private GLCapabilitiesChooser requestedChooser;
-
     /** When running alternate frame mode, which frame are we on now? */
     private boolean renderLeftFrame;
 
@@ -263,17 +257,14 @@ public class StereoAWTSurface extends BaseAWTSurface
     {
         super(sharedWith, lightweight);
 
-        requestedCapabilities = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
-        requestedChooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
-
         renderLeftFrame = true;
         quadBuffersAvailable = false;
         eyeSeparation = 0.001f;
 
-        setStereoRenderingPolicy(policy);
+        init(caps, chooser);
 
-        init();
-   }
+        setStereoRenderingPolicy(policy);
+    }
 
     //---------------------------------------------------------------
     // Methods defined by GraphicsOutputDevice
@@ -350,40 +341,7 @@ public class StereoAWTSurface extends BaseAWTSurface
     @Override
     public void setStereoRenderingPolicy(int policy)
     {
-        // TODO:
-        // Need to understand where the shared context went to in the
-        // constructor
-        GLContext shared_context = null;
-
-        if(sharedSurface != null)
-        {
-            shared_context = sharedSurface.canvasContext;
-        }
-
-        if(lightweight)
-        {
-            canvas = new GLJPanel(requestedCapabilities, requestedChooser);
-        }
-        else
-        {
-            canvas = new GLCanvas(requestedCapabilities, requestedChooser, null);
-        }
-
-        GLAutoDrawable gld = (GLAutoDrawable)canvas;
-        Component comp = (Component)canvas;
-
-        AWTSurfaceMonitor mon = (AWTSurfaceMonitor)surfaceMonitor;
-
-        comp.setIgnoreRepaint(true);
-        comp.addComponentListener(resizer);
-        comp.addHierarchyListener(resizer);
-        comp.addComponentListener(mon);
-        comp.addHierarchyListener(mon);
-        gld.addGLEventListener(mon);
-
         stereoRenderType = policy;
-
-        canvasContext = ((GLAutoDrawable)canvas).getContext();
 
         if(canvasContext == null)
             return;
@@ -611,24 +569,45 @@ public class StereoAWTSurface extends BaseAWTSurface
         return false;
     }
 
+    @Override
+    protected void initCanvas(GLCapabilities caps, GLCapabilitiesChooser chooser)
+    {
+        GLContext shared_context = null;
+
+        if(sharedSurface != null)
+        {
+            shared_context = sharedSurface.canvasContext;
+        }
+
+        if(lightweight)
+        {
+            canvas = new GLJPanel(caps, chooser);
+        }
+        else
+        {
+            canvas = new GLCanvas(caps, chooser, null);
+        }
+
+        GLAutoDrawable gld = (GLAutoDrawable)canvas;
+        Component comp = (Component)canvas;
+
+        AWTSurfaceMonitor mon = (AWTSurfaceMonitor)surfaceMonitor;
+
+        comp.setIgnoreRepaint(true);
+        comp.addComponentListener(resizer);
+        comp.addHierarchyListener(resizer);
+        comp.addComponentListener(mon);
+        comp.addHierarchyListener(mon);
+        gld.addGLEventListener(mon);
+
+        canvasContext = ((GLAutoDrawable)canvas).getContext();
+    }
+
     //---------------------------------------------------------------
-    // Local Methods
+    // Methods defined by BaseSurface
     //---------------------------------------------------------------
 
-    /**
-     * Used during initialisation of the system for the first time. This is
-     * called just after the extension strings have been checked, but before
-     * we return back to the main rendering loop. The default implementation is
-     * empty.
-     * <p>
-     * The return value indicates success or failure in the ability to
-     * initialise this surface. Typically it will indicate failure if the
-     * underlying surface has been disposed of or a failure to find the
-     * capabilities needed. The default implementation returns true.
-     *
-     * @param gl An initialised, current gl context to play with
-     * @return true if the initialisation succeeded, or false if not
-     */
+    @Override
     public boolean completeCanvasInitialisation(GL gl)
     {
         byte[] params = new byte[1];
@@ -637,15 +616,5 @@ public class StereoAWTSurface extends BaseAWTSurface
         quadBuffersAvailable = (params[0] == GL.GL_TRUE);
 
         return true;
-    }
-
-    /**
-     * Resynchronise the stereo rendering to be the next frame as the left
-     * eye view. Useful when the shutter glasses or other device needs to
-     * reset with the output.
-     */
-    public void resychronizeRenderTarget()
-    {
-        // TODO:
     }
 }

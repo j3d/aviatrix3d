@@ -48,7 +48,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
     public StandardRenderingProcessor(GLContext context,
                                       GraphicsOutputDevice owner)
     {
-        super(context, owner);
+        super(owner);
     }
 
     //---------------------------------------------------------------

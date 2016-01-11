@@ -16,7 +16,6 @@ package org.j3d.renderer.aviatrix3d.swt.output;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLCapabilitiesChooser;
 import com.jogamp.opengl.GLContext;
-import com.jogamp.opengl.GLProfile;
 
 import com.jogamp.opengl.swt.GLCanvas;
 import org.eclipse.swt.events.KeyListener;
@@ -226,19 +225,13 @@ public class DebugSWTSurface extends BaseSWTSurface
 
         dumpNextFrameCount = 0;
 
-        init(parent, style, caps, chooser, lightweight);
+        init(parent, style, caps, chooser);
     }
 
     //------------------------------------------------------------------------
     // Methods defined by KeyListener
     //------------------------------------------------------------------------
 
-    /**
-     * Notification of a key press event. When the 'd' key is pressed, dump
-     * the next frame to stdout.
-     *
-     * @param evt The key event that caused this method to be called
-     */
     @Override
     public void keyPressed(KeyEvent evt)
     {
@@ -257,37 +250,34 @@ public class DebugSWTSurface extends BaseSWTSurface
         }
     }
 
-    /**
-     * Notification of a key release event. Does nothing for this
-     * implementation.
-     *
-     * @param evt The key event that caused this method to be called
-     */
     @Override
     public void keyReleased(KeyEvent evt)
     {
+    }
+
+
+    //---------------------------------------------------------------
+    // Methods defined by BaseSWTSurface
+    //---------------------------------------------------------------
+
+    @Override
+    protected void initCanvas(Composite parent, int style, GLCapabilities caps, GLCapabilitiesChooser chooser)
+    {
+        swtCanvas = new GLCanvas(parent, style, caps, chooser);
+
+        swtCanvas.addKeyListener(this);
+        swtCanvas.addControlListener(resizer);
+
+        canvas = swtCanvas.getDelegatedDrawable();
+        canvasContext = swtCanvas.getContext();
+
+        canvasRenderer = new DebugRenderingProcessor(canvasContext, this);
     }
 
     //---------------------------------------------------------------
     // Methods defined by BaseSurface
     //---------------------------------------------------------------
 
-    /**
-     * Instruct the surface to draw the collected set of nodes now. The
-     * registered view environment is used to draw to this surface. If no
-     * view is registered, the surface is cleared and then this call is
-     * exited. The drawing surface does not swap the buffers at this point.
-     * <p>
-     * The return value indicates success or failure in the ability to
-     * render this frame. Typically it will indicate failure if the
-     * underlying surface has been disposed of, either directly through the
-     * calling of the method on this interface, or through an internal check
-     * mechanism. If failure is indicated, then check to see if the surface has
-     * been disposed of and discontinue rendering if it has.
-     *
-     * @param profilingData The timing and load data
-     * @return true if the drawing succeeded, or false if not
-     */
     @Override
     public boolean draw(ProfilingData profilingData)
     {
@@ -308,13 +298,6 @@ public class DebugSWTSurface extends BaseSWTSurface
         return ret_val;
     }
 
-    /**
-     * Overridden to provide instances of the debug rendering processor for
-     * off screen textures.
-     *
-     * @param context The GLContext instance to wrap for this processor
-     * @return The rendering processor instance to use
-     */
     @Override
     protected RenderingProcessor createRenderingProcessor(GLContext context)
     {
@@ -354,44 +337,5 @@ public class DebugSWTSurface extends BaseSWTSurface
                 ((DebugRenderingProcessor)rp).traceNextFrames(count);
             }
         }
-    }
-
-    /**
-     * Common internal initialisation for the constructors.
-     *
-     * @param parent The parent component that this surface uses for the canvas
-     * @param style The SWT style bits to use on the created canvas
-     * @param caps A set of required capabilities for this canvas.
-     * @param chooser Custom algorithm for selecting one of the available
-     *    GLCapabilities for the component;
-     * @param lightweight If true, uses a GLJPanel (lightweight) JComponent,
-     *   otherwise a GLCanvas. Note that setting this to true could negatively
-     *   impact performance.
-     */
-    private void init(Composite parent,
-                      int style,
-                      GraphicsRenderingCapabilities caps,
-                      GraphicsRenderingCapabilitiesChooser chooser,
-                      boolean lightweight)
-    {
-        GLContext shared_context = null;
-
-        if(sharedSurface != null)
-            shared_context = sharedSurface.getGLContext();
-
-        GLCapabilities jogl_caps = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
-        GLCapabilitiesChooser jogl_chooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
-
-        swtCanvas = new GLCanvas(parent, style, jogl_caps, jogl_chooser);
-
-        swtCanvas.addKeyListener(this);
-        swtCanvas.addControlListener(resizer);
-
-        canvas = swtCanvas.getDelegatedDrawable();
-        canvasContext = swtCanvas.getContext();
-
-        canvasRenderer = new DebugRenderingProcessor(canvasContext, this);
-
-        init();
     }
 }

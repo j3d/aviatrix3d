@@ -213,9 +213,6 @@ public abstract class BaseRenderingProcessor
     /** Error reporter used to send out messages */
     protected ErrorReporter errorReporter;
 
-    /** The context from the drawable that is above us in the rendering */
-    protected GLContext parentContext;
-
     /** The context from the drawable */
     protected GLContext localContext;
 
@@ -269,14 +266,10 @@ public abstract class BaseRenderingProcessor
     /**
      * Construct handler for rendering objects to the main screen.
      *
-     * @param parentCtx The parent GL context to the surface that holds
-     *   this processor.
      * @param owner The owning device of this processor
      */
-    protected BaseRenderingProcessor(GLContext parentCtx,
-                                     GraphicsOutputDevice owner)
+    protected BaseRenderingProcessor(GraphicsOutputDevice owner)
     {
-        parentContext = parentCtx;
         ownerDevice = owner;
 
         clearColor = new float[4];
@@ -902,7 +895,6 @@ public abstract class BaseRenderingProcessor
         }
 
         ownerRenderable = desc;
-        localContext = desc.getLocalContext();
     }
 
     /**
@@ -1014,6 +1006,7 @@ public abstract class BaseRenderingProcessor
      */
     protected void init()
     {
+        localContext = ownerRenderable.getLocalContext();
         GL base_gl = localContext.getGL();
         GL2 gl = base_gl.getGL2();
 
@@ -1650,6 +1643,7 @@ public abstract class BaseRenderingProcessor
      */
     protected void updateContextChange()
     {
+        localContext = ownerRenderable.getLocalContext();
         GL base_gl = localContext.getGL();
         GL2 gl = base_gl.getGL2();
 

@@ -196,12 +196,7 @@ public class DebugAWTSurface extends BaseAWTSurface
     // Methods defined by KeyListener
     //------------------------------------------------------------------------
 
-    /**
-     * Notification of a key press event. When the 'd' key is pressed, dump
-     * the next frame to stdout.
-     *
-     * @param evt The key event that caused this method to be called
-     */
+    @Override
     public void keyPressed(KeyEvent evt)
     {
         if(evt.getKeyCode() == KeyEvent.VK_D)
@@ -219,22 +214,12 @@ public class DebugAWTSurface extends BaseAWTSurface
         }
     }
 
-    /**
-     * Notification of a key release event. Does nothing for this
-     * implementation.
-     *
-     * @param evt The key event that caused this method to be called
-     */
+    @Override
     public void keyReleased(KeyEvent evt)
     {
     }
 
-    /**
-     * Notification of a key type (press and release) event. This will any one
-     * of the key value fields depending on the value.
-     *
-     * @param evt The key event that caused this method to be called
-     */
+    @Override
     public void keyTyped(KeyEvent evt)
     {
     }
@@ -243,13 +228,6 @@ public class DebugAWTSurface extends BaseAWTSurface
     // Methods defined by GraphicsOutputDevice
     //---------------------------------------------------------------
 
-    /**
-     * Get the underlying object that this surface is rendered to. If it is a
-     * screen display device, the surface can be one of AWT Component or
-     * Swing JComponent. An off-screen buffer would be a form of AWT Image etc.
-     *
-     * @return The drawable surface representation
-     */
     @Override
     public Object getSurfaceObject()
     {
@@ -262,14 +240,6 @@ public class DebugAWTSurface extends BaseAWTSurface
     // Methods defined by BaseAWTSurface
     //---------------------------------------------------------------
 
-    /**
-     * Attempt to create a new lightweight canvas renderer now. This will only
-     * be called whenever the user has signalled that this is a lightweight
-     * renderer and we do not yet have a canvasRenderer instance created. If
-     * this fails, silently exit. We'll attempt to do this next frame.
-     *
-     * @return true if this creation succeeded
-     */
     @Override
     protected boolean createLightweightContext()
     {
@@ -297,26 +267,46 @@ public class DebugAWTSurface extends BaseAWTSurface
         return false;
     }
 
+    @Override
+    protected void initCanvas(GLCapabilities caps, GLCapabilitiesChooser chooser)
+    {
+        if(lightweight)
+        {
+            canvas = new GLJPanel(caps, chooser);
+
+            // Don't fetch context here because the JOGL code doesn't
+            // generate a valid context until the window has been drawn and
+            // made visible the first time.
+        }
+        else
+        {
+            canvas = new GLCanvas(caps, chooser, null);
+            ((GLCanvas)canvas).setAutoSwapBufferMode(false);
+
+            canvasContext = canvas.createContext(null);
+            canvasRenderer = new DebugRenderingProcessor(canvasContext, this);
+            canvasDescriptor.setLocalContext(canvasContext);
+            canvasRenderer.setOwnerBuffer(canvasDescriptor);
+        }
+
+        GLAutoDrawable gld = (GLAutoDrawable)canvas;
+        Component comp = (Component)canvas;
+
+        AWTSurfaceMonitor mon = (AWTSurfaceMonitor)surfaceMonitor;
+
+        comp.setIgnoreRepaint(true);
+        comp.addKeyListener(this);
+        comp.addComponentListener(resizer);
+        comp.addHierarchyListener(resizer);
+        comp.addComponentListener(mon);
+        comp.addHierarchyListener(mon);
+        gld.addGLEventListener(mon);
+    }
+
     //---------------------------------------------------------------
     // Methods defined by BaseSurface
     //---------------------------------------------------------------
 
-    /**
-     * Instruct the surface to draw the collected set of nodes now. The
-     * registered view environment is used to draw to this surface. If no
-     * view is registered, the surface is cleared and then this call is
-     * exited. The drawing surface does not swap the buffers at this point.
-     * <p>
-     * The return value indicates success or failure in the ability to
-     * render this frame. Typically it will indicate failure if the
-     * underlying surface has been disposed of, either directly through the
-     * calling of the method on this interface, or through an internal check
-     * mechanism. If failure is indicated, then check to see if the surface has
-     * been disposed of and discontinue rendering if it has.
-     *
-     * @param profilingData The timing and load data
-     * @return true if the drawing succeeded, or false if not
-     */
     @Override
     public boolean draw(ProfilingData profilingData)
     {
@@ -337,13 +327,6 @@ public class DebugAWTSurface extends BaseAWTSurface
         return ret_val;
     }
 
-    /**
-     * Overridden to provide instances of the debug rendering processor for
-     * off screen textures.
-     *
-     * @param context The GLContext instance to wrap for this processor
-     * @return The rendering processor instance to use
-     */
     @Override
     protected RenderingProcessor createRenderingProcessor(GLContext context)
     {
@@ -383,57 +366,5 @@ public class DebugAWTSurface extends BaseAWTSurface
                 ((DebugRenderingProcessor)rp).traceNextFrames(count);
             }
         }
-    }
-
-    /**
-     * Common internal initialisation for the constructors.
-     *
-     * @param caps A set of required capabilities for this canvas.
-     * @param chooser Custom algorithm for selecting one of the available
-     *    GLCapabilities for the component;
-     */
-    private void init(GraphicsRenderingCapabilities caps, GraphicsRenderingCapabilitiesChooser chooser)
-    {
-        GLContext shared_context = null;
-
-        if(sharedSurface != null)
-            shared_context = sharedSurface.getGLContext();
-
-        GLCapabilities jogl_caps = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
-        GLCapabilitiesChooser jogl_chooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
-
-        if(lightweight)
-        {
-            canvas = new GLJPanel(jogl_caps, jogl_chooser);
-
-            // Don't fetch context here because the JOGL code doesn't
-            // generate a valid context until the window has been drawn and
-            // made visible the first time.
-        }
-        else
-        {
-            canvas = new GLCanvas(jogl_caps, jogl_chooser, null);
-            ((GLCanvas)canvas).setAutoSwapBufferMode(false);
-
-            canvasContext = ((GLAutoDrawable)canvas).getContext();
-            canvasRenderer = new DebugRenderingProcessor(canvasContext, this);
-            canvasDescriptor.setLocalContext(canvasContext);
-            canvasRenderer.setOwnerBuffer(canvasDescriptor);
-        }
-
-        GLAutoDrawable gld = (GLAutoDrawable)canvas;
-        Component comp = (Component)canvas;
-
-        AWTSurfaceMonitor mon = (AWTSurfaceMonitor)surfaceMonitor;
-
-        comp.setIgnoreRepaint(true);
-        comp.addKeyListener(this);
-        comp.addComponentListener(resizer);
-        comp.addHierarchyListener(resizer);
-        comp.addComponentListener(mon);
-        comp.addHierarchyListener(mon);
-        gld.addGLEventListener(mon);
-
-        init();
     }
 }

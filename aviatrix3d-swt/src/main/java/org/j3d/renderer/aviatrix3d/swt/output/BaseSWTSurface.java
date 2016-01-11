@@ -17,10 +17,18 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 // Local imports
+import com.jogamp.nativewindow.AbstractGraphicsDevice;
+import com.jogamp.opengl.*;
 import com.jogamp.opengl.swt.GLCanvas;
+
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
 import org.j3d.aviatrix3d.output.graphics.BaseSurface;
+import org.j3d.aviatrix3d.output.graphics.CapabilitiesUtils;
+import org.j3d.aviatrix3d.output.graphics.CapabilityChooserWrapper;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsResizeListener;
 
+import org.eclipse.swt.widgets.Composite;
 import org.j3d.util.ErrorReporter;
 
 /**
@@ -37,7 +45,7 @@ import org.j3d.util.ErrorReporter;
  * @author Justin Couch
  * @version $Revision: 3.4 $
  */
-public class BaseSWTSurface extends BaseSurface
+public abstract class BaseSWTSurface extends BaseSurface
 {
     /** Handler for dealing with the AWT to our graphics resize handler */
     protected SWTResizeHandler resizer;
@@ -133,5 +141,54 @@ public class BaseSWTSurface extends BaseSurface
     public Object getSurfaceObject()
     {
         return swtCanvas;
+    }
+
+    //---------------------------------------------------------------
+    // Local Methods
+    //---------------------------------------------------------------
+
+    /**
+     * Ask the final class to create the actual canvas now, based on the selected chooser and
+     * caps that JOGL needs, rather than the AV3D-specific classes that the external caller
+     * makes use of.
+     *
+     * @param parent The parent component that this surface uses for the canvas
+     * @param style The SWT style bits to use on the created canvas
+     * @param caps The capabilities to select for
+     * @param chooser The optional chooser that will help select the required capabilities
+     */
+    protected abstract void initCanvas(Composite parent,
+                                       int style,
+                                       GLCapabilities caps,
+                                       GLCapabilitiesChooser chooser);
+
+    /**
+     * Common internal initialisation for the constructors.
+     *
+     * @param parent The parent component that this surface uses for the canvas
+     * @param style The SWT style bits to use on the created canvas
+     * @param caps A set of required capabilities for this canvas.
+     * @param chooser Custom algorithm for selecting one of the available
+     *    GLCapabilities for the component;
+     */
+    protected void init(Composite parent,
+                        int style,
+                        GraphicsRenderingCapabilities caps,
+                        GraphicsRenderingCapabilitiesChooser chooser)
+    {
+        GLContext shared_context = null;
+
+        if (sharedSurface != null)
+            shared_context = sharedSurface.getGLContext();
+
+        GLDrawableFactory fac = GLDrawableFactory.getDesktopFactory();
+        AbstractGraphicsDevice screen_device = fac.getDefaultDevice();
+        GLProfile selected_profile = GLProfile.get(screen_device, GLProfile.GL2);
+
+        GLCapabilities jogl_caps = CapabilitiesUtils.convertCapabilities(caps, selected_profile);
+        GLCapabilitiesChooser jogl_chooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
+
+        initCanvas(parent, style, jogl_caps, jogl_chooser);
+        init(screen_device, selected_profile);
     }
 }
