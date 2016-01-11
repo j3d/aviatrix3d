@@ -187,13 +187,6 @@ public class SimpleAWTSurface extends BaseAWTSurface
     // Methods defined by GraphicsOutputDevice
     //---------------------------------------------------------------
 
-    /**
-     * Get the underlying object that this surface is rendered to. If it is a
-     * screen display device, the surface can be one of AWT Component or
-     * Swing JComponent. An off-screen buffer would be a form of AWT Image etc.
-     *
-     * @return The drawable surface representation
-     */
     @Override
     public Object getSurfaceObject()
     {
@@ -206,14 +199,6 @@ public class SimpleAWTSurface extends BaseAWTSurface
     // Methods defined by BaseAWTSurface
     //---------------------------------------------------------------
 
-    /**
-     * Attempt to create a new lightweight canvas renderer now. This will only
-     * be called whenever the user has signalled that this is a lightweight
-     * renderer and we do not yet have a canvasRenderer instance created. If
-     * this fails, silently exit. We'll attempt to do this next frame.
-     *
-     * @return true if this creation succeeded
-     */
     @Override
     protected boolean createLightweightContext()
     {
@@ -231,8 +216,7 @@ public class SimpleAWTSurface extends BaseAWTSurface
         if(canvasContext != null)
         {
             ((GLJPanel)canvas).setAutoSwapBufferMode(false);
-            canvasRenderer =
-                new StandardRenderingProcessor(canvasContext, this);
+            canvasRenderer = new StandardRenderingProcessor(canvasContext, this);
             canvasDescriptor.setLocalContext(canvasContext);
             canvasRenderer.setOwnerBuffer(canvasDescriptor);
             return true;
@@ -241,30 +225,12 @@ public class SimpleAWTSurface extends BaseAWTSurface
         return false;
     }
 
-    //---------------------------------------------------------------
-    // Local Methods
-    //---------------------------------------------------------------
-
-    /**
-     * Common internal initialisation for the constructors.
-     *
-     * @param caps A set of required capabilities for this canvas.
-     * @param chooser Custom algorithm for selecting one of the available
-     *    GLCapabilities for the component;
-     */
-    private void init(GraphicsRenderingCapabilities caps, GraphicsRenderingCapabilitiesChooser chooser)
+    @Override
+    protected void initCanvas(GLCapabilities caps, GLCapabilitiesChooser chooser)
     {
-        GLContext shared_context = null;
-
-        if(sharedSurface != null)
-            shared_context = sharedSurface.getGLContext();
-
-        GLCapabilities jogl_caps = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
-        GLCapabilitiesChooser jogl_chooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
-
         if(lightweight)
         {
-            canvas = new GLJPanel(jogl_caps, jogl_chooser);
+            canvas = new GLJPanel(caps, chooser);
 
             // Don't fetch context here because the JOGL code doesn't
             // generate a valid context until the window has been drawn and
@@ -272,12 +238,11 @@ public class SimpleAWTSurface extends BaseAWTSurface
         }
         else
         {
-            canvas = new GLCanvas(jogl_caps, jogl_chooser, null);
+            canvas = new GLCanvas(caps, chooser, null);
             ((GLCanvas)canvas).setAutoSwapBufferMode(false);
 
-            canvasContext = ((GLAutoDrawable)canvas).getContext();
-            canvasRenderer =
-                new StandardRenderingProcessor(canvasContext, this);
+            canvasContext = canvas.createContext(null);
+            canvasRenderer = new StandardRenderingProcessor(canvasContext, this);
             canvasDescriptor.setLocalContext(canvasContext);
             canvasRenderer.setOwnerBuffer(canvasDescriptor);
         }
@@ -294,7 +259,10 @@ public class SimpleAWTSurface extends BaseAWTSurface
         comp.addComponentListener(mon);
         comp.addHierarchyListener(mon);
         gld.addGLEventListener(mon);
-
-        init();
     }
+
+    //---------------------------------------------------------------
+    // Local Methods
+    //---------------------------------------------------------------
+
 }

@@ -89,7 +89,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
      */
     public BaseStereoProcessor(GLContext context, GraphicsOutputDevice owner)
     {
-        super(context, owner);
+        super(owner);
 
         eyeSeparation = 0.005f;
         stereoAvailability = false;

@@ -44,6 +44,8 @@ import org.j3d.aviatrix3d.pipeline.graphics.*;
  * <b>Internationalisation Resource Names</b>
  * <ul>
  * <li>makeCurrentFailMsg: Error message because the GL context isn't current</li>
+ * <li>makeCurrentAttemptMsg: Info message when attempting to make the GL context current</li>
+ * <li>makeCurrentSuccessMsg: Info message when the GL context is current</li>
  * </ul>
  *
  * @author Justin Couch
@@ -169,121 +171,52 @@ public abstract class BaseSurface
     // Methods defined by GraphicsOutputDevice
     //---------------------------------------------------------------
 
-    /**
-     * Check to see whether this surface supports stereo rendering - which is
-     * does not. Always returns false. May be overridden by derived class to
-     * provide a different answer.
-     *
-     * @return false Stereo is not available
-     */
     @Override
     public boolean isStereoAvailable()
     {
         return false;
     }
 
-    /**
-     * Check to see whether this surface supports Quad buffer stereo rendering
-     * - which it does not. Always returns false for this implementation. May
-     * be overridden by derived class to provide a different answer.
-     *
-     * @return false The surface does not support stereo at all
-     */
     @Override
     public boolean isQuadStereoAvailable()
     {
         return false;
     }
 
-    /**
-     * Set the eye separation value when rendering stereo. The default value is
-     * 0.33 for most applications. The absolute value of the separation is
-     * always used. Ignored for this implementation. May be overridden by
-     * derived class to provide a different answer.
-     *
-     * @param sep The amount of eye separation
-     */
     @Override
     public void setStereoEyeSeparation(float sep)
     {
     }
 
-    /**
-     * Get the current eye separation value - always returns 0. May be
-     * overridden by derived class to provide a different answer.
-     *
-     * @return sep The amount of eye separation
-     */
     @Override
     public float getStereoEyeSeparation()
     {
         return 0;
     }
 
-    /**
-     * Set the rendering policy used when handling stereo. The policy must be
-     * one of the _STEREO constants defined in this interface. May be
-     * overridden by derived class to provide a different answer.
-     *
-     * @param policy The policy to currently use
-     * @throws IllegalArgumentException The policy type is not one of the legal
-     *    selections.
-     */
     @Override
     public void setStereoRenderingPolicy(int policy)
     {
     }
 
-    /**
-     * Get the current stereo rendering policy in use. If not explicitly set by
-     * the user, then it will default to <code>NO_STEREO</code>. May be
-     * overridden by derived class to provide a different answer.
-     *
-     * @return One of the *_STEREO values
-     */
     @Override
     public int getStereoRenderingPolicy()
     {
         return NO_STEREO;
     }
 
-    /**
-     * Set the background colour that this surface should be cleared to before
-     * the drawing step. Colours range from 0 to 1 in the normal manner.
-     *
-     * @param r The red component of the background clear colour
-     * @param g The green component of the background clear colour
-     * @param b The blue component of the background clear colour
-     * @param a The alpha component of the background clear colour
-     */
     @Override
     public void setClearColor(float r, float g, float b, float a)
     {
         canvasRenderer.setClearColor(r, g, b, a);
     }
 
-    /**
-     * Set whether we should always force a local colour clear before
-     * beginning any drawing. If this is set to false, then we can assume that
-     * there is at least one background floating around that we can use to
-     * clear whatever was drawn in the previous frame, and so we can ignore the
-     * glClear(GL.GL_COLOR_BUFFER_BIT) call. The default is set to true.
-     *
-     * @param state true if we should always locally clear first
-     */
     @Override
     public void setColorClearNeeded(boolean state)
     {
         canvasRenderer.setColorClearNeeded(state);
     }
 
-    /**
-     * Enable or disable two pass rendering of transparent objects. By default
-     * it is disabled. This flag applies to this surface and any offscreen
-     * surfaces that are children of this surface (FBOs, PBuffers etc).
-     *
-     * @param state true if we should enable two pass rendering
-     */
     @Override
     public void enableTwoPassTransparentRendering(boolean state)
     {
@@ -302,27 +235,12 @@ public abstract class BaseSurface
         }
     }
 
-    /**
-     * Check the state of the two pass transprent rendering flag.
-     *
-     * @return true if two pass rendering of transparent objects is enabled
-     */
     @Override
     public boolean isTwoPassTransparentEnabled()
     {
         return useTwoPassTransparent;
     }
 
-    /**
-     * If two pass rendering of transparent objects is enabled, this is the alpha
-     * test value used when deciding what to render. The default value is 1.0. No
-     * sanity checking is performed, but the value should be between [0,1].
-     * <p>
-     * This flag applies to this surface and any offscreen
-     * surfaces that are children of this surface (FBOs, PBuffers etc).
-     *
-     * @param cutoff The alpha value at which to enable rendering
-     */
     @Override
     public void setAlphaTestCutoff(float cutoff)
     {
@@ -341,27 +259,12 @@ public abstract class BaseSurface
         }
     }
 
-    /**
-     * Get the current value of the alpha test cutoff number. Will always
-     * return the currently set number regardless of the state of the
-     * two pass rendering flag.
-     *
-     * @return The currently set cut off value
-     */
     @Override
     public float getAlphaTestCutoff()
     {
         return alphaCutoff;
     }
 
-    /**
-     * Update the list of items to be rendered to the current list. Draw them
-     * at the next opportunity.
-     *
-     * @param otherData data to be processed before the rendering
-     * @param commands The list of drawable surfaces to render
-     * @param numValid The number of valid items in the array
-     */
     @Override
     public void setDrawableObjects(GraphicsRequestData otherData,
                                    GraphicsInstructions[] commands,
@@ -456,10 +359,6 @@ public abstract class BaseSurface
         updatedSubscenes = true;
     }
 
-    /**
-     * Swap the buffers now if the surface supports multiple buffer drawing.
-     * For surfaces that don't support multiple buffers, this does nothing.
-     */
     @Override
     public void swap()
     {
@@ -484,22 +383,6 @@ public abstract class BaseSurface
         }
     }
 
-    /**
-     * Get the surface to VWorld transformation matrix.
-     *
-     * @param x The X coordinate in the entire surface
-     * @param y The Y coordinate in the entire surface
-     * @param layer The layer ID to fetch from. Layer 0 is the front-most
-     * @param subLayer The ID of the viewport-layer that is needed. If there
-     *   are no sub-layers, use 0.
-     * @param matrix The matrix to copy into
-     * @param deviceId A user-defined identifier for the requesting device when
-     *    using the lastFound items
-     * @param useLastFound Should we skip the search process and use the last
-     *    data found for this layer/sublayer combo.
-     *
-     * @return Whether the coordinates where on the layer
-     */
     @Override
     public boolean getSurfaceToVWorld(int x,
                                    int y,
@@ -518,22 +401,6 @@ public abstract class BaseSurface
                                                  useLastFound);
     }
 
-    /**
-     * Convert a pixel location to surface coordinates.
-     *
-     * @param x The X coordinate
-     * @param y The Y coordinate
-     * @param layer The layer ID to fetch from. Layer 0 is the front-most
-     * @param subLayer The ID of the viewport-layer that is needed. If there
-     *   are no sub-layers, use 0.
-     * @param position The converted position.  It must be preallocated.
-     * @param deviceId A user-defined identifier for the requesting device when
-     *    using the lastFound items
-     * @param useLastFound Should we skip the search process and use the last
-     *    data found for this layer/sublayer combo.
-     *
-     * @return Whether the coordinates where on the layer
-     */
     @Override
     public boolean getPixelLocationInSurface(int x,
                                           int y,
@@ -552,22 +419,6 @@ public abstract class BaseSurface
                                                  useLastFound);
     }
 
-    /**
-     * Get the Center Eye position in surface coordinates.
-     *
-     * @param x The X coordinate in the entire surface
-     * @param y The Y coordinate in the entire surface
-     * @param layer The layer ID to fetch from. Layer 0 is the front-most
-     * @param subLayer The ID of the viewport-layer that is needed. If there
-     *   are no sub-layers, use 0.
-     * @param position The current eye position.  It must be preallocated.
-     * @param deviceId A user-defined identifier for the requesting device when
-     *    using the lastFound items
-     * @param useLastFound Should we skip the search process and use the last
-     *    data found for this layer/sublayer combo.
-     *
-     * @return Whether the coordinates where on the layer
-     */
     @Override
     public boolean getCenterEyeInSurface(int x,
                                          int y,
@@ -586,12 +437,6 @@ public abstract class BaseSurface
                                                     useLastFound);
     }
 
-    /**
-     * Add a surface info listener instance to this surface. Duplicate listener
-     * instance add requests are ignored, as are null values.
-     *
-     * @param l The new listener instance to add
-     */
     @Override
     public void addSurfaceInfoListener(SurfaceInfoListener l)
     {
@@ -599,12 +444,6 @@ public abstract class BaseSurface
             canvasRenderer.addSurfaceInfoListener(l);
     }
 
-    /**
-     * Remove a surface info listener from this surface. If the listener is not
-     * currently registered the request is ignored.
-     *
-     * @param l The listener instance to remove
-     */
     @Override
     public void removeSurfaceInfoListener(SurfaceInfoListener l)
     {
@@ -616,14 +455,6 @@ public abstract class BaseSurface
     // Methods defined by OutputDevice
     //---------------------------------------------------------------
 
-    /**
-     * Register an error reporter with the engine so that any errors generated
-     * by the node's internals can be reported in a nice, pretty fashion.
-     * Setting a value of null will clear the currently set reporter. If one
-     * is already set, the new value replaces the old.
-     *
-     * @param reporter The instance to use or null
-     */
     @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
@@ -636,30 +467,18 @@ public abstract class BaseSurface
         surfaceMonitor.setErrorReporter(errorReporter);
     }
 
-    /**
-     * Instruct the surface to draw the collected set of nodes now. The
-     * registered view environment is used to draw to this surface. If no
-     * view is registered, the surface is cleared and then this call is
-     * exited. The drawing surface does not swap the buffers at this point.
-     * <p>
-     * The return value indicates success or failure in the ability to
-     * render this frame. Typically it will indicate failure if the
-     * underlying surface has been disposed of, either directly through the
-     * calling of the method on this interface, or through an internal check
-     * mechanism. If failure is indicated, then check to see if the surface has
-     * been disposed of and discontinue rendering if it has.
-     *
-     * @param profilingData The timing and load data
-     * @return true if the drawing succeeded, or false if not
-     */
     @Override
     public boolean draw(ProfilingData profilingData)
     {
         // tell the draw lock that it's ok to run now, so long as it's not
         // called before the canvas has completed initialisation.
         if(!initComplete)
+        {
             if(!initCanvas())
+            {
                 return false;
+            }
+        }
 
         // TODO:
         // Would be nice to alter this so that we can dynamically query for
@@ -674,7 +493,9 @@ public abstract class BaseSurface
         GraphicsProfilingData gpd = null;
 
         if(profilingData instanceof GraphicsProfilingData)
-            gpd = (GraphicsProfilingData)profilingData;
+        {
+            gpd = (GraphicsProfilingData) profilingData;
+        }
 
         EnableState status = EnableState.ENABLE_FAILED;
         boolean reinit_required = false;
@@ -732,10 +553,6 @@ public abstract class BaseSurface
         return !terminate && draw_continue;
     }
 
-    /**
-     * Instruct this surface that you have finished with the resources needed
-     * and to dispose all rendering resources.
-     */
     @Override
     public void dispose()
     {
@@ -753,31 +570,12 @@ public abstract class BaseSurface
         }
     }
 
-    /**
-     * Check to see the disposal state of the surface. Will return true if the
-     * {@link #dispose} method has been called or an internal dispose handler
-     * has detected the underlying surface is no longer valid to draw to.
-     *
-     * @return true if the surface is disposed and no longer usable
-     */
     @Override
     public boolean isDisposed()
     {
         return terminate;
     }
 
-    /**
-     * Notification that this surface is being drawn to with a single thread.
-     * This can be used to optmise internal state handling when needed in a
-     * single versus multithreaded environment.
-     * <p>
-     *
-     * This method should never be called by end user code. It is purely for
-     * the purposes of the {@link org.j3d.aviatrix3d.management.RenderManager}
-     * to inform the device about what state it can expect.
-     *
-     * @param state true if the device can expect single threaded behaviour
-     */
     @Override
     public void enableSingleThreaded(boolean state)
     {
@@ -796,14 +594,6 @@ public abstract class BaseSurface
         }
     }
 
-    /**
-     * If the output device is marked as single threaded, this instructs the
-     * device that the current rendering thread has exited. Next time the draw
-     * method is called, a new rendering context will need to be created for
-     * a new incoming thread instance. Also, if any other per-thread resources
-     * are around, clean those up now. This is called just before that thread
-     * exits.
-     */
     @Override
     public void disposeSingleThreadResources()
     {
@@ -891,13 +681,11 @@ public abstract class BaseSurface
      * must call this during their constructor otherwise this class will crash
      * in some spectacular ways.
      */
-    protected void init()
+    protected void init(AbstractGraphicsDevice selectedDevice, GLProfile selectedProfile)
     {
         GLDrawableFactory fac = GLDrawableFactory.getDesktopFactory();
 
-        AbstractGraphicsDevice awt_device = fac.getDefaultDevice();
-        GLProfile profile = GLProfile.get(awt_device, GLProfile.GL2);
-        canCreatePBuffers = fac.canCreateGLPbuffer(awt_device, profile);
+        canCreatePBuffers = fac.canCreateGLPbuffer(selectedDevice, selectedProfile);
 
         colourTmp = new float[4];
 
@@ -908,8 +696,7 @@ public abstract class BaseSurface
 
         numExtensions = 0;
 
-        rendererMap =
-            new HashMap<OffscreenBufferRenderable, RenderingProcessor>();
+        rendererMap = new HashMap<>();
 
         errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
@@ -930,11 +717,29 @@ public abstract class BaseSurface
      */
     protected boolean initCanvas()
     {
-        if(canvasContext == null)
+        if(!canvas.isRealized())
+        {
             return false;
+        }
 
-        if(surfaceMonitor != null && !surfaceMonitor.isVisible())
-            return initComplete;
+        if(surfaceMonitor != null)
+        {
+            if(!surfaceMonitor.isVisible())
+            {
+                return initComplete;
+            }
+
+            if(surfaceMonitor.requiresNewContext())
+            {
+                canvasContext = canvas.createContext(null);
+                canvasDescriptor.setLocalContext(canvasContext);
+            }
+        }
+        else if(canvasContext == null)
+        {
+            canvasContext = canvas.createContext(null);
+            canvasDescriptor.setLocalContext(canvasContext);
+        }
 
         int status = canvasContext.makeCurrent();
 

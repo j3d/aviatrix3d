@@ -76,7 +76,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
     public DebugRenderingProcessor(GLContext parentCtx,
                                    GraphicsOutputDevice owner)
     {
-        super(parentCtx, owner);
+        super(owner);
 
         dumpNextFrameCount = 0;
         dumpNow = false;

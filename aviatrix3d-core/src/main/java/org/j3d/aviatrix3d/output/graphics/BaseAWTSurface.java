@@ -13,13 +13,17 @@
 package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
+import com.jogamp.opengl.*;
+
+import com.jogamp.nativewindow.AbstractGraphicsDevice;
 
 // Local imports
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
 import org.j3d.aviatrix3d.rendering.ProfilingData;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsInstructions;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsRequestData;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsResizeListener;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsProfilingData;
 
 import org.j3d.util.ErrorReporter;
 
@@ -177,7 +181,7 @@ public abstract class BaseAWTSurface extends BaseSurface
                 return false;
         }
 
-        boolean ret_val = super.draw((GraphicsProfilingData)profilingData);
+        boolean ret_val = super.draw(profilingData);
 
         return ret_val;
     }
@@ -195,4 +199,39 @@ public abstract class BaseAWTSurface extends BaseSurface
      * @return true if this creation succeeded
      */
     protected abstract boolean createLightweightContext();
+
+    /**
+     * Ask the final class to create the actual canvas now, based on the selected chooser and
+     * caps that JOGL needs, rather than the AV3D-specific classes that the external caller
+     * makes use of.
+     *
+     * @param caps The capabilities to select for
+     * @param chooser The optional chooser that will help select the required capabilities
+     */
+    protected abstract void initCanvas(GLCapabilities caps, GLCapabilitiesChooser chooser);
+
+    /**
+     * Common internal initialisation for the constructors.
+     *
+     * @param caps A set of required capabilities for this canvas.
+     * @param chooser Custom algorithm for selecting one of the available
+     *    GLCapabilities for the component;
+     */
+    protected void init(GraphicsRenderingCapabilities caps, GraphicsRenderingCapabilitiesChooser chooser)
+    {
+        GLContext shared_context = null;
+
+        if (sharedSurface != null)
+            shared_context = sharedSurface.getGLContext();
+
+        GLDrawableFactory fac = GLDrawableFactory.getDesktopFactory();
+        AbstractGraphicsDevice screen_device = fac.getDefaultDevice();
+        GLProfile selected_profile = GLProfile.get(screen_device, GLProfile.GL2);
+
+        GLCapabilities jogl_caps = CapabilitiesUtils.convertCapabilities(caps, selected_profile);
+        GLCapabilitiesChooser jogl_chooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
+
+        initCanvas(jogl_caps, jogl_chooser);
+        init(screen_device, selected_profile);
+    }
 }

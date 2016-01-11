@@ -15,8 +15,6 @@ package org.j3d.renderer.aviatrix3d.swt.output;
 // External imports
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLCapabilitiesChooser;
-import com.jogamp.opengl.GLContext;
-import com.jogamp.opengl.GLProfile;
 
 import com.jogamp.opengl.swt.GLCanvas;
 import org.eclipse.swt.widgets.Composite;
@@ -25,8 +23,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
 import org.j3d.aviatrix3d.output.graphics.BaseSurface;
-import org.j3d.aviatrix3d.output.graphics.CapabilitiesUtils;
-import org.j3d.aviatrix3d.output.graphics.CapabilityChooserWrapper;
 import org.j3d.aviatrix3d.output.graphics.StandardRenderingProcessor;
 
 /**
@@ -148,31 +144,6 @@ public class SimpleSWTSurface extends BaseSWTSurface
      * @param parent The parent component that this surface uses for the canvas
      * @param style The SWT style bits to use on the created canvas
      * @param caps A set of required capabilities for this canvas.
-     * @param chooser Custom algorithm for selecting one of the available
-     *    GLCapabilities for the component;
-     * @param sharedWith The surface that you'd like this surface to share
-     *    the GL context with, if possible. May be null.
-     */
-    public SimpleSWTSurface(Composite parent,
-                            int style,
-                            GraphicsRenderingCapabilities caps,
-                            GraphicsRenderingCapabilitiesChooser chooser,
-                            BaseSurface sharedWith)
-    {
-        this(parent, style, caps, chooser, sharedWith, false);
-    }
-
-    /**
-     * Construct a surface shares it's GL context with the given surface. This
-     * is useful for constructing multiple view displays of the same scene graph,
-     * but from different viewing directions, such as in a CAD application.
-     * <p>
-     * If the sharedWith parameter is null, then this is just treated as an
-     * ordinary non-shared frame. The return flag will be set appropriately.
-     *
-     * @param parent The parent component that this surface uses for the canvas
-     * @param style The SWT style bits to use on the created canvas
-     * @param caps A set of required capabilities for this canvas.
      * @param sharedWith The surface that you'd like this surface to share
      *    the GL context with, if possible. May be null.
      * @param lightweight If true, uses a GLJPanel (lightweight) JComponent,
@@ -185,9 +156,7 @@ public class SimpleSWTSurface extends BaseSWTSurface
                             BaseSurface sharedWith,
                             boolean lightweight)
     {
-        super(sharedWith);
-
-        init(parent, style, caps, null, lightweight);
+        this(parent, style, caps, null, sharedWith, false);
     }
 
     /**
@@ -218,48 +187,22 @@ public class SimpleSWTSurface extends BaseSWTSurface
     {
         super(sharedWith);
 
-        init(parent, style, caps, chooser, lightweight);
+        init(parent, style, caps, chooser);
     }
 
     //---------------------------------------------------------------
-    // Local Methods
+    // Methods defined by BaseSWTSurface
     //---------------------------------------------------------------
 
-    /**
-     * Common internal initialisation for the constructors.
-     *
-     * @param parent The parent component that this surface uses for the canvas
-     * @param style The SWT style bits to use on the created canvas
-     * @param caps A set of required capabilities for this canvas.
-     * @param chooser Custom algorithm for selecting one of the available
-     *    GLCapabilities for the component;
-     * @param lightweight If true, uses a GLJPanel (lightweight) JComponent,
-     *   otherwise a GLCanvas. Note that setting this to true could negatively
-     *   impact performance.
-     */
-    private void init(Composite parent,
-                      int style,
-                      GraphicsRenderingCapabilities caps,
-                      GraphicsRenderingCapabilitiesChooser chooser,
-                      boolean lightweight)
+    @Override
+    protected void initCanvas(Composite parent, int style, GLCapabilities caps, GLCapabilitiesChooser chooser)
     {
-        GLContext shared_context = null;
-
-        if(sharedSurface != null)
-            shared_context = sharedSurface.getGLContext();
-
-        GLCapabilities jogl_caps = CapabilitiesUtils.convertCapabilities(caps, GLProfile.getDefault());
-        GLCapabilitiesChooser jogl_chooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
-
-        swtCanvas = new GLCanvas(parent, style, jogl_caps, jogl_chooser);
+        swtCanvas = new GLCanvas(parent, style, caps, chooser);
         swtCanvas.addControlListener(resizer);
 
         canvas = swtCanvas.getDelegatedDrawable();
         canvasContext = swtCanvas.getContext();
 
-        canvasRenderer =
-            new StandardRenderingProcessor(canvasContext, this);
-
-        init();
+        canvasRenderer = new StandardRenderingProcessor(canvasContext, this);
     }
 }
