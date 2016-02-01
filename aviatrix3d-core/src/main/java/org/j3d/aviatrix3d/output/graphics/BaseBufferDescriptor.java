@@ -111,14 +111,6 @@ public abstract class BaseBufferDescriptor implements OffscreenBufferDescriptor
     public abstract void reinitialize();
 
     /**
-     * Fetch the local context for this buffer. If the buffer has not yet been
-     * initialised, this will return null.
-     *
-     * @return The context for the buffer, or null
-     */
-    public abstract GLContext getLocalContext();
-
-    /**
      * Enable this buffer for rendering to now. A buffer may fail to enable
      * depending on the state of the underlying buffer. The state object
      * describes the options available.
@@ -128,7 +120,7 @@ public abstract class BaseBufferDescriptor implements OffscreenBufferDescriptor
      * @throws GLException Exception when something at the low-level went
      *    wrong.
      */
-    public abstract EnableState enable(GLContext context)
+    public abstract void enable(GLContext context)
         throws GLException;
 
     /**
@@ -156,13 +148,6 @@ public abstract class BaseBufferDescriptor implements OffscreenBufferDescriptor
     public void unbindBuffer(GLContext parentContext)
     {
     }
-
-    /**
-     * Finish rendering this buffer and copy it in to the destination texture.
-     *
-     * @param context The GL context this buffer comes from
-     */
-    public abstract void swapBuffers(GLContext context);
 
     /**
      * Resize the underlying textures, leaving the buffer ID intact.

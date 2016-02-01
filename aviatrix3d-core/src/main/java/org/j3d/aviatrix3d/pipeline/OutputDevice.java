@@ -85,28 +85,4 @@ public interface OutputDevice
      * @return true if the surface is disposed and no longer usable
      */
     public boolean isDisposed();
-
-    /**
-     * Notification that this surface is being drawn to with a single thread.
-     * This can be used to optmise internal state handling when needed in a
-     * single versus multithreaded environment.
-     * <p>
-     *
-     * This method should never be called by end user code. It is purely for
-     * the purposes of the {@link org.j3d.aviatrix3d.management.RenderManager}
-     * to inform the device about what state it can expect.
-     *
-     * @param state true if the device can expect single threaded behaviour
-     */
-    public void enableSingleThreaded(boolean state);
-
-    /**
-     * If the output device is marked as single threaded, this instructs the
-     * device that the current rendering thread has exited. Next time the draw
-     * method is called, a new rendering context will need to be created for
-     * a new incoming thread instance. Also, if any other per-thread resources
-     * are around, clean those up now. This is called just before that thread
-     * exits.
-     */
-    public void disposeSingleThreadResources();
 }

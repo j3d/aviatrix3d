@@ -343,27 +343,21 @@ public class StereoAWTSurface extends BaseAWTSurface
     {
         stereoRenderType = policy;
 
-        if(canvasContext == null)
-            return;
-
         switch(policy)
         {
             case NO_STEREO:
-                canvasRenderer =
-                    new StandardRenderingProcessor(canvasContext, this);
+                canvasRenderer = new StandardRenderingProcessor(this);
                 break;
 
             case QUAD_BUFFER_STEREO:
                 canvasRenderer =
-                    new QuadBufferStereoProcessor(canvasContext, this);
-                StereoRenderingProcessor r =
-                    (StereoRenderingProcessor)canvasRenderer;
+                    new QuadBufferStereoProcessor(this);
+                StereoRenderingProcessor r = (StereoRenderingProcessor)canvasRenderer;
                 r.setStereoEyeSeparation(eyeSeparation);
                 break;
 
             case ALTERNATE_FRAME_STEREO:
-                canvasRenderer =
-                    new SingleEyeStereoProcessor(canvasContext, this);
+                canvasRenderer = new SingleEyeStereoProcessor(this);
                 r = (StereoRenderingProcessor)canvasRenderer;
                 r.setStereoEyeSeparation(eyeSeparation);
                 break;
@@ -390,7 +384,6 @@ public class StereoAWTSurface extends BaseAWTSurface
                 throw new IllegalArgumentException(msg);
         }
 
-        canvasDescriptor.setLocalContext(canvasContext);
         canvasRenderer.setOwnerBuffer(canvasDescriptor);
     }
 
@@ -407,52 +400,62 @@ public class StereoAWTSurface extends BaseAWTSurface
     }
 
     /**
-     * Instruct the surface to draw the collected set of nodes now. The
-     * registered view environment is used to draw to this surface. If no
-     * view is registered, the surface is cleared and then this call is
-     * exited. The drawing surface does not swap the buffers at this point.
-     * <p>
-     * The return value indicates success or failure in the ability to
-     * render this frame. Typically it will indicate failure if the
-     * underlying surface has been disposed of, either directly through the
-     * calling of the method on this interface, or through an internal check
-     * mechanism. If failure is indicated, then check to see if the surface has
-     * been disposed of and discontinue rendering if it has.
+     * Get the underlying object that this surface is rendered to. If it is a
+     * screen display device, the surface can be one of AWT Component or
+     * Swing JComponent. An off-screen buffer would be a form of AWT Image etc.
      *
-     * @param profilingData The timing and load data
-     * @return true if the drawing succeeded, or false if not
+     * @return The drawable surface representation
      */
     @Override
-    public boolean draw(ProfilingData profilingData)
+    public Object getSurfaceObject()
     {
-        // tell the draw lock that it's ok to run now, so long as it's not called
-        // before the canvas has completed initialisation.
-        if(!initComplete)
-            if(!initCanvas())
-                return false;
+        // Since we know that the canvas is GLJPanel or GLCanvas, we can just
+        // return the raw drawable here for casting.
+        return canvas;
+    }
 
-        // Take local reference in case the setDrawableObjects decides to
-        // update values right now.
-        int count = numRenderables;
-        boolean draw_continue = true;
-        OffscreenBufferRenderable[] surfaces = renderableList;
-        GraphicsProfilingData gpd = null;
+    //---------------------------------------------------------------
+    // Methods defined by BaseAWTSurface
+    //---------------------------------------------------------------
 
-        if(profilingData instanceof GraphicsProfilingData)
-            gpd = (GraphicsProfilingData)profilingData;
-
-        for(int i = 0; i < count && !terminate && draw_continue; i++)
+    @Override
+    protected void initCanvas(GLCapabilities caps, GLCapabilitiesChooser chooser)
+    {
+        if(lightweight)
         {
-            if(surfaces[i] != null)
-            {
-                RenderingProcessor rp = rendererMap.get(surfaces[i]);
-                draw_continue = rp.render(gpd);
-            }
+            canvas = new GLJPanel(caps, chooser);
+        }
+        else
+        {
+            canvas = new GLCanvas(caps, chooser, null);
         }
 
-        if(terminate || !draw_continue)
-            return false;
+        Component comp = (Component)canvas;
 
+        comp.setIgnoreRepaint(true);
+        comp.addComponentListener(resizer);
+        comp.addHierarchyListener(resizer);
+        canvas.addGLEventListener(this);
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by BaseSurface
+    //---------------------------------------------------------------
+
+    @Override
+    public boolean completeCanvasInitialisation(GL gl)
+    {
+        byte[] params = new byte[1];
+        gl.glGetBooleanv(GL2.GL_STEREO, params, 0);
+
+        quadBuffersAvailable = (params[0] == GL.GL_TRUE);
+
+        return true;
+    }
+
+    @Override
+    protected void preMainCanvasDraw()
+    {
         switch(stereoRenderType)
         {
             case ALTERNATE_FRAME_STEREO:
@@ -461,7 +464,6 @@ public class StereoAWTSurface extends BaseAWTSurface
 
 
                 r.setEyeToRender(renderLeftFrame);
-                draw_continue = super.draw(gpd);
                 renderLeftFrame = !renderLeftFrame;
 
 // TODO: I think this should be called twice in the same frame.  But it doesn't seem to work right
@@ -485,136 +487,6 @@ public class StereoAWTSurface extends BaseAWTSurface
                 break;
 
             default:
-                //canvasRenderer.render(gpd);
-                draw_continue = super.draw(profilingData);
         }
-
-        return !terminate && draw_continue;
-    }
-
-    /**
-     * Get the underlying object that this surface is rendered to. If it is a
-     * screen display device, the surface can be one of AWT Component or
-     * Swing JComponent. An off-screen buffer would be a form of AWT Image etc.
-     *
-     * @return The drawable surface representation
-     */
-    @Override
-    public Object getSurfaceObject()
-    {
-        // Since we know that the canvas is GLJPanel or GLCanvas, we can just
-        // return the raw drawable here for casting.
-        return canvas;
-    }
-
-    //---------------------------------------------------------------
-    // Methods defined by BaseAWTSurface
-    //---------------------------------------------------------------
-
-    /**
-     * Attempt to create a new lightweight canvas renderer now. This will only
-     * be called whenever the user has signalled that this is a lightweight
-     * renderer and we do not yet have a canvasRenderer instance created. If
-     * this fails, silently exit. We'll attempt to do this next frame.
-     *
-     * @return true if this creation succeeded
-     */
-    @Override
-    protected boolean createLightweightContext()
-    {
-        try
-        {
-            canvasContext = ((GLAutoDrawable)canvas).getContext();
-        }
-        catch(NullPointerException npe)
-        {
-            // This is unexpectedly thrown by the internals of the JOGL RI when
-            // the surface has not yet been realised at the AWT level. Catch an
-            // ignore, treating it as though context creation failed.
-        }
-
-        if(canvasContext != null)
-        {
-            ((GLJPanel)canvas).setAutoSwapBufferMode(false);
-            switch(stereoRenderType)
-            {
-                case NO_STEREO:
-                    canvasRenderer =
-                        new StandardRenderingProcessor(canvasContext, this);
-                    break;
-
-                case QUAD_BUFFER_STEREO:
-                    canvasRenderer =
-                        new QuadBufferStereoProcessor(canvasContext, this);
-                    StereoRenderingProcessor r =
-                        (StereoRenderingProcessor)canvasRenderer;
-                    r.setStereoEyeSeparation(eyeSeparation);
-                    break;
-
-                case ALTERNATE_FRAME_STEREO:
-                    canvasRenderer =
-                        new SingleEyeStereoProcessor(canvasContext, this);
-                    r = (StereoRenderingProcessor)canvasRenderer;
-                    r.setStereoEyeSeparation(eyeSeparation);
-                    break;
-
-                case TWO_CANVAS_STEREO:
-                    errorReporter.warningReport("Dual canvas stereo is not implemented yet", null);
-                    break;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
-    protected void initCanvas(GLCapabilities caps, GLCapabilitiesChooser chooser)
-    {
-        GLContext shared_context = null;
-
-        if(sharedSurface != null)
-        {
-            shared_context = sharedSurface.canvasContext;
-        }
-
-        if(lightweight)
-        {
-            canvas = new GLJPanel(caps, chooser);
-        }
-        else
-        {
-            canvas = new GLCanvas(caps, chooser, null);
-        }
-
-        GLAutoDrawable gld = (GLAutoDrawable)canvas;
-        Component comp = (Component)canvas;
-
-        AWTSurfaceMonitor mon = (AWTSurfaceMonitor)surfaceMonitor;
-
-        comp.setIgnoreRepaint(true);
-        comp.addComponentListener(resizer);
-        comp.addHierarchyListener(resizer);
-        comp.addComponentListener(mon);
-        comp.addHierarchyListener(mon);
-        gld.addGLEventListener(mon);
-
-        canvasContext = ((GLAutoDrawable)canvas).getContext();
-    }
-
-    //---------------------------------------------------------------
-    // Methods defined by BaseSurface
-    //---------------------------------------------------------------
-
-    @Override
-    public boolean completeCanvasInitialisation(GL gl)
-    {
-        byte[] params = new byte[1];
-        gl.glGetBooleanv(GL2.GL_STEREO, params, 0);
-
-        quadBuffersAvailable = (params[0] == GL.GL_TRUE);
-
-        return true;
     }
 }

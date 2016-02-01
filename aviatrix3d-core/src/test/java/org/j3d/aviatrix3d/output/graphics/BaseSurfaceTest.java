@@ -62,12 +62,6 @@ public class BaseSurfaceTest
         {
             return null;
         }
-
-        @Override
-        public RenderingProcessor createRenderingProcessor(GLContext ctx)
-        {
-            return mockRenderingProcessor;
-        }
     }
 
     @BeforeMethod(groups = "unit")

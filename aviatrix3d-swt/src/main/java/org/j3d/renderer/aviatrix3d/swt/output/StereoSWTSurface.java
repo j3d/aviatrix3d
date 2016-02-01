@@ -325,42 +325,18 @@ public class StereoSWTSurface extends BaseSWTSurface
     // Methods defined by GraphicsOutputDevice
     //---------------------------------------------------------------
 
-    /**
-     * Check to see whether this surface supports stereo rendering. As this is
-     * not known until after initialisation, this method will return false
-     * until it can determine whether or not stereo is available.
-     *
-     * @return true Stereo support is currently available
-     */
     @Override
     public boolean isStereoAvailable()
     {
         return true;
     }
 
-    /**
-     * Check to see whether this surface supports Quad buffer stereo rendering.
-     * Quadbuffers uses the GL_BACK_LEFT and GL_BACK_RIGHT for rendering pairs
-     * rather than drawing alternate frames to the same window.
-     * <p>
-     * As this is not known until after initialisation, this method will return
-     * false until it can determine whether or not stereo is available.
-     *
-     * @return true Stereo support is currently available
-     */
     @Override
     public boolean isQuadStereoAvailable()
     {
         return quadBuffersAvailable;
     }
 
-    /**
-     * Set the eye separation value when rendering stereo. The default value is
-     * 0.33 for most applications. The absolute value of the separation is
-     * always used. Ignored for this implementation.
-     *
-     * @param sep The amount of eye separation
-     */
     @Override
     public void setStereoEyeSeparation(float sep)
     {
@@ -374,46 +350,30 @@ public class StereoSWTSurface extends BaseSWTSurface
         }
     }
 
-    /**
-     * Get the current eye separation value - always returns 0.
-     *
-     * @return sep The amount of eye separation
-     */
     @Override
     public float getStereoEyeSeparation()
     {
         return eyeSeparation;
     }
 
-    /**
-     * Set the rendering policy used when handling stereo. The policy must be
-     * one of the _STEREO constants defined in this interface.
-     *
-     * @param policy The policy to currently use
-     * @throws IllegalArgumentException The policy type is not one of the legal
-     *    selections.
-     */
     @Override
     public void setStereoRenderingPolicy(int policy)
     {
         switch(policy)
         {
             case NO_STEREO:
-                canvasRenderer =
-                    new StandardRenderingProcessor(canvasContext, this);
+                canvasRenderer = new StandardRenderingProcessor(this);
                 break;
 
             case QUAD_BUFFER_STEREO:
                 canvasRenderer =
-                    new QuadBufferStereoProcessor(canvasContext, this);
-                StereoRenderingProcessor r =
-                    (StereoRenderingProcessor)canvasRenderer;
+                    new QuadBufferStereoProcessor(this);
+                StereoRenderingProcessor r = (StereoRenderingProcessor)canvasRenderer;
                 r.setStereoEyeSeparation(eyeSeparation);
                 break;
 
             case ALTERNATE_FRAME_STEREO:
-                canvasRenderer =
-                    new SingleEyeStereoProcessor(canvasContext, this);
+                canvasRenderer = new SingleEyeStereoProcessor(this);
                 r = (StereoRenderingProcessor)canvasRenderer;
                 r.setStereoEyeSeparation(eyeSeparation);
                 break;
@@ -443,94 +403,12 @@ public class StereoSWTSurface extends BaseSWTSurface
         stereoRenderType = policy;
     }
 
-    /**
-     * Get the current stereo rendering policy in use. If not explicitly set by
-     * the user, then it will default to <code>NO_STEREO</code>.
-     *
-     * @return One of the *_STEREO values
-     */
     @Override
     public int getStereoRenderingPolicy()
     {
         return stereoRenderType;
     }
 
-    /**
-     * Instruct the surface to draw the collected set of nodes now. The
-     * registered view environment is used to draw to this surface. If no
-     * view is registered, the surface is cleared and then this call is
-     * exited. The drawing surface does not swap the buffers at this point.
-     * <p>
-     * The return value indicates success or failure in the ability to
-     * render this frame. Typically it will indicate failure if the
-     * underlying surface has been disposed of, either directly through the
-     * calling of the method on this interface, or through an internal check
-     * mechanism. If failure is indicated, then check to see if the surface has
-     * been disposed of and discontinue rendering if it has.
-     *
-     * @param profilingData The timing and load data
-     * @return true if the drawing succeeded, or false if not
-     */
-    @Override
-    public boolean draw(ProfilingData profilingData)
-    {
-        // tell the draw lock that it's ok to run now, so long as it's not called
-        // before the canvas has completed initialisation.
-        if(!initComplete)
-            if(!initCanvas())
-                return false;
-
-        // Take local reference in case the setDrawableObjects decides to
-        // update values right now.
-        int count = numRenderables;
-        boolean draw_continue = true;
-        OffscreenBufferRenderable[] surfaces = renderableList;
-        GraphicsProfilingData gpd = null;
-
-        if(profilingData instanceof GraphicsProfilingData)
-            gpd = (GraphicsProfilingData)profilingData;
-
-        for(int i = 0; i < count && !terminate && draw_continue; i++)
-        {
-            if(surfaces[i] != null)
-            {
-                RenderingProcessor rp = rendererMap.get(surfaces[i]);
-                draw_continue = rp.render(gpd);
-            }
-        }
-
-        if(terminate)
-            return false;
-
-        // Always render the main canvas last.
-        switch(stereoRenderType)
-        {
-            case ALTERNATE_FRAME_STEREO:
-                SingleEyeStereoProcessor r =
-                    (SingleEyeStereoProcessor)canvasRenderer;
-
-
-                r.setEyeToRender(renderLeftFrame);
-                canvasRenderer.render(gpd);
-                renderLeftFrame = !renderLeftFrame;
-//                r.setEyeToRender(false);
-//                canvas.display();
-                break;
-
-            default:
-                canvasRenderer.render(gpd);
-        }
-
-        return !terminate;
-    }
-
-    /**
-     * Get the underlying object that this surface is rendered to. If it is a
-     * screen display device, the surface can be one of AWT Component or
-     * Swing JComponent. An off-screen buffer would be a form of AWT Image etc.
-     *
-     * @return The drawable surface representation
-     */
     @Override
     public Object getSurfaceObject()
     {
@@ -549,8 +427,7 @@ public class StereoSWTSurface extends BaseSWTSurface
         swtCanvas = new GLCanvas(parentWidget, swtStyle, requestedCapabilities, requestedChooser);
         swtCanvas.addControlListener(resizer);
 
-        canvas = swtCanvas.getDelegatedDrawable();
-        canvasContext = swtCanvas.getContext();
+        canvas = swtCanvas;
     }
 
     //---------------------------------------------------------------
@@ -566,5 +443,42 @@ public class StereoSWTSurface extends BaseSWTSurface
         quadBuffersAvailable = (params[0] == GL.GL_TRUE);
 
         return true;
+    }
+
+    @Override
+    protected void preMainCanvasDraw()
+    {
+        switch(stereoRenderType)
+        {
+            case ALTERNATE_FRAME_STEREO:
+                SingleEyeStereoProcessor r =
+                    (SingleEyeStereoProcessor)canvasRenderer;
+
+
+                r.setEyeToRender(renderLeftFrame);
+                renderLeftFrame = !renderLeftFrame;
+
+// TODO: I think this should be called twice in the same frame.  But it doesn't seem to work right
+/*
+                r.setEyeToRender(true);
+                canvasRenderer.render();
+                renderLeftFrame = !renderLeftFrame;
+
+                if(count > 1)
+                {
+                    for(int i = 0; i < count && !terminate; i++)
+                    {
+                        if(surfaces[i] != null)
+                            surfaces[i].display();
+                    }
+                }
+
+                r.setEyeToRender(false);
+                canvasRenderer.render();
+*/
+                break;
+
+            default:
+        }
     }
 }

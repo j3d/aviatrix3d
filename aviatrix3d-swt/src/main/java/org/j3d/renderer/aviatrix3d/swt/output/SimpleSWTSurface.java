@@ -200,9 +200,8 @@ public class SimpleSWTSurface extends BaseSWTSurface
         swtCanvas = new GLCanvas(parent, style, caps, chooser);
         swtCanvas.addControlListener(resizer);
 
-        canvas = swtCanvas.getDelegatedDrawable();
-        canvasContext = swtCanvas.getContext();
+        canvas = swtCanvas;
 
-        canvasRenderer = new StandardRenderingProcessor(canvasContext, this);
+        canvasRenderer = new StandardRenderingProcessor(this);
     }
 }

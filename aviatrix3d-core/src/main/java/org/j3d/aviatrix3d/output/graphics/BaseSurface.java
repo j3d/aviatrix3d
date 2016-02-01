@@ -52,15 +52,8 @@ import org.j3d.aviatrix3d.pipeline.graphics.*;
  * @version $Revision: 3.50 $
  */
 public abstract class BaseSurface
-    implements GraphicsOutputDevice
+    implements GraphicsOutputDevice, GLEventListener
 {
-    /** Message when the GL context failed to initialise */
-    private static final String FAILED_CONTEXT_PROP =
-        "org.j3d.aviatrix3d.output.graphics.BaseSurface.makeCurrentFailMsg";
-
-    /** Message when the GL context failed to initialise */
-    private static final String TEST_CONTEXT_PROP =
-        "org.j3d.aviatrix3d.output.graphics.BaseSurface.makeCurrentAttemptMsg";
 
     /** Message when the GL context failed to initialise */
     private static final String PASS_CONTEXT_PROP =
@@ -70,17 +63,7 @@ public abstract class BaseSurface
     private static final int LIST_START_SIZE = 20;
 
     /** The real canvas that we draw to */
-    protected GLDrawable canvas;
-
-    /** The context of the main canvas */
-    protected GLContext canvasContext;
-
-    /**
-     * Manager of surface status so that we know what to do with the
-     * context (ie refresh it or makeCurrent again). This must be
-     * initialised in the constructor.
-     */
-    protected SurfaceMonitor surfaceMonitor;
+    protected GLAutoDrawable canvas;
 
     /** Abstract representation of the underlying primary renderer */
     protected RenderingProcessor canvasRenderer;
@@ -112,9 +95,6 @@ public abstract class BaseSurface
     /** Flag indicating if this surface is shared with another */
     protected BaseSurface sharedSurface;
 
-    /** Flag to say whether the underlying factory can create pbuffers */
-    protected boolean canCreatePBuffers;
-
     /** Error reporter used to send out messages */
     protected ErrorReporter errorReporter;
 
@@ -142,6 +122,14 @@ public abstract class BaseSurface
      * the main loop if nothing in them changed since the last frame.
      */
     private boolean updatedSubscenes;
+
+    /**
+     * Temp variable to hold the profiling information during draw calls. This
+     * is here because we get a call and then call GLAutoDrawable.display() and
+     * then later get the callback that fills in this information. Not null
+     * only during the draw() call
+     */
+    private GraphicsProfilingData profilingData;
 
     /**
      * Construct a surface shares it's GL context with the given surface. This
@@ -293,8 +281,7 @@ public abstract class BaseSurface
 
                 if(rp == null)
                 {
-                    rp = createRenderingProcessor(canvasContext);
-                    rp.enableSingleThreaded(singleThreaded);
+                    rp = createRenderingProcessor();
                     rendererMap.put(tex, rp);
 
                     if(ri.parentSource == null)
@@ -373,7 +360,7 @@ public abstract class BaseSurface
             // and re-throw it as a RuntimeException.
             try
             {
-                canvasRenderer.swapBuffers();
+                canvas.swapBuffers();
             }
             catch(GLException e)
             {
@@ -464,93 +451,27 @@ public abstract class BaseSurface
             errorReporter = reporter;
 
         canvasRenderer.setErrorReporter(reporter);
-        surfaceMonitor.setErrorReporter(errorReporter);
     }
 
     @Override
     public boolean draw(ProfilingData profilingData)
     {
-        // tell the draw lock that it's ok to run now, so long as it's not
-        // called before the canvas has completed initialisation.
-        if(!initComplete)
-        {
-            if(!initCanvas())
-            {
-                return false;
-            }
-        }
-
         // TODO:
         // Would be nice to alter this so that we can dynamically query for
         // available extensions after the first run has started. Would need some
-        // sort of flag here that checks for new queries and executes it when/          // set.
-
-        // Take local reference in case the setDrawableObjects decides to
-        // update values right now.
-        int count = numRenderables;
-        OffscreenBufferRenderable[] surfaces = renderableList;
-        boolean draw_continue = true;
-        GraphicsProfilingData gpd = null;
+        // sort of flag here that checks for new queries and executes it when
+        // 65set.
 
         if(profilingData instanceof GraphicsProfilingData)
         {
-            gpd = (GraphicsProfilingData) profilingData;
+            this.profilingData = (GraphicsProfilingData)profilingData;
         }
 
-        EnableState status = EnableState.ENABLE_FAILED;
-        boolean reinit_required = false;
+        canvas.display();
 
+        this.profilingData = null;
 
-        // Always prepare the main canvas first.
-        if(!terminate)
-        {
-            status = canvasRenderer.prepareData();
-            draw_continue = (status == EnableState.ENABLE_OK) ||
-                (status == EnableState.ENABLE_REINIT);
-
-            if(status == EnableState.ENABLE_REINIT)
-            {
-                reinit_required = true;
-                canvasRenderer.reinitialize();
-            }
-        }
-
-        if(updatedSubscenes)
-        {
-            for(int i = 0; i < count && !terminate && draw_continue; i++)
-            {
-                if(surfaces[i] != null)
-                {
-                    RenderingProcessor rp = rendererMap.get(surfaces[i]);
-                    status = rp.prepareData();
-
-                    draw_continue = (status == EnableState.ENABLE_OK) ||
-                        (status == EnableState.ENABLE_REINIT);
-
-                    if(draw_continue)
-                    {
-                        if((status == EnableState.ENABLE_REINIT) ||
-                           reinit_required)
-                        {
-                            reinit_required = true;
-                            rp.reinitialize();
-                        }
-
-                        draw_continue = rp.render(gpd);
-                        rp.swapBuffers();
-                    }
-                }
-            }
-            updatedSubscenes = false;
-        }
-
-        // Always render the main canvas last.
-        if(!terminate && draw_continue)
-            draw_continue = canvasRenderer.render(gpd);
-
-//        if(canvasRenderer.hasOtherDataUpdates())
-//            updatedSubscenes = true;
-        return !terminate && draw_continue;
+        return true;
     }
 
     @Override
@@ -568,6 +489,9 @@ public abstract class BaseSurface
                 rp.halt();
             }
         }
+
+        // Need this here or should we keep the Canvas open?
+        // canvas.destroy();
     }
 
     @Override
@@ -576,43 +500,89 @@ public abstract class BaseSurface
         return terminate;
     }
 
+    //---------------------------------------------------------------
+    // Methods defined by GLEventListener
+    //---------------------------------------------------------------
+
     @Override
-    public void enableSingleThreaded(boolean state)
+    public void init(GLAutoDrawable drawable)
     {
-        singleThreaded = state;
-
-        if(canvasRenderer != null)
-            canvasRenderer.enableSingleThreaded(state);
-
-        for(int i = 0; i < numRenderables; i++)
-        {
-            if(renderableList[i] != null)
-            {
-                RenderingProcessor rp = rendererMap.get(renderableList[i]);
-                rp.enableSingleThreaded(state);
-            }
-        }
+        initCanvas(drawable.getContext());
     }
 
     @Override
-    public void disposeSingleThreadResources()
+    public void dispose(GLAutoDrawable drawable)
     {
-        if(canvasRenderer != null)
-            canvasRenderer.disposeSingleThreadResources();
 
-        for(int i = 0; i < numRenderables; i++)
+    }
+
+    @Override
+    public void display(GLAutoDrawable drawable)
+    {
+        GLContext localContext = drawable.getContext();
+
+        // Always prepare the main canvas first.
+        if(!terminate)
         {
-            if(renderableList[i] != null)
-            {
-                RenderingProcessor rp = rendererMap.get(renderableList[i]);
-                rp.disposeSingleThreadResources();
-            }
+            canvasRenderer.prepareData(localContext);
         }
+
+        // Take local reference in case the setDrawableObjects decides to
+        // update values right now.
+        int count = numRenderables;
+        OffscreenBufferRenderable[] surfaces = renderableList;
+
+        if(updatedSubscenes)
+        {
+            for(int i = 0; i < count && !terminate; i++)
+            {
+                if(surfaces[i] != null)
+                {
+                    RenderingProcessor rp = rendererMap.get(surfaces[i]);
+                    rp.prepareData(localContext);
+
+                    if(terminate)
+                    {
+                        break;
+                    }
+
+                    rp.render(localContext, profilingData);
+                }
+            }
+            updatedSubscenes = false;
+        }
+
+        // Always render the main canvas last.
+        if(terminate)
+        {
+            return;
+        }
+
+        preMainCanvasDraw();
+
+        canvasRenderer.render(localContext, profilingData);
+    }
+
+    @Override
+    public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height)
+    {
+
     }
 
     //---------------------------------------------------------------
     // Local Methods
     //---------------------------------------------------------------
+
+    /**
+     * Pre final canvas draw method that is called after the subscenes have been rendered
+     * but before the main canvas is rendered. Default method is empty, but derived
+     * classes can use it to do anything of interest. Typical use would be to select
+     * which eye to draw for stereo rendering
+     */
+    protected void preMainCanvasDraw()
+    {
+        // Do nothing for the default
+    }
 
     /**
      * Create a new RenderingProcessor instance for this surface. Used
@@ -621,12 +591,11 @@ public abstract class BaseSurface
      * instance of {@link StandardRenderingProcessor}. Implementations may
      * override this to provide their own processor instance.
      *
-     * @param ctx The parent context to use for the processor
      * @return The rendering processor instance to use
      */
-    protected RenderingProcessor createRenderingProcessor(GLContext ctx)
+    protected RenderingProcessor createRenderingProcessor()
     {
-        return new StandardRenderingProcessor(ctx, this);
+        return new StandardRenderingProcessor(this);
     }
 
     /**
@@ -681,12 +650,8 @@ public abstract class BaseSurface
      * must call this during their constructor otherwise this class will crash
      * in some spectacular ways.
      */
-    protected void init(AbstractGraphicsDevice selectedDevice, GLProfile selectedProfile)
+    protected void initBasicDataStructures()
     {
-        GLDrawableFactory fac = GLDrawableFactory.getDesktopFactory();
-
-        canCreatePBuffers = fac.canCreateGLPbuffer(selectedDevice, selectedProfile);
-
         colourTmp = new float[4];
 
         initComplete = false;
@@ -715,65 +680,8 @@ public abstract class BaseSurface
      *
      * @return true if the initialisation succeeded, or false if not
      */
-    protected boolean initCanvas()
+    protected boolean initCanvas(GLContext canvasContext)
     {
-        if(!canvas.isRealized())
-        {
-            return false;
-        }
-
-        if(surfaceMonitor != null)
-        {
-            if(!surfaceMonitor.isVisible())
-            {
-                return initComplete;
-            }
-
-            if(surfaceMonitor.requiresNewContext())
-            {
-                canvasContext = canvas.createContext(null);
-                canvasDescriptor.setLocalContext(canvasContext);
-            }
-        }
-        else if(canvasContext == null)
-        {
-            canvasContext = canvas.createContext(null);
-            canvasDescriptor.setLocalContext(canvasContext);
-        }
-
-        int status = canvasContext.makeCurrent();
-
-        switch(status)
-        {
-            case GLContext.CONTEXT_NOT_CURRENT:
-
-                I18nManager intl_mgr = I18nManager.getManager();
-                String msg = intl_mgr.getString(TEST_CONTEXT_PROP);
-
-                errorReporter.messageReport(msg);
-
-                status = canvasContext.makeCurrent();
-
-                if (status == GLContext.CONTEXT_NOT_CURRENT)
-                {
-                    // Exit right now as there's nothing left to do.
-                    msg = intl_mgr.getString(FAILED_CONTEXT_PROP);
-
-                    errorReporter.errorReport(msg, null);
-                    return false;
-                }
-                else
-                {
-                    msg = intl_mgr.getString(PASS_CONTEXT_PROP);
-                    errorReporter.messageReport(msg);
-                }
-
-                break;
-
-            default:
-                // do nothing for the other cases
-        }
-
         GL gl = canvasContext.getGL();
 
         // Check for extensions:
@@ -787,34 +695,9 @@ public abstract class BaseSurface
 
         if(completeCanvasInitialisation(gl))
         {
-            canvasContext.release();
             initComplete = true;
         }
 
         return initComplete;
-    }
-
-    /**
-     * Package local method to fetch the GLContext that this surface has.
-     * Allows there to be sharing between different surface types - for example
-     * having an elumens surface on one screen and a normal renderer on
-     * another.
-     *
-     * @return The context used by this surface
-     */
-    public GLContext getGLContext()
-    {
-        return canvasContext;
-    }
-
-    /**
-     * Get the context object from the shared surface, if there is one set.
-     * If there is no surface set then this will return null
-     *
-     * @return The context from the shared surface or null
-     */
-    protected GLContext getSharedGLContext()
-    {
-        return  (sharedSurface != null) ? sharedSurface.getGLContext() : null;
     }
 }

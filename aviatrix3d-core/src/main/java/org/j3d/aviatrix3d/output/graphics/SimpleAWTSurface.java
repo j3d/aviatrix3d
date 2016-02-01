@@ -200,32 +200,6 @@ public class SimpleAWTSurface extends BaseAWTSurface
     //---------------------------------------------------------------
 
     @Override
-    protected boolean createLightweightContext()
-    {
-        try
-        {
-            canvasContext = ((GLAutoDrawable)canvas).getContext();
-        }
-        catch(NullPointerException npe)
-        {
-            // This is unexpectedly thrown by the internals of the JOGL RI when
-            // the surface has not yet been realised at the AWT level. Catch an
-            // ignore, treating it as though context creation failed.
-        }
-
-        if(canvasContext != null)
-        {
-            ((GLJPanel)canvas).setAutoSwapBufferMode(false);
-            canvasRenderer = new StandardRenderingProcessor(canvasContext, this);
-            canvasDescriptor.setLocalContext(canvasContext);
-            canvasRenderer.setOwnerBuffer(canvasDescriptor);
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
     protected void initCanvas(GLCapabilities caps, GLCapabilitiesChooser chooser)
     {
         if(lightweight)
@@ -239,26 +213,17 @@ public class SimpleAWTSurface extends BaseAWTSurface
         else
         {
             canvas = new GLCanvas(caps, chooser, null);
-            ((GLCanvas)canvas).setAutoSwapBufferMode(false);
-
-            canvasContext = canvas.createContext(null);
-            canvasRenderer = new StandardRenderingProcessor(canvasContext, this);
-            canvasDescriptor.setLocalContext(canvasContext);
+            canvas.setAutoSwapBufferMode(false);
+            canvasRenderer = new StandardRenderingProcessor(this);
             canvasRenderer.setOwnerBuffer(canvasDescriptor);
         }
 
-
-        GLAutoDrawable gld = (GLAutoDrawable)canvas;
         Component comp = (Component)canvas;
-
-        AWTSurfaceMonitor mon = (AWTSurfaceMonitor)surfaceMonitor;
 
         comp.setIgnoreRepaint(true);
         comp.addComponentListener(resizer);
         comp.addHierarchyListener(resizer);
-        comp.addComponentListener(mon);
-        comp.addHierarchyListener(mon);
-        gld.addGLEventListener(mon);
+        canvas.addGLEventListener(this);
     }
 
     //---------------------------------------------------------------

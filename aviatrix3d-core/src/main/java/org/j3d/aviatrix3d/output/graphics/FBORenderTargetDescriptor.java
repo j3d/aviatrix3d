@@ -33,9 +33,6 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
     /** The underlying depth buffer ID if one was asked for */
     private int textureId;
 
-    /** Local and global context for this descriptor */
-    private GLContext localContext;
-
     /**
      * Construct a new instance of the pbuffer descriptor.
      *
@@ -65,7 +62,6 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
     @Override
     public boolean initialise(GLContext parentContext)
     {
-        localContext = parentContext;
         initComplete = true;
         // Do nothing in this case
         return true;
@@ -80,52 +76,18 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
 		// do nothing in this case
 	}
 
-    /**
-     * Fetch the local context for this buffer. If the buffer has not yet been
-     * initialised, this will return null.
-     *
-     * @return The context for the buffer, or null
-     */
     @Override
-    public GLContext getLocalContext()
+    public void enable(GLContext context) throws GLException
     {
-        return localContext;
+        // do nothing in this case
     }
 
-    /**
-     * Enable this buffer for rendering to now. A buffer may fail to enable
-     * depending on the state of the underlying buffer. The state object
-     * describes the options available.
-     *
-     * @param context The GL context this buffer comes from
-     * @return The state that the enabling departed in
-     * @throws GLException Exception when something at the low-level went
-     *    wrong.
-     */
     @Override
-    public EnableState enable(GLContext context)
-        throws GLException
+    public void disable(GLContext context) throws GLException
     {
-        return EnableState.ENABLE_OK;
+        // do nothing in this case
     }
 
-    /**
-     * This buffer is no longer eligable for rendering to now.
-     *
-     * @param context The GL context this buffer comes from
-     * @throws GLException Exception when something at the low-level went
-     *    wrong.
-     */
-    @Override
-    public void disable(GLContext context)
-        throws GLException
-    {
-    }
-
-    /**
-     * Bind the current buffer to this context now. Default implementation does
-     * nothing. Override for the pbuffer render-to-texture-specific case.
-     */
     @Override
     public void bindBuffer(GLContext parentContext)
     {
@@ -136,10 +98,6 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
         }
     }
 
-    /**
-     * Unbind the current buffer from this context now. Default implementation
-     * does nothing. Override for the pbuffer render-to-texture-specific case.
-     */
     @Override
     public void unbindBuffer(GLContext parentContext)
     {
@@ -150,34 +108,12 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
         }
     }
 
-    /**
-     * Finish rendering this buffer and copy it in to the destination texture.
-     *
-     * @param context The GL context this buffer comes from
-     */
-    @Override
-    public void swapBuffers(GLContext context)
-    {
-        // do nothing for the FBOs
-    }
-
-    /**
-     * Resize this buffer object .
-     *
-     * @param context The GL context this buffer comes from
-     */
     @Override
     public void resize(GLContext context)
     {
         // Do nothing for child render targets
     }
 
-    /**
-     * Remove this buffer object from existance. Will delete the handle that
-     * OpenGL has and turns it back to uninitialised.
-     *
-     * @param context The GL context this buffer comes from
-     */
     @Override
     public void delete(GLContext context)
     {

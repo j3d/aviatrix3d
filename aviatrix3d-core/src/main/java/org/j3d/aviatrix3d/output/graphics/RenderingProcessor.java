@@ -14,6 +14,7 @@ package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
 
+import com.jogamp.opengl.GLContext;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Point3d;
 import org.j3d.util.ErrorReporter;
@@ -155,17 +156,18 @@ public interface RenderingProcessor
      * Perform the pre-rendering tasks now, including enabling the context
      * for this buffer as needed.
      *
-     * @return either The enable was good, a reinitialisation was performed
-     *    or it failed completely.
+     * @param localContext The context to perform the rendering with
      */
-    public EnableState prepareData();
+    public void prepareData(GLContext localContext);
 
     /**
      * In the prepare data call, it was found that the GL context had been
      * reinitialised. So, pass through all the current geometry now and
      * reinitialise everything that needs it.
+     *
+     * @param localContext The context to perform the rendering with
      */
-    public void reinitialize();
+    public void reinitialize(GLContext localContext);
 
     /**
      * Draw to the drawable now. This causes the drawable's context to be made
@@ -173,39 +175,11 @@ public interface RenderingProcessor
      * override this method, instead they should use the display()
      * or init() methods as needed.
      *
+     * @param localContext The context to perform the rendering with
      * @param profilingData The timing and load data
      * @return false if the rendering should not continue
      */
-    public boolean render(GraphicsProfilingData profilingData);
-
-    /**
-     * Cause the buffers of the underlying drawable to swap now.
-     */
-    public void swapBuffers();
-
-    /**
-     * Notification that this surface is being drawn to with a single thread.
-     * This can be used to optmise internal state handling when needed in a
-     * single versus multithreaded environment.
-     * <p>
-     *
-     * This method should never be called by end user code. It is purely for
-     * the purposes of the {@link org.j3d.aviatrix3d.management.RenderManager}
-     * to inform the device about what state it can expect.
-     *
-     * @param state true if the device can expect single threaded behaviour
-     */
-    public void enableSingleThreaded(boolean state);
-
-    /**
-     * If the output device is marked as single threaded, this instructs the
-     * device that the current rendering thread has exited. Next time the draw
-     * method is called, a new rendering context will need to be created for
-     * a new incoming thread instance. Also, if any other per-thread resources
-     * are around, clean those up now. This is called just before that thread
-     * exits.
-     */
-    public void disposeSingleThreadResources();
+    public boolean render(GLContext localContext, GraphicsProfilingData profilingData);
 
     /**
      * Get the surface to VWorld transformation matrix.

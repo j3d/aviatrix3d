@@ -104,62 +104,20 @@ class FBODescriptor extends BaseBufferDescriptor
     }
 
     /**
-     * Fetch the local context for this buffer. If the buffer has not yet been
-     * initialised, this will return null.
-     *
-     * @return The context for the buffer, or null
-     */
-    @Override
-    public GLContext getLocalContext()
-    {
-        return localContext;
-    }
-
-    /**
      * Enable this buffer for rendering to now. A buffer may fail to enable
      * depending on the state of the underlying buffer. The state object
      * describes the options available.
      *
-     * @param context The GL context this buffer comes from
+     * @param localContext The GL context this buffer comes from
      * @return The state that the enabling departed in
      * @throws GLException Exception when something at the low-level went
      *    wrong.
      */
     @Override
-    public EnableState enable(GLContext context)
+    public void enable(GLContext localContext)
         throws GLException
     {
-        EnableState ret_val = EnableState.ENABLE_FAILED;
-
-        GLContext cur_ctx = GLContext.getCurrent();
-
-        // Do we have a current context for us already? If not, make it current
-        // to draw to now.
-        if(cur_ctx == context)
-        {
-            ret_val = EnableState.ENABLE_OK;
-        }
-        else
-        {
-            int status = localContext.makeCurrent();
-
-            switch(status)
-            {
-                case GLContext.CONTEXT_CURRENT:
-                    ret_val = EnableState.ENABLE_OK;
-                    break;
-
-                case GLContext.CONTEXT_CURRENT_NEW:
-                    ret_val = EnableState.ENABLE_REINIT;
-                    break;
-
-                case GLContext.CONTEXT_NOT_CURRENT:
-                    ret_val = EnableState.ENABLE_FAILED;
-                    break;
-            }
-        }
-
-        if((ret_val == EnableState.ENABLE_OK) && (bufferId != 0))
+        if(bufferId != 0)
         {
             GL base_gl = localContext.getGL();
             GL2 gl = base_gl.getGL2();
@@ -168,8 +126,6 @@ class FBODescriptor extends BaseBufferDescriptor
             gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, bufferId);
             gl.glPushAttrib(GL2.GL_VIEWPORT_BIT);
         }
-
-        return ret_val;
     }
 
     /**
@@ -219,17 +175,6 @@ class FBODescriptor extends BaseBufferDescriptor
             GL gl = parentContext.getGL();
             gl.glBindTexture(GL.GL_TEXTURE_2D, 0);
         }
-    }
-
-    /**
-     * Finish rendering this buffer and copy it in to the destination texture.
-     *
-     * @param context The GL context this buffer comes from
-     */
-    @Override
-    public void swapBuffers(GLContext context)
-    {
-        // do nothing for the FBOs
     }
 
     /**
