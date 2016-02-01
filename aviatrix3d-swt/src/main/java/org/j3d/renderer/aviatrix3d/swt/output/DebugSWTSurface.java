@@ -268,10 +268,9 @@ public class DebugSWTSurface extends BaseSWTSurface
         swtCanvas.addKeyListener(this);
         swtCanvas.addControlListener(resizer);
 
-        canvas = swtCanvas.getDelegatedDrawable();
-        canvasContext = swtCanvas.getContext();
+        canvas = swtCanvas;
 
-        canvasRenderer = new DebugRenderingProcessor(canvasContext, this);
+        canvasRenderer = new DebugRenderingProcessor(this);
     }
 
     //---------------------------------------------------------------
@@ -296,20 +295,6 @@ public class DebugSWTSurface extends BaseSWTSurface
             errorReporter.messageReport("\n\n++++  Completed Frame  ++++\n");
 
         return ret_val;
-    }
-
-    @Override
-    protected RenderingProcessor createRenderingProcessor(GLContext context)
-    {
-        DebugRenderingProcessor proc =
-            new DebugRenderingProcessor(context, this);
-
-        int traces_left =
-            ((DebugRenderingProcessor)canvasRenderer).getTraceCount();
-
-        proc.traceNextFrames(traces_left);
-
-        return proc;
     }
 
     //---------------------------------------------------------------

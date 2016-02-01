@@ -126,9 +126,6 @@ public class OpenALAudioDevice
     /** Provider for our OpenAL context and device interfaces to abstract away the factory */
     private OpenALProvider openalProvider;
 
-    /** Single threaded rendering mode operation state. Defaults to false. */
-    private boolean singleThreaded;
-
     /**
      * Static constructor for generating the default orientation.
      */
@@ -159,7 +156,6 @@ public class OpenALAudioDevice
         terminate = false;
         initComplete = false;
         initFailed = false;
-        singleThreaded = false;
 
         lastId = 0;
 
@@ -354,18 +350,6 @@ public class OpenALAudioDevice
     public boolean isDisposed()
     {
         return terminate || initFailed;
-    }
-
-    @Override
-    public void enableSingleThreaded(boolean state)
-    {
-        singleThreaded = state;
-    }
-
-    @Override
-    public void disposeSingleThreadResources()
-    {
-        // Do nothing for now until we implement this properly.
     }
 
     // ----- Local Methods ---------------------------------------------------

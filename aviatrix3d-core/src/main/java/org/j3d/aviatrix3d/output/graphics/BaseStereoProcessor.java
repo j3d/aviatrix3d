@@ -84,10 +84,9 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
     /**
      * Construct handler for rendering objects to the main screen.
      *
-     * @param context The context that this processor is working on
      * @param owner The owning device of this processor
      */
-    public BaseStereoProcessor(GLContext context, GraphicsOutputDevice owner)
+    public BaseStereoProcessor(GraphicsOutputDevice owner)
     {
         super(owner);
 
@@ -102,14 +101,10 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
     // Methods defined by BaseRenderingProcesor
     //---------------------------------------------------------------
 
-    /**
-     * Called by the drawable when the surface resizes itself. Used to
-     * reset the viewport dimensions.
-     */
     @Override
-    public void init()
+    public void init(GLContext localContext)
     {
-        super.init();
+        super.init(localContext);
 
         GL gl = localContext.getGL();
 
@@ -123,50 +118,24 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
     // Methods defined by StereoRenderingProcessor
     //---------------------------------------------------------------
 
-    /**
-     * Check to see whether this surface supports stereo rendering. As this is
-     * not known until after initialisation, this method will return false
-     * until it can determine whether or not stereo is available.
-     *
-     * @return true Stereo support is currently available
-     */
     @Override
     public boolean isStereoAvailable()
     {
         return stereoAvailability;
     }
 
-    /**
-     * Set the eye separation value when rendering stereo. The default value is
-     * 0.33 for most applications. The absolute value of the separation is
-     * always used. Ignored for this implementation.
-     *
-     * @param sep The amount of eye separation
-     */
     @Override
     public void setStereoEyeSeparation(float sep)
     {
         eyeSeparation = (sep < 0) ? -sep : sep;
     }
 
-    /**
-     * Get the current eye separation value - always returns 0.
-     *
-     * @return sep The amount of eye separation
-     */
     @Override
     public float getStereoEyeSeparation()
     {
         return eyeSeparation;
     }
 
-    /**
-     * Set the angular aperature of the camera. Measurement is in degrees
-     * and is in the horizontal plane relative to the camera. By default,
-     * this angle is 45 degrees.
-     *
-     * @param angle The angle in degress
-     */
     @Override
     public void setCameraAperatureAngle(float angle)
     {
@@ -178,7 +147,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
             Locale lcl = intl_mgr.getFoundLocale();
             NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-            Object[] msg_args = { new Float(angle) };
+            Object[] msg_args = { angle };
             Format[] fmts = { n_fmt };
             MessageFormat msg_fmt =
                 new MessageFormat(msg_pattern, lcl);
@@ -191,27 +160,12 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
         cameraAperature = Math.toRadians(angle);
     }
 
-    /**
-     * Get the current camera aperature angle.
-     *
-     * @return The aperature angle, in degrees
-     */
     @Override
     public float getCameraAperatureAngle()
     {
         return (float)Math.toDegrees(cameraAperature);
     }
 
-    /**
-     * Set the focal length to be used to calculate the zero parallax
-     * depth. The value must always be positive to indicate the focal length
-     * is in front of the camera. By default, this is set to the near clip
-     * plane distance if the provided value is zero.
-     *
-     * @param length a positive focal length value or zero to use the
-     *    near clip plane as the focal distance
-     * @throws IllegalArgumentException focal length was negative
-     */
     @Override
     public void setCameraFocalLength(float length)
     {
@@ -223,7 +177,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
             Locale lcl = intl_mgr.getFoundLocale();
             NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-            Object[] msg_args = { new Float(length) };
+            Object[] msg_args = { length };
             Format[] fmts = { n_fmt };
             MessageFormat msg_fmt =
                 new MessageFormat(msg_pattern, lcl);
@@ -236,12 +190,6 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
         focalDistance = length;
     }
 
-    /**
-     * Get the current camera focal length. Returns a positive value, or
-     * zero if this is using the near clip plane for the focal length.
-     *
-     * @return a zero or positive number
-     */
     @Override
     public float getCameraFocalLength()
     {
@@ -453,7 +401,7 @@ public abstract class BaseStereoProcessor extends BaseRenderingProcessor
                 Locale lcl = intl_mgr.getFoundLocale();
                 NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-                Object[] msg_args = { new Integer(data.viewProjectionType) };
+                Object[] msg_args = { data.viewProjectionType };
                 Format[] fmts = { n_fmt };
                 MessageFormat msg_fmt =
                     new MessageFormat(msg_pattern, lcl);

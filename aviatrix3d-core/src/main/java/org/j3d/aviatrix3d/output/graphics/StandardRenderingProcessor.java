@@ -42,11 +42,9 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
     /**
      * Construct handler for rendering objects to the main screen.
      *
-     * @param context The parent GL context for this processor
      * @param owner The owning device of this processor
      */
-    public StandardRenderingProcessor(GLContext context,
-                                      GraphicsOutputDevice owner)
+    public StandardRenderingProcessor(GraphicsOutputDevice owner)
     {
         super(owner);
     }
@@ -59,7 +57,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
      * Called by the drawable to perform rendering by the client.
      */
     @Override
-    public void display(GraphicsProfilingData profilingData)
+    public void display(GLContext localContext, GraphicsProfilingData profilingData)
     {
         GL base_gl = localContext.getGL();
 
@@ -471,7 +469,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     }
 
 // TODO: Optimise this to avoid the allocation. Use IntHashMap for lookup.
-                    currentShaderProgramId = new Integer(prog.getProgramId(gl));
+                    currentShaderProgramId = prog.getProgramId(gl);
                     prog.render(gl);
                     break;
 

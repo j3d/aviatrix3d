@@ -47,38 +47,33 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
     /**
      * Construct handler for rendering objects to the main screen.
      *
-     * @param context The context that this processor is working on
      * @param owner The owning device of this processor
      */
-    public QuadBufferStereoProcessor(GLContext context,
-                                     GraphicsOutputDevice owner)
+    public QuadBufferStereoProcessor(GraphicsOutputDevice owner)
     {
-        super(context, owner);
+        super(owner);
     }
 
     //---------------------------------------------------------------
     // Methods defined by BaseRenderingProcessor
     //---------------------------------------------------------------
 
-    /**
-     * Called by the drawable to perform rendering by the client.
-     *
-     * @param profilingData The timing and load data
-     */
     @Override
-    public void display(GraphicsProfilingData profilingData)
+    public void display(GLContext localContext, GraphicsProfilingData profilingData)
     {
+        processRequestData(localContext);
+
+        if(terminate)
+        {
+            return;
+        }
+
         GL base_gl = localContext.getGL();
 
         if(base_gl == null)
             return;
 
         GL2 gl = base_gl.getGL2();
-
-        processRequestData(gl);
-
-        if(terminate)
-            return;
 
         // Draw the left eye first, then right
         gl.glMatrixMode(GL2.GL_MODELVIEW);
@@ -87,7 +82,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
         if(terminate)
             return;
 
-        render(gl, true, profilingData);
+        render(localContext, true, profilingData);
 
         if(terminate)
             return;
@@ -99,7 +94,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
         if(terminate)
             return;
 
-        render(gl, false, profilingData);
+        render(localContext, false, profilingData);
     }
 
     /**
@@ -135,11 +130,18 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
      * Perform the rendering loop for one of the two buffers, indicated by
      * the provided parameter.
      *
-     * @param gl The gl context to draw with
+     * @param localContext The gl context to draw with
      * @param left true if this is the left eye
      */
-    private void render(GL2 gl, boolean left, GraphicsProfilingData profilingData)
+    private void render(GLContext localContext, boolean left, GraphicsProfilingData profilingData)
     {
+        GL base_gl = localContext.getGL();
+
+        if(base_gl == null)
+            return;
+
+        GL2 gl = base_gl.getGL2();
+
         // TODO:
         // May want to put some optimisations here for systems that can clear
         // both back buffers at once with a single call to
@@ -394,7 +396,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                     if(lastLightIdx >= availableLights.length)
                         continue;
 
-                    l_id = (Integer)lightIdMap.remove(renderableList[i].id);
+                    l_id = lightIdMap.remove(renderableList[i].id);
 
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.postRender(gl, l_id);
@@ -422,7 +424,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                     if(lastClipIdx >= availableClips.length)
                         continue;
 
-                    c_id = (Integer)clipIdMap.remove(renderableList[i].id);
+                    c_id = clipIdMap.remove(renderableList[i].id);
 
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.postRender(gl, c_id);
@@ -499,7 +501,7 @@ public class QuadBufferStereoProcessor extends BaseStereoProcessor
                     }
 
 // TODO: Optimise this to avoid the allocation. Use IntHashMap for lookup.
-                    currentShaderProgramId = new Integer(prog.getProgramId(gl));
+                    currentShaderProgramId = prog.getProgramId(gl);
                     prog.render(gl);
                     break;
 

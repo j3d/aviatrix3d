@@ -74,13 +74,11 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
     /**
      * Construct handler for rendering objects to the main screen.
      *
-     * @param context The context that this processor is working on
      * @param owner The owning device of this processor
      */
-    public DebugSingleEyeStereoProcessor(GLContext context,
-                                         GraphicsOutputDevice owner)
+    public DebugSingleEyeStereoProcessor(GraphicsOutputDevice owner)
     {
-        super(context, owner);
+        super(owner);
 
         renderLeftEye = true;
         dumpNextFrameCount = 3;
@@ -92,18 +90,10 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
     // Methods defined by BaseRenderingProcesor
     //---------------------------------------------------------------
 
-    /**
-     * Draw to the drawable now. This causes the drawable's context to be made
-     * current and the GL commands are issued. Derived classes should not
-     * override this method, instead they should use the display()
-     * or init() methods as needed.
-     *
-     * @return false if the rendering should not continue
-     */
     @Override
-    public boolean render(GraphicsProfilingData profilingData)
+    public boolean render(GLContext localContext, GraphicsProfilingData profilingData)
     {
-        if((dumpNextFrameCount != 0) && (localContext != null))
+        if(dumpNextFrameCount != 0)
         {
             dumpNextFrameCount--;
             dumpNow = true;
@@ -159,7 +149,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
             }
         }
 
-        boolean ret_val = super.render(profilingData);
+        boolean ret_val = super.render(localContext, profilingData);
 
         if(untraced_gl != null)
             localContext.setGL(untraced_gl);
@@ -169,13 +159,8 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
         return ret_val;
     }
 
-    /**
-     * Called by the drawable to perform rendering by the client.
-     *
-     * @param profilingData The timing and load data
-     */
     @Override
-    public void display(GraphicsProfilingData profilingData)
+    public void display(GLContext localContext, GraphicsProfilingData profilingData)
     {
         GL base_gl = localContext.getGL();
 
@@ -199,7 +184,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
         // right queue separately. Don't have any hardware here that would
         // be useful for debugging it, so please register a bug with Bugzilla
         // if you find a problem.
-        processRequestData(gl);
+        processRequestData(localContext);
 
         if(terminate)
             return;
@@ -209,9 +194,11 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
         gl.glDrawBuffer(GL2.GL_BACK_LEFT);
 
         if(terminate)
+        {
             return;
+        }
 
-        render(gl, renderLeftEye, profilingData);
+        render(localContext, renderLeftEye, profilingData);
     }
 
     //---------------------------------------------------------------
@@ -232,11 +219,14 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
      * Perform the rendering loop for one of the two buffers, indicated by
      * the provided parameter.
      *
-     * @param gl The gl context to draw with
-     *     * @param left true if this is the left eye
+     * @param localContext The gl context to draw with
+     * @param left true if this is the left eye
      */
-    private void render(GL2 gl, boolean left, GraphicsProfilingData profilingData)
+    private void render(GLContext localContext, boolean left, GraphicsProfilingData profilingData)
     {
+        GL base_gl = localContext.getGL();
+        GL2 gl = base_gl.getGL2();
+
         // TODO:
         // May want to put some optimisations here for systems that can clear
         // both back buffers at once with a single call to
@@ -994,15 +984,8 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
         gl.glFlush();
     }
 
-    /**
-     * Process the shader and delete requests for this scene now. Should
-     * normally be called at the start of the frame to ensure IDs are deleted
-     * up front before being reallocated elsewhere.
-     *
-     * @param gl The GL context to process the requests with
-     */
     @Override
-    protected void processRequestData(GL2 gl)
+    protected void processRequestData(GLContext localContext)
     {
         if(dumpNow || PRINT_STATES)
         {
@@ -1031,7 +1014,7 @@ public class DebugSingleEyeStereoProcessor extends SingleEyeStereoProcessor
         }
 
         // Overridden so that we can print out state.
-        super.processRequestData(gl);
+        super.processRequestData(localContext);
     }
 
     //---------------------------------------------------------------

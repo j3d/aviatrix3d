@@ -84,7 +84,6 @@ public abstract class BaseSWTSurface extends BaseSurface
         super(sharedWith);
 
         resizer = new SWTResizeHandler();
-        surfaceMonitor = new SWTSurfaceMonitor();
     }
 
     //---------------------------------------------------------------
@@ -176,11 +175,6 @@ public abstract class BaseSWTSurface extends BaseSurface
                         GraphicsRenderingCapabilities caps,
                         GraphicsRenderingCapabilitiesChooser chooser)
     {
-        GLContext shared_context = null;
-
-        if (sharedSurface != null)
-            shared_context = sharedSurface.getGLContext();
-
         GLDrawableFactory fac = GLDrawableFactory.getDesktopFactory();
         AbstractGraphicsDevice screen_device = fac.getDefaultDevice();
         GLProfile selected_profile = GLProfile.get(screen_device, GLProfile.GL2);
@@ -189,6 +183,6 @@ public abstract class BaseSWTSurface extends BaseSurface
         GLCapabilitiesChooser jogl_chooser = chooser != null ? new CapabilityChooserWrapper(chooser) : null;
 
         initCanvas(parent, style, jogl_caps, jogl_chooser);
-        init(screen_device, selected_profile);
+        initBasicDataStructures();
     }
 }

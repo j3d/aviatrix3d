@@ -213,20 +213,8 @@ public abstract class BaseRenderingProcessor
     /** Error reporter used to send out messages */
     protected ErrorReporter errorReporter;
 
-    /** The context from the drawable */
-    protected GLContext localContext;
-
     /** Flag inidicating the context has not been destroyed yet */
     private boolean contextNotDestroyed;
-
-    /** Single threaded rendering mode operation state. Defaults to false. */
-    protected boolean singleThreaded;
-
-    /**
-     * The context is current right now. Unfortunately JOGL has no way of
-     * asking that right now, so we have to keep a flag.
-     */
-    private boolean contextIsCurrent;
 
     /** List of last found layer in the search list for mouse handling */
     private HashMap<String, GraphicsEnvironmentData> envSaveMap;
@@ -283,8 +271,6 @@ public abstract class BaseRenderingProcessor
         terminate = false;
         contextNotDestroyed = true;
         alwaysLocalClear = true;
-        singleThreaded = false;
-        contextIsCurrent = false;
         bufferCheckComplete = false;
         fboAvailable = false;
 
@@ -490,68 +476,33 @@ public abstract class BaseRenderingProcessor
         }
     }
 
-    /**
-     * Perform the pre-rendering tasks now, including enabling the context
-     * for this buffer as needed.
-     *
-     * @return either The enable was good, a reinitialisation was performed
-     *    or it failed completely.
-     */
     @Override
-    public EnableState prepareData()
+    public void prepareData(GLContext localContext)
     {
         if(terminate)
         {
-            terminateCleanup();
-            return EnableState.ENABLE_FAILED;
+            terminateCleanup(localContext);
+            return;
         }
-
-        EnableState status = EnableState.ENABLE_FAILED;
 
         try
         {
-            if(!singleThreaded || !initComplete || !contextIsCurrent)
+            if(!initComplete)
             {
                 if(ownerRenderable != null)
                 {
-                    status = ownerRenderable.enable(localContext);
-                    switch(status)
-                    {
-                        case ENABLE_OK:
-                            if(!initComplete)
-                                init();
-
-                            contextIsCurrent = true;
-                            break;
-
-                        case ENABLE_REINIT:
-                            init();
-
-                            contextIsCurrent = true;
-                            break;
-
-                        case ENABLE_FAILED:
-                            // Exit right now as there's nothing left to do.
-                            I18nManager intl_mgr = I18nManager.getManager();
-                            String msg = intl_mgr.getString(FAILED_CONTEXT_PROP);
-                            errorReporter.errorReport(msg, null);
-                            contextIsCurrent = false;
-                            break;
-                    }
+                    ownerRenderable.enable(localContext);
                 }
             }
 
-            if(contextIsCurrent && !terminate)
+            if(!terminate)
             {
-                GL base_gl = localContext.getGL();
-                GL2 gl = base_gl.getGL2();
-
-                processRequestData(gl);
+                processRequestData(localContext);
             }
 
             if(terminate)
             {
-                terminateCleanup();
+                terminateCleanup(localContext);
             }
         }
         catch(GLException ie)
@@ -569,51 +520,32 @@ public abstract class BaseRenderingProcessor
                 errorReporter.errorReport(msg, ie);
             }
         }
-
-        if(terminate)
-        {
-            status = EnableState.TERMINATE_REQUESTED;
-        }
-
-        return status;
     }
 
-    /**
-     * In the prepare data call, it was found that the GL context had been
-     * reinitialised. So, pass through all the current geometry now and
-     * reinitialise everything that needs it.
-     */
     @Override
-    public void reinitialize()
+    public void reinitialize(GLContext localContext)
     {
         ownerRenderable.reinitialize();
-        updateContextChange();
+        updateContextChange(localContext);
     }
 
-    /**
-     * Draw to the drawable now. This causes the drawable's context to be made
-     * current and the GL commands are issued. Derived classes should not
-     * override this method, instead they should use the display()
-     * or init() methods as needed.
-     *
-     * @return false if the rendering should not continue
-     */
     @Override
-    public boolean render(GraphicsProfilingData profilingData)
+    public boolean render(GLContext localContext, GraphicsProfilingData profilingData)
     {
         if(terminate)
         {
-            terminateCleanup();
+            terminateCleanup(localContext);
             return false;
         }
 
         try
         {
-            if(contextIsCurrent && !terminate)
-                display(profilingData);
+            display(localContext, profilingData);
 
             if(terminate)
-                terminateCleanup();
+            {
+                terminateCleanup(localContext);
+            }
         }
         catch(GLException ie)
         {
@@ -632,91 +564,6 @@ public abstract class BaseRenderingProcessor
         return !terminate;
     }
 
-
-    /**
-     * Cause the buffers of the underlying drawable to swap now.
-     */
-    @Override
-    public void swapBuffers()
-    {
-        if(!contextIsCurrent)
-            return;
-
-        ownerRenderable.swapBuffers(localContext);
-
-        if(!singleThreaded)
-        {
-            try
-            {
-                contextIsCurrent = false;
-                ownerRenderable.disable(localContext);
-            }
-            catch(GLException ge)
-            {
-                // catch and ignore here. Normally get this if, for some reason
-                // the user is managing to hide and show a UI in the middle of
-                // a rendering thread and the context gets released before
-                // this. It's of no real importance that it crashed here. We
-                // can keep going with life as needed.
-            }
-        }
-    }
-
-    /**
-     * Notification that this surface is being drawn to with a single thread.
-     * This can be used to optmise internal state handling when needed in a
-     * single versus multithreaded environment.
-     * <p>
-     *
-     * This method should never be called by end user code. It is purely for
-     * the purposes of the {@link org.j3d.aviatrix3d.management.RenderManager}
-     * to inform the device about what state it can expect.
-     *
-     * @param state true if the device can expect single threaded behaviour
-     */
-    @Override
-    public void enableSingleThreaded(boolean state)
-    {
-        singleThreaded = state;
-    }
-
-    /**
-     * If the output device is marked as single threaded, this instructs the
-     * device that the current rendering thread has exited. Next time the draw
-     * method is called, a new rendering context will need to be created for
-     * a new incoming thread instance. Also, if any other per-thread resources
-     * are around, clean those up now. This is called just before that thread
-     * exits.
-     */
-    @Override
-    public void disposeSingleThreadResources()
-    {
-        if(singleThreaded && contextIsCurrent)
-        {
-            contextIsCurrent = false;
-            ownerRenderable.disable(localContext);
-        }
-    }
-
-    /**
-     * Get the surface to VWorld transformation matrix.
-     * The coordinate system is in the window-system interface:
-     * The x,y position is the lower left corner, with height going up the
-     * screen and width heading to the right.
-     *
-     * @param x The X coordinate on the surface
-     * @param y The Y coordinate on the surface
-     * @param matrix The matrix to copy into  It must be preallocated.
-     * @param layer The layer ID to fetch from. Layer 0 is the front-most
-     * @param subLayer The ID of the viewport-layer that is needed. If there
-     *   are no sub-layers, use 0.
-     * @param deviceId A user-defined identifier for the requesting device when
-     *    using the lastFound items
-     * @param useLastFound Should we skip the search process and use the last
-     *    data found for this layer/sublayer combo.
-     *
-     * @return Whether the coordinates where on the layer
-     */
     @Override
     public boolean getSurfaceToVWorld(int x,
                                    int y,
@@ -738,25 +585,6 @@ public abstract class BaseRenderingProcessor
         return true;
     }
 
-    /**
-     * Convert a pixel location to surface coordinates.
-     * The coordinate system is in the window-system interface:
-     * The x,y position is the lower left corner, with height going up the
-     * screen and width heading to the right.
-     *
-     * @param x The X coordinate
-     * @param y The Y coordinate
-     * @param layer The layer ID to fetch from. Layer 0 is the front-most
-     * @param subLayer The ID of the viewport-layer that is needed. If there
-     *   are no sub-layers, use 0.
-     * @param position The converted position.  It must be preallocated.
-     * @param deviceId A user-defined identifier for the requesting device when
-     *    using the lastFound items
-     * @param useLastFound Should we skip the search process and use the last
-     *    data found for this layer/sublayer combo.
-     *
-     * @return Whether the coordinates where on the layer
-     */
     @Override
     public boolean getPixelLocationInSurface(int x,
                                           int y,
@@ -815,20 +643,6 @@ public abstract class BaseRenderingProcessor
         return true;
     }
 
-    /**
-     * Get the Center Eye position in surface coordinates.
-     *
-     * @param x The X coordinate on the surface
-     * @param y The Y coordinate on the surface
-     * @param position The current eye position.  It must be preallocated.
-     * @param layer The layer ID to fetch from. Layer 0 is the front-most
-     * @param deviceId A user-defined identifier for the requesting device when
-     *    using the lastFound items
-     * @param useLastFound Should we skip the search process and use the last
-     *    data found for this layer/sublayer combo.
-     *
-     * @return Whether the coordinates where on the layer
-     */
     @Override
     public boolean getCenterEyeInSurface(int x,
                                       int y,
@@ -997,16 +811,17 @@ public abstract class BaseRenderingProcessor
      *
      * @param profilingData The timing and load data
      */
-    protected abstract void display(GraphicsProfilingData profilingData);
+    protected abstract void display(GLContext localContext, GraphicsProfilingData profilingData);
 
     /**
      * Called by the drawable immediately after the OpenGL context is
      * initialized or has changed; the GLContext has already been made
      * current when this method is called.
+     *
+     * @param localContext The GL context to do the drawing with
      */
-    protected void init()
+    protected void init(GLContext localContext)
     {
-        localContext = ownerRenderable.getLocalContext();
         GL base_gl = localContext.getGL();
         GL2 gl = base_gl.getGL2();
 
@@ -1029,21 +844,18 @@ public abstract class BaseRenderingProcessor
         // Find out the number of available lights and clip planes and
         // initialise the arrays to that length.
 
-        int num_lights = 0;
-        int num_clips = 0;
-
         int[] num_id = new int[1];
 
         gl.glGetIntegerv(GL2.GL_MAX_CLIP_PLANES, num_id, 0);
 
-        num_clips = num_id[0];
+        int num_clips = num_id[0];
 
         availableClips = new Integer[num_id[0]];
         for(int i = 0; i < num_id[0]; i++)
             availableClips[i] = GL2.GL_CLIP_PLANE0 + i;
 
         gl.glGetIntegerv(GL2.GL_MAX_LIGHTS, num_id, 0);
-        num_lights = num_id[0];
+        int num_lights = num_id[0];
 
         // GL_LIGHT0 is assumed to be used by the current viewpoint
         availableLights = new Integer[num_id[0]];
@@ -1185,23 +997,26 @@ public abstract class BaseRenderingProcessor
      * normally be called at the start of the frame to ensure IDs are deleted
      * up front before being reallocated elsewhere.
      *
-     * @param gl The GL context to process the requests with
+     * @param context The GL context to process the requests with
      */
-    protected void processRequestData(GL2 gl)
+    protected void processRequestData(GLContext context)
     {
-        processChildBuffers();
+        processChildBuffers(context);
 
         if(otherDataRequests == null)
             return;
 
         // Process the deleted nodes
+        GL gl = context.getGL();
+        GL2 gl2 = gl.getGL2();
+
         if(otherDataRequests.deletionRequests != null)
         {
             for(int i = 0;
                 i < otherDataRequests.deletionRequests.length && ! terminate;
                 i++)
             {
-                otherDataRequests.deletionRequests[i].cleanup(gl);
+                otherDataRequests.deletionRequests[i].cleanup(gl2);
                 otherDataRequests.deletionRequests[i] = null;
             }
 
@@ -1215,7 +1030,7 @@ public abstract class BaseRenderingProcessor
                 i < otherDataRequests.shaderInitList.length && !terminate;
                 i++)
             {
-                otherDataRequests.shaderInitList[i].initialize(gl);
+                otherDataRequests.shaderInitList[i].initialize(gl2);
                 otherDataRequests.shaderInitList[i] = null;
             }
 
@@ -1228,7 +1043,7 @@ public abstract class BaseRenderingProcessor
                 i < otherDataRequests.shaderLogList.length && !terminate;
                 i++)
             {
-                otherDataRequests.shaderLogList[i].fetchLogInfo(gl);
+                otherDataRequests.shaderLogList[i].fetchLogInfo(gl2);
                 otherDataRequests.shaderLogList[i] = null;
             }
 
@@ -1239,11 +1054,10 @@ public abstract class BaseRenderingProcessor
     /**
      * Process the child buffer additions and removals.
      */
-    private void processChildBuffers()
+    private void processChildBuffers(GLContext localContext)
     {
-        for(int i = 0; i < removedBuffers.size(); i++)
+        for (OffscreenBufferRenderable rend : removedBuffers)
         {
-            OffscreenBufferRenderable rend = removedBuffers.get(i);
             BaseBufferDescriptor desc = childBuffers.remove(rend);
             desc.delete(localContext);
         }
@@ -1252,15 +1066,14 @@ public abstract class BaseRenderingProcessor
         {
             OffscreenBufferRenderable rend = addedBuffers.get(i);
             RenderingProcessor proc = addedProcessors.get(i);
-            BaseBufferDescriptor desc = createBuffer(rend);
+            BaseBufferDescriptor desc = createBuffer(localContext, rend);
 
             proc.setOwnerBuffer(desc);
             childBuffers.put(rend, desc);
         }
 
-        for(int i = 0; i < updatedBuffers.size(); i++)
+        for (OffscreenBufferRenderable rend : updatedBuffers)
         {
-            OffscreenBufferRenderable rend = updatedBuffers.get(i);
             BaseBufferDescriptor desc = childBuffers.get(rend);
 
             desc.resize(localContext);
@@ -1277,13 +1090,14 @@ public abstract class BaseRenderingProcessor
      * the display loop, this method is called to destroy and cleanup
      * the context instance. Once called, this instance can no longer be
      * used.
+     *
+     * @param localContext The GL context to clean up with
      */
-    protected void terminateCleanup()
+    protected void terminateCleanup(GLContext localContext)
     {
         if(contextNotDestroyed)
         {
             contextNotDestroyed = false;
-            contextIsCurrent = false;
             ownerRenderable.disable(localContext);
             ownerRenderable.delete(localContext);
         }
@@ -1618,16 +1432,16 @@ public abstract class BaseRenderingProcessor
         {
             GraphicsEnvironmentData[] data = environmentList;
 
-            for(int i = 0; i < data.length; i++)
+            for (GraphicsEnvironmentData ged : data)
             {
-                if(data[i] != null &&
-                   data[i].layerId == layer && data[i].subLayerId == subLayer &&
-                   x >= data[i].viewport[0] && y >= data[i].viewport[1] &&
-                   (x < data[i].viewport[0] + data[i].viewport[2]) &&
-                   (y < data[i].viewport[1] + data[i].viewport[3]))
+                if (ged != null &&
+                    ged.layerId == layer && ged.subLayerId == subLayer &&
+                    x >= ged.viewport[0] && y >= ged.viewport[1] &&
+                    (x < ged.viewport[0] + ged.viewport[2]) &&
+                    (y < ged.viewport[1] + ged.viewport[3]))
                 {
-                    ret_val = data[i];
-                    envSaveMap.put(deviceId, data[i]);
+                    ret_val = ged;
+                    envSaveMap.put(deviceId, ged);
                     break;
                 }
             }
@@ -1640,11 +1454,12 @@ public abstract class BaseRenderingProcessor
      * The GL class instance has changed due to reinitialising the context,
      * so work through the list of current renderable items and reinitialise
      * them.
+     *
+     * @param newContext The new Context wrapper to initialise with
      */
-    protected void updateContextChange()
+    protected void updateContextChange(GLContext newContext)
     {
-        localContext = ownerRenderable.getLocalContext();
-        GL base_gl = localContext.getGL();
+        GL base_gl = newContext.getGL();
         GL2 gl = base_gl.getGL2();
 
         for(int i = 0; i < numRenderables && !terminate; i++)
@@ -1672,11 +1487,12 @@ public abstract class BaseRenderingProcessor
      * If no matching buffer could be created, then return null. Assumes the
      * context is current at the time of calling.
      *
+     * @param localContext The GLContext wrapper to build with
      * @param renderable The renderable that defines what we need to have
      *   for the buffer
      * @return The descriptor for the buffer that was created.
      */
-    private BaseBufferDescriptor createBuffer(OffscreenBufferRenderable renderable)
+    private BaseBufferDescriptor createBuffer(GLContext localContext, OffscreenBufferRenderable renderable)
     {
         // Note that since we are treating all offscreens as a flat list under
         // the root canvas, they all use the root GLContext instance as the

@@ -62,19 +62,13 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
     /** The GLU instance needed for finding and printing error strings */
     private GLU glu;
 
-    /** Has the buffer been initialised yet. */
-    private boolean initialised;
-
     /**
      * Construct handler for rendering objects to the main screen. Assumes this
      * is the main renderer, for debugging output purposes.
      *
-     * @param parentCtx The parent GL context to the surface that holds
-     *   this processor.
      * @param owner The owning device of this processor
      */
-    public DebugRenderingProcessor(GLContext parentCtx,
-                                   GraphicsOutputDevice owner)
+    public DebugRenderingProcessor(GraphicsOutputDevice owner)
     {
         super(owner);
 
@@ -87,16 +81,8 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
     // Methods defined by BaseRenderingProcessor
     //---------------------------------------------------------------
 
-    /**
-     * Draw to the drawable now. This causes the drawable's context to be made
-     * current and the GL commands are issued. Derived classes should not
-     * override this method, instead they should use the display()
-     * or init() methods as needed.
-     *
-     * @return false if the rendering should not continue
-     */
     @Override
-    public boolean render(GraphicsProfilingData profilingData)
+    public boolean render(GLContext localContext, GraphicsProfilingData profilingData)
     {
         if((dumpNextFrameCount != 0) && (localContext != null))
         {
@@ -149,7 +135,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
             }
         }
 
-        boolean ret_val = super.render(profilingData);
+        boolean ret_val = super.render(localContext, profilingData);
 
         if(untraced_gl != null)
             localContext.setGL(untraced_gl);
@@ -159,13 +145,8 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
         return ret_val;
     }
 
-    /**
-     * Called by the drawable to perform rendering by the client.
-     *
-     * @param profilingData The timing and load data
-     */
     @Override
-    public void display(GraphicsProfilingData profilingData)
+    public void display(GLContext localContext, GraphicsProfilingData profilingData)
     {
         GL base_gl = localContext.getGL();
 
@@ -664,7 +645,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     if(lastLightIdx >= availableLights.length)
                         continue;
 
-                    l_id = (Integer)lightIdMap.remove(renderableList[i].id);
+                    l_id = lightIdMap.remove(renderableList[i].id);
 
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.postRender(gl, l_id);
@@ -714,7 +695,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     if(lastClipIdx >= availableClips.length)
                         continue;
 
-                    c_id = (Integer)clipIdMap.remove(renderableList[i].id);
+                    c_id = clipIdMap.remove(renderableList[i].id);
 
                     comp = (ComponentRenderable)renderableList[i].renderable;
                     comp.postRender(gl, c_id);
@@ -957,15 +938,8 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
         gl.glFlush();
     }
 
-    /**
-     * Process the shader and delete requests for this scene now. Should
-     * normally be called at the start of the frame to ensure IDs are deleted
-     * up front before being reallocated elsewhere.
-     *
-     * @param gl The GL context to process the requests with
-     */
     @Override
-    protected void processRequestData(GL2 gl)
+    protected void processRequestData(GLContext localContext)
     {
         if(dumpNow || PRINT_STATES)
         {
@@ -994,7 +968,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
         }
 
         // Overridden so that we can print out state.
-        super.processRequestData(gl);
+        super.processRequestData(localContext);
     }
 
     //---------------------------------------------------------------

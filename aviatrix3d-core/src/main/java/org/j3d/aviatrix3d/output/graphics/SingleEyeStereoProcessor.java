@@ -50,13 +50,11 @@ public class SingleEyeStereoProcessor extends BaseStereoProcessor
     /**
      * Construct handler for rendering objects to the main screen.
      *
-     * @param context The context that this processor is working on
      * @param owner The owning device of this processor
      */
-    public SingleEyeStereoProcessor(GLContext context,
-                                    GraphicsOutputDevice owner)
+    public SingleEyeStereoProcessor(GraphicsOutputDevice owner)
     {
-        super(context, owner);
+        super(owner);
 
         renderLeftEye = true;
     }
@@ -65,39 +63,39 @@ public class SingleEyeStereoProcessor extends BaseStereoProcessor
     // Methods defined by BaseRenderingProcesor
     //---------------------------------------------------------------
 
-    /**
-     * Called by the drawable to perform rendering by the client.
-     *
-     * @param profilingData The timing and load data
-     */
     @Override
-    public void display(GraphicsProfilingData profilingData)
+    public void display(GLContext localContext, GraphicsProfilingData profilingData)
     {
+
+        // This may be problematic for cleanup. Since we have a left and
+        // right render as separate stages, we may need to keep a left and
+        // right queue separately. Don't have any hardware here that would
+        // be useful for debugging it, so please register a bug with Bugzilla
+        // if you find a problem.
+        processRequestData(localContext);
+
+        if(terminate)
+        {
+            return;
+        }
+
+        // Draw the left eye first, then right
         GL base_gl = localContext.getGL();
 
         if(base_gl == null)
             return;
 
         GL2 gl = base_gl.getGL2();
-        
-        // This may be problematic for cleanup. Since we have a left and
-        // right render as separate stages, we may need to keep a left and
-        // right queue separately. Don't have any hardware here that would
-        // be useful for debugging it, so please register a bug with Bugzilla
-        // if you find a problem.
-        processRequestData(gl);
 
-        if(terminate)
-            return;
-
-        // Draw the left eye first, then right
         gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glDrawBuffer(GL2.GL_BACK_LEFT);
 
         if(terminate)
+        {
             return;
+        }
 
-        render(gl, renderLeftEye, profilingData);
+        render(localContext, renderLeftEye, profilingData);
     }
 
     //---------------------------------------------------------------
@@ -118,11 +116,14 @@ public class SingleEyeStereoProcessor extends BaseStereoProcessor
      * Perform the rendering loop for one of the two buffers, indicated by
      * the provided parameter.
      *
-     * @param gl The gl context to draw with
-     *     * @param left true if this is the left eye
+     * @param localContext The gl context to draw with
+     * @param left true if this is the left eye
      */
-    private void render(GL2 gl, boolean left, GraphicsProfilingData profilingData)
+    private void render(GLContext localContext, boolean left, GraphicsProfilingData profilingData)
     {
+        GL base_gl = localContext.getGL();
+        GL2 gl = base_gl.getGL2();
+
         // TODO:
         // May want to put some optimisations here for systems that can clear
         // both back buffers at once with a single call to
