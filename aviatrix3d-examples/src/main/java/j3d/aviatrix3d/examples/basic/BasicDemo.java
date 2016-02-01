@@ -48,7 +48,7 @@ public class BasicDemo extends Frame
         setupAviatrix();
         setupSceneGraph();
 
-        setSize(600, 600);
+        setSize(500, 500);
         setLocation(40, 40);
 
         // Need to set visible first before starting the rendering thread due
@@ -70,6 +70,7 @@ public class BasicDemo extends Frame
 
         GraphicsSortStage sorter = new NullSortStage();
         surface = new DebugAWTSurface(caps);
+        surface.setClearColor(0.3f, 0.3f, 0.3f, 1);
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
 
         pipeline.setCuller(culler);
@@ -116,13 +117,13 @@ public class BasicDemo extends Frame
         // Flat panel that has the viewable object as the demo
         float[] coord = { 0, 0, -1, 0.25f, 0, -1, 0, 0.25f, -1 };
         float[] normal = { 0, 0, 1, 0, 0, 1, 0, 0, 1 };
-        //float[] color = { 0, 0, 1, 0, 1, 0, 1, 0, 0 };
+        float[] color = { 0, 0, 1, 0, 1, 0, 1, 0, 0 };
 
         TriangleArray geom = new TriangleArray();
         geom.setValidVertexCount(3);
         geom.setVertices(TriangleArray.COORDINATE_3, coord);
         geom.setNormals(normal);
-        //geom.setColors(false, color);
+        geom.setColors(false, color);
 
         Shape3D shape = new Shape3D();
         shape.setGeometry(geom);
