@@ -13,21 +13,21 @@
 package org.j3d.renderer.aviatrix3d.swt.output;
 
 // External imports
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
-// Local imports
-import com.jogamp.nativewindow.AbstractGraphicsDevice;
 import com.jogamp.opengl.*;
+
+import com.jogamp.nativewindow.AbstractGraphicsDevice;
 import com.jogamp.opengl.swt.GLCanvas;
 
+import org.eclipse.swt.widgets.Composite;
+
+// Local imports
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
 import org.j3d.aviatrix3d.output.graphics.BaseSurface;
 import org.j3d.aviatrix3d.output.graphics.CapabilitiesUtils;
 import org.j3d.aviatrix3d.output.graphics.CapabilityChooserWrapper;
 
-import org.eclipse.swt.widgets.Composite;
 
 
 /**
@@ -48,25 +48,6 @@ public abstract class BaseSWTSurface extends BaseSurface
 {
     /** The SWT version of the OpenGL canvas */
     protected GLCanvas swtCanvas;
-
-    /**
-     * Static constructor to make sure that the right system property is set
-     * for our SWT-specific factory.
-     */
-    static
-    {
-        AccessController.doPrivileged(
-            new PrivilegedAction<Object>()
-            {
-                public Object run()
-                {
-                    System.setProperty("opengl.factory.class.name",
-                                       "org.j3d.opengl.swt.SWTRIDrawableFactory");
-                    return null;
-                }
-            }
-        );
-    }
 
     /**
      * Construct a surface that requires the given set of capabilities. This
