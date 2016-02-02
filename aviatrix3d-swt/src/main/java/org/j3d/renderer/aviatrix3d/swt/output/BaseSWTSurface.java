@@ -28,7 +28,7 @@ import org.j3d.aviatrix3d.output.graphics.CapabilitiesUtils;
 import org.j3d.aviatrix3d.output.graphics.CapabilityChooserWrapper;
 
 import org.eclipse.swt.widgets.Composite;
-                                   Get
+
 
 /**
  * Extended base implementation of the basic drawable surface, but adding in
