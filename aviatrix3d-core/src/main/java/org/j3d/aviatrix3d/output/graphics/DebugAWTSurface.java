@@ -262,10 +262,8 @@ public class DebugAWTSurface extends BaseAWTSurface
 
         Component comp = (Component)canvas;
 
-        comp.setIgnoreRepaint(true);
         comp.addKeyListener(this);
-        comp.addComponentListener(resizer);
-        comp.addHierarchyListener(resizer);
+
         canvas.addGLEventListener(this);
     }
 
