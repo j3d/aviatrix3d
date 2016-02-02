@@ -12,12 +12,7 @@ import org.j3d.util.I18nManager;
 import org.j3d.aviatrix3d.*;
 
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
-import org.j3d.aviatrix3d.pipeline.graphics.NullCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
+import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
@@ -43,10 +38,12 @@ public class AnimationDemo extends Frame
     /** Our drawing surface */
     private GraphicsOutputDevice surface;
 
+    /** Makes sure the viewport is sync'd with the window size */
+    private ViewportResizeManager resizeManager;
 
     public AnimationDemo()
     {
-        super("Basic Aviatrix Demo");
+        super("Aviatrix Animation Demo");
 
         I18nManager intl_mgr = I18nManager.getManager();
         intl_mgr.setApplication(APP_NAME, "config.i18n.av3dResources");
@@ -71,6 +68,8 @@ public class AnimationDemo extends Frame
      */
     private void setupAviatrix()
     {
+        resizeManager = new ViewportResizeManager();
+
         // Assemble a simple single-threaded pipeline.
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
@@ -79,6 +78,8 @@ public class AnimationDemo extends Frame
 
         GraphicsSortStage sorter = new NullSortStage();
         surface = new SimpleAWTSurface(caps);
+        surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
 
         pipeline.setCuller(culler);
@@ -155,13 +156,15 @@ public class AnimationDemo extends Frame
         view.setDimensions(0, 0, 500, 500);
         view.setScene(scene);
 
+        resizeManager.addManagedViewport(view);
+
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
         Layer[] layers = { layer };
         displayManager.setLayers(layers, 1);
 
-        RotationAnimation anim = new RotationAnimation(shape_transform);
+        RotationAnimation anim = new RotationAnimation(shape_transform, resizeManager);
         sceneManager.setApplicationObserver(anim);
         sceneManager.setEnabled(true);
     }

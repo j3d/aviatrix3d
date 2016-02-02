@@ -50,21 +50,14 @@ public class ModelRotationAnimation
     // Methods defined by ApplicationUpdateObserver
     //---------------------------------------------------------------
 
-    /**
-     * Notification that now is a good time to update the scene graph.
-     */
+    @Override
     public void updateSceneGraph()
     {
         resizer.sendResizeUpdates();
         transform.boundsChanged(this);
     }
 
-    /**
-     * Notification that the AV3D internal shutdown handler has detected a
-     * system-wide shutdown. The aviatrix code has already terminated rendering
-     * at the point this method is called, only the user's system code needs to
-     * terminate before exiting here.
-     */
+    @Override
     public void appShutdown()
     {
         // do nothing

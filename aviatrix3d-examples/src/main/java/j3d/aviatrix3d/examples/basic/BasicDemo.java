@@ -8,12 +8,7 @@ import java.awt.event.*;
 import org.j3d.aviatrix3d.*;
 
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
-import org.j3d.aviatrix3d.pipeline.graphics.NullCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
+import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.maths.vector.Matrix4d;
@@ -27,7 +22,7 @@ import org.j3d.maths.vector.Vector3d;
  * @version $Revision: 1.13 $
  */
 public class BasicDemo extends Frame
-    implements WindowListener
+    implements WindowListener, ApplicationUpdateObserver
 {
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -37,6 +32,8 @@ public class BasicDemo extends Frame
 
     /** Our drawing surface */
     private GraphicsOutputDevice surface;
+
+    private ViewportResizeManager resizeManager;
 
     public BasicDemo()
     {
@@ -62,6 +59,8 @@ public class BasicDemo extends Frame
      */
     private void setupAviatrix()
     {
+        resizeManager = new ViewportResizeManager();
+
         // Assemble a simple single-threaded pipeline.
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
@@ -71,6 +70,8 @@ public class BasicDemo extends Frame
         GraphicsSortStage sorter = new NullSortStage();
         surface = new DebugAWTSurface(caps);
         surface.setClearColor(0.3f, 0.3f, 0.3f, 1);
+        surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
 
         pipeline.setCuller(culler);
@@ -84,6 +85,7 @@ public class BasicDemo extends Frame
         sceneManager = new SingleThreadRenderManager();
         sceneManager.addDisplay(displayManager);
         sceneManager.setMinimumFrameInterval(100);
+        sceneManager.setApplicationObserver(this);
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
@@ -147,6 +149,8 @@ public class BasicDemo extends Frame
         SimpleViewport view = new SimpleViewport();
         view.setDimensions(0, 0, 500, 500);
         view.setScene(scene);
+
+        resizeManager.addManagedViewport(view);
 
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
@@ -218,6 +222,22 @@ public class BasicDemo extends Frame
     public void windowOpened(WindowEvent evt)
     {
         sceneManager.setEnabled(true);
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by ApplicationUpdateObserver
+    //---------------------------------------------------------------
+
+    @Override
+    public void updateSceneGraph()
+    {
+        resizeManager.sendResizeUpdates();
+    }
+
+    @Override
+    public void appShutdown()
+    {
+        // do nothing
     }
 
     //---------------------------------------------------------------

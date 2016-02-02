@@ -46,8 +46,7 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
     {
         initComplete = true;
 
-        bufferWidth = ownerRenderable.getWidth();
-        bufferHeight = ownerRenderable.getHeight();
+        resize(parentContext);
 
         return true;
     }
@@ -83,8 +82,9 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
     @Override
     public void resize(GLContext context)
     {
-        bufferWidth = ownerRenderable.getWidth();
-        bufferHeight = ownerRenderable.getHeight();
+        GLDrawable drawable = context.getGLDrawable();
+        bufferWidth = drawable.getSurfaceWidth();
+        bufferHeight = drawable.getSurfaceHeight();
     }
 
     @Override

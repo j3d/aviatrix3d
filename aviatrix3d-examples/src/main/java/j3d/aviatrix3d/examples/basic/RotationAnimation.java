@@ -4,6 +4,8 @@ package j3d.aviatrix3d.examples.basic;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
+import org.j3d.aviatrix3d.pipeline.graphics.ViewportResizeManager;
+
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
 
@@ -29,11 +31,14 @@ public class RotationAnimation
     /** The current angle */
     private float angle;
 
+    private ViewportResizeManager resizeManager;
+
     /**
      *
      */
-    public RotationAnimation(TransformGroup tx)
+    public RotationAnimation(TransformGroup tx, ViewportResizeManager resizer)
     {
+        resizeManager = resizer;
         translation = new Vector3d();
         matrix = new Matrix4d();
         matrix.setIdentity();
@@ -49,6 +54,8 @@ public class RotationAnimation
      */
     public void updateSceneGraph()
     {
+        resizeManager.sendResizeUpdates();
+
         if(transform.isLive())
             transform.boundsChanged(this);
     }
@@ -78,8 +85,8 @@ public class RotationAnimation
     {
         angle += Math.PI / 1000;
 
-        float x = 0.5f * (float)Math.sin(angle);
-        float y = 0.5f * (float)Math.cos(angle);
+        float x = 0.25f * (float)Math.sin(angle);
+        float y = 0.25f * (float)Math.cos(angle);
 
         translation.x = x;
         translation.y = y;

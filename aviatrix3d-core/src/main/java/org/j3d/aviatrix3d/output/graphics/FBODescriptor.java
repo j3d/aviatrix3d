@@ -40,9 +40,6 @@ class FBODescriptor extends BaseBufferDescriptor
     /** The texture ID if a separate depth texture was asked for */
     private int depthTextureId;
 
-    /** The internal format for the storage */
-    private int internalFormat;
-
     /** Local and global context for this descriptor */
     private GLContext localContext;
 
@@ -73,46 +70,24 @@ class FBODescriptor extends BaseBufferDescriptor
     // Methods defined by BaseBufferDescriptor
     //---------------------------------------------------------------
 
-    /**
-     * Initialise an instance of this buffer now within the given parent
-     * context.
-     *
-     * @param parentContext The parent context to create the buffer in
-     * @return boolean true if initialisation succeeded for this buffer
-     *    false if it was not possible or had an error when creating this
-     *    buffer type.
-     */
     @Override
     public boolean initialise(GLContext parentContext)
     {
         localContext = parentContext;
 
-        boolean ret_val = createFBO(localContext, false);
+        boolean ret_val = createFBO(false);
 
         initComplete = ret_val;
 
         return ret_val;
     }
 
-    /**
-     * Reinitialise this descriptor because the GL context has changed.
-     */
     @Override
     public void reinitialize()
     {
-        createFBO(localContext, true);
+        createFBO(true);
     }
 
-    /**
-     * Enable this buffer for rendering to now. A buffer may fail to enable
-     * depending on the state of the underlying buffer. The state object
-     * describes the options available.
-     *
-     * @param localContext The GL context this buffer comes from
-     * @return The state that the enabling departed in
-     * @throws GLException Exception when something at the low-level went
-     *    wrong.
-     */
     @Override
     public void enable(GLContext localContext)
         throws GLException
@@ -128,13 +103,6 @@ class FBODescriptor extends BaseBufferDescriptor
         }
     }
 
-    /**
-     * This buffer is no longer eligable for rendering to now.
-     *
-     * @param context The GL context this buffer comes from
-     * @throws GLException Exception when something at the low-level went
-     *    wrong.
-     */
     @Override
     public void disable(GLContext context)
         throws GLException
@@ -149,10 +117,6 @@ class FBODescriptor extends BaseBufferDescriptor
         }
     }
 
-    /**
-     * Bind the current buffer to this context now. Default implementation does
-     * nothing. Override for the pbuffer render-to-texture-specific case.
-     */
     @Override
     public void bindBuffer(GLContext parentContext)
     {
@@ -163,10 +127,6 @@ class FBODescriptor extends BaseBufferDescriptor
         }
     }
 
-    /**
-     * Unbind the current buffer from this context now. Default implementation
-     * does nothing. Override for the pbuffer render-to-texture-specific case.
-     */
     @Override
     public void unbindBuffer(GLContext parentContext)
     {
@@ -177,11 +137,6 @@ class FBODescriptor extends BaseBufferDescriptor
         }
     }
 
-    /**
-     * Resize the underlying textures, leaving the buffer ID intact.
-     *
-     * @param context The GL context this buffer comes from
-     */
     @Override
     public void resize(GLContext context)
     {
@@ -196,15 +151,9 @@ class FBODescriptor extends BaseBufferDescriptor
             return;
 
         delete(context);
-        createFBO(context, true);
+        createFBO(true);
     }
 
-    /**
-     * Remove this buffer object from existance. Will delete the handle that
-     * OpenGL has and turns it back to uninitialised.
-     *
-     * @param context The GL context this buffer comes from
-     */
     @Override
     public void delete(GLContext context)
     {
@@ -277,13 +226,13 @@ class FBODescriptor extends BaseBufferDescriptor
     /**
      * Create a new FBO definition.
      *
-     * @param context
-     * @param update
+     * @param update true if we are just updating the existing texture ID
+     *    false to create a new one.
      */
-    private boolean createFBO(GLContext context, boolean update)
+    private boolean createFBO(boolean update)
     {
         // FBOs don't support stencil buffers currently, so exit immediately if
-        // the user has requestd them.
+        // the user has requested them.
         BufferSetupData caps = ownerRenderable.getBufferSetup();
 
         int num_targets = caps.getNumRenderTargets();

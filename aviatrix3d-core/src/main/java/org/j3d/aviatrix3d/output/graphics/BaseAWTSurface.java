@@ -20,14 +20,6 @@ import com.jogamp.nativewindow.AbstractGraphicsDevice;
 // Local imports
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
-import org.j3d.aviatrix3d.rendering.ProfilingData;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsInstructions;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsRequestData;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsResizeListener;
-
-import org.j3d.util.ErrorReporter;
-
-import com.jogamp.opengl.awt.GLJPanel;
 
 /**
  * Implementation of the most basic drawable surface extended to provide
@@ -39,9 +31,6 @@ import com.jogamp.opengl.awt.GLJPanel;
  */
 public abstract class BaseAWTSurface extends BaseSurface
 {
-    /** Handler for dealing with the AWT to our graphics resize handler */
-    protected AWTResizeHandler resizer;
-
     /** Flag indicating if we're a lightweight surface or not */
     protected final boolean lightweight;
 
@@ -63,44 +52,7 @@ public abstract class BaseAWTSurface extends BaseSurface
     {
         super(sharedWith);
 
-        resizer = new AWTResizeHandler();
-
         this.lightweight = lightweight;
-    }
-
-    //---------------------------------------------------------------
-    // Methods defined by GraphicsOutputDevice
-    //---------------------------------------------------------------
-
-    @Override
-    public void setErrorReporter(ErrorReporter reporter)
-    {
-        super.setErrorReporter(reporter);
-        resizer.setErrorReporter(errorReporter);
-    }
-
-    @Override
-    public void addGraphicsResizeListener(GraphicsResizeListener l)
-    {
-        resizer.addGraphicsResizeListener(l);
-    }
-
-    @Override
-    public void removeGraphicsResizeListener(GraphicsResizeListener l)
-    {
-        resizer.removeGraphicsResizeListener(l);
-    }
-
-    @Override
-    public void swap()
-    {
-        if(lightweight && canvasRenderer == null)
-            return;
-
-        super.swap();
-
-        if(lightweight)
-            ((GLJPanel)canvas).repaint();
     }
 
     //---------------------------------------------------------------
