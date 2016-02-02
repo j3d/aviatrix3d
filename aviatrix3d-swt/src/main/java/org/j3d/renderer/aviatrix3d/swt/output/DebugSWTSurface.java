@@ -15,17 +15,19 @@ package org.j3d.renderer.aviatrix3d.swt.output;
 // External imports
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLCapabilitiesChooser;
-import com.jogamp.opengl.GLContext;
 
 import com.jogamp.opengl.swt.GLCanvas;
+
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
 // Local imports
+import org.j3d.aviatrix3d.output.graphics.*;
+
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
-import org.j3d.aviatrix3d.output.graphics.*;
 import org.j3d.aviatrix3d.rendering.ProfilingData;
 
 /**
@@ -263,12 +265,9 @@ public class DebugSWTSurface extends BaseSWTSurface
     @Override
     protected void initCanvas(Composite parent, int style, GLCapabilities caps, GLCapabilitiesChooser chooser)
     {
-        swtCanvas = new GLCanvas(parent, style, caps, chooser);
+        canvas = new GLCanvas(parent, style, caps, chooser);
 
-        swtCanvas.addKeyListener(this);
-        swtCanvas.addControlListener(resizer);
-
-        canvas = swtCanvas;
+        ((Canvas)canvas).addKeyListener(this);
 
         canvasRenderer = new DebugRenderingProcessor(this);
     }

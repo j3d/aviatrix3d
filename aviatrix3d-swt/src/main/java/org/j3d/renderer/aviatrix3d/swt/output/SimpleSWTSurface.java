@@ -197,11 +197,7 @@ public class SimpleSWTSurface extends BaseSWTSurface
     @Override
     protected void initCanvas(Composite parent, int style, GLCapabilities caps, GLCapabilitiesChooser chooser)
     {
-        swtCanvas = new GLCanvas(parent, style, caps, chooser);
-        swtCanvas.addControlListener(resizer);
-
-        canvas = swtCanvas;
-
+        canvas = new GLCanvas(parent, style, caps, chooser);
         canvasRenderer = new StandardRenderingProcessor(this);
     }
 }

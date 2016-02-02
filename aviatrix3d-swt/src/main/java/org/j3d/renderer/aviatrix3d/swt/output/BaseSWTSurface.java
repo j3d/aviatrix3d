@@ -17,7 +17,6 @@ package org.j3d.renderer.aviatrix3d.swt.output;
 import com.jogamp.opengl.*;
 
 import com.jogamp.nativewindow.AbstractGraphicsDevice;
-import com.jogamp.opengl.swt.GLCanvas;
 
 import org.eclipse.swt.widgets.Composite;
 
@@ -46,9 +45,6 @@ import org.j3d.aviatrix3d.output.graphics.CapabilityChooserWrapper;
  */
 public abstract class BaseSWTSurface extends BaseSurface
 {
-    /** The SWT version of the OpenGL canvas */
-    protected GLCanvas swtCanvas;
-
     /**
      * Construct a surface that requires the given set of capabilities. This
      * surface acts as a standalone canvas.
@@ -61,10 +57,16 @@ public abstract class BaseSWTSurface extends BaseSurface
         super(sharedWith);
     }
 
+    //---------------------------------------------------------------
+    // Methods defined by GraphicsOutputDevice
+    //---------------------------------------------------------------
+
     @Override
     public Object getSurfaceObject()
     {
-        return swtCanvas;
+        // Since we know that the canvas is GLJPanel or GLCanvas, we can just
+        // return the raw drawable here for casting.
+        return canvas;
     }
 
     //---------------------------------------------------------------

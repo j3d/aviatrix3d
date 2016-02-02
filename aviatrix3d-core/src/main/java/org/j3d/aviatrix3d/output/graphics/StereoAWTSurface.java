@@ -14,24 +14,20 @@ package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
 import com.jogamp.opengl.*;
-import com.jogamp.opengl.awt.GLCanvas;
-import com.jogamp.opengl.awt.GLJPanel;
 
-import java.awt.Component;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
+
+import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.awt.GLJPanel;
 
 import org.j3d.util.I18nManager;
 
 // Local imports
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
 import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
-import org.j3d.aviatrix3d.rendering.OffscreenBufferRenderable;
-import org.j3d.aviatrix3d.rendering.ProfilingData;
-
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsProfilingData;
 
 /**
  * Implementation of the most drawable surface, supporting stereo rendering
@@ -430,11 +426,6 @@ public class StereoAWTSurface extends BaseAWTSurface
             canvas = new GLCanvas(caps, chooser, null);
         }
 
-        Component comp = (Component)canvas;
-
-        comp.setIgnoreRepaint(true);
-        comp.addComponentListener(resizer);
-        comp.addHierarchyListener(resizer);
         canvas.addGLEventListener(this);
     }
 

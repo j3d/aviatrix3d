@@ -56,6 +56,18 @@ public abstract class BaseAWTSurface extends BaseSurface
     }
 
     //---------------------------------------------------------------
+    // Methods defined by GraphicsOutputDevice
+    //---------------------------------------------------------------
+
+    @Override
+    public Object getSurfaceObject()
+    {
+        // Since we know that the canvas is GLJPanel or GLCanvas, we can just
+        // return the raw drawable here for casting.
+        return canvas;
+    }
+
+    //---------------------------------------------------------------
     // Local Methods
     //---------------------------------------------------------------
 

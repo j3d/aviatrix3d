@@ -26,13 +26,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.j3d.util.I18nManager;
 
 // Local imports
-import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
-import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
 import org.j3d.aviatrix3d.output.graphics.*;
 
-import org.j3d.aviatrix3d.rendering.OffscreenBufferRenderable;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsProfilingData;
-import org.j3d.aviatrix3d.rendering.ProfilingData;
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilities;
+import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
+
 
 /**
  * Implementation of the most drawable surface, supporting stereo rendering
@@ -84,15 +82,6 @@ public class StereoSWTSurface extends BaseSWTSurface
 
     /** The current eye separation to use */
     private float eyeSeparation;
-
-    /** The user requested capabilities for this canvas */
-    private GLCapabilities requestedCapabilities;
-
-    /** The user-defined capabilities chooser for this canvas */
-    private GLCapabilitiesChooser requestedChooser;
-
-    /** Flag saying whether we should generate light or heavyweight canvases */
-    private boolean useLightweight;
 
     /** When running alternate frame mode, which frame are we on now? */
     private boolean renderLeftFrame;
@@ -308,7 +297,6 @@ public class StereoSWTSurface extends BaseSWTSurface
     {
         super(sharedWith);
 
-        useLightweight = lightweight;
         parentWidget = parent;
         swtStyle = style;
 
@@ -424,10 +412,7 @@ public class StereoSWTSurface extends BaseSWTSurface
     @Override
     protected void initCanvas(Composite parent, int style, GLCapabilities caps, GLCapabilitiesChooser chooser)
     {
-        swtCanvas = new GLCanvas(parentWidget, swtStyle, requestedCapabilities, requestedChooser);
-        swtCanvas.addControlListener(resizer);
-
-        canvas = swtCanvas;
+        canvas = new GLCanvas(parentWidget, swtStyle, caps, chooser);
     }
 
     //---------------------------------------------------------------
