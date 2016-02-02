@@ -26,10 +26,9 @@ import org.j3d.aviatrix3d.GraphicsRenderingCapabilitiesChooser;
 import org.j3d.aviatrix3d.output.graphics.BaseSurface;
 import org.j3d.aviatrix3d.output.graphics.CapabilitiesUtils;
 import org.j3d.aviatrix3d.output.graphics.CapabilityChooserWrapper;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsResizeListener;
 
 import org.eclipse.swt.widgets.Composite;
-import org.j3d.util.ErrorReporter;
+                                   Get
 
 /**
  * Extended base implementation of the basic drawable surface, but adding in
@@ -47,9 +46,6 @@ import org.j3d.util.ErrorReporter;
  */
 public abstract class BaseSWTSurface extends BaseSurface
 {
-    /** Handler for dealing with the AWT to our graphics resize handler */
-    protected SWTResizeHandler resizer;
-
     /** The SWT version of the OpenGL canvas */
     protected GLCanvas swtCanvas;
 
@@ -82,60 +78,8 @@ public abstract class BaseSWTSurface extends BaseSurface
     public BaseSWTSurface(BaseSurface sharedWith)
     {
         super(sharedWith);
-
-        resizer = new SWTResizeHandler();
     }
 
-    //---------------------------------------------------------------
-    // Methods defined by GraphicsOutputDevice
-    //---------------------------------------------------------------
-
-    /**
-     * Register an error reporter with the engine so that any errors generated
-     * by the node's internals can be reported in a nice, pretty fashion.
-     * Setting a value of null will clear the currently set reporter. If one
-     * is already set, the new value replaces the old.
-     *
-     * @param reporter The instance to use or null
-     */
-    @Override
-    public void setErrorReporter(ErrorReporter reporter)
-    {
-        super.setErrorReporter(reporter);
-        resizer.setErrorReporter(errorReporter);
-    }
-
-    /**
-     * Add a resize listener instance to this surface. Duplicate listener
-     * instance add requests are ignored, as are null values.
-     *
-     * @param l The new listener instance to add
-     */
-    @Override
-    public void addGraphicsResizeListener(GraphicsResizeListener l)
-    {
-        resizer.addGraphicsResizeListener(l);
-    }
-
-    /**
-     * Remove a resize listener from this surface. If the listener is not
-     * currently registered the request is ignored.
-     *
-     * @param l The listener instance to remove
-     */
-    @Override
-    public void removeGraphicsResizeListener(GraphicsResizeListener l)
-    {
-        resizer.removeGraphicsResizeListener(l);
-    }
-
-    /**
-     * Get the underlying object that this surface is rendered to. If it is a
-     * screen display device, the surface can be one of AWT Component or
-     * Swing JComponent. An off-screen buffer would be a form of AWT Image etc.
-     *
-     * @return The drawable surface representation
-     */
     @Override
     public Object getSurfaceObject()
     {

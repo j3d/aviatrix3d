@@ -68,15 +68,7 @@ public class ViewportResizeManager
     // Methods defined by GraphicsResizeListener
     //---------------------------------------------------------------
 
-    /**
-     * Notification that the graphics output device has changed dimensions to
-     * the given size. Dimensions are in pixels.
-     *
-     * @param x The lower left x coordinate for the view
-     * @param y The lower left y coordinate for the view
-     * @param width The width of the viewport in pixels
-     * @param height The height of the viewport in pixels
-     */
+    @Override
     public void graphicsDeviceResized(int x, int y, int width, int height)
     {
         viewX = x;

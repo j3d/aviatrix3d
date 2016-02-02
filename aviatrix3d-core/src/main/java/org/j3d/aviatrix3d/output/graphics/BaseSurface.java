@@ -18,12 +18,10 @@ import com.jogamp.opengl.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.jogamp.nativewindow.AbstractGraphicsDevice;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Point3d;
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
-import org.j3d.util.I18nManager;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.*;
@@ -43,9 +41,6 @@ import org.j3d.aviatrix3d.pipeline.graphics.*;
  * <p>
  * <b>Internationalisation Resource Names</b>
  * <ul>
- * <li>makeCurrentFailMsg: Error message because the GL context isn't current</li>
- * <li>makeCurrentAttemptMsg: Info message when attempting to make the GL context current</li>
- * <li>makeCurrentSuccessMsg: Info message when the GL context is current</li>
  * </ul>
  *
  * @author Justin Couch
@@ -54,11 +49,6 @@ import org.j3d.aviatrix3d.pipeline.graphics.*;
 public abstract class BaseSurface
     implements GraphicsOutputDevice, GLEventListener
 {
-
-    /** Message when the GL context failed to initialise */
-    private static final String PASS_CONTEXT_PROP =
-        "org.j3d.aviatrix3d.output.graphics.BaseSurface.makeCurrentSuccessMsg";
-
     /** The initial size of the children list */
     private static final int LIST_START_SIZE = 20;
 
@@ -131,6 +121,9 @@ public abstract class BaseSurface
      */
     private GraphicsProfilingData profilingData;
 
+    /** Manages the GLEventListener to GraphicsResizeListener transitions */
+    private GLResizeHandler resizer;
+
     /**
      * Construct a surface shares it's GL context with the given surface. This
      * is useful for constructing multiple view displays of the same scene
@@ -149,6 +142,7 @@ public abstract class BaseSurface
         terminate = false;
         singleThreaded = false;
         canvasDescriptor = new MainCanvasDescriptor();
+        resizer = new GLResizeHandler();
 
         alphaCutoff = 1.0f;
         useTwoPassTransparent = false;
@@ -438,6 +432,18 @@ public abstract class BaseSurface
             canvasRenderer.removeSurfaceInfoListener(l);
     }
 
+    @Override
+    public void addGraphicsResizeListener(GraphicsResizeListener l)
+    {
+        resizer.addGraphicsResizeListener(l);
+    }
+
+    @Override
+    public void removeGraphicsResizeListener(GraphicsResizeListener l)
+    {
+        resizer.removeGraphicsResizeListener(l);
+    }
+
     //---------------------------------------------------------------
     // Methods defined by OutputDevice
     //---------------------------------------------------------------
@@ -451,6 +457,7 @@ public abstract class BaseSurface
             errorReporter = reporter;
 
         canvasRenderer.setErrorReporter(reporter);
+        resizer.setErrorReporter(errorReporter);
     }
 
     @Override
@@ -566,7 +573,8 @@ public abstract class BaseSurface
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height)
     {
-
+        canvasDescriptor.resize(drawable.getContext());
+        resizer.fireResizeEvent(x, y, width, height);
     }
 
     //---------------------------------------------------------------

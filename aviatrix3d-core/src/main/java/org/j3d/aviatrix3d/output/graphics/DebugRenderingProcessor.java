@@ -971,6 +971,27 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
         super.processRequestData(localContext);
     }
 
+    @Override
+    protected void setupViewport(GL2 gl, GraphicsEnvironmentData data)
+    {
+        if(dumpNow || PRINT_STATES)
+        {
+
+            String msg = "Viewport set to [" +
+                data.viewport[GraphicsEnvironmentData.VIEW_X] + ", " +
+                data.viewport[GraphicsEnvironmentData.VIEW_Y] + ", " +
+                data.viewport[GraphicsEnvironmentData.VIEW_WIDTH] + ", " +
+                data.viewport[GraphicsEnvironmentData.VIEW_HEIGHT] + "]" +
+                " Scissor set to " +
+                data.scissor[GraphicsEnvironmentData.VIEW_X] + ", " +
+                data.scissor[GraphicsEnvironmentData.VIEW_Y] + ", " +
+                data.scissor[GraphicsEnvironmentData.VIEW_WIDTH] + ", " +
+                data.scissor[GraphicsEnvironmentData.VIEW_HEIGHT] + "]";
+
+            errorReporter.messageReport(msg);
+        }
+    }
+
     //---------------------------------------------------------------
     // Local Methods
     //---------------------------------------------------------------
