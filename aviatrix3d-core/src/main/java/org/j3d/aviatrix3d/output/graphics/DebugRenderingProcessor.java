@@ -13,8 +13,14 @@
 package org.j3d.aviatrix3d.output.graphics;
 
 // External imports
+import java.text.Format;
+import java.text.MessageFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.glu.GLU;
+import org.j3d.util.I18nManager;
 
 // Local imports
 import org.j3d.aviatrix3d.rendering.*;
@@ -84,23 +90,23 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
     @Override
     public boolean render(GLContext localContext, GraphicsProfilingData profilingData)
     {
-        if((dumpNextFrameCount != 0) && (localContext != null))
+        if ((dumpNextFrameCount != 0) && (localContext != null))
         {
             dumpNextFrameCount--;
             dumpNow = true;
         }
 
-        if(dumpNow || PRINT_STATES || CHECK_ERRORS)
+        if (dumpNow || PRINT_STATES || CHECK_ERRORS)
         {
             StringBuilder buf =
-              new StringBuilder("*** Starting ");
+                new StringBuilder("*** Starting ");
 
-            if(ownerRenderable instanceof FBODescriptor)
+            if (ownerRenderable instanceof FBODescriptor)
                 buf.append("Frame Buffer Object ");
-            else if(ownerRenderable instanceof MainCanvasDescriptor)
+            else if (ownerRenderable instanceof MainCanvasDescriptor)
                 buf.append("Main canvas ");
 
-            if(ownerRenderable != null)
+            if (ownerRenderable != null)
                 buf.append(ownerRenderable.hashCode());
             else
                 buf.append("No Owner");
@@ -112,14 +118,14 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
         GL untraced_gl = null;
 
-        if(localContext != null)
+        if (localContext != null)
         {
             GL base_gl = localContext.getGL();
             GL2 gl = base_gl.getGL2();
 
-            if(dumpNow)
+            if (dumpNow)
             {
-                if(debugGL == null && !(gl instanceof DebugGL2))
+                if (debugGL == null && !(gl instanceof DebugGL2))
                 {
                     debugGL = new DebugGL2(gl);
                     localContext.setGL(debugGL);
@@ -137,7 +143,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
         boolean ret_val = super.render(localContext, profilingData);
 
-        if(untraced_gl != null)
+        if (untraced_gl != null)
             localContext.setGL(untraced_gl);
 
         dumpNow = false;
@@ -150,25 +156,25 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
     {
         GL base_gl = localContext.getGL();
 
-        if(base_gl == null)
+        if (base_gl == null)
             return;
 
         GL2 gl = base_gl.getGL2();
 
-        if(dumpNow || CHECK_ERRORS)
+        if (dumpNow || CHECK_ERRORS)
         {
             int err = gl.glGetError();
-            if(err != GL.GL_NO_ERROR)
+            if (err != GL.GL_NO_ERROR)
             {
                 errorReporter.messageReport("Error: before start of this frame");
                 errorReporter.messageReport(glu.gluErrorString(err));
             }
         }
 
-        if(terminate)
+        if (terminate)
             return;
 
-        if(alwaysLocalClear)
+        if (alwaysLocalClear)
         {
             // Need to reset the viewport back to full window size when we
             // clear because we never unset the viewport in the previous
@@ -189,10 +195,10 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
             gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 
-            if(dumpNow || CHECK_ERRORS)
+            if (dumpNow || CHECK_ERRORS)
             {
                 int err = gl.glGetError();
-                if(err != GL.GL_NO_ERROR)
+                if (err != GL.GL_NO_ERROR)
                 {
                     errorReporter.messageReport("Error: after clearing local");
                     errorReporter.messageReport(glu.gluErrorString(err));
@@ -217,15 +223,15 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
         boolean first_layer = true;
         ObjectRenderable current_fog = null;
 
-        for(int i = 0; i < numRenderables && !terminate; i++)
+        for (int i = 0; i < numRenderables && !terminate; i++)
         {
-            switch(operationList[i])
+            switch (operationList[i])
             {
                 case RenderOp.START_MULTIPASS:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Start multipass. First layer? " +
-                                           first_layer);
+                                                        first_layer);
                     }
 
                     clear_buffer_bits = 0;
@@ -234,7 +240,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     // If this is not the first layer, render to one of the
                     // auxillary buffers and have that copy back to the main
                     // buffer when the layer is finished.
-                    if(!first_layer)
+                    if (!first_layer)
                     {
                         gl.glDrawBuffer(GL2.GL_AUX0);
                         gl.glReadBuffer(GL2.GL_AUX0);
@@ -244,16 +250,16 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.STOP_MULTIPASS:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Stop multipass. First layer? " +
-                                           first_layer);
+                                                        first_layer);
                     }
 
                     // If not the first layer, copy everything back and then
                     // reset the drawing and read layers back to the normal
                     // rendering setup.
-                    if(!first_layer)
+                    if (!first_layer)
                     {
                         gl.glDrawBuffer(GL.GL_BACK);
                         gl.glRasterPos2i(data.viewport[GraphicsEnvironmentData.VIEW_X],
@@ -269,12 +275,13 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.START_MULTIPASS_PASS:
-                    if(dumpNow || PRINT_STATES) {
+                    if (dumpNow || PRINT_STATES)
+                    {
                         errorReporter.messageReport("Start multipass pass. Clear Buffers 0x" +
-                                           Integer.toHexString(clear_buffer_bits));
+                                                        Integer.toHexString(clear_buffer_bits));
                     }
 
-                    if(clear_buffer_bits != 0)
+                    if (clear_buffer_bits != 0)
                         gl.glClear(clear_buffer_bits);
 
                     data = environmentList[data_index];
@@ -285,7 +292,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.STOP_MULTIPASS_PASS:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Stop multipass pass.");
                     }
@@ -295,15 +302,15 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.SET_VIEWPORT_STATE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Set multipass viewport.");
                     }
-                    ((ViewportRenderable)renderableList[i].renderable).render(gl);
+                    ((ViewportRenderable) renderableList[i].renderable).render(gl);
                     break;
 
                 case RenderOp.STOP_VIEWPORT_STATE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Stop multipass viewport.");
                     }
@@ -312,66 +319,66 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.START_BUFFER_STATE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Start buffer state " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
-                    buffer = (BufferStateRenderable)renderableList[i].renderable;
+                    buffer = (BufferStateRenderable) renderableList[i].renderable;
                     buffer.setBufferState(gl);
 
-                    if(buffer.checkClearBufferState())
+                    if (buffer.checkClearBufferState())
                         clear_buffer_bits |= buffer.getBufferBitMask();
                     break;
 
                 case RenderOp.SET_BUFFER_CLEAR:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Set buffer clear bit " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
-                    buffer = (BufferStateRenderable)renderableList[i].renderable;
+                    buffer = (BufferStateRenderable) renderableList[i].renderable;
 
-                    if(buffer.checkClearBufferState())
+                    if (buffer.checkClearBufferState())
                         clear_buffer_bits |= buffer.getBufferBitMask();
                     else
                         clear_buffer_bits &= ~buffer.getBufferBitMask();
                     break;
 
                 case RenderOp.CHANGE_BUFFER_STATE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Change buffer state " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
-                    buffer = (BufferStateRenderable)renderableList[i].renderable;
+                    buffer = (BufferStateRenderable) renderableList[i].renderable;
                     buffer.updateBufferState(gl);
 
-                    if(buffer.checkClearBufferState())
+                    if (buffer.checkClearBufferState())
                         clear_buffer_bits |= buffer.getBufferBitMask();
                     else
                         clear_buffer_bits &= ~buffer.getBufferBitMask();
                     break;
 
                 case RenderOp.STOP_BUFFER_STATE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Stop buffer state " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
-                    buffer = (BufferStateRenderable)renderableList[i].renderable;
+                    buffer = (BufferStateRenderable) renderableList[i].renderable;
                     buffer.clearBufferState(gl);
                     clear_buffer_bits &= ~buffer.getBufferBitMask();
                     break;
@@ -382,12 +389,12 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     layer_data_index = data_index;
                     data_index++;
 
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Start layer " +
-                                                    layer_data_index +
-                                                    " 0x" +
-                                            Integer.toHexString(data.hashCode()));
+                                                        layer_data_index +
+                                                        " 0x" +
+                                                        Integer.toHexString(data.hashCode()));
                     }
                     gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
 
@@ -399,12 +406,12 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.STOP_LAYER:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Stop Layer " +
-                                                    layer_data_index +
-                                                    " 0x" +
-                                            Integer.toHexString(data.hashCode()));
+                                                        layer_data_index +
+                                                        " 0x" +
+                                                        Integer.toHexString(data.hashCode()));
                     }
                     data = environmentList[layer_data_index];
 
@@ -418,150 +425,151 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     // EMF: there might be multiple layers per viewport
                     // we increment data_index within START_LAYER
 
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Start viewport " +
-                                                    layer_data_index +
-                                                    " 0x" +
-                                            Integer.toHexString(data.hashCode()));
+                                                        layer_data_index +
+                                                        " 0x" +
+                                                        Integer.toHexString(data.hashCode()));
                     }
 
                     setupViewport(gl, data);
                     break;
 
                 case RenderOp.STOP_VIEWPORT:
-                    if(dumpNow || PRINT_STATES) {
+                    if (dumpNow || PRINT_STATES)
+                    {
                         errorReporter.messageReport("Stop viewport");
                     }
                     break;
 
                 case RenderOp.START_RENDER:
                     // load the matrix to render
-                    if(dumpNow)
+                    if (dumpNow)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Start render " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
                     gl.glPushMatrix();
                     gl.glMultMatrixd(renderableList[i].transform, 0);
-                    obj = (ObjectRenderable)renderableList[i].renderable;
+                    obj = (ObjectRenderable) renderableList[i].renderable;
                     obj.render(gl);
                     break;
 
                 case RenderOp.STOP_RENDER:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Stop render " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    obj = (ObjectRenderable)renderableList[i].renderable;
+                    obj = (ObjectRenderable) renderableList[i].renderable;
                     obj.postRender(gl);
                     gl.glPopMatrix();
                     break;
 
                 case RenderOp.START_RENDER_2D:
                     // load the matrix to render
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Start 2D render " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
                     gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
-                    gl.glPixelZoom((float)renderableList[i].transform[0],
-                                   (float)renderableList[i].transform[5]);
-                    obj = (ObjectRenderable)renderableList[i].renderable;
+                    gl.glPixelZoom((float) renderableList[i].transform[0],
+                                   (float) renderableList[i].transform[5]);
+                    obj = (ObjectRenderable) renderableList[i].renderable;
                     obj.render(gl);
                     break;
 
                 case RenderOp.STOP_RENDER_2D:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Stop 2D render " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    obj = (ObjectRenderable)renderableList[i].renderable;
+                    obj = (ObjectRenderable) renderableList[i].renderable;
                     obj.postRender(gl);
                     break;
 
                 case RenderOp.RENDER_GEOMETRY:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Render geometry " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
                     // load the matrix to render
                     gl.glPushMatrix();
                     gl.glMultMatrixd(renderableList[i].transform, 0);
-                    ((GeometryRenderable)renderableList[i].renderable).render(gl);
+                    ((GeometryRenderable) renderableList[i].renderable).render(gl);
                     gl.glPopMatrix();
                     break;
 
                 case RenderOp.RENDER_GEOMETRY_2D:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Render 2D geometry " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
                     // load the matrix to render
                     gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
-                    gl.glPixelZoom((float)renderableList[i].transform[0],
-                                   (float)renderableList[i].transform[5]);
-                    ((GeometryRenderable)renderableList[i].renderable).render(gl);
+                    gl.glPixelZoom((float) renderableList[i].transform[0],
+                                   (float) renderableList[i].transform[5]);
+                    ((GeometryRenderable) renderableList[i].renderable).render(gl);
                     break;
 
                 case RenderOp.RENDER_CUSTOM_GEOMETRY:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Render custom geometry " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
                     // load the matrix to render
                     gl.glPushMatrix();
                     gl.glMultMatrixd(renderableList[i].transform, 0);
                     CustomGeometryRenderable gr =
-                        (CustomGeometryRenderable)renderableList[i].renderable;
+                        (CustomGeometryRenderable) renderableList[i].renderable;
                     gr.render(gl, renderableList[i].instructions);
                     gl.glPopMatrix();
                     break;
 
                 case RenderOp.RENDER_CUSTOM:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Render custom " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
                     // load the matrix to render
@@ -569,47 +577,47 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     gl.glMultMatrixd(renderableList[i].transform, 0);
 
                     CustomRenderable cr =
-                        (CustomRenderable)renderableList[i].renderable;
+                        (CustomRenderable) renderableList[i].renderable;
                     cr.render(gl, renderableList[i].instructions);
                     gl.glPopMatrix();
                     break;
 
                 case RenderOp.START_STATE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Start state " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    obj = (ObjectRenderable)renderableList[i].renderable;
+                    obj = (ObjectRenderable) renderableList[i].renderable;
                     obj.render(gl);
                     break;
 
                 case RenderOp.STOP_STATE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Stop state " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    obj = (ObjectRenderable)renderableList[i].renderable;
+                    obj = (ObjectRenderable) renderableList[i].renderable;
                     obj.postRender(gl);
                     break;
 
                 case RenderOp.START_LIGHT:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Start light " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
                     // Get the next available light ID
@@ -617,7 +625,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 // TODO:
 // Fix this so that if we run off the end we can still recover and not disable
 // Lighting/Clipping completely for the next frame.
-                    if(lastLightIdx >= availableLights.length)
+                    if (lastLightIdx >= availableLights.length)
                         continue;
 
                     Integer l_id = availableLights[lastLightIdx++];
@@ -627,39 +635,39 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     // load the matrix to render
                     gl.glPushMatrix();
                     gl.glMultMatrixd(renderableList[i].transform, 0);
-                    comp = (ComponentRenderable)renderableList[i].renderable;
+                    comp = (ComponentRenderable) renderableList[i].renderable;
                     comp.render(gl, l_id);
                     gl.glPopMatrix();
                     break;
 
                 case RenderOp.STOP_LIGHT:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Stop light " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    if(lastLightIdx >= availableLights.length)
+                    if (lastLightIdx >= availableLights.length)
                         continue;
 
                     l_id = lightIdMap.remove(renderableList[i].id);
 
-                    comp = (ComponentRenderable)renderableList[i].renderable;
+                    comp = (ComponentRenderable) renderableList[i].renderable;
                     comp.postRender(gl, l_id);
                     availableLights[--lastLightIdx] = l_id;
                     break;
 
                 case RenderOp.START_CLIP_PLANE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Start clip plane " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
                     // Get the next available clip plane ID
@@ -667,7 +675,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 // TODO:
 // Fix this so that if we run off the end we can still recover and not disable
 // Lighting/Clipping completely for the next frame.
-                    if(lastClipIdx >= availableClips.length)
+                    if (lastClipIdx >= availableClips.length)
                         continue;
 
                     Integer c_id = availableClips[lastClipIdx++];
@@ -677,36 +685,36 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     gl.glPushMatrix();
                     gl.glMultMatrixd(renderableList[i].transform, 0);
 
-                    comp = (ComponentRenderable)renderableList[i].renderable;
+                    comp = (ComponentRenderable) renderableList[i].renderable;
                     comp.render(gl, c_id);
                     gl.glPopMatrix();
                     break;
 
                 case RenderOp.STOP_CLIP_PLANE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Stop clip plane " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    if(lastClipIdx >= availableClips.length)
+                    if (lastClipIdx >= availableClips.length)
                         continue;
 
                     c_id = clipIdMap.remove(renderableList[i].id);
 
-                    comp = (ComponentRenderable)renderableList[i].renderable;
+                    comp = (ComponentRenderable) renderableList[i].renderable;
                     comp.postRender(gl, c_id);
 
                     availableClips[--lastClipIdx] = c_id;
                     break;
 
                 case RenderOp.START_TRANSPARENT:
-                    if(first_pass_alpha && two_pass_transparent)
+                    if (first_pass_alpha && two_pass_transparent)
                     {
-                        if(dumpNow || PRINT_STATES)
+                        if (dumpNow || PRINT_STATES)
                             errorReporter.messageReport("Start transparency first pass");
 
                         gl.glEnable(GL2.GL_ALPHA_TEST);
@@ -715,7 +723,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     }
                     else
                     {
-                        if(dumpNow || PRINT_STATES)
+                        if (dumpNow || PRINT_STATES)
                             errorReporter.messageReport("Start transparency second pass");
 
                         gl.glDepthMask(false);
@@ -727,9 +735,9 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.STOP_TRANSPARENT:
-                    if(first_pass_alpha && two_pass_transparent)
+                    if (first_pass_alpha && two_pass_transparent)
                     {
-                        if(dumpNow || PRINT_STATES)
+                        if (dumpNow || PRINT_STATES)
                             errorReporter.messageReport("Stop transparency first pass");
 
                         // if this is the end of the first pass, reset the
@@ -743,7 +751,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     }
                     else
                     {
-                        if(dumpNow || PRINT_STATES)
+                        if (dumpNow || PRINT_STATES)
                             errorReporter.messageReport("Stop transparency second pass");
 
                         gl.glDisable(GL.GL_BLEND);
@@ -752,40 +760,40 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.START_FOG:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Start fog " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    if(!fog_active)
+                    if (!fog_active)
                     {
                         gl.glEnable(GL2.GL_FOG);
                         fog_active = true;
                     }
 
-                    obj = (ObjectRenderable)renderableList[i].renderable;
+                    obj = (ObjectRenderable) renderableList[i].renderable;
                     obj.render(gl);
                     break;
 
                 case RenderOp.STOP_FOG:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Stop fog " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    if(current_fog != null)
+                    if (current_fog != null)
                         current_fog.render(gl);
                     else
                     {
-                        obj = (ObjectRenderable)renderableList[i].renderable;
+                        obj = (ObjectRenderable) renderableList[i].renderable;
                         obj.postRender(gl);
                         fog_active = false;
                         gl.glDisable(GL2.GL_FOG);
@@ -793,19 +801,19 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.START_SHADER_PROGRAM:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Start shader program " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
                     ShaderComponentRenderable prog =
-                        (ShaderComponentRenderable)renderableList[i].renderable;
+                        (ShaderComponentRenderable) renderableList[i].renderable;
 
-                    if(!prog.isValid(gl))
+                    if (!prog.isValid(gl))
                     {
                         errorReporter.messageReport("Shader program not valid");
                         currentShaderProgramId = INVALID_SHADER;
@@ -818,68 +826,68 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.STOP_SHADER_PROGRAM:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Stop shader program " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    if(currentShaderProgramId == INVALID_SHADER)
+                    if (currentShaderProgramId == INVALID_SHADER)
                     {
                         errorReporter.messageReport("Shader program not valid");
                         continue;
                     }
 
-                    obj = (ObjectRenderable)renderableList[i].renderable;
+                    obj = (ObjectRenderable) renderableList[i].renderable;
                     obj.postRender(gl);
 
                     currentShaderProgramId = INVALID_SHADER;
                     break;
 
                 case RenderOp.SET_SHADER_ARGS:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Set shader args " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    if(currentShaderProgramId == INVALID_SHADER)
+                    if (currentShaderProgramId == INVALID_SHADER)
                         continue;
 
-                    comp = (ComponentRenderable)renderableList[i].renderable;
+                    comp = (ComponentRenderable) renderableList[i].renderable;
                     comp.render(gl, currentShaderProgramId);
                     break;
 
                 case RenderOp.START_TEXTURE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Start texture " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
                     TextureRenderable texcomp =
-                         (TextureRenderable)renderableList[i].renderable;
+                        (TextureRenderable) renderableList[i].renderable;
 
-                    Integer id = (Integer)(renderableList[i].instructions);
+                    Integer id = (Integer) (renderableList[i].instructions);
                     texcomp.activateTexture(gl, id);
 
-                    if(texcomp.isOffscreenBuffer())
+                    if (texcomp.isOffscreenBuffer())
                     {
                         BaseBufferDescriptor desc =
-                            (BaseBufferDescriptor)texcomp.getBuffer(localContext);
+                            (BaseBufferDescriptor) texcomp.getBuffer(localContext);
 
                         // Will be null if the upstream cull stage has
                         // offscreen search disabled.
-                        if(desc != null)
+                        if (desc != null)
                             desc.bindBuffer(localContext);
                     }
 
@@ -888,28 +896,28 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     break;
 
                 case RenderOp.STOP_TEXTURE:
-                    if(dumpNow || PRINT_STATES)
+                    if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
                         errorReporter.messageReport("Stop texture " +
-                                            s.getClass() +
-                                            " 0x" +
-                                            Integer.toHexString(s.hashCode()));
+                                                        s.getClass() +
+                                                        " 0x" +
+                                                        Integer.toHexString(s.hashCode()));
                     }
 
-                    texcomp = (TextureRenderable)renderableList[i].renderable;
+                    texcomp = (TextureRenderable) renderableList[i].renderable;
 
-                    id = (Integer)(renderableList[i].instructions);
+                    id = (Integer) (renderableList[i].instructions);
                     texcomp.postRender(gl, id);
 
-                    if(texcomp.isOffscreenBuffer())
+                    if (texcomp.isOffscreenBuffer())
                     {
                         BaseBufferDescriptor desc =
-                            (BaseBufferDescriptor)texcomp.getBuffer(localContext);
+                            (BaseBufferDescriptor) texcomp.getBuffer(localContext);
 
                         // Will be null if the upstream cull stage has
                         // offscreen search disabled.
-                        if(desc != null)
+                        if (desc != null)
                             desc.unbindBuffer(localContext);
                     }
 
@@ -919,20 +927,20 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
             }
 
             // Also check for GL errors being made
-            if(dumpNow || PRINT_STATES || CHECK_ERRORS)
+            if (dumpNow || PRINT_STATES || CHECK_ERRORS)
             {
                 int err = gl.glGetError();
-                if(err != GL.GL_NO_ERROR)
+                if (err != GL.GL_NO_ERROR)
                 {
                     errorReporter.messageReport("Error: after " +
-                                                renderableList[i].renderable +
-                                                " op ID " + operationList[i]);
+                                                    renderableList[i].renderable +
+                                                    " op ID " + operationList[i]);
                     errorReporter.messageReport(glu.gluErrorString(err));
                 }
             }
         }
 
-        if(terminate)
+        if (terminate)
             return;
 
         gl.glFlush();
@@ -941,25 +949,25 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
     @Override
     protected void processRequestData(GLContext localContext)
     {
-        if(dumpNow || PRINT_STATES)
+        if (dumpNow || PRINT_STATES)
         {
             errorReporter.messageReport("Processing Request Data ");
-            if(otherDataRequests != null)
+            if (otherDataRequests != null)
             {
                 int num_del =
                     (otherDataRequests.deletionRequests != null) ?
-                     otherDataRequests.deletionRequests.length :
-                     0;
+                    otherDataRequests.deletionRequests.length :
+                    0;
 
                 int num_log =
                     (otherDataRequests.shaderLogList != null) ?
-                     otherDataRequests.shaderLogList.length :
-                     0;
+                    otherDataRequests.shaderLogList.length :
+                    0;
 
                 int num_init =
                     (otherDataRequests.shaderInitList != null) ?
-                     otherDataRequests.shaderInitList.length :
-                     0;
+                    otherDataRequests.shaderInitList.length :
+                    0;
 
                 errorReporter.messageReport("  Deletes :" + num_del);
                 errorReporter.messageReport("  Inits   :" + num_init);
@@ -974,7 +982,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
     @Override
     protected void setupViewport(GL2 gl, GraphicsEnvironmentData data)
     {
-        if(dumpNow || PRINT_STATES)
+        if (dumpNow || PRINT_STATES)
         {
 
             String msg = "Viewport set to [" +
@@ -990,6 +998,99 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
             errorReporter.messageReport(msg);
         }
+    }
+
+    @Override
+    protected void renderViewpoint(GL2 gl, GraphicsEnvironmentData data)
+    {
+        if (dumpNow || PRINT_STATES)
+        {
+            String msg = "Camera transform matrix [\n" +
+                data.cameraTransform[0] + ", " +
+                data.cameraTransform[1] + ", " +
+                data.cameraTransform[2] + ", " +
+                data.cameraTransform[3] + ",\n" +
+                data.cameraTransform[4] + ", " +
+                data.cameraTransform[5] + ", " +
+                data.cameraTransform[6] + ", " +
+                data.cameraTransform[7] + ",\n" +
+                data.cameraTransform[8] + ", " +
+                data.cameraTransform[9] + ", " +
+                data.cameraTransform[10] + ", " +
+                data.cameraTransform[11] + ",\n" +
+                data.cameraTransform[12] + ", " +
+                data.cameraTransform[13] + ", " +
+                data.cameraTransform[14] + ", " +
+                data.cameraTransform[15] + "]";
+
+            errorReporter.messageReport(msg);
+        }
+
+
+        super.renderViewpoint(gl, data);
+    }
+
+    @Override
+    protected void updateProjectionMatrix(GL2 gl, GraphicsEnvironmentData data)
+    {
+        if (dumpNow || PRINT_STATES)
+        {
+
+            String msg = null;
+
+            switch(data.viewProjectionType)
+            {
+                case ViewEnvironmentCullable.PERSPECTIVE_PROJECTION:
+                    msg = "Perspective projection frustum [" +
+                            data.viewFrustum[0] + ", " +
+                            data.viewFrustum[1] + ", " +
+                            data.viewFrustum[2] + ", " +
+                            data.viewFrustum[3] + ", " +
+                            data.viewFrustum[4] + ", " +
+                            data.viewFrustum[5] + "]";
+                    break;
+
+                case ViewEnvironmentCullable.ORTHOGRAPHIC_PROJECTION:
+                    msg = "Orthographic projection frustum [" +
+                        data.viewFrustum[0] + ", " +
+                        data.viewFrustum[1] + ", " +
+                        data.viewFrustum[2] + ", " +
+                        data.viewFrustum[3] + ", " +
+                        data.viewFrustum[4] + ", " +
+                        data.viewFrustum[5] + "]";
+
+                    break;
+
+                // Apply user specified custom projection matrix.
+                case ViewEnvironmentCullable.CUSTOM_PROJECTION:
+
+                    msg = "Custom projection matrix [\n" +
+                        data.projectionMatrix[0] + ", " +
+                        data.projectionMatrix[1] + ", " +
+                        data.projectionMatrix[2] + ", " +
+                        data.projectionMatrix[3] + ",\n" +
+                        data.projectionMatrix[4] + ", " +
+                        data.projectionMatrix[5] + ", " +
+                        data.projectionMatrix[6] + ", " +
+                        data.projectionMatrix[7] + ",\n" +
+                        data.projectionMatrix[8] + ", " +
+                        data.projectionMatrix[9] + ", " +
+                        data.projectionMatrix[10] + ", " +
+                        data.projectionMatrix[11] + ",\n" +
+                        data.projectionMatrix[12] + ", " +
+                        data.projectionMatrix[13] + ", " +
+                        data.projectionMatrix[14] + ", " +
+                        data.projectionMatrix[15] + "]";
+                    break;
+
+                default:
+                    msg = "Unknown projection type " + data.viewProjectionType;
+            }
+
+            errorReporter.messageReport(msg);
+        }
+
+        super.updateProjectionMatrix(gl, data);
     }
 
     //---------------------------------------------------------------
