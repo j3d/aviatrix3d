@@ -5,6 +5,8 @@ package j3d.aviatrix3d.examples.basic;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
+import org.j3d.aviatrix3d.pipeline.graphics.ViewportResizeManager;
+
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.MatrixUtils;
 
@@ -31,11 +33,14 @@ public class FogObjectAnimation
     /** Utils class for performing rotation */
     private MatrixUtils matrixUtils;
 
+    private ViewportResizeManager resizeManager;
+
     /**
      *
      */
-    public FogObjectAnimation(TransformGroup tx)
+    public FogObjectAnimation(TransformGroup tx, ViewportResizeManager resizer)
     {
+        resizeManager = resizer;
         matrix = new Matrix4d();
         matrix.setIdentity();
         transform = tx;
@@ -52,6 +57,7 @@ public class FogObjectAnimation
      */
     public void updateSceneGraph()
     {
+        resizeManager.sendResizeUpdates();
         transform.boundsChanged(this);
     }
 

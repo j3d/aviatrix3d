@@ -10,13 +10,9 @@ import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
 import org.j3d.renderer.aviatrix3d.geom.*;
 
+import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
-import org.j3d.aviatrix3d.pipeline.graphics.NullCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
+import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.util.MatrixUtils;
@@ -46,6 +42,8 @@ public class BasicFogDemo extends Frame
     /** Our drawing surface */
     private GraphicsOutputDevice surface;
 
+    private ViewportResizeManager resizeManager;
+
     public BasicFogDemo()
     {
         super("Global fog effect Aviatrix Demo");
@@ -70,6 +68,8 @@ public class BasicFogDemo extends Frame
      */
     private void setupAviatrix()
     {
+        resizeManager = new ViewportResizeManager();
+
         // Assemble a simple single-threaded pipeline.
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
@@ -77,8 +77,10 @@ public class BasicFogDemo extends Frame
         culler.setOffscreenCheckEnabled(false);
 
         GraphicsSortStage sorter = new NullSortStage();
-        surface = new SimpleAWTSurface(caps);
+        surface = new DebugAWTSurface(caps);
         surface.setClearColor(FOG_COLOUR[0], FOG_COLOUR[1], FOG_COLOUR[2], 1);
+        surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
 
         pipeline.setCuller(culler);
@@ -155,10 +157,12 @@ public class BasicFogDemo extends Frame
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
+        resizeManager.addManagedViewport(view);
+
         Layer[] layers = { layer };
         displayManager.setLayers(layers, 1);
 
-        FogObjectAnimation anim = new FogObjectAnimation(shape_transform);
+        FogObjectAnimation anim = new FogObjectAnimation(shape_transform, resizeManager);
         sceneManager.setApplicationObserver(anim);
     }
 
