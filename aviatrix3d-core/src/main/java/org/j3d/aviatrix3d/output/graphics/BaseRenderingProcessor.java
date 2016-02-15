@@ -1330,7 +1330,7 @@ public abstract class BaseRenderingProcessor
         gl.glLoadIdentity();
 
         data.viewpoint.render(gl);
-        gl.glMultMatrixd(data.cameraTransform, 0);
+        gl.glMultTransposeMatrixd(data.cameraTransform, 0);
     }
 
     /**
