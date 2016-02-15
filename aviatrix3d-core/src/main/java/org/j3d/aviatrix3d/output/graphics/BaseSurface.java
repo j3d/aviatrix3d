@@ -476,8 +476,6 @@ public abstract class BaseSurface
 
         canvas.display();
 
-        this.profilingData = null;
-
         return true;
     }
 
