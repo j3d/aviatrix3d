@@ -31,6 +31,7 @@ import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.renderer.aviatrix3d.nodes.SortedPointArray;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates the use of point sprites.
@@ -53,7 +54,7 @@ public class PointSpriteDemo extends Frame
 
     public PointSpriteDemo()
     {
-        super("Basic Aviatrix Demo");
+        super("Point Sprite Aviatrix Demo");
 
         setLayout(new BorderLayout());
         addWindowListener(this);
@@ -115,8 +116,8 @@ public class PointSpriteDemo extends Frame
 
         try
         {
-            File f = new File("textures/halo.jpg");
-//            File f = new File("textures/big_glow.jpg");
+            File f = DataUtils.lookForFile("images/examples/geometry/halo.jpg", getClass(), null);
+//            File f = DataUtils.lookForFile("images/examples/geometry/big_glow.jpg", getClass(), null);
             if(!f.exists())
                 System.out.println("Can't find point sprite source file");
 

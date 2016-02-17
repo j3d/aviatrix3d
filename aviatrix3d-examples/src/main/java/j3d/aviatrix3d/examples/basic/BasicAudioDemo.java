@@ -178,7 +178,7 @@ public class BasicAudioDemo extends Frame
 
 
         ConeSound sound = new ConeSound();
-        AudioComponent audioComp = loadWav("wavdata/Footsteps.wav", sound);
+        AudioComponent audioComp = loadWav("audio/examples/basic/Footsteps.wav", sound);
 
         sound.setEnabled(true);
         sound.startSound();

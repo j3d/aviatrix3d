@@ -36,6 +36,7 @@ import org.j3d.renderer.aviatrix3d.loader.AVModel;
 import org.j3d.renderer.aviatrix3d.loader.AVLoader;
 import org.j3d.renderer.aviatrix3d.loader.discreet.MaxLoader;
 import org.j3d.renderer.aviatrix3d.texture.TextureCreateUtils;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates how to use the loader interface
@@ -123,15 +124,15 @@ public class BasicLoaderDemo extends Frame
     {
         try
         {
-            File file = new File(filename);
+            File file = DataUtils.lookForFile(filename, getClass(), null);
             AVLoader loader = new MaxLoader();
             AVModel model = loader.load(file);
 
             SimpleScene scene = setupSceneGraph(model.getModelRoot());
 
             // Now go off and load textures.
-            Map externals = model.getExternallyDefinedFiles();
-            if(externals.size() != 0)
+            Map<SceneGraphObject, Object> externals = model.getExternallyDefinedFiles();
+            if(!externals.isEmpty())
             {
                 File parent_dir = file.getParentFile();
 
@@ -365,9 +366,11 @@ public class BasicLoaderDemo extends Frame
         System.out.println("Loading external file: " + name);
         try
         {
-            File f = new File(name);
-            if(!f.exists())
+            File f = DataUtils.lookForFile(name, getClass(), null);
+            if(f == null)
+            {
                 System.out.println("Can't find texture source file");
+            }
 
             FileInputStream is = new FileInputStream(f);
 

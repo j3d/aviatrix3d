@@ -11,6 +11,7 @@ import java.io.IOException;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
 
+import org.j3d.util.DataUtils;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -39,11 +40,11 @@ public class SimpleToonShaderDemo extends Frame
 
     /** List of available vertex shaders for the geometry */
     private static final String VTX_SHADER_FILE =
-        "shaders/SimpleToonVert.glsl";
+        "shaders/examples/npr/SimpleToonVert.glsl";
 
     /** List of available fragment shaders for the geometry */
     private static final String FRAG_SHADER_FILE =
-        "shaders/SimpleToonFrag.glsl";
+        "shaders/examples/npr/SimpleToonFrag.glsl";
 
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -310,8 +311,8 @@ public class SimpleToonShaderDemo extends Frame
      */
     private String[] loadShaderFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;

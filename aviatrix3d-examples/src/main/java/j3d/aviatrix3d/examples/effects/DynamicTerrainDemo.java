@@ -42,6 +42,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.terrain.ElevationGridGenerator;
 import org.j3d.texture.procedural.TextureGenerator;
+import org.j3d.util.DataUtils;
 import org.j3d.util.MatrixUtils;
 
 /**
@@ -61,10 +62,10 @@ public class DynamicTerrainDemo extends Frame
     /** Names of the images to load from the local dir */
     private static final String[] IMAGE_FILES =
     {
-        "textures/sand_128x128.gif",
-        "textures/grass_128x128.jpg",
-        "textures/rock_320x240.gif",
-        "textures/snow_128x128.jpg",
+        "images/examples/effects/sand_128x128.gif",
+        "images/examples/effects/grass_128x128.jpg",
+        "images/examples/effects/rock_320x240.gif",
+        "images/examples/effects/snow_128x128.jpg",
     };
 
     /** The texture type constant needed when updating texture coordinates */
@@ -176,7 +177,7 @@ public class DynamicTerrainDemo extends Frame
 
         colorImages = new BufferedImage[IMAGE_FILES.length];
         for(int i = 0; i < IMAGE_FILES.length; i++)
-            colorImages[i] = loadImage(new File(IMAGE_FILES[i]));
+            colorImages[i] = loadImage(DataUtils.lookForFile(IMAGE_FILES[i], getClass(), null));
 
         imageHeights = new float[5];
 
