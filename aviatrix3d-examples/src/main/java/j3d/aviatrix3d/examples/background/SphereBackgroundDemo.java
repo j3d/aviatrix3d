@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.util.DataUtils;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -112,36 +113,40 @@ public class SphereBackgroundDemo extends Frame
 
         try
         {
-            File f = new File("globe_map_2.jpg");
-            if(!f.exists())
-                System.out.println("Can't find texture source file");
-
-            FileInputStream is = new FileInputStream(f);
-
-            BufferedInputStream stream = new BufferedInputStream(is);
-            BufferedImage img = ImageIO.read(stream);
-
-            img_width = img.getWidth(null);
-            img_height = img.getHeight(null);
-            int format = TextureComponent.FORMAT_RGB;
-
-            switch(img.getType())
+            File f = DataUtils.lookForFile("images/examples/background/globe_map_2.jpg", getClass(), null);
+            if(f == null)
             {
-                case BufferedImage.TYPE_3BYTE_BGR:
-                case BufferedImage.TYPE_CUSTOM:
-                case BufferedImage.TYPE_INT_RGB:
-                    break;
-
-                case BufferedImage.TYPE_4BYTE_ABGR:
-                case BufferedImage.TYPE_INT_ARGB:
-                    format = TextureComponent.FORMAT_RGBA;
-                    break;
+                System.out.println("Can't find texture source file");
             }
+            else
+            {
+                FileInputStream is = new FileInputStream(f);
 
-            img_comp = new ImageTextureComponent2D(format,
-                                            img_width,
-                                            img_height,
-                                            img);
+                BufferedInputStream stream = new BufferedInputStream(is);
+                BufferedImage img = ImageIO.read(stream);
+
+                img_width = img.getWidth(null);
+                img_height = img.getHeight(null);
+                int format = TextureComponent.FORMAT_RGB;
+
+                switch (img.getType())
+                {
+                    case BufferedImage.TYPE_3BYTE_BGR:
+                    case BufferedImage.TYPE_CUSTOM:
+                    case BufferedImage.TYPE_INT_RGB:
+                        break;
+
+                    case BufferedImage.TYPE_4BYTE_ABGR:
+                    case BufferedImage.TYPE_INT_ARGB:
+                        format = TextureComponent.FORMAT_RGBA;
+                        break;
+                }
+
+                img_comp = new ImageTextureComponent2D(format,
+                                                       img_width,
+                                                       img_height,
+                                                       img);
+            }
         }
         catch(IOException ioe)
         {
