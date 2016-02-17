@@ -27,6 +27,8 @@ import org.j3d.aviatrix3d.pipeline.graphics.TransparencyDepthSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+
+import org.j3d.util.DataUtils;
 import org.j3d.util.MatrixUtils;
 
 /**
@@ -51,7 +53,7 @@ public class TwoPassTextureDemo extends Frame
 
     public TwoPassTextureDemo()
     {
-        super("Transparent Texture Demo");
+        super("Two-pass Transparent Texture Demo");
 
         setLayout(new GridLayout(1, 2));
         addWindowListener(this);
@@ -150,7 +152,7 @@ public class TwoPassTextureDemo extends Frame
     private void setupSceneGraph()
     {
 
-        TextureComponent2D argbImg = loadImage("textures/mytree.png");
+        TextureComponent2D argbImg = loadImage("images/examples/transparency/mytree.png");
 
         // View group
         Viewpoint vp = new Viewpoint();
@@ -270,9 +272,12 @@ public class TwoPassTextureDemo extends Frame
 
         try
         {
-            File f = new File(name);
-            if(!f.exists())
+            File f = DataUtils.lookForFile(name, getClass(), null);
+            if(f == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
             FileInputStream is = new FileInputStream(f);
 

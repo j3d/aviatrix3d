@@ -689,7 +689,7 @@ public class ShadowMappingDemo extends JFrame
         TextureAttributes texAttrib = new TextureAttributes();
         texAttrib.setTextureMode(TextureAttributes.MODE_MODULATE);
 
-        TextureComponent2D[] filter_img = loadImage("textures/colour_map.jpg");
+        TextureComponent2D[] filter_img = loadImage("images/examples/texture/colour_map.jpg");
         Texture2D filter_texture = new Texture2D();
         filter_texture.setSources(Texture.MODE_BASE_LEVEL,
                                   Texture.FORMAT_RGBA,

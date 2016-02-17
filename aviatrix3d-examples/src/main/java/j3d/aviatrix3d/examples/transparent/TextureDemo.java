@@ -13,6 +13,7 @@ import java.io.BufferedInputStream;
 import javax.imageio.ImageIO;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.util.DataUtils;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
@@ -105,8 +106,8 @@ public class TextureDemo extends Frame
     private void setupSceneGraph()
     {
 
-        TextureComponent2D custImg = loadImage("textures/ButtonForward.png");
-        TextureComponent2D argbImg = loadImage("textures/mytree.png");
+        TextureComponent2D custImg = loadImage("images/examples/transparency/ButtonForward.png");
+        TextureComponent2D argbImg = loadImage("images/examples/transparency/mytree.png");
 
         // View group
         Viewpoint vp = new Viewpoint();
@@ -263,11 +264,14 @@ public class TextureDemo extends Frame
 
         try
         {
-            File f = new File(name);
-            if(!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);
