@@ -851,11 +851,14 @@ public class ShadowMappingDemo extends JFrame
 
         try
         {
-            File f = new File(name);
-            if (!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);

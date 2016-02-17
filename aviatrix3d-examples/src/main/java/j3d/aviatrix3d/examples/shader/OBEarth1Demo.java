@@ -30,6 +30,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.SphereGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates using the simple GLSLang texture
@@ -43,11 +44,11 @@ public class OBEarth1Demo extends Frame
 {
     /** Vertex shader source file */
     private static final String VTX_SHADER_FILE =
-        "orangebook/CH10-earth-1tex.vert";
+        "shaders/examples/orangebook/CH10-earth-1tex.vert";
 
     /** Fragment shader source file */
     private static final String FRAG_SHADER_FILE =
-        "orangebook/CH10-earth-1tex.frag";
+        "shaders/examples/orangebook/CH10-earth-1tex.frag";
 
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -127,7 +128,7 @@ public class OBEarth1Demo extends Frame
         // Load the texture image
         TextureComponent2D[] img_comp = new TextureComponent2D[1];
 
-        img_comp[0] = loadImage("orangebook/globe_map_2.png");
+        img_comp[0] = loadImage("images/examples/background/globe_map_2.png");
 
         // View group
         Viewpoint vp = new Viewpoint();
@@ -312,8 +313,8 @@ public class OBEarth1Demo extends Frame
      */
     private String loadFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;
@@ -356,11 +357,14 @@ public class OBEarth1Demo extends Frame
 
         try
         {
-            File f = new File(name);
-            if(!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);

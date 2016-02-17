@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.util.DataUtils;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
@@ -36,11 +37,11 @@ public class UniformUpdateDemo extends Frame
 {
     /** Vertex shader source file */
     private static final String VTX_SHADER_FILE =
-        "orangebook/CH06-brick.vert";
+        "shaders/examples/orangebook/CH06-brick.vert";
 
     /** Fragment shader source file */
     private static final String FRAG_SHADER_FILE =
-        "orangebook/CH06-brick.frag";
+        "shaders/examples/orangebook/CH06-brick.frag";
 
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -300,8 +301,8 @@ public class UniformUpdateDemo extends Frame
      */
     private String loadFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;

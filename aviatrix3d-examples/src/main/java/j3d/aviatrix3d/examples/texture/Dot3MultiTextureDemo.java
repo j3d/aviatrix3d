@@ -31,6 +31,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates how to put together a simple multitextured
@@ -110,8 +111,8 @@ public class Dot3MultiTextureDemo extends Frame
     private void setupSceneGraph()
     {
         // Load the texture image
-        TextureComponent2D[] base_img = loadImage("textures/bump_map.jpg");
-        TextureComponent2D[] filter_img = loadImage("textures/colour_map.jpg");
+        TextureComponent2D[] base_img = loadImage("images/examples/texture/bump_map.jpg");
+        TextureComponent2D[] filter_img = loadImage("images/examples/texture/colour_map.jpg");
 
         // View group
         Viewpoint vp = new Viewpoint();
@@ -295,11 +296,14 @@ public class Dot3MultiTextureDemo extends Frame
 
         try
         {
-            File f = new File(name);
-            if (!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);

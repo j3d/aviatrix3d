@@ -33,6 +33,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.SphereGenerator;
 import org.j3d.geom.BoxGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -120,9 +121,11 @@ public class TexturedSphereDemo extends Frame
 
         try
         {
-            File f = new File("textures/left_cube_map.jpg");
-            if (!f.exists())
+            File f = DataUtils.lookForFile("images/examples/textures/left_cube_map.jpg", getClass(), null);
+            if (f == null)
+            {
                 System.out.println("Can't find texture source file");
+            }
 
             FileInputStream is = new FileInputStream(f);
 

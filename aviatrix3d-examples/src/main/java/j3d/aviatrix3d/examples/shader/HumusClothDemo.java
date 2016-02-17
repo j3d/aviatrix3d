@@ -41,6 +41,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.SphereGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Demo that is a port of Humus' cloth falling over spheres code.
@@ -53,19 +54,19 @@ public class HumusClothDemo extends Frame
 {
     /** Names of the shader vertex file for the sphere */
     private static final String SPHERE_VERTEX_SHADER =
-        "demo_shaders/humus_cloth_sphere.vert";
+        "shaders/examples/simple/humus_cloth_sphere.vert";
 
     /** Names of the shader fragment file for the sphere */
     private static final String SPHERE_FRAG_SHADER =
-        "demo_shaders/humus_cloth_sphere.frag";
+        "shaders/examples/simple/humus_cloth_sphere.frag";
 
     /** Names of the shader vertex file for the sphere */
     private static final String LIGHTING_VERTEX_SHADER =
-        "demo_shaders/humus_cloth_lighting.vert";
+        "shaders/examples/simple/humus_cloth_lighting.vert";
 
     /** Names of the shader fragment file for the sphere */
     private static final String LIGHTING_FRAG_SHADER =
-        "demo_shaders/humus_cloth_lighting.frag";
+        "shaders/examples/simple/humus_cloth_lighting.frag";
 
     /** Shader program shared between all the spheres */
     private ShaderProgram sphereProgram;
@@ -256,7 +257,7 @@ public class HumusClothDemo extends Frame
 
         // Run through the flags directory and load every texture found into
         // the flags array as texture objects.
-        File flags_dir = new File("textures/flags");
+        File flags_dir = DataUtils.lookForFile("textures/flags", getClass(), null);
         File[] files_in_dir = flags_dir.listFiles();
         Texture2D[] flag_textures = new Texture2D[files_in_dir.length];
         int num_flags = 0;
@@ -521,13 +522,13 @@ public class HumusClothDemo extends Frame
     /**
      * Load a shader source file into an array of strings.
      *
-     * @param file The name of the file to load
+     * @param name The name of the file to load
      * @return the strings that represent the source.
      */
-    private String[] loadShaderSource(String file)
+    private String[] loadShaderSource(String name)
     {
-        File f = new File(file);
-        if(!f.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Can't find shader " + file);
             return null;
@@ -537,8 +538,8 @@ public class HumusClothDemo extends Frame
 
         try
         {
-            FileInputStream fis = new FileInputStream(f);
-            byte[] raw_chars = new byte[(int)f.length()];
+            FileInputStream fis = new FileInputStream(file);
+            byte[] raw_chars = new byte[(int)file.length()];
             byte[] readbuf = new byte[1024];
             int bytes_read = 0;
             int read_offset = 0;

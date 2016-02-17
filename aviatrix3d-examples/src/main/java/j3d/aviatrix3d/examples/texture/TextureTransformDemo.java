@@ -32,6 +32,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
+import org.j3d.util.DataUtils;
 import org.j3d.util.MatrixUtils;
 
 /**
@@ -55,7 +56,7 @@ public class TextureTransformDemo extends Frame
 
     public TextureTransformDemo()
     {
-        super("Aviatrix 2D Texture Demo");
+        super("Aviatrix 2D Texture Transform Demo");
 
         setLayout(new BorderLayout());
         addWindowListener(this);
@@ -117,8 +118,8 @@ public class TextureTransformDemo extends Frame
 
         try
         {
-            File f = new File("textures/transform_test.gif");
-            if (!f.exists())
+            File f = DataUtils.lookForFile("images/examples/texture/transform_test.gif", getClass(), null);
+            if (f == null)
                 System.out.println("Can't find texture source file");
 
             FileInputStream is = new FileInputStream(f);

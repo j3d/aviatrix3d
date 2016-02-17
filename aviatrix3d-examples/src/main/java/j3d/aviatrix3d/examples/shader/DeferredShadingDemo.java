@@ -22,6 +22,7 @@ import org.j3d.maths.vector.Vector4d;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
+import org.j3d.util.DataUtils;
 import org.j3d.util.MatrixUtils;
 import org.j3d.util.TriangleUtils;
 import org.j3d.util.I18nManager;
@@ -51,75 +52,75 @@ public class DeferredShadingDemo extends Frame
 
     /** Render GBuffer depth pass vertex shader file name */
     private static final String SSAO_GBUFFER_VTX_SHADER_FILE =
-        "global_illum/ssao_normal_vert.glsl";
+        "shaders/examples/global_illum/ssao_normal_vert.glsl";
 
     /** Render GBuffer depth Fragment shader file name */
     private static final String SSAO_GBUFFER_FRAG_SHADER_FILE =
-        "global_illum/ssao_normal_frag.glsl";
+        "shaders/examples/global_illum/ssao_normal_frag.glsl";
 
     /** Screen space ambient occlusion pass vertex shader file name */
     private static final String SSAO_VTX_SHADER_FILE =
-        "global_illum/deferred_ssao_vert.glsl";
+        "shaders/examples/global_illum/deferred_ssao_vert.glsl";
 
     /** Screen space ambient occlusion fragment shader file name */
     private static final String SSAO_FRAG_SHADER_FILE =
-        "global_illum/deferred_ssao_frag.glsl";
+        "shaders/examples/global_illum/deferred_ssao_frag.glsl";
 
     /** Post processing anti alias pass vertex shader file name */
     private static final String AA_VTX_SHADER_FILE =
-        "global_illum/deferred_aa_vert.glsl";
+        "shaders/examples/global_illum/deferred_aa_vert.glsl";
 
     /** Post processing anti alias fragment shader file name */
     private static final String AA_FRAG_SHADER_FILE =
-        "global_illum/deferred_aa_frag.glsl";
+        "shaders/examples/global_illum/deferred_aa_frag.glsl";
 
     /** Post processing bloom fragment shader file name */
     private static final String BLOOM_FRAG_SHADER_FILE =
-        "global_illum/deferred_bloom_frag.glsl";
+        "shaders/examples/global_illum/deferred_bloom_frag.glsl";
 
     /** Post processing bloom pass vertex shader file name */
     private static final String BLOOM_VTX_SHADER_FILE =
-        "global_illum/deferred_bloom_vert.glsl";
+        "shaders/examples/global_illum/deferred_bloom_vert.glsl";
 
     /** Render pass vertex shader string */
     private static final String MAT_VTX_SHADER_FILE =
-        "global_illum/deferred_material_vert.glsl";
+        "shaders/examples/global_illum/deferred_material_vert.glsl";
 
     /** Fragment shader file name for the rendering pass */
     private static final String MAT_FRAG_SHADER_FILE =
-        "global_illum/deferred_material_frag.glsl";
+        "shaders/examples/global_illum/deferred_material_frag.glsl";
 
     /** Render pass vertex shader string */
     private static final String LIGHT_VTX_SHADER_FILE =
-        "global_illum/deferred_light_vert.glsl";
+        "shaders/examples/global_illum/deferred_light_vert.glsl";
 
     /** Fragment shader file name for the rendering pass */
     private static final String LIGHT_FRAG_SHADER_FILE =
-        "global_illum/deferred_light_frag.glsl";
+        "shaders/examples/global_illum/deferred_light_frag.glsl";
 
     /** Final stage source combiner vertex shader file name */
     private static final String FINAL_VTX_SHADER_FILE =
-        "global_illum/deferred_final_vert.glsl";
+        "shaders/examples/global_illum/deferred_final_vert.glsl";
 
     /** Final stage source combiner fragment shader file name */
     private static final String FINAL_FRAG_SHADER_FILE =
-        "global_illum/deferred_final_frag.glsl";
+        "shaders/examples/global_illum/deferred_final_frag.glsl";
 
 
     /** Image file holding the local normal map */
     private static final String NORMAL_MAP_FILE =
-        "textures/gbuffer_normal.png";
+        "images/examples/shader/gbuffer_normal.png";
 
     /** Image file holding the local colour map */
     private static final String COLOUR_MAP_FILE =
-        "textures/gbuffer_colour.png";
+        "images/examples/shader/gbuffer_colour.png";
 
 
     /**
      * Image file holding a random colour sample map for SSAO
      */
     private static final String RANDOM_MAP_FILE =
-        "textures/ssao_noise.png";
+        "images/examples/shader/ssao_noise.png";
 
     /** Width and height of the offscreen texture, in pixels */
     private static final int TEXTURE_SIZE = 512;
@@ -1792,8 +1793,8 @@ shader_args.setUniform("planes", 2, d_planes, 1);
      */
     private String[] loadShaderFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;
@@ -1896,18 +1897,20 @@ shader_args.setUniform("planes", 2, d_planes, 1);
     /**
      * Load a single image.
      */
-    private TextureComponent2D loadTextureImage(String filename)
+    private TextureComponent2D loadTextureImage(String name)
     {
         TextureComponent2D img_comp = null;
 
         try
         {
-            File f = new File(filename);
-
-            if(!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);

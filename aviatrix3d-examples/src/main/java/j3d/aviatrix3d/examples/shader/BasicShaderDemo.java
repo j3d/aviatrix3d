@@ -30,6 +30,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.SphereGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -44,29 +45,29 @@ public class BasicShaderDemo extends Frame
     /** List of available vertex shaders for the geometry */
     private static final String[] VTX_SHADER_FILE =
     {
-        "demo_shaders/SimpleVert.txt",
-        "demo_shaders/PhongVert.txt",
-        "demo_shaders/MarbleVert.txt",
-        "demo_shaders/BrickVert.txt",
+        "shaders/examples/simple/SimpleVert.txt",
+        "shaders/examples/simple/PhongVert.txt",
+        "shaders/examples/simple/MarbleVert.txt",
+        "shaders/examples/simple/BrickVert.txt",
         null
     };
 
     /** List of available fragment shaders for the geometry */
     private static final String[] FRAG_SHADER_FILE =
     {
-        "demo_shaders/SimpleFrag.txt",
-        "demo_shaders/PhongFrag.txt",
-        "demo_shaders/MarbleFrag.txt",
-        "demo_shaders/BrickFrag.txt",
-        "demo_shaders/PaintedPlasticFrag.txt"
+        "shaders/examples/simple/SimpleFrag.txt",
+        "shaders/examples/simple/PhongFrag.txt",
+        "shaders/examples/simple/MarbleFrag.txt",
+        "shaders/examples/simple/BrickFrag.txt",
+        "shaders/examples/simple/PaintedPlasticFrag.txt"
     };
 
     /** List of texture files needed for each shader */
     private static final String[][] TEXTURE_FILES =
     {
-        { "textures/mr_smiley.png" },
+        { "images/examples/shader/mr_smiley.png" },
         {},
-        {"textures/noisef128.png", "textures/colSpline.png"},
+        {"images/examples/shader/noisef128.png", "images/examples/shader/colSpline.png"},
         {},
     };
 
@@ -337,8 +338,8 @@ public class BasicShaderDemo extends Frame
      */
     private String loadFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;
@@ -381,11 +382,14 @@ public class BasicShaderDemo extends Frame
 
         try
         {
-            File f = new File(name);
-            if(!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);

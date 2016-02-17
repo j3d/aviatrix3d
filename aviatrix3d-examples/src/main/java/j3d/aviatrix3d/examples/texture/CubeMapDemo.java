@@ -31,6 +31,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.SphereGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -116,14 +117,14 @@ public class CubeMapDemo extends Frame
         TextureComponent2D[] img_sides = new TextureComponent2D[6];
 
         String[] targets =
-                {
-                        "textures/left_cube_map.gif",
-                        "textures/right_cube_map.jpg",
-                        "textures/top_cube_map.jpg",
-                        "textures/bottom_cube_map.jpg",
-                        "textures/back_cube_map.jpg",
-                        "textures/front_cube_map.jpg"
-                };
+        {
+                "images/examples/texture/left_cube_map.gif",
+                "images/examples/texture/right_cube_map.jpg",
+                "images/examples/texture/top_cube_map.jpg",
+                "images/examples/texture/bottom_cube_map.jpg",
+                "images/examples/texture/back_cube_map.jpg",
+                "images/examples/texture/front_cube_map.jpg"
+        };
 
         for (int i = 0; i < 6; i++)
             img_sides[i] = loadImage(targets[i]);
@@ -303,11 +304,14 @@ public class CubeMapDemo extends Frame
 
         try
         {
-            File f = new File(name);
-            if (!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);

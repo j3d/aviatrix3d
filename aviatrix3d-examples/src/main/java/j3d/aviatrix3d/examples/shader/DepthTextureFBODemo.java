@@ -26,6 +26,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
 import org.j3d.geom.SphereGenerator;
+import org.j3d.util.DataUtils;
 import org.j3d.util.MatrixUtils;
 
 /**
@@ -42,11 +43,11 @@ public class DepthTextureFBODemo extends Frame
 {
     /** Render pass vertex shader string */
     private static final String RENDER_PASS_VERTEX_SHADER_FILE =
-        "subsurf/fbo_depth_pass_vert.glsl";
+        "shaders/examples/subsurf/fbo_depth_pass_vert.glsl";
 
     /** Fragment shader file name for the rendering pass */
     private static final String RENDER_PASS_FRAG_SHADER_FILE =
-        "subsurf/fbo_depth_pass_frag.glsl";
+        "shaders/examples/subsurf/fbo_depth_pass_frag.glsl";
 
     /** Width and height of the offscreen texture, in pixels */
     private static final int TEXTURE_SIZE = 1024;
@@ -363,8 +364,8 @@ public class DepthTextureFBODemo extends Frame
      */
     private String[] loadShaderFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;
@@ -398,16 +399,20 @@ public class DepthTextureFBODemo extends Frame
     /**
      * Load a single image.
      */
-    private TextureComponent2D loadImage(File f)
+    private TextureComponent2D loadImage(String name)
     {
         TextureComponent2D img_comp = null;
 
         try
         {
-            if(!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);
@@ -457,7 +462,7 @@ public class DepthTextureFBODemo extends Frame
         bg_geom.setNormals(bg_normals);
         bg_geom.setTextureCoordinates(tex_type, bg_texcoords, 1);
 
-        File tex_file = new File("textures/flags/australia.png");
+        String tex_file = "images/examples/shader/flags/australia.png";
         TextureComponent2D img_comp = loadImage(tex_file);
         Texture2D tex = new Texture2D(Texture2D.FORMAT_RGBA, img_comp);
         tex.setBoundaryModeS(Texture.BM_CLAMP_TO_EDGE);

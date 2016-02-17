@@ -32,6 +32,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
 import org.j3d.texture.procedural.PerlinNoiseGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -345,32 +346,6 @@ public class ByteTexture3DDemo extends Frame
     //---------------------------------------------------------------
     // Local methods
     //---------------------------------------------------------------
-
-    /**
-     * Load a single image
-     */
-    private BufferedImage loadImage(String name)
-    {
-        BufferedImage img_comp = null;
-
-        try
-        {
-            File f = new File(name);
-            if (!f.exists())
-                System.out.println("Can't find texture source file");
-
-            FileInputStream is = new FileInputStream(f);
-
-            BufferedInputStream stream = new BufferedInputStream(is);
-            img_comp = ImageIO.read(stream);
-        }
-        catch (IOException ioe)
-        {
-            System.out.println("Error reading image: " + ioe);
-        }
-
-        return img_comp;
-    }
 
     public static void main(String[] args)
     {

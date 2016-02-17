@@ -32,6 +32,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
 import org.j3d.geom.SphereGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Example of per pixel lighting.
@@ -44,19 +45,19 @@ public class PerPixelLightingDemo extends Frame
 {
 	/** vertex shader */
 	private static final String VTX_SHADER_FILE = 
-		"demo_shaders/phong_vert.glsl";
+		"shaders/examples/simple/phong_vert.glsl";
 	
 	/** fragment shader */
 	private static final String FRAG_SHADER_FILE = 
-		"demo_shaders/phong_frag.glsl";
+		"shaders/examples/simple/phong_frag.glsl";
 	
 	/** texture file */
 	private static final String[] TEXTURE_FILES =
 	{
-		"textures/flags/uk.png",
-		"textures/flags/usa.png",
-		"textures/flags/sweden.png",
-		"textures/flags/switzerland.png",
+		"images/examples/shader/flags/uk.png",
+		"images/examples/shader/flags/usa.png",
+		"images/examples/shader/flags/sweden.png",
+		"images/examples/shader/flags/switzerland.png",
 	};
 	
 	/** orbit distance */
@@ -472,8 +473,8 @@ public class PerPixelLightingDemo extends Frame
 	 */
 	private String[] loadShaderFile(String name)
 	{
-		File file = new File(name);
-		if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
 		{
 			System.out.println("Cannot find file " + name);
 			return null;
@@ -515,11 +516,14 @@ public class PerPixelLightingDemo extends Frame
 		
 		try
 		{
-			File f = new File(name);
-			if(!f.exists())
-				System.out.println("Can't find texture source file");
+			File file = DataUtils.lookForFile(name, getClass(), null);
+			if(file == null)
+            {
+                System.out.println("Can't find texture source file");
+                return null;
+            }
 			
-			FileInputStream is = new FileInputStream(f);
+			FileInputStream is = new FileInputStream(file);
 			
 			BufferedInputStream stream = new BufferedInputStream(is);
 			BufferedImage img = ImageIO.read(stream);

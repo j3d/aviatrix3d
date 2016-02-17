@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
 
+import org.j3d.util.DataUtils;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -49,25 +50,25 @@ public class SSAODemo extends Frame
 
     /** Render GBuffer depth pass vertex shader file name */
     private static final String DEPTH_VTX_SHADER_FILE =
-        "global_illum/ssao_normal_vert.glsl";
+        "shaders/examples/global_illum/ssao_normal_vert.glsl";
 
     /** Render GBuffer depth Fragment shader file name */
     private static final String DEPTH_FRAG_SHADER_FILE =
-        "global_illum/ssao_normal_frag.glsl";
+        "shaders/examples/global_illum/ssao_normal_frag.glsl";
 
     /** Screen space ambient occlusion pass vertex shader file name */
     private static final String SSAO_VTX_SHADER_FILE =
-        "global_illum/deferred_ssao_vert.glsl";
+        "shaders/examples/global_illum/deferred_ssao_vert.glsl";
 
     /** Screen space ambient occlusion fragment shader file name */
     private static final String SSAO_FRAG_SHADER_FILE =
-        "global_illum/deferred_ssao_frag.glsl";
+        "shaders/examples/global_illum/deferred_ssao_frag.glsl";
 
     /**
      * Image file holding a random colour sample map for SSAO
      */
     private static final String RANDOM_MAP_FILE =
-        "textures/ssao_noise.png";
+        "images/examples/shader/ssao_noise.png";
 
     /** Width and height of the offscreen texture, in pixels */
     private static final int TEXTURE_SIZE = 512;
@@ -645,8 +646,8 @@ public class SSAODemo extends Frame
      */
     private String[] loadShaderFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;
@@ -679,18 +680,20 @@ public class SSAODemo extends Frame
     /**
      * Load a single image.
      */
-    private TextureComponent2D loadTextureImage(String filename)
+    private TextureComponent2D loadTextureImage(String name)
     {
         TextureComponent2D img_comp = null;
 
         try
         {
-            File f = new File(filename);
-
-            if(!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);

@@ -32,6 +32,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -112,8 +113,8 @@ public class Texture3DDemo extends Frame
         // Load the texture image
         BufferedImage[] src_img = new BufferedImage[2];
 
-        src_img[0] = loadImage("textures/3d_texture_1.gif");
-        src_img[1] = loadImage("textures/3d_texture_2.gif");
+        src_img[0] = loadImage("images/examples/texture/3d_texture_1.gif");
+        src_img[1] = loadImage("images/examples/texture/3d_texture_2.gif");
 
         ImageTextureComponent3D[] img_comp = {
                 new ImageTextureComponent3D(TextureComponent.FORMAT_RGB, src_img)
@@ -287,11 +288,14 @@ public class Texture3DDemo extends Frame
 
         try
         {
-            File f = new File(name);
-            if (!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             img_comp = ImageIO.read(stream);

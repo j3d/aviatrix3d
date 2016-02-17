@@ -28,6 +28,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.BoxGenerator;
 import org.j3d.geom.SphereGenerator;
+import org.j3d.util.DataUtils;
 import org.j3d.util.MatrixUtils;
 import org.j3d.loaders.stl.STLFileReader;
 
@@ -45,19 +46,19 @@ public class SubSurfaceScatteringDemo extends Frame
 {
     /** Vertex shader file name for the depth pass */
     private static final String DEPTH_PASS_VTX_SHADER_FILE =
-        "subsurf/depth_pass_vert.glsl";
+        "shaders/examples/subsurf/depth_pass_vert.glsl";
 
     /** Fragment shader file name for the depth pass */
     private static final String DEPTH_PASS_FRAG_SHADER_FILE =
-        "subsurf/depth_pass_frag.glsl";
+        "shaders/examples/subsurf/depth_pass_frag.glsl";
 
     /** Render pass vertex shader string */
     private static final String RENDER_PASS_VERTEX_SHADER_FILE =
-        "subsurf/render_pass_vert.glsl";
+        "shaders/examples/subsurf/render_pass_vert.glsl";
 
     /** Fragment shader file name for the rendering pass */
     private static final String RENDER_PASS_FRAG_SHADER_FILE =
-        "subsurf/render_pass_frag.glsl";
+        "shaders/examples/subsurf/render_pass_frag.glsl";
 
     /** Width and height of the offscreen texture, in pixels */
     private static final int TEXTURE_SIZE = 1024;
@@ -502,8 +503,8 @@ public class SubSurfaceScatteringDemo extends Frame
      */
     private String[] loadShaderFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;
@@ -612,7 +613,7 @@ public class SubSurfaceScatteringDemo extends Frame
         bg_geom.setNormals(bg_normals);
         bg_geom.setTextureCoordinates(tex_type, bg_texcoords, 1);
 
-        File tex_file = new File("textures/flags/australia.png");
+        File tex_file = DataUtils.lookForFile("images/examples/shader/flags/australia.png", getClass(), null);
         TextureComponent2D img_comp = loadImage(tex_file);
         Texture2D tex = new Texture2D(Texture2D.FORMAT_RGBA, img_comp);
         tex.setBoundaryModeS(Texture.BM_CLAMP_TO_EDGE);

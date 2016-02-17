@@ -24,6 +24,7 @@ import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.texture.procedural.PerlinNoiseGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates a shader using fragment shading and
@@ -47,7 +48,7 @@ public class ElectroEffectDemo extends Frame
     private static final float ZSCALE = 0.16f;
 
     /** Fragment shaders file name */
-    private static final String FRAG_SHADER_FILE = "demo_shaders/electro.fp";
+    private static final String FRAG_SHADER_FILE = "shaders/examples/simple/electro.fp";
 
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -292,8 +293,8 @@ public class ElectroEffectDemo extends Frame
      */
     private String loadFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;

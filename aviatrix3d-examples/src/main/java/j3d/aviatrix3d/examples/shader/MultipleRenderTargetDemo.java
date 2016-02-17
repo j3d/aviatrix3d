@@ -11,6 +11,7 @@ import java.io.FileReader;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
 
+import org.j3d.util.DataUtils;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -40,11 +41,11 @@ public class MultipleRenderTargetDemo extends Frame
 
     /** Render pass vertex shader string */
     private static final String VERTEX_SHADER_FILE =
-        "demo_shaders/mrt_vert.glsl";
+        "shaders/examples/simple/mrt_vert.glsl";
 
     /** Fragment shader file name for the rendering pass */
     private static final String FRAG_SHADER_FILE =
-        "demo_shaders/mrt_frag.glsl";
+        "shaders/examples/simple/mrt_frag.glsl";
 
     /** Width and height of the offscreen texture, in pixels */
     private static final int TEXTURE_SIZE = 256;
@@ -195,8 +196,8 @@ public class MultipleRenderTargetDemo extends Frame
      */
     private String[] loadShaderFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;

@@ -55,19 +55,19 @@ public class HumusFlagDemo extends Frame
 {
     /** Names of the shader vertex file for the sphere */
     private static final String POLE_VERTEX_SHADER =
-        "demo_shaders/humus_flag_pole.vert";
+        "shaders/examples/simple/humus_flag_pole.vert";
 
     /** Names of the shader fragment file for the sphere */
     private static final String POLE_FRAG_SHADER =
-        "demo_shaders/humus_flag_pole.frag";
+        "shaders/examples/simple/humus_flag_pole.frag";
 
     /** Names of the shader vertex file for the sphere */
     private static final String LIGHTING_VERTEX_SHADER =
-        "demo_shaders/humus_flag_cloth.vert";
+        "shaders/examples/simple/humus_flag_cloth.vert";
 
     /** Names of the shader fragment file for the sphere */
     private static final String LIGHTING_FRAG_SHADER =
-        "demo_shaders/humus_flag_cloth.frag";
+        "shaders/examples/simple/humus_flag_cloth.frag";
 
     /** The number of vertices for the cloth in the X direction */
     private static final int CLOTH_SIZE_X = HumusFlagAnimator.CLOTH_SIZE_X;

@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
 
+import org.j3d.util.DataUtils;
 import org.j3d.util.I18nManager;
 
 // Local imports
@@ -54,23 +55,23 @@ public class DepthOfFieldDemo extends Frame
 
     /** Image file holding the local colour map */
     private static final String COLOUR_MAP_FILE =
-        "textures/gbuffer_colour.png";
+        "images/examples/shader/gbuffer_colour.png";
 
     /** Render pass vertex shader string */
     private static final String MAT_VTX_SHADER_FILE =
-        "global_illum/dof_depth_vert.glsl";
+        "shaders/examples/global_illum/dof_depth_vert.glsl";
 
     /** Fragment shader file name for the rendering pass */
     private static final String MAT_FRAG_SHADER_FILE =
-        "global_illum/dof_depth_frag.glsl";
+        "shaders/examples/global_illum/dof_depth_frag.glsl";
 
     /** Render pass vertex shader string */
     private static final String RENDER_VTX_SHADER_FILE =
-        "global_illum/dof_render_vert.glsl";
+        "shaders/examples/global_illum/dof_render_vert.glsl";
 
     /** Fragment shader file name for the rendering pass */
     private static final String RENDER_FRAG_SHADER_FILE =
-        "global_illum/dof_render_frag.glsl";
+        "shaders/examples/global_illum/dof_render_frag.glsl";
 
     /** Width and height of the offscreen texture, in pixels */
     private static final int TEXTURE_SIZE = 256;
@@ -558,8 +559,8 @@ public class DepthOfFieldDemo extends Frame
      */
     private String[] loadShaderFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;
@@ -592,18 +593,20 @@ public class DepthOfFieldDemo extends Frame
     /**
      * Load a single image.
      */
-    private TextureComponent2D loadTextureImage(String filename)
+    private TextureComponent2D loadTextureImage(String name)
     {
         TextureComponent2D img_comp = null;
 
         try
         {
-            File f = new File(filename);
-
-            if(!f.exists())
+            File file = DataUtils.lookForFile(name, getClass(), null);
+            if(file == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
-            FileInputStream is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream(file);
 
             BufferedInputStream stream = new BufferedInputStream(is);
             BufferedImage img = ImageIO.read(stream);

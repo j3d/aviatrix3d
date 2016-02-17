@@ -26,6 +26,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.SphereGenerator;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates a wood texture from the ogl2sdk.
@@ -38,11 +39,11 @@ public class WoodDemo extends Frame
 {
     /** Vertex shader source file */
     private static final String VTX_SHADER_FILE =
-        "demo_shaders/wood.vert";
+        "shaders/examples/simple/wood.vert";
 
     /** Fragment shader source file */
     private static final String FRAG_SHADER_FILE =
-        "demo_shaders/wood.frag";
+        "shaders/examples/simple/wood.frag";
 
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -303,8 +304,8 @@ public class WoodDemo extends Frame
      */
     private String loadFile(String name)
     {
-        File file = new File(name);
-        if(!file.exists())
+        File file = DataUtils.lookForFile(name, getClass(), null);
+        if(file == null)
         {
             System.out.println("Cannot find file " + name);
             return null;
