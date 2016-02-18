@@ -163,27 +163,16 @@ public class BasicDemo extends Frame
     // Methods defined by WindowListener
     //---------------------------------------------------------------
 
-    /**
-     * Ignored
-     */
     @Override
     public void windowActivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
     @Override
     public void windowClosed(WindowEvent evt)
     {
     }
 
-    /**
-     * Exit the application
-     *
-     * @param evt The event that caused this method to be called.
-     */
     @Override
     public void windowClosing(WindowEvent evt)
     {
@@ -191,33 +180,21 @@ public class BasicDemo extends Frame
         System.exit(0);
     }
 
-    /**
-     * Ignored
-     */
     @Override
     public void windowDeactivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
     @Override
     public void windowDeiconified(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
     @Override
     public void windowIconified(WindowEvent evt)
     {
     }
 
-    /**
-     * When the window is opened, start everything up.
-     */
     @Override
     public void windowOpened(WindowEvent evt)
     {

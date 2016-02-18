@@ -4,6 +4,7 @@ package j3d.aviatrix3d.examples.basic;
 import java.awt.*;
 import java.awt.event.*;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import com.jogamp.openal.util.ALut;
 
@@ -31,6 +32,7 @@ import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -178,7 +180,9 @@ public class BasicAudioDemo extends Frame
 
 
         ConeSound sound = new ConeSound();
-        AudioComponent audioComp = loadWav("audio/examples/basic/Footsteps.wav", sound);
+        File f = DataUtils.lookForFile("audio/examples/basic/Footsteps.wav", getClass(), null);
+
+        AudioComponent audioComp = loadWav(f.getAbsolutePath(), sound);
 
         sound.setEnabled(true);
         sound.startSound();

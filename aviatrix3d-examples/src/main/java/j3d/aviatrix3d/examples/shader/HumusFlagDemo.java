@@ -41,6 +41,8 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.CylinderGenerator;
+import org.j3d.util.DataUtils;
+import org.j3d.util.I18nManager;
 
 /**
  * Demo that is a port of Humus' waving flag demo. Uses most of the same code
@@ -53,6 +55,8 @@ import org.j3d.geom.CylinderGenerator;
 public class HumusFlagDemo extends Frame
     implements WindowListener
 {
+    private static final String APP_NAME = "examples.HumusFlagDemo";
+
     /** Names of the shader vertex file for the sphere */
     private static final String POLE_VERTEX_SHADER =
         "shaders/examples/simple/humus_flag_pole.vert";
@@ -101,6 +105,9 @@ public class HumusFlagDemo extends Frame
     public HumusFlagDemo()
     {
         super("Aviatrix3D Port of Humus Cloth Demo");
+
+        I18nManager intl_mgr = I18nManager.getManager();
+        intl_mgr.setApplication(APP_NAME, "config.i18n.org-j3d-aviatrix3d-resources-core");
 
         setLayout(new BorderLayout());
         addWindowListener(this);
@@ -240,7 +247,7 @@ public class HumusFlagDemo extends Frame
 
         // Run through the flags directory and load every texture found into
         // the flags array as texture objects.
-        File flags_dir = new File("textures/flags");
+        File flags_dir = DataUtils.lookForFile("images/examples/shader/flags", getClass(), null);
         File[] files_in_dir = flags_dir.listFiles();
         Texture2D[] flag_textures = new Texture2D[files_in_dir.length];
         int num_flags = 0;
@@ -575,7 +582,7 @@ public class HumusFlagDemo extends Frame
         geom.setVertices(QuadArray.COORDINATE_3,coords, 4);
         geom.setTextureCoordinates(tex_type, tex_coords, 1);
 
-        File light_file = new File("textures/humus_particle.png");
+        File light_file = DataUtils.lookForFile("images/examples/shader/humus_particle.png", getClass(), null);
         TextureComponent2D img_comp = loadImage(light_file);
         Texture2D tex = new Texture2D(Texture2D.FORMAT_RGBA, img_comp);
         tex.setBoundaryModeS(Texture.BM_CLAMP_TO_EDGE);

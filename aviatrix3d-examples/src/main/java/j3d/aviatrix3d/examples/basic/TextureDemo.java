@@ -26,6 +26,7 @@ import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates how to put together a single-threaded
@@ -110,39 +111,43 @@ public class TextureDemo extends Frame
 
         try
         {
-            File f = new File("textures/test_image.png");
-//            File f = new File("textures/left_cube_map.gif");
-            if(!f.exists())
-                System.out.println("Can't find texture source file");
-
-            FileInputStream is = new FileInputStream(f);
-
-            BufferedInputStream stream = new BufferedInputStream(is);
-            BufferedImage img = ImageIO.read(stream);
-
-            img_width = img.getWidth(null);
-            img_height = img.getHeight(null);
-            int format = TextureComponent.FORMAT_RGB;
-
-            switch(img.getType())
+            File f = DataUtils.lookForFile("images/examples/basic/test_image.png", getClass(), null);
+            if(f == null)
             {
-                case BufferedImage.TYPE_3BYTE_BGR:
-                case BufferedImage.TYPE_CUSTOM:
-                case BufferedImage.TYPE_INT_RGB:
-                    System.out.println("TD RGB");
-                    break;
-
-                case BufferedImage.TYPE_4BYTE_ABGR:
-                case BufferedImage.TYPE_INT_ARGB:
-                    System.out.println("TD RGBA");
-                    format = TextureComponent.FORMAT_RGBA;
-                    break;
+                System.out.println("Can't find texture source file");
             }
+            else
+            {
 
-            img_comp = new ImageTextureComponent2D(format,
-                                                   img_width,
-                                                   img_height,
-                                                   img);
+                FileInputStream is = new FileInputStream(f);
+
+                BufferedInputStream stream = new BufferedInputStream(is);
+                BufferedImage img = ImageIO.read(stream);
+
+                img_width = img.getWidth(null);
+                img_height = img.getHeight(null);
+                int format = TextureComponent.FORMAT_RGB;
+
+                switch (img.getType())
+                {
+                    case BufferedImage.TYPE_3BYTE_BGR:
+                    case BufferedImage.TYPE_CUSTOM:
+                    case BufferedImage.TYPE_INT_RGB:
+                        System.out.println("TD RGB");
+                        break;
+
+                    case BufferedImage.TYPE_4BYTE_ABGR:
+                    case BufferedImage.TYPE_INT_ARGB:
+                        System.out.println("TD RGBA");
+                        format = TextureComponent.FORMAT_RGBA;
+                        break;
+                }
+
+                img_comp = new ImageTextureComponent2D(format,
+                                                       img_width,
+                                                       img_height,
+                                                       img);
+            }
         }
         catch(IOException ioe)
         {

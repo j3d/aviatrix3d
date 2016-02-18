@@ -72,7 +72,7 @@ public class StencilEdgeDemo extends Frame
         super("FF Stencil Edge Demo");
 
         I18nManager intl_mgr = I18nManager.getManager();
-        intl_mgr.setApplication(APP_NAME, "config.i18n.av3dResources");
+        intl_mgr.setApplication(APP_NAME, "config.i18n.org-j3d-aviatrix3d-resources-core");
 
         setLayout(new BorderLayout());
         addWindowListener(this);

@@ -173,16 +173,7 @@ public class SceneWalkDemo extends Frame
     // Methods defined by SceneGraphTraversalObserver
     //---------------------------------------------------------------
 
-    /**
-     * Notification of a scene graph object that has been traversed in the
-     * scene.
-     *
-     * @param parent The parent node of this node
-     * @param child The child node that is being observed
-     * @param shared true if the object reference has already been traversed
-     *    and this is beyond the first reference
-     * @param depth The depth of traversal from the top of the tree.  Starts at 0 for top.
-     */
+    @Override
     public void observedNode(SceneGraphObject parent,
                              SceneGraphObject child,
                              boolean shared,
@@ -223,55 +214,39 @@ public class SceneWalkDemo extends Frame
     // Methods defined by WindowListener
     //---------------------------------------------------------------
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowActivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowClosed(WindowEvent evt)
     {
     }
 
-    /**
-     * Exit the application
-     *
-     * @param evt The event that caused this method to be called.
-     */
+    @Override
     public void windowClosing(WindowEvent evt)
     {
         sceneManager.shutdown();
         System.exit(0);
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeactivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeiconified(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowIconified(WindowEvent evt)
     {
     }
 
-    /**
-     * When the window is opened, start everything up.
-     */
+    @Override
     public void windowOpened(WindowEvent evt)
     {
         sceneManager.setEnabled(true);

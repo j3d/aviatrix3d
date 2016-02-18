@@ -8,11 +8,7 @@ import java.awt.event.*;
 import org.j3d.aviatrix3d.*;
 
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
-import org.j3d.aviatrix3d.pipeline.graphics.NullCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
+import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.*;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
@@ -30,7 +26,7 @@ import org.j3d.maths.vector.Vector3d;
  * @version $Revision: 1.3 $
  */
 public class MultiViewDemo extends Frame
-    implements WindowListener
+    implements WindowListener, ApplicationUpdateObserver
 {
     /** Manager for the scene graph handling */
     private RenderManager sceneManager;
@@ -40,6 +36,8 @@ public class MultiViewDemo extends Frame
 
     /** Manager for the layers on surface 2 */
     private SingleDisplayCollection displayManager2;
+
+    private ViewportResizeManager resizeManager;
 
     public MultiViewDemo()
     {
@@ -51,7 +49,7 @@ public class MultiViewDemo extends Frame
         setupAviatrix();
         setupSceneGraph();
 
-        setSize(800, 800);
+        setSize(800, 400);
         setLocation(40, 40);
 
         // Need to set visible first before starting the rendering thread due
@@ -65,10 +63,14 @@ public class MultiViewDemo extends Frame
      */
     private void setupAviatrix()
     {
+        resizeManager = new ViewportResizeManager();
+
         // Assemble a simple single-threaded pipeline.
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
         SimpleAWTSurface main_surface = new SimpleAWTSurface(caps);
+        main_surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline1 = new DefaultGraphicsPipeline();
 
         GraphicsCullStage culler = new NullCullStage();
@@ -82,6 +84,8 @@ public class MultiViewDemo extends Frame
 
 
         SimpleAWTSurface slave_surface = new SimpleAWTSurface(caps, main_surface);
+        slave_surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline2 = new DefaultGraphicsPipeline();
 
         culler = new NullCullStage();
@@ -99,12 +103,13 @@ public class MultiViewDemo extends Frame
         displayManager2.addPipeline(pipeline2);
 
         // Render manager
-        sceneManager = new MultiThreadRenderManager();
-        //sceneManager = new SingleThreadRenderManager();
+        //sceneManager = new MultiThreadRenderManager();
+        sceneManager = new SingleThreadRenderManager();
 
         sceneManager.addDisplay(displayManager1);
         sceneManager.addDisplay(displayManager2);
         sceneManager.setMinimumFrameInterval(100);
+        sceneManager.setApplicationObserver(this);
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
@@ -171,6 +176,8 @@ public class MultiViewDemo extends Frame
         view.setDimensions(0, 0, 400, 400);
         view.setScene(scene);
 
+        resizeManager.addManagedViewport(view);
+
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
@@ -183,58 +190,58 @@ public class MultiViewDemo extends Frame
     // Methods defined by WindowListener
     //---------------------------------------------------------------
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowActivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowClosed(WindowEvent evt)
     {
     }
 
-    /**
-     * Exit the application
-     *
-     * @param evt The event that caused this method to be called.
-     */
+    @Override
     public void windowClosing(WindowEvent evt)
     {
         sceneManager.shutdown();
         System.exit(0);
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeactivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeiconified(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowIconified(WindowEvent evt)
     {
     }
 
-    /**
-     * When the window is opened, start everything up.
-     */
+    @Override
     public void windowOpened(WindowEvent evt)
     {
         sceneManager.setEnabled(true);
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by ApplicationUpdateObserver
+    //---------------------------------------------------------------
+
+    @Override
+    public void updateSceneGraph()
+    {
+        resizeManager.sendResizeUpdates();
+    }
+
+    @Override
+    public void appShutdown()
+    {
+        // do nothing
     }
 
     //---------------------------------------------------------------

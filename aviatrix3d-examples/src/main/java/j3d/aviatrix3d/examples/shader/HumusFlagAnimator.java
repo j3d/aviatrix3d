@@ -212,11 +212,13 @@ public class HumusFlagAnimator
         ShaderProgram prog = shader.getShaderProgram();
         prog.requestInfoLog();
 
-        ShaderObject[] objs = new ShaderObject[2];
+        ShaderObject[] objs = new ShaderObject[prog.getNumShaderObjects()];
         prog.getShaderObjects(objs);
-        objs[0].requestInfoLog();
-        objs[1].requestInfoLog();
 
+        for(ShaderObject o: objs)
+        {
+            o.requestInfoLog();
+        }
 
         lightPos = new float[3];
 

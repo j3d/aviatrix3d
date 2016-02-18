@@ -40,7 +40,7 @@ public class EdgeFlagsDemo extends Frame
 
     public EdgeFlagsDemo()
     {
-        super("Basic Aviatrix Demo");
+        super("Aviatrix Edge Flags Demo");
 
         setLayout(new BorderLayout());
         addWindowListener(this);

@@ -44,7 +44,7 @@ public class GraphicsCardInfoDemo extends Frame
         super("Graphics Info Demo");
 
         I18nManager intl_mgr = I18nManager.getManager();
-        intl_mgr.setApplication(APP_NAME, "config.i18n.av3dResources");
+        intl_mgr.setApplication(APP_NAME, "config.i18n.org-j3d-aviatrix3d-resources-core");
 
         setLayout(new BorderLayout());
         addWindowListener(this);
@@ -65,13 +65,7 @@ public class GraphicsCardInfoDemo extends Frame
     // Methods defined by SurfaceInfoListener
     //---------------------------------------------------------------
 
-    /**
-     * Notification that the graphics output device has changed GL context
-     * and this is the collection of new information.
-     *
-     * @param surface The output surface that caused the new info
-     * @param info The collected set of information known
-     */
+    @Override
     public void surfaceInfoChanged(OutputDevice surface, SurfaceInfo info)
     {
         System.out.println("Graphics card info");
@@ -86,62 +80,45 @@ public class GraphicsCardInfoDemo extends Frame
         System.out.println("Max textures:    " + info.getMaxTextureCount());
         System.out.println("Max RTs:         " + info.getMaxMRTCount());
         System.out.println("Max Color Atch:  " + info.getMaxColorAttachmentsCount());
-
     }
 
     //---------------------------------------------------------------
     // Methods defined by WindowListener
     //---------------------------------------------------------------
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowActivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowClosed(WindowEvent evt)
     {
     }
 
-    /**
-     * Exit the application
-     *
-     * @param evt The event that caused this method to be called.
-     */
+    @Override
     public void windowClosing(WindowEvent evt)
     {
         sceneManager.shutdown();
         System.exit(0);
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeactivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeiconified(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowIconified(WindowEvent evt)
     {
     }
 
-    /**
-     * When the window is opened, start everything up.
-     */
+    @Override
     public void windowOpened(WindowEvent evt)
     {
         sceneManager.setEnabled(true);
