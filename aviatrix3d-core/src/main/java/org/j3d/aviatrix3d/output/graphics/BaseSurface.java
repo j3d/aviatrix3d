@@ -512,7 +512,23 @@ public abstract class BaseSurface
     @Override
     public void init(GLAutoDrawable drawable)
     {
-        initCanvas(drawable.getContext());
+        GLContext localContext = drawable.getContext();
+
+        initCanvas(localContext);
+
+        int count = numRenderables;
+        OffscreenBufferRenderable[] surfaces = renderableList;
+
+        for(int i = 0; i < count && !terminate; i++)
+        {
+            if(surfaces[i] != null)
+            {
+                RenderingProcessor rp = rendererMap.get(surfaces[i]);
+                rp.reinitialize(localContext);
+            }
+        }
+
+        canvasRenderer.reinitialize(localContext);
     }
 
     @Override

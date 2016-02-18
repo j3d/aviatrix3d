@@ -526,7 +526,7 @@ public abstract class BaseRenderingProcessor
     public void reinitialize(GLContext localContext)
     {
         ownerRenderable.reinitialize();
-        updateContextChange(localContext);
+        init(localContext);
     }
 
     @Override
@@ -990,6 +990,28 @@ public abstract class BaseRenderingProcessor
                 errorReporter.errorReport(msg , e);
             }
         }
+
+        int renderableCount = numRenderables;
+        int[] opList = operationList;
+        GraphicsDetails[] renderables = renderableList;
+
+        for(int i = 0; i < renderableCount && !terminate; i++)
+        {
+            switch(opList[i])
+            {
+                case RenderOp.START_SHADER_PROGRAM:
+                    ShaderComponentRenderable prog = (ShaderComponentRenderable)renderables[i].renderable;
+
+                    if(!prog.isValid(gl))
+                    {
+                        prog.reinitialize(gl);
+                    }
+
+                default:
+                    // do nothing
+
+            }
+        }
     }
 
     /**
@@ -1448,38 +1470,6 @@ public abstract class BaseRenderingProcessor
         }
 
         return ret_val;
-    }
-
-    /**
-     * The GL class instance has changed due to reinitialising the context,
-     * so work through the list of current renderable items and reinitialise
-     * them.
-     *
-     * @param newContext The new Context wrapper to initialise with
-     */
-    protected void updateContextChange(GLContext newContext)
-    {
-        GL base_gl = newContext.getGL();
-        GL2 gl = base_gl.getGL2();
-
-        for(int i = 0; i < numRenderables && !terminate; i++)
-        {
-            switch(operationList[i])
-            {
-                case RenderOp.START_SHADER_PROGRAM:
-                    ShaderComponentRenderable prog =
-                        (ShaderComponentRenderable)renderableList[i].renderable;
-
-                    if(!prog.isValid(gl))
-                    {
-                        prog.reinitialize(gl);
-                    }
-
-                default:
-                    // do nothing
-
-            }
-        }
     }
 
     /**
