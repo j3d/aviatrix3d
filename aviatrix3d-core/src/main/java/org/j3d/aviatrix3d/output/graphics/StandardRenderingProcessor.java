@@ -96,6 +96,12 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
             gl.glClear(GL.GL_COLOR_BUFFER_BIT);
         }
 
+        // No point continuing if nothing to render.
+        if(numRenderables == 0)
+        {
+            return;
+        }
+
         float alpha_test = alphaCutoff;
         boolean two_pass_transparent = useTwoPassTransparent;
         boolean first_pass_alpha = true;
