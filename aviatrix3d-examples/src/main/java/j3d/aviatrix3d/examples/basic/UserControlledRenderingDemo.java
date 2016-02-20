@@ -23,15 +23,15 @@ import org.j3d.maths.vector.Vector3d;
  * Example application that demonstrates how to make use of the explicit
  * rendering call renderOnce().
  *
- * The demo puts up a frame and only repaints it each time it gets iconified.
- * Each time it repaints, it first changes the colour of the object then
- * repaints.
+ * The demo puts up a frame and only repaints it each time the render button
+ * gets pushed or the screen is iconified and brought back to the screen. Each
+ * render pass changes the colour.
  *
  * @author Justin Couch
  * @version $Revision: 1.7 $
  */
 public class UserControlledRenderingDemo extends Frame
-    implements WindowListener, NodeUpdateListener
+    implements WindowListener, ActionListener
 {
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -98,6 +98,11 @@ public class UserControlledRenderingDemo extends Frame
         // screen first.
         Component comp = (Component)surface.getSurfaceObject();
         add(comp, BorderLayout.CENTER);
+
+        Button btn = new Button("Press to Render");
+        btn.addActionListener(this);
+
+        add(btn, BorderLayout.SOUTH);
     }
 
     /**
@@ -172,86 +177,61 @@ public class UserControlledRenderingDemo extends Frame
     // Methods defined by WindowListener
     //---------------------------------------------------------------
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowActivated(WindowEvent evt)
     {
-        material.dataChanged(this);
-        sceneManager.renderOnce();
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowClosed(WindowEvent evt)
     {
     }
 
-    /**
-     * Exit the application
-     *
-     * @param evt The event that caused this method to be called.
-     */
+    @Override
     public void windowClosing(WindowEvent evt)
     {
         sceneManager.shutdown();
         System.exit(0);
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeactivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeiconified(WindowEvent evt)
     {
-        material.dataChanged(this);
-        sceneManager.renderOnce();
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowIconified(WindowEvent evt)
     {
     }
 
-    /**
-     * When the window is opened, start everything up.
-     */
+    @Override
     public void windowOpened(WindowEvent evt)
     {
-        material.dataChanged(this);
         sceneManager.renderOnce();
     }
 
     //----------------------------------------------------------
-    // Methods defined by NodeUpdateListener
+    // Methods defined by ActionListener
     //----------------------------------------------------------
 
-    /**
-     * Notification that its safe to update the node now with any operations
-     * that could potentially effect the node's bounds.
-     *
-     * @param src The node or Node Component that is to be updated.
-     */
-    public void updateNodeBoundsChanges(Object src)
+    @Override
+    public void actionPerformed(ActionEvent e)
     {
+        changeNodeColour();
+        sceneManager.renderOnce();
     }
 
-    /**
-     * Notification that its safe to update the node now with any operations
-     * that only change the node's properties, but do not change the bounds.
-     *
-     * @param src The node or Node Component that is to be updated.
-     */
-    public void updateNodeDataChanges(Object src)
+    //---------------------------------------------------------------
+    // Local methods
+    //---------------------------------------------------------------
+
+
+    public void changeNodeColour()
     {
         colourIteration = ++colourIteration % 7;
 
@@ -286,10 +266,6 @@ public class UserControlledRenderingDemo extends Frame
                 break;
         }
     }
-
-    //---------------------------------------------------------------
-    // Local methods
-    //---------------------------------------------------------------
 
     public static void main(String[] args)
     {
