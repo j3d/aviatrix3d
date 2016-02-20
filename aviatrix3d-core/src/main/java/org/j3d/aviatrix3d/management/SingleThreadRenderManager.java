@@ -414,6 +414,7 @@ public class SingleThreadRenderManager
             throw new IllegalStateException(msg);
 		}
 
+        processDisplayChanges();
         processChangeList();
         processShaderLists();
 
@@ -571,46 +572,7 @@ public class SingleThreadRenderManager
             // Throttle the apps runtime
             long start_time = System.currentTimeMillis();
 
-            if(addedDisplays.size() != 0)
-            {
-                for(int i = 0; i < addedDisplays.size() && !terminate; i++)
-                {
-                    DisplayCollection c = addedDisplays.get(i);
-
-                    c.setUpdateHandler(this);
-                    c.setEnabled(true);
-                    displays.add(c);
-                    usableDisplays.add(c);
-
-                    // We've had a new display added, so we want to force a new
-                    // run of the pipelines for all pipes.
-                    sceneChanged = true;
-                }
-
-                addedDisplays.clear();
-            }
-
-            if(terminate)
-                break;
-
-            if(removedDisplays.size() != 0)
-            {
-                for(int i = 0; i < removedDisplays.size() && !terminate; i++)
-                {
-                    DisplayCollection c = removedDisplays.get(i);
-
-                    displays.remove(c);
-                    usableDisplays.remove(c);
-                    c.setEnabled(false);
-                    c.setUpdateHandler(null);
-
-                    // We've had a display removed, so we want to force a new
-                    // run of the pipelines for all pipes.
-                    sceneChanged = true;
-                }
-
-                removedDisplays.clear();
-            }
+            processDisplayChanges();
 
             if(terminate)
                 break;
@@ -952,6 +914,53 @@ public class SingleThreadRenderManager
     //---------------------------------------------------------------
     // Misc Internal methods
     //---------------------------------------------------------------
+
+    /**
+     * Process the added and removed displays now.
+     */
+    private void processDisplayChanges()
+    {
+        if(addedDisplays.size() != 0)
+        {
+            for(int i = 0; i < addedDisplays.size() && !terminate; i++)
+            {
+                DisplayCollection c = addedDisplays.get(i);
+
+                c.setUpdateHandler(this);
+                c.setEnabled(true);
+                displays.add(c);
+                usableDisplays.add(c);
+
+                // We've had a new display added, so we want to force a new
+                // run of the pipelines for all pipes.
+                sceneChanged = true;
+            }
+
+            addedDisplays.clear();
+        }
+
+        if(terminate)
+            return;
+
+        if(removedDisplays.size() != 0)
+        {
+            for(int i = 0; i < removedDisplays.size() && !terminate; i++)
+            {
+                DisplayCollection c = removedDisplays.get(i);
+
+                displays.remove(c);
+                usableDisplays.remove(c);
+                c.setEnabled(false);
+                c.setUpdateHandler(null);
+
+                // We've had a display removed, so we want to force a new
+                // run of the pipelines for all pipes.
+                sceneChanged = true;
+            }
+
+            removedDisplays.clear();
+        }
+    }
 
     /**
      * Process the changeList now. If the user code generated an exception
