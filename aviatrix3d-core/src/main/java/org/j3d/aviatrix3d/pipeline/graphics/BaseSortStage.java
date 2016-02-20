@@ -111,31 +111,7 @@ public abstract class BaseSortStage implements GraphicsSortStage
     // Methods defined by GraphicsSortStage
     //---------------------------------------------------------------
 
-    /**
-     * Sort the listing of layers and nodes. Do not return until the
-     * sort has been completed.
-     * <p>
-     *
-     * For the 2D array of layers, it contains the list of final subscenes to
-     * send to the final stage, with the second dimension describing the
-     * layers, in rendering order. The first item will always be the main
-     * scene that gets rendered to the canvas.
-     * <p>
-     * For the 2D array sceneParent, it allows for mapping the output of
-     * internal scenes to the holding texture node. Index 0 is the direct
-     * owner of the  scene contents. Index 1 is the scene parent of the scene
-     * included (needed for pBuffer GL context handling at render time). If
-     * this second one is null, then the parent is the main canvas that is
-     * being rendered to.
-     *
-     * @param otherData data to be passed along unprocessed
-     * @param profilingData The timing and load data
-     * @param layers The list of layers that need to be further processed
-     * @param numLayers The number of valid layers in each scene to process
-     * @param numScenes The number of valid scenes to process
-     * @param sceneParents Parent node that holds the subscene in the main
-     *   scene graph
-     */
+    @Override
     public void sort(GraphicsRequestData otherData,
                      GraphicsProfilingData profilingData,
                      ViewportCollection[][] layers,
@@ -179,8 +155,7 @@ public abstract class BaseSortStage implements GraphicsSortStage
             commandList[curr_scene].pbuffer = sceneParents[i][0];
             commandList[curr_scene].parentSource = sceneParents[i][1];
 
-            GraphicsInstructions original =
-                (GraphicsInstructions)instructionMap.get(sceneParents[i][0]);
+            GraphicsInstructions original = instructionMap.get(sceneParents[i][0]);
 
             if(original != null)
             {
@@ -229,35 +204,19 @@ public abstract class BaseSortStage implements GraphicsSortStage
     }
 
 
-    /**
-     * Register a reciever for the output of the sorter. If the value is null,
-     * it will clear the currently set receiver.
-     *
-     * @param sgr The receiver instance to add or null
-     */
+    @Override
     public void setSortedGeometryReceiver(SortedGeometryReceiver sgr)
     {
         receiver = sgr;
     }
 
-    /**
-     * Force a halt of the current processing. Any processing in progress
-     * should exit immediately. Used to abort the current scene processing due
-     * to application shutdown or complete scene replacement.
-     */
+    @Override
     public void halt()
     {
         terminate = true;
     }
 
-    /**
-     * Register an error reporter with the engine so that any errors generated
-     * by the node's internals can be reported in a nice, pretty fashion.
-     * Setting a value of null will clear the currently set reporter. If one
-     * is already set, the new value replaces the old.
-     *
-     * @param reporter The instance to use or null
-     */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         errorReporter = reporter;

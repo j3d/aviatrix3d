@@ -187,19 +187,7 @@ public class TransparencyDepthSortStage extends BaseSortStage
     // Methods defined by BaseSortStage
     //---------------------------------------------------------------
 
-    /**
-     * Sort a single set of nodes into the output details of a single layer of
-     * a single viewport and place in the provided GraphicsInstructions
-     * instance. The implementation of this method should only concern itself
-     * with this set of nodes and not worry about dealing with nested scenes or
-     * other viewports.
-     *
-     * @param nodes The list of nodes to perform sorting on
-     * @param numNodes The number of valid items in the nodes array
-     * @param instr Instruction instant to put the details into
-     * @param instrCount Offset of current number of valid instructions
-     * @return The current instruction count after sorting
-     */
+    @Override
     protected int sortNodes(GraphicsCullOutputDetails[] nodes,
                             int numNodes,
                             GraphicsEnvironmentData data,
@@ -395,19 +383,7 @@ public class TransparencyDepthSortStage extends BaseSortStage
         return idx;
     }
 
-    /**
-     * Sort a single set of nodes into the output details of a single layer of
-     * a single viewport and place in the provided GraphicsInstructions
-     * instance. The implementation of this method should only concern itself
-     * with this set of nodes and not worry about dealing with nested scenes or
-     * other viewports.
-     *
-     * @param nodes The list of nodes to perform sorting on
-     * @param numNodes The number of valid items in the nodes array
-     * @param instr Instruction instant to put the details into
-     * @param instrCount Offset of current number of valid instructions
-     * @return The current instruction count after sorting
-     */
+    @Override
     protected int sort2DNodes(GraphicsCullOutputDetails[] nodes,
                               int numNodes,
                               GraphicsEnvironmentData data,
@@ -517,17 +493,7 @@ public class TransparencyDepthSortStage extends BaseSortStage
         return idx;
     }
 
-    /**
-     * Estimate the required size of the instruction list needed for this scene
-     * to be processed. This is an initial rough estimate that will be used to
-     * make sure the arrays are at least big enough to start with. There is no
-     * issue if this underestimates, as most sorting will continually check and
-     * resize as needed. However, each resize is costly, so the closer this can
-     * be to estimating the real size, the better for performance.
-     *
-     * @param scene The scene bucket to use for the source
-     * @return A greater than zero value
-     */
+    @Override
     protected int estimateInstructionSize(SceneRenderBucket scene)
     {
         int instr_count = 4 + scene.numNodes << 1;
@@ -540,17 +506,7 @@ public class TransparencyDepthSortStage extends BaseSortStage
         return instr_count;
     }
 
-    /**
-     * Estimate the required size of the instruction list needed for this scene
-     * to be processed. This is an initial rough estimate that will be used to
-     * make sure the arrays are at least big enough to start with. There is no
-     * issue if this underestimates, as most sorting will continually check and
-     * resize as needed. However, each resize is costly, so the closer this can
-     * be to estimating the real size, the better for performance.
-     *
-     * @param scene The scene bucket to use for the source
-     * @return A greater than zero value
-     */
+    @Override
     protected int estimateInstructionSize(MultipassRenderBucket scene)
     {
         int instr_count = 4;
@@ -618,11 +574,12 @@ public class TransparencyDepthSortStage extends BaseSortStage
                 VisualDetails ld = node.lights[j];
                 instr.renderList[idx].renderable = ld.getRenderable();
 
-                System.arraycopy(ld.getTransform(),
-                                 0,
-                                 instr.renderList[idx].transform,
-                                 0,
-                                 16);
+                float[] src_tx = ld.getTransform();
+
+                for(int k = 0; k < 16; k++)
+                {
+                    instr.renderList[idx].transform[k] = src_tx[k];
+                }
 
                 instr.renderList[idx].id = lastGlobalId++;
                 instr.renderOps[idx] = RenderOp.START_LIGHT;
@@ -637,11 +594,12 @@ public class TransparencyDepthSortStage extends BaseSortStage
                 VisualDetails cd = node.clipPlanes[j];
                 instr.renderList[idx].renderable = cd.getRenderable();
 
-                System.arraycopy(cd.getTransform(),
-                                 0,
-                                 instr.renderList[idx].transform,
-                                 0,
-                                 16);
+                float[] src_tx = cd.getTransform();
+
+                for(int k = 0; k < 16; k++)
+                {
+                    instr.renderList[idx].transform[k] = src_tx[k];
+                }
 
                 instr.renderList[idx].id = lastGlobalId++;
                 instr.renderOps[idx] = RenderOp.START_CLIP_PLANE;
