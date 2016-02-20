@@ -26,6 +26,7 @@ import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.util.DataUtils;
 
 /**
  * Example application that demonstrates the simple BoxBackground class
@@ -107,12 +108,12 @@ public class BoxBackgroundDemo extends Frame
 
         String[] targets =
         {
-            "right_cube_map.jpg",
-            "left_cube_map.jpg",
-            "top_cube_map.jpg",
-            "bottom_cube_map.jpg",
-            "back_cube_map.jpg",
-            "front_cube_map.jpg"
+            "images/examples/background/right_cube_map.jpg",
+            "images/examples/background/left_cube_map.jpg",
+            "images/examples/background/top_cube_map.jpg",
+            "images/examples/background/bottom_cube_map.jpg",
+            "images/examples/background/back_cube_map.jpg",
+            "images/examples/background/front_cube_map.jpg"
         };
 
         for(int i = 0; i < 6; i++)
@@ -184,9 +185,12 @@ public class BoxBackgroundDemo extends Frame
 
         try
         {
-            File f = new File(name);
-            if(!f.exists())
+            File f = DataUtils.lookForFile(name, getClass(), null);
+            if(f == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
             FileInputStream is = new FileInputStream(f);
 
