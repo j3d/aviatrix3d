@@ -199,33 +199,13 @@ public class StateAndTransparencyDepthSortStage extends BaseStateSortStage
     // Methods defined by BaseSortStage
     //---------------------------------------------------------------
 
-    /**
-     * Estimate the required size of the instruction list needed for this scene
-     * to be processed. This is an initial rough estimate that will be used to
-     * make sure the arrays are at least big enough to start with. There is no
-     * issue if this underestimates, as most sorting will continually check and
-     * resize as needed. However, each resize is costly, so the closer this can
-     * be to estimating the real size, the better for performance.
-     *
-     * @param scene The scene bucket to use for the source
-     * @return A greater than zero value
-     */
+    @Override
     protected int estimateInstructionSize(SceneRenderBucket scene)
     {
         return 4 + scene.numNodes * GUESS_NUM_COMPONENTS;
     }
 
-    /**
-     * Estimate the required size of the instruction list needed for this scene
-     * to be processed. This is an initial rough estimate that will be used to
-     * make sure the arrays are at least big enough to start with. There is no
-     * issue if this underestimates, as most sorting will continually check and
-     * resize as needed. However, each resize is costly, so the closer this can
-     * be to estimating the real size, the better for performance.
-     *
-     * @param scene The scene bucket to use for the source
-     * @return A greater than zero value
-     */
+    @Override
     protected int estimateInstructionSize(MultipassRenderBucket scene)
     {
         int instr_count = 2;
@@ -240,19 +220,7 @@ public class StateAndTransparencyDepthSortStage extends BaseStateSortStage
         return instr_count;
     }
 
-    /**
-     * Sort a single set of nodes into the output details of a single layer of
-     * a single viewport and place in the provided GraphicsInstructions
-     * instance. The implementation of this method should only concern itself
-     * with this set of nodes and not worry about dealing with nested scenes or
-     * other viewports.
-     *
-     * @param nodes The list of nodes to perform sorting on
-     * @param numNodes The number of valid items in the nodes array
-     * @param instr Instruction instant to put the details into
-     * @param instrCount Offset of current number of valid instructions
-     * @return The current instruction count after sorting
-     */
+    @Override
     protected int sortNodes(GraphicsCullOutputDetails[] nodes,
                             int numNodes,
                             GraphicsEnvironmentData data,
@@ -598,19 +566,7 @@ public class StateAndTransparencyDepthSortStage extends BaseStateSortStage
         return idx;
     }
 
-    /**
-     * Sort a single set of nodes into the output details of a single layer of
-     * a single viewport and place in the provided GraphicsInstructions
-     * instance. The implementation of this method should only concern itself
-     * with this set of nodes and not worry about dealing with nested scenes or
-     * other viewports.
-     *
-     * @param nodes The list of nodes to perform sorting on
-     * @param numNodes The number of valid items in the nodes array
-     * @param instr Instruction instant to put the details into
-     * @param instrCount Offset of current number of valid instructions
-     * @return The current instruction count after sorting
-     */
+    @Override
     protected int sort2DNodes(GraphicsCullOutputDetails[] nodes,
                               int numNodes,
                               GraphicsEnvironmentData data,
