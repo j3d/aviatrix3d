@@ -129,6 +129,42 @@ public class TextureUpdateStateManagerTest
         assertTrue(class_under_test.isEmpty(), "Should be empty after context removal");
     }
 
+    @Test(groups = "unit")
+    public void testUpdateBeforeContextRegistration() throws Exception
+    {
+        final int TEST_TEXTURE_WIDTH = 5;
+        final int TEST_TEXTURE_HEIGHT = 5;
+        final byte[] TEST_PIXELS = new byte[TEST_TEXTURE_WIDTH * TEST_TEXTURE_HEIGHT];
+        final int TEST_TEXTURE_FORMAT = GL.GL_ALPHA;
+
+        // generate some random test data.
+        for(int i = 0; i < TEST_PIXELS.length; i++)
+        {
+            TEST_PIXELS[i] = (byte)(Math.random() * 255);
+        }
+
+        GL test_key = mock(GL.class);
+
+        TextureUpdateStateManager class_under_test =
+            new TextureUpdateStateManager(TextureUpdateStateManager.UPDATE_BUFFER_ALL);
+
+        class_under_test.setTextureFormat(TEST_TEXTURE_FORMAT);
+        class_under_test.textureUpdated(0, 0, 0, TEST_TEXTURE_WIDTH, TEST_TEXTURE_HEIGHT, 1, 0, TEST_PIXELS);
+
+        // Register new context after the update this time and make sure we still
+        // get the update in the list of data to run.
+        class_under_test.addContext(test_key);
+
+        assertEquals(class_under_test.size(), 1, "Wrong number of contexts cached");
+        assertFalse(class_under_test.isEmpty(), "Should not be empty if size is non-zero");
+        assertEquals(class_under_test.getNumUpdatesPending(test_key), 1, "Should have updates registered");
+
+        // We should always get an array for a registered class. The number of valid items
+        // in the array is the previous call, so we don't actually check anything about
+        // the array here except that we have something.
+        assertNotNull(class_under_test.getUpdatesAndClear(test_key), "Should find something for updates");
+    }
+
     @Test(groups = "unit", dataProvider = "update strategy")
     public void testUpdateWithSingle(int testStrategy) throws Exception
     {

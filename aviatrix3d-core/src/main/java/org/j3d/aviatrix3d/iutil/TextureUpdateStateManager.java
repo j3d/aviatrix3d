@@ -16,6 +16,7 @@ package org.j3d.aviatrix3d.iutil;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
 
 import java.nio.ByteBuffer;
@@ -108,16 +109,22 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
     private float loadFactor;
 
     /** Cache of the entry instances to prevent excessive object creation */
-    private ArrayList<Entry> entryCache;
+    private List<Entry> entryCache;
 
     /** Collection of update objects cached when not being used. */
-    private ArrayList<TextureUpdateData> updateObjectCache;
+    private List<TextureUpdateData> updateObjectCache;
 
     /** Set the texture format to use. Uses GL constants */
     private int format;
 
     /** The update strategy to use for sub-image updates. Defaults to keep latest */
     private int updateStrategy;
+
+    /**
+     * If an update is received and we don't yet have any GL entries as keys
+     * then keep the pending updates here.
+     */
+    private List<TextureUpdateData> unassignedUpdates;
 
     /**
      * Innerclass that acts as a datastructure to create a new entry in the
@@ -209,8 +216,9 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
         table = new Entry[initialCapacity];
         threshold = (int)(initialCapacity * loadFactor);
 
-        entryCache = new ArrayList<Entry>(initialCapacity);
-        updateObjectCache = new ArrayList<TextureUpdateData>(initialCapacity);
+        entryCache = new ArrayList<>(initialCapacity);
+        updateObjectCache = new ArrayList<>(initialCapacity);
+        unassignedUpdates = new ArrayList<>(initialCapacity);
     }
 
 
@@ -218,19 +226,6 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
     // Methods defined by SubTextureUpdateListener
     //---------------------------------------------------------------
 
-    /**
-     * Notification that the texture has updated a section of the texture.
-     * This is generic for all textures correctly.
-     *
-     * @param x The start location x coordinate in texel space
-     * @param y The start location y coordinate in texel space
-     * @param z The start location z coordinate in texel space
-     * @param width The width of the update in texel space
-     * @param height The height of the update in texel space
-     * @param depth The depth of the update in texel space
-     * @param level The mipmap level that changed
-     * @param pixels Buffer of the data that has updated
-     */
     @Override
     public void textureUpdated(int x,
                                int y,
@@ -241,21 +236,38 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
                                int level,
                                byte[] pixels)
     {
-        switch(updateStrategy)
+        if(isEmpty())
         {
-            case UPDATE_BUFFER_ALL:
-                updateAppend(x, y, width, height, depth, level, pixels);
-                break;
+            TextureUpdateData tud = getNewUpdate();
+            tud.x = x;
+            tud.y = y;
+            tud.width = width;
+            tud.height = height;
+            tud.level = level;
+            tud.depth = depth;
+            tud.format = format;
 
-            case UPDATE_BUFFER_LAST:
-                updateReplace(x, y, width, height, depth, level, pixels);
-                break;
+            copyPixels(tud, pixels);
 
-            case UPDATE_DISCARD_OVERWRITES:
-                updateOverlap(x, y, width, height, depth, level, pixels);
-                break;
+            unassignedUpdates.add(tud);
         }
+        else
+        {
+            switch (updateStrategy)
+            {
+                case UPDATE_BUFFER_ALL:
+                    updateAppend(x, y, width, height, depth, level, pixels);
+                    break;
 
+                case UPDATE_BUFFER_LAST:
+                    updateReplace(x, y, width, height, depth, level, pixels);
+                    break;
+
+                case UPDATE_DISCARD_OVERWRITES:
+                    updateOverlap(x, y, width, height, depth, level, pixels);
+                    break;
+            }
+        }
     }
 
     //---------------------------------------------------------------
@@ -341,7 +353,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
     public TextureUpdateData[] getUpdatesAndClear(GL gl)
     {
         Entry[] tab = table;
-        int hash = gl.hashCode();;
+        int hash = gl.hashCode();
         int index = (hash & 0x7FFFFFFF) % tab.length;
         for(Entry e = tab[index]; e != null; e = e.next)
         {
@@ -362,7 +374,6 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
      */
     public void addContext(GL gl)
     {
-
         // Makes sure the key is not already in the hashtable.
         Entry[] tab = table;
         int hash = gl.hashCode();;
@@ -378,7 +389,6 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
 
         if(count >= threshold)
         {
-
             // Rehash the table if the threshold is exceeded
             rehash();
 
@@ -395,7 +405,21 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
 
         if(e.updatesPending == null)
         {
-            e.updatesPending = new TextureUpdateData[1];
+            if(unassignedUpdates.isEmpty())
+            {
+                e.updatesPending = new TextureUpdateData[1];
+            }
+            else
+            {
+                int initial_size = unassignedUpdates.size();
+
+                e.updatesPending = new TextureUpdateData[initial_size];
+
+                unassignedUpdates.toArray(e.updatesPending);
+                e.numUpdatesPending = initial_size;
+
+                unassignedUpdates.clear();
+            }
         }
 
         tab[index] = e;
@@ -411,7 +435,7 @@ public class TextureUpdateStateManager implements SubTextureUpdateListener
     public void removeContext(GL gl)
     {
         Entry[] tab = table;
-        int hash = gl.hashCode();;
+        int hash = gl.hashCode();
         int index = (hash & 0x7FFFFFFF) % tab.length;
         for(Entry e = tab[index], prev = null; e != null; prev = e, e = e.next)
         {
