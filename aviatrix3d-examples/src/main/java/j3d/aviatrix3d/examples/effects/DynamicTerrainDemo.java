@@ -177,14 +177,14 @@ public class DynamicTerrainDemo extends Frame
 
         colorImages = new BufferedImage[IMAGE_FILES.length];
         for(int i = 0; i < IMAGE_FILES.length; i++)
-            colorImages[i] = loadImage(DataUtils.lookForFile(IMAGE_FILES[i], getClass(), null));
+            colorImages[i] = loadImage(IMAGE_FILES[i]);
 
         imageHeights = new float[5];
 
         createParamsPanel();
 
         setupAviatrix();
-        setupSceneGraph(3);
+        setupSceneGraph();
 
         setSize(600, 600);
         setLocation(40, 40);
@@ -425,9 +425,6 @@ public class DynamicTerrainDemo extends Frame
         catch(NumberFormatException nfe)
         {
             System.out.println("Number formatting problem");
-
-            regenButton.setEnabled(true);
-            sceneManager.setMinimumFrameInterval(30);
         }
     }
 
@@ -616,10 +613,8 @@ public class DynamicTerrainDemo extends Frame
 
     /**
      * Setup the basic scene which consists of a quad and a viewpoint
-     *
-     * @param nSpheres Number of sphere objects to pre-initialise
      */
-    private void setupSceneGraph(int nSpheres)
+    private void setupSceneGraph()
     {
         // View group
         Viewpoint vp = new Viewpoint();
@@ -729,14 +724,19 @@ public class DynamicTerrainDemo extends Frame
     /**
      * Load a single image.
      */
-    private BufferedImage  loadImage(File f)
+    private BufferedImage  loadImage(String name)
     {
         BufferedImage  ret_val = null;
 
         try
         {
-            if(!f.exists())
+            File f = DataUtils.lookForFile(name, getClass(), null);
+
+            if(f == null)
+            {
                 System.out.println("Can't find texture source file");
+                return null;
+            }
 
             FileInputStream is = new FileInputStream(f);
 
