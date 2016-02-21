@@ -107,7 +107,7 @@ public class IndexedTriangleFanArray extends IndexedVertexGeometry
 
         if(vboAvailable && useVbo)
         {
-            vbo_id = (Integer)vboElementIdMap.get(gl);
+            vbo_id = vboElementIdMap.get(gl);
             gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vbo_id.intValue());
 
             int fan_offset = 0;
@@ -125,7 +125,6 @@ public class IndexedTriangleFanArray extends IndexedVertexGeometry
         }
         else
         {
-/*
             int fan_offset = 0;
             for(int i = 0; i < numFans; i++)
             {
@@ -137,7 +136,6 @@ public class IndexedTriangleFanArray extends IndexedVertexGeometry
 
                 fan_offset += fanCounts[i];
             }
-*/
         }
 
 
