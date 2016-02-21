@@ -10,12 +10,7 @@ import org.j3d.maths.vector.Vector3d;
 // Local imports
 import org.j3d.aviatrix3d.*;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
-import org.j3d.aviatrix3d.pipeline.graphics.NullCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
+import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
@@ -26,7 +21,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
  * @version $Revision: 1.2 $
  */
 public class TriStripArrayDemo extends Frame
-    implements WindowListener
+    implements WindowListener, ApplicationUpdateObserver
 {
     /** Manager for the scene graph handling */
     private SingleThreadRenderManager sceneManager;
@@ -36,6 +31,8 @@ public class TriStripArrayDemo extends Frame
 
     /** Our drawing surface */
     private GraphicsOutputDevice surface;
+
+    private ViewportResizeManager resizeManager;
 
     public TriStripArrayDemo()
     {
@@ -61,6 +58,8 @@ public class TriStripArrayDemo extends Frame
      */
     private void setupAviatrix()
     {
+        resizeManager = new ViewportResizeManager();
+
         // Assemble a simple single-threaded pipeline.
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
@@ -69,6 +68,8 @@ public class TriStripArrayDemo extends Frame
 
         GraphicsSortStage sorter = new NullSortStage();
         surface = new DebugAWTSurface(caps);
+        surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
 
         pipeline.setCuller(culler);
@@ -113,10 +114,10 @@ public class TriStripArrayDemo extends Frame
         scene_root.addChild(tx);
 
         // Flat panel that has the viewable object as the demo
-        //int[] index = {0, 1, 2};
-        //float[] coord = { 0, 0, -1, 0.25f, 0, -1, 0, 0.25f, -1 };
-        //float[] normal = { 0, 0, 1, 0, 0, 1, 0, 0, 1 };
-        //int[] fanCount = {3};
+//        int[] index = {0, 1, 2};
+//        float[] coord = { 0, 0, -1,  0.25f, 0, -1, 0, 0.25f, -1 };
+//        float[] normal = { 0, 0, 1, 0, 0, 1, 0, 0, 1 };
+//        int[] fanCount = {3};
 
         int[] index = {7, 4, 3, 1, 2};
         float[] coord = {0.5f, 0.5f, -0.5f, 0.5f, -0.5f, 0, 0.5f, -0.5f, -0.5f, -0.5f, -0.5f, 0, -0.5f, 0.5f, 0, -0.5f, -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0};
@@ -126,15 +127,17 @@ public class TriStripArrayDemo extends Frame
         IndexedTriangleFanArray geom = new IndexedTriangleFanArray();
         geom.setVertices(IndexedTriangleFanArray.COORDINATE_3, coord);
         geom.setIndices(index, 5);
+        geom.setIndices(index, 3);
         geom.setFanCount(fanCount, 1);
         geom.setNormals(normal);
 
         Shape3D shape = new Shape3D();
         shape.setGeometry(geom);
 
-        trans.set(0.2f, 0.5f, 0);
+        trans.set(0.2f, 0, 0);
         Matrix4d mat2 = new Matrix4d();
         mat2.setIdentity();
+        mat2.set(0.25);
         mat2.setTranslation(trans);
 
         TransformGroup shape_transform = new TransformGroup();
@@ -151,6 +154,8 @@ public class TriStripArrayDemo extends Frame
         SimpleViewport view = new SimpleViewport();
         view.setDimensions(0, 0, 500, 500);
         view.setScene(scene);
+
+        resizeManager.addManagedViewport(view);
 
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
@@ -215,6 +220,22 @@ public class TriStripArrayDemo extends Frame
     public void windowOpened(WindowEvent evt)
     {
         sceneManager.setEnabled(true);
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by ApplicationUpdateObserver
+    //---------------------------------------------------------------
+
+    @Override
+    public void updateSceneGraph()
+    {
+        resizeManager.sendResizeUpdates();
+    }
+
+    @Override
+    public void appShutdown()
+    {
+        // do nothing
     }
 
     //---------------------------------------------------------------

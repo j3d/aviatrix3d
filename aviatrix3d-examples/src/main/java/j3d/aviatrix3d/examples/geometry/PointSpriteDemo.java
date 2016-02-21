@@ -20,13 +20,9 @@ import org.j3d.maths.vector.Vector3d;
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
 
+import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
-import org.j3d.aviatrix3d.pipeline.graphics.GenericCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.StateAndTransparencyDepthSortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
+import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
@@ -51,6 +47,7 @@ public class PointSpriteDemo extends Frame
     /** Our drawing surface */
     private GraphicsOutputDevice surface;
 
+    private ViewportResizeManager resizeManager;
 
     public PointSpriteDemo()
     {
@@ -76,6 +73,8 @@ public class PointSpriteDemo extends Frame
      */
     private void setupAviatrix()
     {
+        resizeManager = new ViewportResizeManager();
+
         // Assemble a simple single-threaded pipeline.
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
@@ -84,6 +83,8 @@ public class PointSpriteDemo extends Frame
 
         GraphicsSortStage sorter = new StateAndTransparencyDepthSortStage();
         surface = new SimpleAWTSurface(caps);
+        surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
 
         pipeline.setCuller(culler);
@@ -118,37 +119,42 @@ public class PointSpriteDemo extends Frame
         {
             File f = DataUtils.lookForFile("images/examples/geometry/halo.jpg", getClass(), null);
 //            File f = DataUtils.lookForFile("images/examples/geometry/big_glow.jpg", getClass(), null);
-            if(!f.exists())
-                System.out.println("Can't find point sprite source file");
-
-            FileInputStream is = new FileInputStream(f);
-
-            BufferedInputStream stream = new BufferedInputStream(is);
-            BufferedImage img = ImageIO.read(stream);
-
-            img_width = img.getWidth(null);
-            img_height = img.getHeight(null);
-            int format = TextureComponent.FORMAT_RGB;
-
-            switch(img.getType())
+            if(f == null)
             {
-                case BufferedImage.TYPE_3BYTE_BGR:
-                case BufferedImage.TYPE_CUSTOM:
-                case BufferedImage.TYPE_INT_RGB:
-                    System.out.println("TD RGB");
-                    break;
-
-                case BufferedImage.TYPE_4BYTE_ABGR:
-                case BufferedImage.TYPE_INT_ARGB:
-                    System.out.println("TD RGBA");
-                    format = TextureComponent.FORMAT_RGBA;
-                    break;
+                System.out.println("Can't find point sprite source file");
             }
+            else
+            {
 
-            img_comp = new ImageTextureComponent2D(format,
-                                                   img_width,
-                                                   img_height,
-                                                   img);
+                FileInputStream is = new FileInputStream(f);
+
+                BufferedInputStream stream = new BufferedInputStream(is);
+                BufferedImage img = ImageIO.read(stream);
+
+                img_width = img.getWidth(null);
+                img_height = img.getHeight(null);
+                int format = TextureComponent.FORMAT_RGB;
+
+                switch (img.getType())
+                {
+                    case BufferedImage.TYPE_3BYTE_BGR:
+                    case BufferedImage.TYPE_CUSTOM:
+                    case BufferedImage.TYPE_INT_RGB:
+                        System.out.println("TD RGB");
+                        break;
+
+                    case BufferedImage.TYPE_4BYTE_ABGR:
+                    case BufferedImage.TYPE_INT_ARGB:
+                        System.out.println("TD RGBA");
+                        format = TextureComponent.FORMAT_RGBA;
+                        break;
+                }
+
+                img_comp = new ImageTextureComponent2D(format,
+                                                       img_width,
+                                                       img_height,
+                                                       img);
+            }
         }
         catch(IOException ioe)
         {
@@ -244,13 +250,15 @@ public class PointSpriteDemo extends Frame
         view.setDimensions(0, 0, 500, 500);
         view.setScene(scene);
 
+        resizeManager.addManagedViewport(view);
+
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
         Layer[] layers = { layer };
         displayManager.setLayers(layers, 1);
 
-        RotationAnimation anim = new RotationAnimation(shape_transform);
+        RotationAnimation anim = new RotationAnimation(shape_transform, resizeManager);
         sceneManager.setApplicationObserver(anim);
     }
 
