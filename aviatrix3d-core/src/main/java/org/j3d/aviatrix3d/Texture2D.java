@@ -97,27 +97,12 @@ public class Texture2D extends Texture
     // Methods defined by MultipassTextureDestination
     //---------------------------------------------------------------
 
-    /**
-     * Check to see how many multipass texture sources are actually set for.
-     * this instance of the destination.
-     *
-     * @return The number of defined sources >= 0
-     */
     @Override
     public int numMultipassSources()
     {
         return mpNumSources;
     }
 
-    /**
-     * Fetch all of the currently specified multipass texture sources in this
-     * instance of the class. The values are copied into the arrays, along with
-     * their corresponding image index and level for mipmapping. The array must
-     * be at least as long as {@link #numMultipassSources()}.
-     *
-     * @param sources An array to copy the current sources into
-     * @param images The indices of each of the source images
-     */
     @Override
     public void getMultipassSources(MultipassTextureSource[] sources,
                                     int[] images)
@@ -125,22 +110,10 @@ public class Texture2D extends Texture
         if(mpNumSources == 0)
             return;
 
-        sources[0] = (MultipassTextureSource)sources[0];
+        sources[0] = (MultipassTextureSource)this.sources[0];
         images[0] = 0;
     }
 
-    /**
-     * The multipass source has completed rendering and the implemented class
-     * should now copy the image data across now.
-     *
-     * @param gl The gl context to draw with
-     * @param x The x offset in pixels to start the copy from
-     * @param y The y offset in pixels to start the copy from
-     * @param width The width in pixels of the texture that was rendered
-     * @param height The height in pixels of the texture that was rendered
-     * @param imgNum The index of the texture source to copy to
-     * @param level The mipmap level that this corresponds to
-     */
     @Override
     public void updateMultipassSource(GL2 gl,
                                       int x,
@@ -153,7 +126,7 @@ public class Texture2D extends Texture
         gl.glReadBuffer(mpReadBuffer);
 
         // Not handling mipmaps right now.
-        Integer t_id = (Integer)textureIdMap.get(gl);
+        Integer t_id = textureIdMap.get(gl);
         if(t_id == null)
         {
             int[] tex_id_tmp = new int[1];
@@ -226,15 +199,6 @@ public class Texture2D extends Texture
         }
     }
 
-    /**
-     * Set the buffer that this texture should read it's input from during the
-     * update callback. For 2D textures the image number is ignored.
-     *
-     * @param imgNum The index of the image that this offset applies to
-     * @param buffer The identifier of the buffer to read from
-     * @throws InvalidWriteTimingException An attempt was made to write outside
-     *   of the NodeUpdateListener data changed callback method
-     */
     @Override
     public void setReadBuffer(int imgNum, int buffer)
         throws InvalidWriteTimingException
@@ -246,30 +210,12 @@ public class Texture2D extends Texture
         mpReadBuffer = buffer;
     }
 
-    /**
-     * Get the current read buffer that is being used. For 2D textures the
-     * image number is ignored.
-     *
-     * @param imgNum The index of the image that this offset applies to
-     * @return One of the buffer indicies.
-     */
     @Override
     public int getReadBuffer(int imgNum)
     {
         return mpReadBuffer;
     }
 
-    /**
-     * Set the offsets in this texture to use for update the sub image
-     * update values. For 2D textures the image number is ignored.
-     *
-     * @param imgNum The index of the image that this offset applies to
-     * @param xoffset The x offset in pixels to start the copy at
-     * @param yoffset The y offset in pixels to start the copy at
-     * @param level The mipmap level that this corresponds to
-     * @throws InvalidWriteTimingException An attempt was made to write outside
-     *   of the NodeUpdateListener callback method
-     */
     @Override
     public void setCopyOffset(int imgNum, int level, int xoffset, int yoffset)
         throws InvalidWriteTimingException
@@ -278,15 +224,6 @@ public class Texture2D extends Texture
         mpOffsets[level][1] = yoffset;
     }
 
-    /**
-     * Get the current copy offset. The return values are copied into the
-     * user provided array as [xoffset, yoffset]. For 2D textures the image
-     * number is ignored.
-     *
-     * @param imgNum The index of the image that this offset applies to
-     * @param level The mipmap level that this corresponds to
-     * @param offsets An array to copy the values into
-     */
     @Override
     public void getCopyOffset(int imgNum, int level, int[] offsets)
     {
@@ -298,16 +235,6 @@ public class Texture2D extends Texture
     // Methods defined by Texture
     //---------------------------------------------------------------
 
-    /**
-     * Set a new collection of sources for this texture to use.
-     *
-     * @param mipMapMode Flag stating the type of texture mode to use
-     * @param format Image format to use for grayscale sources
-     * @param texSources The source data to use, single for base level
-     * @param num The valid number of sources to use from the array
-     * @throws InvalidWriteTimingException An attempt was made to write outside
-     *   of the NodeUpdateListener callback method
-     */
     @Override
     public void setSources(int mipMapMode,
                            int format,
@@ -335,18 +262,13 @@ public class Texture2D extends Texture
     // Methods defined by ObjectRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Issue ogl commands needed for this component
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void render(GL2 gl)
     {
         if(numSources == 0)
             return;
 
-        Integer t_id = (Integer)textureIdMap.get(gl);
+        Integer t_id = textureIdMap.get(gl);
         if(t_id == null)
         {
             int[] tex_id_tmp = new int[1];
@@ -498,40 +420,32 @@ public class Texture2D extends Texture
                 int int_format = GL.GL_RGB;
                 int ext_format = GL.GL_RGB;
 
-                int num_comps = 0;
-
                 switch(comp_format)
                 {
                     case TextureComponent.FORMAT_RGB:
                         int_format = GL.GL_RGB;
                         ext_format = GL.GL_RGB;
-                        num_comps = 3;
                         break;
 
                     case TextureComponent.FORMAT_RGBA:
                         int_format = GL.GL_RGBA;
                         ext_format = GL.GL_RGBA;
-                        num_comps = 4;
                         break;
 
                     case TextureComponent.FORMAT_BGR:
                         int_format = GL2.GL_BGR;
                         ext_format = GL2.GL_BGR;
-                        num_comps = 3;
                         break;
 
                     case TextureComponent.FORMAT_BGRA:
                         int_format = GL.GL_BGRA;
                         ext_format = GL.GL_BGRA;
-                        num_comps = 4;
                         break;
 
 
                     case TextureComponent.FORMAT_INTENSITY_ALPHA:
                         int_format = GL.GL_LUMINANCE_ALPHA;
                         ext_format = GL.GL_LUMINANCE_ALPHA;
-                        num_comps = 2;
-
                         break;
 
                     case TextureComponent.FORMAT_SINGLE_COMPONENT:
@@ -540,19 +454,16 @@ public class Texture2D extends Texture
                             case FORMAT_INTENSITY:
                                 int_format = GL2.GL_INTENSITY;
                                 ext_format = GL.GL_LUMINANCE;
-                                num_comps = 1;
                                 break;
 
                             case FORMAT_LUMINANCE:
                                 int_format = GL.GL_LUMINANCE;
                                 ext_format = GL.GL_LUMINANCE;
-                                num_comps = 1;
                                 break;
 
                             case FORMAT_ALPHA:
                                 int_format = GL.GL_ALPHA;
                                 ext_format = GL.GL_ALPHA;
-                                num_comps = 1;
                         }
                         break;
 
@@ -610,11 +521,6 @@ public class Texture2D extends Texture
         }
     }
 
-    /**
-     * Restore all openGL state to the given drawable
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void postRender(GL2 gl)
     {
@@ -624,15 +530,6 @@ public class Texture2D extends Texture
     // Methods defined by Texture
     //---------------------------------------------------------------
 
-    /**
-     * Compares this object with the specified object for order. Returns a
-     * negative integer, zero, or a positive integer as this object is less
-     * than, equal to, or greater than the specified object. Derived instances
-     * should override this to add texture-specific extensions.
-     *
-     * @param tex The texture instance to be compared
-     * @return -1, 0 or 1 depending on order
-     */
     @Override
     public int compareTo(Texture tex)
     {
@@ -654,12 +551,6 @@ public class Texture2D extends Texture
         return 0;
     }
 
-    /**
-     * Compares this object with the specified object to check for equivalence.
-     *
-     * @param tex The texture instance to be compared
-     * @return true if the objects represent identical values
-     */
     @Override
     public boolean equals(Texture tex)
     {

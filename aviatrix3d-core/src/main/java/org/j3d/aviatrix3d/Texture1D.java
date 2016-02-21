@@ -120,7 +120,7 @@ public class Texture1D extends Texture
         if(numSources == 0)
             return;
 
-        Integer t_id = (Integer)textureIdMap.get(gl);
+        Integer t_id = textureIdMap.get(gl);
         if(t_id == null)
         {
             int[] tex_id_tmp = new int[1];
