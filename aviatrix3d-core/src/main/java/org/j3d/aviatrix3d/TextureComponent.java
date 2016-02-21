@@ -20,8 +20,6 @@ import java.awt.image.*;
 
 import java.nio.ByteBuffer;
 
-import com.jogamp.opengl.GL;
-
 import org.j3d.util.I18nManager;
 
 // Local imports
