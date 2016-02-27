@@ -74,7 +74,7 @@ public class CapabilitiesUtilsTest
         assertEquals(result.getRedBits(), testCapabilities.redBits, "Red bits not copied correctly");
         assertEquals(result.getGreenBits(), testCapabilities.greenBits, "Green bits not copied correctly");
         assertEquals(result.getBlueBits(), testCapabilities.blueBits, "Blue bits not copied correctly");
-        assertEquals(result.getAlphaBits(), testCapabilities.alphaBits, "Alpha bits not copied correctly");
+        assertTrue(result.getAlphaBits() > 0, "Alpha bits should be ignored due to transparent background");
 
         assertEquals(result.getDepthBits(), testCapabilities.depthBits, "Depth bits not copied correctly");
         assertEquals(result.getStencilBits(), testCapabilities.stencilBits, "stencil bits not copied correctly");
