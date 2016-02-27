@@ -6,6 +6,7 @@ import java.awt.event.*;
 
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
 import org.j3d.util.I18nManager;
 
 // Application Specific imports

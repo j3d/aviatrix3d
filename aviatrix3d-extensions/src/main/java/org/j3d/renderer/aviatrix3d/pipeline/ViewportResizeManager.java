@@ -10,13 +10,14 @@
  *
  ****************************************************************************/
 
-package org.j3d.aviatrix3d.pipeline.graphics;
+package org.j3d.renderer.aviatrix3d.pipeline;
 
 // External imports
 import java.util.ArrayList;
 
 // Local imports
 import org.j3d.aviatrix3d.Viewport;
+import org.j3d.aviatrix3d.pipeline.graphics.GraphicsResizeListener;
 
 /**
  * Convenience class for managing the resizing of the viewports based on

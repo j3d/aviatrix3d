@@ -14,6 +14,8 @@ import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
 import org.j3d.util.MatrixUtils;
 
 /**

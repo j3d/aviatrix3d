@@ -15,6 +15,7 @@ import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
 
 /**
  * Example application that demonstrates how to put together a single-threaded

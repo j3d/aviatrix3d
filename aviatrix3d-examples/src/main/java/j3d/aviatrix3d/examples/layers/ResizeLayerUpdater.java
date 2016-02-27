@@ -8,7 +8,7 @@ import org.j3d.maths.vector.Vector3d;
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.pipeline.graphics.ViewportResizeManager;
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
 
 /**
  * Animator for moving an object about a circular path for the MultiLayerDemo.

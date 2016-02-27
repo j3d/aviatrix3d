@@ -20,13 +20,13 @@ import org.j3d.maths.vector.Vector3d;
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
 import org.j3d.renderer.aviatrix3d.nodes.SortedPointArray;
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
 import org.j3d.util.DataUtils;
 
 /**

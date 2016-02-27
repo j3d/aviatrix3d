@@ -17,7 +17,7 @@ import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
 import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
 import org.j3d.aviatrix3d.pipeline.graphics.NullCullStage;
 import org.j3d.aviatrix3d.pipeline.graphics.SimpleTransparencySortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.ViewportResizeManager;
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 

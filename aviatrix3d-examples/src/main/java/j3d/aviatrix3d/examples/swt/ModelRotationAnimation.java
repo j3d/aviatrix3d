@@ -2,12 +2,11 @@ package j3d.aviatrix3d.examples.swt;
 
 // Standard imports
 import org.j3d.maths.vector.Matrix4d;
-import org.j3d.maths.vector.Vector3d;
 
 // Application Specific imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.pipeline.graphics.ViewportResizeManager;
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
 import org.j3d.util.MatrixUtils;
 
 /**

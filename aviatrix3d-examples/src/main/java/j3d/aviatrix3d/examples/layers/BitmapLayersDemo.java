@@ -6,17 +6,13 @@ import java.awt.event.*;
 
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
-import org.j3d.aviatrix3d.pipeline.graphics.NullCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.SimpleTransparencySortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
+import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
@@ -32,7 +28,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
  * @version $Revision: 1.2 $
  */
 public class BitmapLayersDemo extends Frame
-    implements WindowListener
+    implements WindowListener, ApplicationUpdateObserver
 {
     /** bitwise descriptions for each character of the alphabet */
     private byte CHAR_RASTERS[][] =
@@ -147,6 +143,8 @@ public class BitmapLayersDemo extends Frame
     /** Our drawing surface */
     private GraphicsOutputDevice surface;
 
+    private ViewportResizeManager resizeManager;
+
     public BitmapLayersDemo()
     {
         super("2D Bitmaps Aviatrix3D Demo");
@@ -171,6 +169,8 @@ public class BitmapLayersDemo extends Frame
      */
     private void setupAviatrix()
     {
+        resizeManager = new ViewportResizeManager();
+
         // Assemble a simple single-threaded pipeline.
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
@@ -178,8 +178,11 @@ public class BitmapLayersDemo extends Frame
         culler.setOffscreenCheckEnabled(false);
 
         GraphicsSortStage sorter = new SimpleTransparencySortStage();
+//        GraphicsSortStage sorter = new NullSortStage();
         surface = new DebugAWTSurface(caps);
         surface.setColorClearNeeded(false);  // we're using a background
+        surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
 
         pipeline.setCuller(culler);
@@ -192,7 +195,7 @@ public class BitmapLayersDemo extends Frame
         // Render manager
         sceneManager = new SingleThreadRenderManager();
         sceneManager.addDisplay(displayManager);
-        sceneManager.setMinimumFrameInterval(10);
+        sceneManager.setMinimumFrameInterval(100);
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
@@ -248,6 +251,8 @@ public class BitmapLayersDemo extends Frame
         view.setDimensions(0, 0, 500, 500);
         view.setScene(scene);
 
+        resizeManager.addManagedViewport(view);
+
         SimpleLayer layer = new SimpleLayer();
         layer.setViewport(view);
 
@@ -259,58 +264,58 @@ public class BitmapLayersDemo extends Frame
     // Methods defined by WindowListener
     //---------------------------------------------------------------
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowActivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowClosed(WindowEvent evt)
     {
     }
 
-    /**
-     * Exit the application
-     *
-     * @param evt The event that caused this method to be called.
-     */
+    @Override
     public void windowClosing(WindowEvent evt)
     {
         sceneManager.shutdown();
         System.exit(0);
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeactivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeiconified(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowIconified(WindowEvent evt)
     {
     }
 
-    /**
-     * When the window is opened, start everything up.
-     */
+    @Override
     public void windowOpened(WindowEvent evt)
     {
         sceneManager.setEnabled(true);
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by ApplicationUpdateObserver
+    //---------------------------------------------------------------
+
+    @Override
+    public void updateSceneGraph()
+    {
+        resizeManager.sendResizeUpdates();
+    }
+
+    @Override
+    public void appShutdown()
+    {
+        // do nothing
     }
 
     //---------------------------------------------------------------
