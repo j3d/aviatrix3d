@@ -22,6 +22,7 @@ import org.j3d.util.ErrorReporter;
 import org.j3d.util.I18nManager;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -44,16 +45,13 @@ public class OpenALAudioDeviceTest
     @Mock
     private OpenALProvider mockProvider;
 
-    @Mock
     private AL mockAL;
 
     @Mock
     private ALC mockALC;
 
-    @Mock
     private ALCcontext mockContext;
 
-    @Mock
     private ALCdevice mockDevice;
 
     @Mock
@@ -66,6 +64,15 @@ public class OpenALAudioDeviceTest
 
         I18nManager intl_mgr = I18nManager.getManager();
         intl_mgr.setApplication("OpenALAudioDeviceTest", "config.i18n.org-j3d-aviatrix3d-resources-core");
+
+        AL al = ALFactory.getAL();
+        mockAL = spy(al);
+
+        ALCcontext context = ALCcontext.create();
+        mockContext = spy(context);
+
+        ALCdevice device = ALCdevice.create();
+        mockDevice = spy(device);
 
         when(mockProvider.getAL()).thenReturn(mockAL);
         when(mockProvider.getALC()).thenReturn(mockALC);
