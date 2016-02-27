@@ -94,9 +94,6 @@ public class StandardRenderingProcessorTest
     {
         MainCanvasDescriptor test_descriptor = new MainCanvasDescriptor();
 
-        // context.getCurrent() returns null here to indicate no current context
-        when(mockContext.makeCurrent()).thenReturn(GLContext.CONTEXT_CURRENT);
-
         StandardRenderingProcessor class_under_test = new StandardRenderingProcessor(mockOutputDevice);
         class_under_test.setOwnerBuffer(test_descriptor);
 
@@ -107,9 +104,6 @@ public class StandardRenderingProcessorTest
     public void testPrepareDataAlreadyTerminated() throws Exception
     {
         MainCanvasDescriptor test_descriptor = new MainCanvasDescriptor();
-
-        // context.getCurrent() returns null here to indicate no current context
-        when(mockContext.makeCurrent()).thenReturn(GLContext.CONTEXT_NOT_CURRENT);
 
         StandardRenderingProcessor class_under_test = new StandardRenderingProcessor(mockOutputDevice);
         class_under_test.setOwnerBuffer(test_descriptor);
@@ -123,9 +117,6 @@ public class StandardRenderingProcessorTest
     {
         MainCanvasDescriptor test_descriptor = new MainCanvasDescriptor();
 
-        // context.getCurrent() returns null here to indicate no current context
-        when(mockContext.makeCurrent()).thenReturn(GLContext.CONTEXT_CURRENT_NEW);
-
         StandardRenderingProcessor class_under_test = new StandardRenderingProcessor(mockOutputDevice);
         class_under_test.setOwnerBuffer(test_descriptor);
 
@@ -135,16 +126,13 @@ public class StandardRenderingProcessorTest
 
         class_under_test.reinitialize(mockContext);
 
-        assertEquals(mockGL2.getCallCount(), 0, "Should not have had GL calls during reinit");
+        assertTrue(mockGL2.getCallCount() > 0, "Should have had some GL calls during reinit");
     }
 
     @Test(groups = "unit")
     public void testDispose() throws Exception
     {
         MainCanvasDescriptor test_descriptor = new MainCanvasDescriptor();
-
-        // context.getCurrent() returns null here to indicate no current context
-        when(mockContext.makeCurrent()).thenReturn(GLContext.CONTEXT_CURRENT);
 
         StandardRenderingProcessor class_under_test = new StandardRenderingProcessor(mockOutputDevice);
         class_under_test.setOwnerBuffer(test_descriptor);
@@ -158,8 +146,6 @@ public class StandardRenderingProcessorTest
     public void testRenderNoContent() throws Exception
     {
         MainCanvasDescriptor test_descriptor = new MainCanvasDescriptor();
-
-        when(mockContext.makeCurrent()).thenReturn(GLContext.CONTEXT_CURRENT);
 
         GraphicsProfilingData test_profile_data = new GraphicsProfilingData();
         StandardRenderingProcessor class_under_test = new StandardRenderingProcessor(mockOutputDevice);
