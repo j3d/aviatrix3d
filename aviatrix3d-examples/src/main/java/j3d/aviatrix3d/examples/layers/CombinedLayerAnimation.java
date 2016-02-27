@@ -6,7 +6,8 @@ import org.j3d.maths.vector.Vector3d;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
-import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
+
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportLayoutManager;
 
 import org.j3d.util.MatrixUtils;
 
@@ -40,14 +41,14 @@ public class CombinedLayerAnimation
     /** Utility for doing matrix rotations */
     private MatrixUtils matrixUtils;
 
-    private ViewportResizeManager resizeManager;
+    private ViewportLayoutManager resizeManager;
 
     /**
      *
      */
     public CombinedLayerAnimation(TransformGroup rotator,
                                   TransformGroup mover,
-                                  ViewportResizeManager resizer)
+                                  ViewportLayoutManager resizer)
     {
         translation = new Vector3d();
         matrix = new Matrix4d();

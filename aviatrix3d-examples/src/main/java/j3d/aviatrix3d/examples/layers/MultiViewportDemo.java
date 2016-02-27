@@ -6,17 +6,13 @@ import java.awt.event.*;
 
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportLayoutManager;
 
 // Local imports
 import org.j3d.aviatrix3d.*;
 
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
-import org.j3d.aviatrix3d.pipeline.graphics.NullCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.NullSortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
+import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
 
@@ -31,7 +27,7 @@ import org.j3d.aviatrix3d.management.SingleDisplayCollection;
  * @version $Revision: 1.5 $
  */
 public class MultiViewportDemo extends Frame
-    implements WindowListener
+    implements WindowListener, ApplicationUpdateObserver
 {
     private static final float[] RED = {1, 0, 0};
     private static final float[] GREEN = {0, 1, 0};
@@ -45,6 +41,8 @@ public class MultiViewportDemo extends Frame
 
     /** Our drawing surface */
     private GraphicsOutputDevice surface;
+
+    private ViewportLayoutManager resizeManager;
 
     public MultiViewportDemo()
     {
@@ -70,6 +68,8 @@ public class MultiViewportDemo extends Frame
      */
     private void setupAviatrix()
     {
+        resizeManager = new ViewportLayoutManager();
+
         // Assemble a simple single-threaded pipeline.
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
@@ -78,6 +78,8 @@ public class MultiViewportDemo extends Frame
 
         GraphicsSortStage sorter = new NullSortStage();
         surface = new DebugAWTSurface(caps);
+        surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
 
         pipeline.setCuller(culler);
@@ -90,7 +92,8 @@ public class MultiViewportDemo extends Frame
         // Render manager
         sceneManager = new SingleThreadRenderManager();
         sceneManager.addDisplay(displayManager);
-        sceneManager.setMinimumFrameInterval(100);
+        sceneManager.setMinimumFrameInterval(500);
+        sceneManager.setApplicationObserver(this);
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
@@ -103,9 +106,6 @@ public class MultiViewportDemo extends Frame
      */
     private void setupSceneGraph()
     {
-        // View group
-
-
         // Flat panel that has the viewable object as the demo
         float[] coord = { 0, 0, -1, 0.25f, 0, -1, 0, 0.25f, -1 };
         float[] normal = { 0, 0, 1, 0, 0, 1, 0, 0, 1 };
@@ -248,6 +248,11 @@ public class MultiViewportDemo extends Frame
         layer.addViewport(view3);
         layer.addViewport(view4);
 
+        resizeManager.addManagedViewport(view1, 0, 0, 0.5f, 0.5f);
+        resizeManager.addManagedViewport(view2, 0.5f, 0, 0.5f, 0.5f);
+        resizeManager.addManagedViewport(view3, 0, 0.5f, 0.5f, 0.5f);
+        resizeManager.addManagedViewport(view4, 0.5f, 0.5f, 0.5f, 0.5f);
+
         Layer[] layers = { layer };
         displayManager.setLayers(layers, 1);
     }
@@ -256,58 +261,58 @@ public class MultiViewportDemo extends Frame
     // Methods defined by WindowListener
     //---------------------------------------------------------------
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowActivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowClosed(WindowEvent evt)
     {
     }
 
-    /**
-     * Exit the application
-     *
-     * @param evt The event that caused this method to be called.
-     */
+    @Override
     public void windowClosing(WindowEvent evt)
     {
         sceneManager.shutdown();
         System.exit(0);
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeactivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeiconified(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowIconified(WindowEvent evt)
     {
     }
 
-    /**
-     * When the window is opened, start everything up.
-     */
+    @Override
     public void windowOpened(WindowEvent evt)
     {
         sceneManager.setEnabled(true);
+    }
+
+    //---------------------------------------------------------------
+    // Methods defined by ApplicationUpdateObserver
+    //---------------------------------------------------------------
+
+    @Override
+    public void updateSceneGraph()
+    {
+        resizeManager.sendResizeUpdates();
+    }
+
+    @Override
+    public void appShutdown()
+    {
+        // do nothing
     }
 
     //---------------------------------------------------------------

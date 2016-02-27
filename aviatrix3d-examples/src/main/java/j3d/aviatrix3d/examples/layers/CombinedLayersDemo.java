@@ -10,16 +10,12 @@ import org.j3d.maths.vector.Vector3d;
 // Local imports
 import org.j3d.aviatrix3d.*;
 
-import org.j3d.aviatrix3d.output.graphics.SimpleAWTSurface;
 import org.j3d.aviatrix3d.output.graphics.DebugAWTSurface;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.DefaultGraphicsPipeline;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsOutputDevice;
-import org.j3d.aviatrix3d.pipeline.graphics.NullCullStage;
-import org.j3d.aviatrix3d.pipeline.graphics.SimpleTransparencySortStage;
-import org.j3d.aviatrix3d.pipeline.graphics.GraphicsSortStage;
+import org.j3d.aviatrix3d.pipeline.graphics.*;
 import org.j3d.aviatrix3d.management.SingleThreadRenderManager;
 import org.j3d.aviatrix3d.management.SingleDisplayCollection;
+
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportLayoutManager;
 import org.j3d.util.MatrixUtils;
 
 /**
@@ -52,6 +48,8 @@ public class CombinedLayersDemo extends Frame
     /** Our drawing surface */
     private GraphicsOutputDevice surface;
 
+    private ViewportLayoutManager resizeManager;
+
     public CombinedLayersDemo()
     {
         super("Combined Layer/Viewport Aviatrix3D Demo");
@@ -76,6 +74,8 @@ public class CombinedLayersDemo extends Frame
      */
     private void setupAviatrix()
     {
+        resizeManager = new ViewportLayoutManager();
+
         // Assemble a simple single-threaded pipeline.
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
 
@@ -85,6 +85,8 @@ public class CombinedLayersDemo extends Frame
         GraphicsSortStage sorter = new SimpleTransparencySortStage();
         surface = new DebugAWTSurface(caps);
         surface.setColorClearNeeded(false);  // we're using a background
+        surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
 
         pipeline.setCuller(culler);
@@ -165,6 +167,8 @@ public class CombinedLayersDemo extends Frame
 
         SimpleLayer back_layer = new SimpleLayer();
         back_layer.setViewport(view1);
+
+        resizeManager.addManagedViewport(view1, 0, 0, 1, 1);
 
         // The front primary layer. Contains two viewports. One has layers
         // the other is a single view into the middle layer of the other
@@ -304,8 +308,6 @@ public class CombinedLayersDemo extends Frame
         SimpleViewportLayer layer2_3 = new SimpleViewportLayer();
         layer2_3.setScene(scene2_3);
 
-        ViewportLayer[] view_layers = { layer2_1, layer2_2, layer2_3 };
-
         CompositeViewport c_view1 = new CompositeViewport();
         c_view1.setDimensions(500, 100, 200, 200);
         c_view1.addViewportLayer(layer2_1);
@@ -349,11 +351,15 @@ public class CombinedLayersDemo extends Frame
         front_layer.addViewport(c_view1);
         front_layer.addViewport(c_view2);
 
+        resizeManager.addManagedViewport(c_view1, 0, 0, 0.5f, 0.5f);
+        resizeManager.addManagedViewport(c_view2, 0, 0.5f, 0.5f, 0.5f);
+
         Layer[] layers = { back_layer, front_layer };
         displayManager.setLayers(layers, 2);
 
-        CombinedLayerAnimation anim = new CombinedLayerAnimation(layer1_group,
-                                                                 layer2_2_group);
+        CombinedLayerAnimation anim =
+            new CombinedLayerAnimation(layer1_group, layer2_2_group, resizeManager);
+
         sceneManager.setApplicationObserver(anim);
     }
 
@@ -361,55 +367,39 @@ public class CombinedLayersDemo extends Frame
     // Methods defined by WindowListener
     //---------------------------------------------------------------
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowActivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowClosed(WindowEvent evt)
     {
     }
 
-    /**
-     * Exit the application
-     *
-     * @param evt The event that caused this method to be called.
-     */
+    @Override
     public void windowClosing(WindowEvent evt)
     {
         sceneManager.shutdown();
         System.exit(0);
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeactivated(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowDeiconified(WindowEvent evt)
     {
     }
 
-    /**
-     * Ignored
-     */
+    @Override
     public void windowIconified(WindowEvent evt)
     {
     }
 
-    /**
-     * When the window is opened, start everything up.
-     */
+    @Override
     public void windowOpened(WindowEvent evt)
     {
         sceneManager.setEnabled(true);
