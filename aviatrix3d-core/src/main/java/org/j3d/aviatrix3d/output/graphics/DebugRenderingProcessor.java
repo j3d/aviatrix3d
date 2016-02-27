@@ -998,6 +998,8 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
             errorReporter.messageReport(msg);
         }
+
+        super.setupViewport(gl, data);
     }
 
     @Override
@@ -1025,7 +1027,6 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
             errorReporter.messageReport(msg);
         }
-
 
         super.renderViewpoint(gl, data);
     }
