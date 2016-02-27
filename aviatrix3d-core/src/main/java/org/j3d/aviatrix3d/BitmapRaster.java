@@ -69,9 +69,6 @@ public class BitmapRaster extends Raster
     /** Buffer for bitmap pixel data */
     private ByteBuffer pixelBuffer;
 
-    /** Local reference to the pixel data */
-    private byte[] pixels;
-
     /** The origin coordinate to use with the bitmap */
     private float[] origin;
 
@@ -123,11 +120,6 @@ public class BitmapRaster extends Raster
     // Methods defined by GeometryRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Render the geometry now.
-     *
-     * @param gl The GL context to render with
-     */
     @Override
     public void render(GL2 gl)
     {
@@ -144,25 +136,7 @@ public class BitmapRaster extends Raster
     // Methods defined by LeafPickTarget
     //---------------------------------------------------------------
 
-    /**
-     * Check for all intersections against this geometry using a line segment and
-     * return the exact distance away of the closest picking point. Default
-     * implementation always returns false indicating that nothing was found.
-     * Derived classes should override and provide a real implementation.
-     *
-     * @param start The start point of the segment
-     * @param end The end point of the segment
-     * @param findAny True if it only has to find a single intersection and can
-     *   exit as soon as it finds the first intersection. False if it must find
-     *   the closest polygon
-     * @param dataOut An array to put the data in for the intersection. Exact
-     *   format is described by the flags
-     * @param dataOutFlags A set of derived-class specific flags describing what
-     *   data should be included in the output array
-     * @return True if an intersection was found according to the input request
-     * @throws NotPickableException This object has been marked as non pickable,
-     *   but you decided to try to call the method anyway
-     */
+    @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
                                    boolean findAny,
@@ -175,25 +149,7 @@ public class BitmapRaster extends Raster
         return false;
     }
 
-    /**
-     * Check for all intersections against this geometry using a line ray and
-     * return the exact distance away of the closest picking point. Default
-     * implementation always returns false indicating that nothing was found.
-     * Derived classes should override and provide a real implementation.
-     *
-     * @param origin The start point of the ray
-     * @param direction The direction vector of the ray
-     * @param findAny True if it only has to find a single intersection and can
-     *   exit as soon as it finds the first intersection. False if it must find
-     *   the closest polygon
-     * @param dataOut An array to put the data in for the intersection. Exact
-     *   format is described by the flags
-     * @param dataOutFlags A set of derived-class specific flags describing what
-     *   data should be included in the output array
-     * @return True if an intersection was found according to the input request
-     * @throws NotPickableException This object has been marked as non pickable,
-     *   but you decided to try to call the method anyway
-     */
+    @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
                                boolean findAny,
@@ -210,28 +166,9 @@ public class BitmapRaster extends Raster
     // Methods defined by Raster
     //----------------------------------------------------------
 
-    /**
-     * Update this node's bounds and then call the parent to update it's
-     * bounds. Used to propogate bounds changes from the leaves of the tree
-     * to the root. A node implementation may decide when and where to tell
-     * the parent(s)s that updates are ready.
-     */
-    protected void updateBounds()
-    {
-        if(pixels != null)
-            super.updateBounds();
-    }
-
-    /**
-     * Internal method to recalculate the implicit bounds of this Node. By
-     * default the bounds are a point sphere, so derived classes should
-     * override this method with something better.
-     */
+    @Override
     protected void recomputeBounds()
     {
-        if(pixels != null)
-            return;
-
         BoundingBox bbox = (BoundingBox)bounds;
 
         if(bounds == null)
@@ -248,13 +185,7 @@ public class BitmapRaster extends Raster
     // Methods defined by SceneGraphObject
     //----------------------------------------------------------
 
-    /**
-     * Notification that this object is live now. Overridden to make sure that
-     * the live state of the nodes represents the same state as the parent
-     * scene graph.
-     *
-     * @param state true if this should be marked as live now
-     */
+    @Override
     protected void setLive(boolean state)
     {
         // Ignore stuff that doesn't change the state
@@ -273,16 +204,7 @@ public class BitmapRaster extends Raster
     // Methods defined by Comparable
     //---------------------------------------------------------------
 
-    /**
-     * Compares this object with the specified object for order. Returns a
-     * negative integer, zero, or a positive integer as this object is less
-     * than, equal to, or greater than the specified object.
-     *
-     * @param o The objec to be compared
-     * @return -1, 0 or 1 depending on order
-     * @throws ClassCastException The specified object's type prevents it from
-     *    being compared to this Object
-     */
+    @Override
     public int compareTo(Object o)
         throws ClassCastException
     {
@@ -294,18 +216,10 @@ public class BitmapRaster extends Raster
     // Methods defined by Object
     //---------------------------------------------------------------
 
-    /**
-     * Compare this object for equality to the given object.
-     *
-     * @param o The object to be compared
-     * @return True if these represent the same values
-     */
+    @Override
     public boolean equals(Object o)
     {
-        if(!(o instanceof BitmapRaster))
-            return false;
-        else
-            return equals((BitmapRaster)o);
+        return o instanceof BitmapRaster && equals((BitmapRaster) o);
     }
 
     //----------------------------------------------------------
@@ -443,7 +357,7 @@ public class BitmapRaster extends Raster
      */
     public void getBits(byte[] bitmask)
     {
-        System.arraycopy(pixels, 0, bitmask, 0, pixelHeight * byteWidth);
+        pixelBuffer.get(bitmask, 0, pixelHeight * byteWidth);
     }
 
     /**
