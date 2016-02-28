@@ -21,6 +21,7 @@ import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
 import org.j3d.maths.vector.Vector4d;
 import org.j3d.maths.vector.AxisAngle4d;
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
 
 import org.j3d.aviatrix3d.*;
 
@@ -80,7 +81,9 @@ public class StencilShadowAnimator implements
     
     private PolygonAttributes backCulling;
     private Appearance backCullApp;
-    
+
+	private ViewportResizeManager resizeManager;
+
 	/**
 	 * Constructor
 	 */
@@ -89,7 +92,9 @@ public class StencilShadowAnimator implements
 								 Vector4d lightPos,
 								 List<SEdgeIndTriArray> meshGeomList,
 								 TransformGroup volPass1,
-								 TransformGroup volPass2) {
+								 TransformGroup volPass2,
+								 ViewportResizeManager resizer) {
+        resizeManager = resizer;
 		this.rotation = 0.0f;
 		this.lightPos = lightPos;
 		this.updateMatrix = objMatrix;
@@ -114,8 +119,7 @@ public class StencilShadowAnimator implements
     	
 		for(int j = 0; j < meshGeomList.size(); j++) {
 
-	        VertexGeometry vtxArray =
-	        	(VertexGeometry)meshGeomList.get(j);
+	        VertexGeometry vtxArray = meshGeomList.get(j);
 	        
 	        vertexType = vtxArray.getVertexType();
 
@@ -143,7 +147,9 @@ public class StencilShadowAnimator implements
      * Notification that now is a good time to update the scene graph.
      */
     public void updateSceneGraph() {
-    	
+
+        resizeManager.sendResizeUpdates();
+
         rotation = (float)((rotation + ROTATION_INC) % (2 * Math.PI));
         AxisAngle4d aa = new AxisAngle4d();
         aa.set(0, 1, 1, rotation);

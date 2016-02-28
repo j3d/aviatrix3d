@@ -35,6 +35,7 @@ import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Vector3d;
 import org.j3d.maths.vector.Vector4d;
 import org.j3d.renderer.aviatrix3d.geom.Box;
+import org.j3d.renderer.aviatrix3d.pipeline.ViewportResizeManager;
 
 // Local imports
 
@@ -73,8 +74,10 @@ public class StencilShadowDemo extends Frame
     
     /** Global position of the light */
     private Vector4d lightPos;
-    
-    /**
+
+	private ViewportResizeManager resizeManager;
+
+	/**
      * Constructor
      */
 	public StencilShadowDemo() {
@@ -101,6 +104,8 @@ public class StencilShadowDemo extends Frame
      */
     private void setupAviatrix()
     {
+		resizeManager = new ViewportResizeManager();
+
         // Assemble a simple single-threaded pipeline.
         GraphicsRenderingCapabilities caps = new GraphicsRenderingCapabilities();
         caps.stencilBits = 8;
@@ -110,6 +115,8 @@ public class StencilShadowDemo extends Frame
 
         GraphicsSortStage sorter = new StateAndTransparencyDepthSortStage();
         surface = new SimpleAWTSurface(caps);
+		surface.addGraphicsResizeListener(resizeManager);
+
         DefaultGraphicsPipeline pipeline = new DefaultGraphicsPipeline();
 
         pipeline.setCuller(culler);
@@ -122,7 +129,7 @@ public class StencilShadowDemo extends Frame
         // Render manager
         sceneManager = new SingleThreadRenderManager();
         sceneManager.addDisplay(displayManager);
-        sceneManager.setMinimumFrameInterval(0);
+        sceneManager.setMinimumFrameInterval(100);
 
         // Before putting the pipeline into run mode, put the canvas on
         // screen first.
@@ -160,7 +167,8 @@ public class StencilShadowDemo extends Frame
         							  lightPos,
         							  sceneGeomList,
         							  volumeGroupPass1,
-        							  volumeGroupPass2);
+        							  volumeGroupPass2,
+                                      resizeManager);
         		
         mainScene.addRenderPass(createNoLightScenePass(silhouetteEdgeGeom, 
         											   geomTransform,
@@ -176,7 +184,9 @@ public class StencilShadowDemo extends Frame
         MultipassViewport sceneViewport = new MultipassViewport();
         sceneViewport.setDimensions(0, 0, 500, 500);
     	sceneViewport.setScene(mainScene);
-    	
+
+		resizeManager.addManagedViewport(sceneViewport);
+
     	// Set layer
     	SimpleLayer mainLayer = new SimpleLayer();
     	mainLayer.setViewport(sceneViewport);
