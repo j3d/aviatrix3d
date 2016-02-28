@@ -165,17 +165,17 @@ public abstract class BaseStateSortStage extends BaseSortStage
 
         stateComparator = new StateSortComparator();
 
-        currentLights = new Stack<VisualDetails>();
-        keepLights = new Stack<VisualDetails>();
-        oldLights = new Stack<VisualDetails>();
+        currentLights = new Stack<>();
+        keepLights = new Stack<>();
+        oldLights = new Stack<>();
 
-        lightIdMap = new HashMap<VisualDetails, Integer>();
+        lightIdMap = new HashMap<>();
         newLights = new VisualDetails[MAX_GL_LIGHTS];
 
         currentClipPlanes = new HashSet();
         keepClipPlanes = new HashSet();
         oldClipPlanes = new HashSet();
-        clipIdMap = new HashMap<VisualDetails, Integer>();
+        clipIdMap = new HashMap<>();
         clipTmp = new Object[24];
         newClipPlanes = new VisualDetails[32];
 
@@ -428,8 +428,8 @@ public abstract class BaseStateSortStage extends BaseSortStage
         {
             for(int i = 0; i < num_old; i++)
             {
-                VisualDetails ld = (VisualDetails)oldLights.pop();
-                Integer l_id = (Integer)lightIdMap.remove(ld);
+                VisualDetails ld = oldLights.pop();
+                Integer l_id = lightIdMap.remove(ld);
 
                 instr.renderList[idx].renderable = ld.getRenderable();
                 instr.renderList[idx].id = l_id.intValue();
@@ -452,11 +452,12 @@ public abstract class BaseStateSortStage extends BaseSortStage
 
                 instr.renderList[idx].renderable = ld.getRenderable();
 
-                System.arraycopy(ld.getTransform(),
-                                 0,
-                                 instr.renderList[idx].transform,
-                                 0,
-                                 16);
+                float[] src_tx = ld.getTransform();
+
+                for(int k = 0; k < 16; k++)
+                {
+                    instr.renderList[idx].transform[k] = src_tx[k];
+                }
 
                 lightIdMap.put(ld, new Integer(lastGlobalId));
                 instr.renderList[idx].id = lastGlobalId++;
@@ -517,7 +518,7 @@ public abstract class BaseStateSortStage extends BaseSortStage
             for(int i = 0; i < num_old; i++)
             {
                 VisualDetails ld = (VisualDetails)clipTmp[i];
-                Integer l_id = (Integer)clipIdMap.remove(ld);
+                Integer l_id = clipIdMap.remove(ld);
 
                 instr.renderList[idx].renderable = ld.getRenderable();
                 instr.renderList[idx].id = l_id.intValue();
@@ -541,11 +542,12 @@ public abstract class BaseStateSortStage extends BaseSortStage
 
                 instr.renderList[idx].renderable = ld.getRenderable();
 
-                System.arraycopy(ld.getTransform(),
-                                 0,
-                                 instr.renderList[idx].transform,
-                                 0,
-                                 16);
+                float[] src_tx = ld.getTransform();
+
+                for(int k = 0; k < 16; k++)
+                {
+                    instr.renderList[idx].transform[k] = src_tx[k];
+                }
 
                 clipIdMap.put(ld, new Integer(lastGlobalId));
                 instr.renderList[idx].id = lastGlobalId++;
@@ -1284,8 +1286,8 @@ public abstract class BaseStateSortStage extends BaseSortStage
         {
             for(int i = 0; i < num_lights; i++)
             {
-                VisualDetails ld = (VisualDetails)currentLights.pop();
-                Integer l_id = (Integer)lightIdMap.remove(ld);
+                VisualDetails ld = currentLights.pop();
+                Integer l_id = lightIdMap.remove(ld);
 
                 instr.renderList[idx].renderable = ld.getRenderable();
                 instr.renderList[idx].id = l_id.intValue();
