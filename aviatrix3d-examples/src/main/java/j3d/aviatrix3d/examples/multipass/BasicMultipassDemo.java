@@ -42,7 +42,7 @@ public class BasicMultipassDemo extends Frame
 
     public BasicMultipassDemo()
     {
-        super("Basic Aviatrix Demo");
+        super("Basic Aviatrix Multipass Rendering Demo");
 
         setLayout(new BorderLayout());
         addWindowListener(this);
