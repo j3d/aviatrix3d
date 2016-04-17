@@ -18,7 +18,7 @@
         <dependency>
             <groupId>org.j3d</groupId>
             <artifactId>j3d-geom</artifactId>
-            <version>3.0.0-RC1</version>
+            <version>${j3d.tools.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

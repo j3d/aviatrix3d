@@ -52,6 +52,7 @@
         <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
         <jogamp.version>2.3.2</jogamp.version>
         <javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
+        <j3d.tools.version>3.0.0</j3d.tools.version>
     </properties>
 
     <scm>
@@ -250,7 +251,7 @@
         <dependency>
             <groupId>org.j3d</groupId>
             <artifactId>j3d-core</artifactId>
-            <version>3.0.0</version>
+            <version>${j3d.tools.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jogamp.gluegen</groupId>

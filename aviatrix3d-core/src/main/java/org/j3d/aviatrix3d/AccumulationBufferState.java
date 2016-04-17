@@ -122,71 +122,36 @@ public class AccumulationBufferState extends BufferState
     // Methods defined by BufferStateRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Get the type of buffer this state represents.
-     *
-     * @return One of the _BUFFER constants
-     */
     @Override
     public int getBufferType()
     {
         return ACCUMULATION_BUFFER;
     }
 
-    /**
-     * Get the GL buffer bit flag that this state class represents. Used for
-     * bulk clearing all the states at once.
-     *
-     * @return The bit state constant for Stencil Buffers
-     */
     @Override
     public int getBufferBitMask()
     {
         return GL2.GL_ACCUM_BUFFER_BIT;
     }
 
-    /**
-     * Check to see if this buffer should be cleared at the start of this run.
-     * If it should be, add the bit mask from this state to the global list.
-     *
-     * @return true if the state should be cleared
-     */
     @Override
     public boolean checkClearBufferState()
     {
         return clearState;
     }
 
-    /**
-     * Issue ogl commands needed for this buffer to set the initial state,
-     * including the initial enabling.
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void setBufferState(GL2 gl)
     {
         gl.glClearAccum(red, green, blue, alpha);
     }
 
-    /**
-     * Issue ogl commands needed for this component to change the state,
-     * assuming that it is already enabled.
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void updateBufferState(GL2 gl)
     {
         gl.glAccum(function, value);
     }
 
-    /**
-     * Restore all state to the default values and copy the buffer to the
-     * colour buffer.
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void clearBufferState(GL2 gl)
     {
@@ -197,16 +162,6 @@ public class AccumulationBufferState extends BufferState
     // Methods defined by Comparable
     //---------------------------------------------------------------
 
-    /**
-     * Compares this object with the specified object for order. Returns a
-     * negative integer, zero, or a positive integer as this object is less
-     * than, equal to, or greater than the specified object.
-     *
-     * @param o The objec to be compared
-     * @return -1, 0 or 1 depending on order
-     * @throws ClassCastException The specified object's type prevents it from
-     *    being compared to this Object
-     */
     @Override
     public int compareTo(Object o)
         throws ClassCastException
@@ -219,19 +174,10 @@ public class AccumulationBufferState extends BufferState
     // Methods defined by Object
     //---------------------------------------------------------------
 
-    /**
-     * Compare this object for equality to the given object.
-     *
-     * @param o The object to be compared
-     * @return True if these represent the same values
-     */
     @Override
     public boolean equals(Object o)
     {
-        if(!(o instanceof AccumulationBufferState))
-            return false;
-        else
-            return equals((AccumulationBufferState)o);
+        return o instanceof AccumulationBufferState && equals((AccumulationBufferState) o);
 
     }
 
