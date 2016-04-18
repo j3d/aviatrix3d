@@ -11,12 +11,12 @@
 
     <name>Aviatrix3D</name>
     <description>A set of Java-based software libraries for 3D graphics rendering</description>
-    <url>http://code.j3d.org</url>
+    <url>http://aviatrix3d.j3d.org</url>
     <licenses>
         <license>
             <distribution>repo</distribution>
-            <name>GNU LGPL 2.1</name>
-            <comments>Copyright j3d.org 2000-2013</comments>
+            <name>GNU LGPL v2.1</name>
+            <comments>Copyright j3d.org 2000-2016</comments>
         </license>
     </licenses>
     <developers>
