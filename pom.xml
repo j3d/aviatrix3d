@@ -73,14 +73,6 @@
     </pluginRepositories>
     <repositories>
         <repository>
-            <id>eclipse</id>
-            <name>Eclipse Repository</name>
-            <url>http://repo.eclipse.org/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
             <id>central</id>
             <name>Main Repository</name>
             <url>http://repo1.maven.org/maven2/</url>
@@ -218,7 +210,7 @@
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.5</version>
+                <version>1.6.7</version>
                 <extensions>true</extensions>
                 <configuration>
                     <serverId>ossrh</serverId>
