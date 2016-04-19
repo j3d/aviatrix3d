@@ -461,7 +461,7 @@ public abstract class BaseSortStage implements GraphicsSortStage
                 tmp[i] = new GraphicsDetails();
 
             instr.renderList = tmp;
-            instr.renderOps = new int[instr_count];
+            instr.renderOps = new RenderOp[instr_count];
         }
 
         if(terminate)
@@ -501,7 +501,7 @@ public abstract class BaseSortStage implements GraphicsSortStage
             reqdSize += REALLOC_SIZE;
 
         GraphicsDetails[] tmp = new GraphicsDetails[reqdSize];
-        int[] roTmp = new int[reqdSize];
+        RenderOp[] roTmp = new RenderOp[reqdSize];
 
         System.arraycopy(instr.renderList, 0, tmp, 0, instr.renderList.length);
         System.arraycopy(instr.renderOps, 0, roTmp, 0, instr.renderOps.length);
@@ -697,6 +697,7 @@ public abstract class BaseSortStage implements GraphicsSortStage
                 }
             }
 
+            view_state = details.buffers[i].viewportState;
             general_state = details.buffers[i].generalBufferState;
             color_state = details.buffers[i].colorBufferState;
             depth_state = details.buffers[i].depthBufferState;

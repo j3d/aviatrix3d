@@ -145,7 +145,7 @@ public abstract class BaseRenderingProcessor
     protected GraphicsDetails[] renderableList;
 
     /** Local storage of the nodes that need to be rendered */
-    protected int[] operationList;
+    protected RenderOp[] operationList;
 
     /** Number of items in the renderable list */
     protected int numRenderables;
@@ -414,8 +414,7 @@ public abstract class BaseRenderingProcessor
     /**
      * Update the list of items to be rendered to the current list. Draw them
      * at the next oppourtunity.
-     *
-     * @param nodes The list of nodes in sorted order
+     *  @param nodes The list of nodes in sorted order
      * @param renderOps Operation to perform on each node
      * @param numValid The number of valid items in the array
      * @param envData environment data to be rendered with this scene
@@ -423,7 +422,7 @@ public abstract class BaseRenderingProcessor
     @Override
     public void setDrawableObjects(GraphicsRequestData otherData,
                                    GraphicsDetails[] nodes,
-                                   int[] renderOps,
+                                   RenderOp[] renderOps,
                                    int numValid,
                                    GraphicsEnvironmentData[] envData)
     {
@@ -992,14 +991,14 @@ public abstract class BaseRenderingProcessor
         }
 
         int renderableCount = numRenderables;
-        int[] opList = operationList;
+        RenderOp[] opList = operationList;
         GraphicsDetails[] renderables = renderableList;
 
         for(int i = 0; i < renderableCount && !terminate; i++)
         {
             switch(opList[i])
             {
-                case RenderOp.START_SHADER_PROGRAM:
+                case START_SHADER_PROGRAM:
                     ShaderComponentRenderable prog = (ShaderComponentRenderable)renderables[i].renderable;
 
                     if(!prog.isValid(gl))

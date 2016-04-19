@@ -44,7 +44,7 @@ public class RenderInstructions
     public RenderInstructions copyOf;
 
     /** Operation to perform on each node */
-    public int[] renderOps;
+    public RenderOp[] renderOps;
 
     /** The number of valid items in the array */
     public int numValid;
@@ -55,7 +55,7 @@ public class RenderInstructions
      */
     public RenderInstructions()
     {
-        renderOps = new int[LIST_START_SIZE];
+        renderOps = new RenderOp[LIST_START_SIZE];
     }
 
 }

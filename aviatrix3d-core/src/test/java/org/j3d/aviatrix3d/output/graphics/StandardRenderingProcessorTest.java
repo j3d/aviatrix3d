@@ -176,7 +176,7 @@ public class StandardRenderingProcessorTest
         // Double up because we have start and stop render ops next.
         GraphicsDetails[] test_nodes = { test_renderable_details, test_renderable_details };
 
-        int[] test_ops = { RenderOp.START_RENDER, RenderOp.STOP_RENDER };
+        RenderOp[] test_ops = { RenderOp.START_RENDER, RenderOp.STOP_RENDER };
 
         GraphicsEnvironmentData test_env_data = new GraphicsEnvironmentData();
         test_env_data.viewProjectionType = ViewEnvironmentCullable.PERSPECTIVE_PROJECTION;

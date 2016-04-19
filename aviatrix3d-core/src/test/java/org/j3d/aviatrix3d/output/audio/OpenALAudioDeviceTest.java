@@ -222,7 +222,7 @@ public class OpenALAudioDeviceTest
         test_instructions.renderData.viewTransform.setIdentity();
         test_instructions.renderList = new AudioDetails[] { test_details, test_details };
         test_instructions.numValid = 2;
-        test_instructions.renderOps = new int[] { RenderOp.START_RENDER, RenderOp.STOP_RENDER };
+        test_instructions.renderOps = new RenderOp[] { RenderOp.START_RENDER, RenderOp.STOP_RENDER };
 
         class_under_test.setDrawableObjects(null, test_instructions);
 

@@ -143,7 +143,7 @@ public class NullAudioSortStage implements AudioSortStage
                 tmp[i] = new AudioDetails();
 
             instr.renderList = tmp;
-            instr.renderOps = new int[req_size];
+            instr.renderOps = new RenderOp[req_size];
         }
 
         int idx = 0;

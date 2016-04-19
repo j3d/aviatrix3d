@@ -130,7 +130,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
 
             switch(operationList[i])
             {
-                case RenderOp.START_MULTIPASS:
+                case START_MULTIPASS:
                     data = environmentList[data_index];
 
                     // If this is not the first layer, render to one of the
@@ -146,7 +146,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     }
                     break;
 
-                case RenderOp.STOP_MULTIPASS:
+                case STOP_MULTIPASS:
                     // If not the first layer, copy everything back and then
                     // reset the drawing and read layers back to the normal
                     // rendering setup.
@@ -165,7 +165,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     }
                     break;
 
-                case RenderOp.START_MULTIPASS_PASS:
+                case START_MULTIPASS_PASS:
                     if(clear_buffer_bits != 0)
                         gl.glClear(clear_buffer_bits);
 
@@ -176,22 +176,22 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     preMPPassEnvironmentDraw(gl, data);
                     break;
 
-                case RenderOp.STOP_MULTIPASS_PASS:
+                case STOP_MULTIPASS_PASS:
                     data = environmentList[mp_data_index];
                     postMPPassEnvironmentDraw(gl, data);
                     break;
 
 
-                case RenderOp.SET_VIEWPORT_STATE:
+                case SET_VIEWPORT_STATE:
                     ((ViewportRenderable)renderableList[i].renderable).render(gl);
                     break;
 
-                case RenderOp.STOP_VIEWPORT_STATE:
+                case STOP_VIEWPORT_STATE:
                     data = environmentList[mp_data_index];
                     setupMultipassViewport(gl, data);
                     break;
 
-                case RenderOp.START_BUFFER_STATE:
+                case START_BUFFER_STATE:
                     buffer = (BufferStateRenderable)renderableList[i].renderable;
                     buffer.setBufferState(gl);
 
@@ -199,7 +199,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                         clear_buffer_bits |= buffer.getBufferBitMask();
                     break;
 
-                case RenderOp.SET_BUFFER_CLEAR:
+                case SET_BUFFER_CLEAR:
                     buffer = (BufferStateRenderable)renderableList[i].renderable;
 
                     if(buffer.checkClearBufferState())
@@ -208,7 +208,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                         clear_buffer_bits &= ~buffer.getBufferBitMask();
                     break;
 
-                case RenderOp.CHANGE_BUFFER_STATE:
+                case CHANGE_BUFFER_STATE:
                     buffer = (BufferStateRenderable)renderableList[i].renderable;
                     buffer.updateBufferState(gl);
 
@@ -218,13 +218,13 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                         clear_buffer_bits &= ~buffer.getBufferBitMask();
                     break;
 
-                case RenderOp.STOP_BUFFER_STATE:
+                case STOP_BUFFER_STATE:
                     buffer = (BufferStateRenderable)renderableList[i].renderable;
                     buffer.clearBufferState(gl);
                     clear_buffer_bits &= ~buffer.getBufferBitMask();
                     break;
 
-                case RenderOp.START_LAYER:
+                case START_LAYER:
                     gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
 
                     // EMF: there might be multiple layers per viewport
@@ -242,7 +242,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     preLayerEnvironmentDraw(gl, data);
                     break;
 
-                case RenderOp.STOP_LAYER:
+                case STOP_LAYER:
                     data = environmentList[layer_data_index];
 
                     // TODO: Not sure this is right, but this is when postDraw gets called
@@ -252,18 +252,18 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     first_layer = false;
                     break;
 
-                case RenderOp.START_VIEWPORT:
+                case START_VIEWPORT:
                     data = environmentList[data_index];
                     // note that data_index is incremented within START_LAYER
 
                     setupViewport(gl, data);
                     break;
 
-                case RenderOp.STOP_VIEWPORT:
+                case STOP_VIEWPORT:
                     // Do nothing
                     break;
 
-                case RenderOp.START_RENDER:
+                case START_RENDER:
                     // load the matrix to render
                     gl.glPushMatrix();
                     gl.glMultMatrixd(renderableList[i].transform, 0);
@@ -271,13 +271,13 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     obj.render(gl);
                     break;
 
-                case RenderOp.STOP_RENDER:
+                case STOP_RENDER:
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.postRender(gl);
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.START_RENDER_2D:
+                case START_RENDER_2D:
                     gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
                     gl.glPixelZoom((float)renderableList[i].transform[0],
@@ -286,12 +286,12 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     obj.render(gl);
                     break;
 
-                case RenderOp.STOP_RENDER_2D:
+                case STOP_RENDER_2D:
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.postRender(gl);
                     break;
 
-                case RenderOp.RENDER_GEOMETRY:
+                case RENDER_GEOMETRY:
                     // load the matrix to render
                     gl.glPushMatrix();
                     gl.glMultMatrixd(renderableList[i].transform, 0);
@@ -299,7 +299,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.RENDER_GEOMETRY_2D:
+                case RENDER_GEOMETRY_2D:
                     // load the matrix to render
                     gl.glRasterPos2d(renderableList[i].transform[3],
                                      renderableList[i].transform[7]);
@@ -309,7 +309,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.RENDER_CUSTOM_GEOMETRY:
+                case RENDER_CUSTOM_GEOMETRY:
                     // load the matrix to render
                     gl.glPushMatrix();
                     gl.glMultMatrixd(renderableList[i].transform, 0);
@@ -319,7 +319,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.RENDER_CUSTOM:
+                case RENDER_CUSTOM:
                     // load the matrix to render
                     gl.glPushMatrix();
                     gl.glMultMatrixd(renderableList[i].transform, 0);
@@ -330,17 +330,17 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.START_STATE:
+                case START_STATE:
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.render(gl);
                     break;
 
-                case RenderOp.STOP_STATE:
+                case STOP_STATE:
                     obj = (ObjectRenderable)renderableList[i].renderable;
                     obj.postRender(gl);
                     break;
 
-                case RenderOp.START_LIGHT:
+                case START_LIGHT:
                     // Get the next available light ID
 
 // TODO:
@@ -361,7 +361,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.STOP_LIGHT:
+                case STOP_LIGHT:
                     if(lastLightIdx >= availableLights.length)
                         continue;
 
@@ -372,7 +372,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     availableLights[--lastLightIdx] = l_id;
                     break;
 
-                case RenderOp.START_CLIP_PLANE:
+                case START_CLIP_PLANE:
                     // Get the next available clip plane ID
 
 // TODO:
@@ -393,7 +393,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.STOP_CLIP_PLANE:
+                case STOP_CLIP_PLANE:
                     if(lastClipIdx >= availableClips.length)
                         continue;
 
@@ -405,7 +405,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     availableClips[--lastClipIdx] = c_id;
                     break;
 
-                case RenderOp.START_TRANSPARENT:
+                case START_TRANSPARENT:
                     if(first_pass_alpha && two_pass_transparent)
                     {
                         gl.glEnable(GL2.GL_ALPHA_TEST);
@@ -422,7 +422,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
 
                     break;
 
-                case RenderOp.STOP_TRANSPARENT:
+                case STOP_TRANSPARENT:
                     if(first_pass_alpha && two_pass_transparent)
                     {
                         // if this is the end of the first pass, reset the
@@ -441,7 +441,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     }
                     break;
 
-                case RenderOp.START_FOG:
+                case START_FOG:
                     if(!fog_active)
                     {
                         gl.glEnable(GL2.GL_FOG);
@@ -452,7 +452,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     obj.render(gl);
                     break;
 
-                case RenderOp.STOP_FOG:
+                case STOP_FOG:
                     if(current_fog != null)
                         current_fog.render(gl);
                     else
@@ -464,7 +464,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     }
                     break;
 
-                case RenderOp.START_SHADER_PROGRAM:
+                case START_SHADER_PROGRAM:
                     ShaderComponentRenderable prog =
                         (ShaderComponentRenderable)renderableList[i].renderable;
 
@@ -479,7 +479,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     prog.render(gl);
                     break;
 
-                case RenderOp.STOP_SHADER_PROGRAM:
+                case STOP_SHADER_PROGRAM:
                     if(currentShaderProgramId == INVALID_SHADER)
                         continue;
 
@@ -489,7 +489,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     currentShaderProgramId = INVALID_SHADER;
                     break;
 
-                case RenderOp.SET_SHADER_ARGS:
+                case SET_SHADER_ARGS:
                     if(currentShaderProgramId == INVALID_SHADER)
                         continue;
 
@@ -497,7 +497,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     comp.render(gl, currentShaderProgramId);
                     break;
 
-                case RenderOp.START_TEXTURE:
+                case START_TEXTURE:
                     TextureRenderable texcomp =
                         (TextureRenderable)renderableList[i].renderable;
 
@@ -517,7 +517,7 @@ public class StandardRenderingProcessor extends BaseRenderingProcessor
                     texcomp.render(gl, id);
                     break;
 
-                case RenderOp.STOP_TEXTURE:
+                case STOP_TEXTURE:
                     texcomp = (TextureRenderable)renderableList[i].renderable;
 
                     id = (Integer)(renderableList[i].instructions);

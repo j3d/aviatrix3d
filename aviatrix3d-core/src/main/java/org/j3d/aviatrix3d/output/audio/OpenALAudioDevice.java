@@ -271,12 +271,12 @@ public class OpenALAudioDevice
                 {
                     switch(localCommands.renderOps[i])
                     {
-                        case RenderOp.START_RENDER:
+                        case START_RENDER:
                             obj = (AudioRenderable)details[i].renderable;
                             obj.render(al, details[i].transform);
                             break;
 
-                        case RenderOp.STOP_RENDER:
+                        case STOP_RENDER:
                             obj = (AudioRenderable)details[i].renderable;
                             obj.postRender(al);
                             break;

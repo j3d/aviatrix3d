@@ -20,6 +20,7 @@ import org.j3d.maths.vector.Point3d;
 import org.j3d.util.ErrorReporter;
 
 // Local imports
+import org.j3d.aviatrix3d.pipeline.RenderOp;
 import org.j3d.aviatrix3d.pipeline.graphics.*;
 
 import org.j3d.aviatrix3d.rendering.OffscreenBufferRenderable;
@@ -105,8 +106,7 @@ public interface RenderingProcessor
     /**
      * Update the list of items to be rendered to the current list. Draw them
      * at the next oppourtunity.
-     *
-     * @param otherData data to be processed before the rendering
+     *  @param otherData data to be processed before the rendering
      * @param nodes The list of nodes in sorted order
      * @param renderOps Operation to perform on each node
      * @param numValid The number of valid items in the array
@@ -114,7 +114,7 @@ public interface RenderingProcessor
      */
     public void setDrawableObjects(GraphicsRequestData otherData,
                                    GraphicsDetails[] nodes,
-                                   int[] renderOps,
+                                   RenderOp[] renderOps,
                                    int numValid,
                                    GraphicsEnvironmentData[] envData);
 

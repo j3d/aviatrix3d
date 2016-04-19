@@ -227,7 +227,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
         {
             switch (operationList[i])
             {
-                case RenderOp.START_MULTIPASS:
+                case START_MULTIPASS:
                     if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Start multipass. First layer? " +
@@ -249,7 +249,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     }
                     break;
 
-                case RenderOp.STOP_MULTIPASS:
+                case STOP_MULTIPASS:
                     if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Stop multipass. First layer? " +
@@ -274,7 +274,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     }
                     break;
 
-                case RenderOp.START_MULTIPASS_PASS:
+                case START_MULTIPASS_PASS:
                     if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Start multipass pass. Clear Buffers 0x" +
@@ -291,7 +291,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     preMPPassEnvironmentDraw(gl, data);
                     break;
 
-                case RenderOp.STOP_MULTIPASS_PASS:
+                case STOP_MULTIPASS_PASS:
                     if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Stop multipass pass.");
@@ -301,7 +301,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     postMPPassEnvironmentDraw(gl, data);
                     break;
 
-                case RenderOp.SET_VIEWPORT_STATE:
+                case SET_VIEWPORT_STATE:
                     if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Set multipass viewport.");
@@ -309,7 +309,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     ((ViewportRenderable) renderableList[i].renderable).render(gl);
                     break;
 
-                case RenderOp.STOP_VIEWPORT_STATE:
+                case STOP_VIEWPORT_STATE:
                     if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Stop multipass viewport.");
@@ -318,7 +318,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     setupMultipassViewport(gl, data);
                     break;
 
-                case RenderOp.START_BUFFER_STATE:
+                case START_BUFFER_STATE:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -334,7 +334,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                         clear_buffer_bits |= buffer.getBufferBitMask();
                     break;
 
-                case RenderOp.SET_BUFFER_CLEAR:
+                case SET_BUFFER_CLEAR:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -351,7 +351,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                         clear_buffer_bits &= ~buffer.getBufferBitMask();
                     break;
 
-                case RenderOp.CHANGE_BUFFER_STATE:
+                case CHANGE_BUFFER_STATE:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -369,7 +369,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                         clear_buffer_bits &= ~buffer.getBufferBitMask();
                     break;
 
-                case RenderOp.STOP_BUFFER_STATE:
+                case STOP_BUFFER_STATE:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -383,7 +383,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     clear_buffer_bits &= ~buffer.getBufferBitMask();
                     break;
 
-                case RenderOp.START_LAYER:
+                case START_LAYER:
 
                     data = environmentList[data_index];
                     layer_data_index = data_index;
@@ -405,7 +405,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     preLayerEnvironmentDraw(gl, data);
                     break;
 
-                case RenderOp.STOP_LAYER:
+                case STOP_LAYER:
                     if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Stop Layer " +
@@ -420,7 +420,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     first_layer = false;
                     break;
 
-                case RenderOp.START_VIEWPORT:
+                case START_VIEWPORT:
                     data = environmentList[data_index];
                     // EMF: there might be multiple layers per viewport
                     // we increment data_index within START_LAYER
@@ -436,14 +436,14 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     setupViewport(gl, data);
                     break;
 
-                case RenderOp.STOP_VIEWPORT:
+                case STOP_VIEWPORT:
                     if (dumpNow || PRINT_STATES)
                     {
                         errorReporter.messageReport("Stop viewport");
                     }
                     break;
 
-                case RenderOp.START_RENDER:
+                case START_RENDER:
                     // load the matrix to render
                     if (dumpNow)
                     {
@@ -460,7 +460,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     obj.render(gl);
                     break;
 
-                case RenderOp.STOP_RENDER:
+                case STOP_RENDER:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -475,7 +475,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.START_RENDER_2D:
+                case START_RENDER_2D:
                     // load the matrix to render
                     if (dumpNow || PRINT_STATES)
                     {
@@ -494,7 +494,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     obj.render(gl);
                     break;
 
-                case RenderOp.STOP_RENDER_2D:
+                case STOP_RENDER_2D:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -508,7 +508,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     obj.postRender(gl);
                     break;
 
-                case RenderOp.RENDER_GEOMETRY:
+                case RENDER_GEOMETRY:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -525,7 +525,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.RENDER_GEOMETRY_2D:
+                case RENDER_GEOMETRY_2D:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -543,7 +543,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     ((GeometryRenderable) renderableList[i].renderable).render(gl);
                     break;
 
-                case RenderOp.RENDER_CUSTOM_GEOMETRY:
+                case RENDER_CUSTOM_GEOMETRY:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -562,7 +562,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.RENDER_CUSTOM:
+                case RENDER_CUSTOM:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -582,7 +582,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.START_STATE:
+                case START_STATE:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -596,7 +596,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     obj.render(gl);
                     break;
 
-                case RenderOp.STOP_STATE:
+                case STOP_STATE:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -610,7 +610,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     obj.postRender(gl);
                     break;
 
-                case RenderOp.START_LIGHT:
+                case START_LIGHT:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -640,7 +640,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.STOP_LIGHT:
+                case STOP_LIGHT:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -660,7 +660,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     availableLights[--lastLightIdx] = l_id;
                     break;
 
-                case RenderOp.START_CLIP_PLANE:
+                case START_CLIP_PLANE:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -690,7 +690,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     gl.glPopMatrix();
                     break;
 
-                case RenderOp.STOP_CLIP_PLANE:
+                case STOP_CLIP_PLANE:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -711,7 +711,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     availableClips[--lastClipIdx] = c_id;
                     break;
 
-                case RenderOp.START_TRANSPARENT:
+                case START_TRANSPARENT:
                     if (first_pass_alpha && two_pass_transparent)
                     {
                         if (dumpNow || PRINT_STATES)
@@ -734,7 +734,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
                     break;
 
-                case RenderOp.STOP_TRANSPARENT:
+                case STOP_TRANSPARENT:
                     if (first_pass_alpha && two_pass_transparent)
                     {
                         if (dumpNow || PRINT_STATES)
@@ -759,7 +759,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     }
                     break;
 
-                case RenderOp.START_FOG:
+                case START_FOG:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -779,7 +779,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     obj.render(gl);
                     break;
 
-                case RenderOp.STOP_FOG:
+                case STOP_FOG:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -800,7 +800,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     }
                     break;
 
-                case RenderOp.START_SHADER_PROGRAM:
+                case START_SHADER_PROGRAM:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -825,7 +825,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     prog.render(gl);
                     break;
 
-                case RenderOp.STOP_SHADER_PROGRAM:
+                case STOP_SHADER_PROGRAM:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -847,7 +847,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     currentShaderProgramId = INVALID_SHADER;
                     break;
 
-                case RenderOp.SET_SHADER_ARGS:
+                case SET_SHADER_ARGS:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -864,7 +864,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     comp.render(gl, currentShaderProgramId);
                     break;
 
-                case RenderOp.START_TEXTURE:
+                case START_TEXTURE:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;
@@ -895,7 +895,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
 
                     break;
 
-                case RenderOp.STOP_TEXTURE:
+                case STOP_TEXTURE:
                     if (dumpNow || PRINT_STATES)
                     {
                         Renderable s = renderableList[i].renderable;

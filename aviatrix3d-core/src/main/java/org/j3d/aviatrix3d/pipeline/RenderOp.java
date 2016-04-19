@@ -25,32 +25,32 @@ package org.j3d.aviatrix3d.pipeline;
  * @author Justin Couch
  * @version $Revision: 2.9 $
  */
-public interface RenderOp
+public enum RenderOp
 {
     /** The unknown/general request to push state onto the stack */
-    public static final int START_RENDER = 1;
+    START_RENDER,
 
     /** The unknown/general request to pop state off the stack */
-    public static final int STOP_RENDER = 2;
+    STOP_RENDER,
 
     /** The unknown/general 2D request to push state onto the stack */
-    public static final int START_RENDER_2D = 3;
+    START_RENDER_2D,
 
     /** The unknown/general 2D request to pop state off the stack */
-    public static final int STOP_RENDER_2D = 4;
+    STOP_RENDER_2D,
 
     /**
      * Render a geometry item. Since this is a terminal for the OpenGL pipeline
      * state, no postRender call will be made.
      */
-    public static final int RENDER_GEOMETRY = 5;
+    RENDER_GEOMETRY,
 
     /**
      * Render a 2D geometry item. Since this is a terminal for the OpenGL pipeline
      * state, no postRender call will be made. Also, instead of using glMultMatrix
      * it will set glRasterPos and glPixelZoom from the provided matrix.
      */
-    public static final int RENDER_GEOMETRY_2D = 6;
+    RENDER_GEOMETRY_2D,
 
     /**
      * Render a custom geometry item. This is an alternate terminal for the OpenGL
@@ -58,7 +58,7 @@ public interface RenderOp
      * custom behaviour (eg distance sorting or billboarding), no postRender call
      * will be made.
      */
-    public static final int RENDER_CUSTOM_GEOMETRY = 7;
+    RENDER_CUSTOM_GEOMETRY,
 
     /**
      * A node implementing the
@@ -66,117 +66,117 @@ public interface RenderOp
      * interface will be rendered. Needs to pass in the external instruction
      * setup.
      */
-    public static final int RENDER_CUSTOM = 9;
+    RENDER_CUSTOM,
 
     /** The node component should push its state onto the stack */
-    public static final int START_STATE = 10;
+    START_STATE,
 
     /** The node component should remove its state from the stack */
-    public static final int STOP_STATE = 11;
+    STOP_STATE,
 
     /** A light should push its state onto the stack */
-    public static final int START_LIGHT = 12;
+    START_LIGHT,
 
     /** A light is removing its state from the stack */
-    public static final int STOP_LIGHT = 13;
+    STOP_LIGHT,
 
     /** Start of a collection of transparent geometry */
-    public static final int START_TRANSPARENT = 14;
+    START_TRANSPARENT,
 
     /** End of a collection of transparent geometry */
-    public static final int STOP_TRANSPARENT = 15;
+    STOP_TRANSPARENT,
 
     /** Start of a collection of objects that are used for shadows */
-    public static final int START_SHADOW = 16;
+    START_SHADOW,
 
     /** End of a collection of objects that are used for shadows */
-    public static final int STOP_SHADOW = 17;
+    STOP_SHADOW,
 
     /** Start of a collection of objects that are shadow generators */
-    public static final int START_SHADOW_GENERATOR = 18;
+    START_SHADOW_GENERATOR,
 
     /** End of a collection of objects that are shadow generators */
-    public static final int STOP_SHADOW_GENERATOR = 19;
+    STOP_SHADOW_GENERATOR,
 
     /** A clip plane should push its state onto the stack */
-    public static final int START_CLIP_PLANE = 20;
+    START_CLIP_PLANE,
 
     /** A clip plane is removing its state from the stack */
-    public static final int STOP_CLIP_PLANE = 21;
+    STOP_CLIP_PLANE,
 
     /** A local fog should push its state onto the stack */
-    public static final int START_FOG = 22;
+    START_FOG,
 
     /** A local fog is removing its state from the stack, restore global fog. */
-    public static final int STOP_FOG = 23;
+    STOP_FOG,
 
     /** Start a GLSLang shader program now */
-    public static final int START_SHADER_PROGRAM = 24;
+    START_SHADER_PROGRAM,
 
     /** Stop using a GLSLang shader programs */
-    public static final int STOP_SHADER_PROGRAM = 25;
+    STOP_SHADER_PROGRAM,
 
     /** Set a collection of shader arguments */
-    public static final int SET_SHADER_ARGS = 26;
+    SET_SHADER_ARGS,
 
     /**
      * Turn on a texture unit stage for rendering. The render instruction
      * will be accompanied by an Integer instance that holds the stage ID
      * to be used for this unit as it needs to be rendered right now.
      */
-    public static final int START_TEXTURE = 27;
+    START_TEXTURE,
 
     /**
      * Turn off a texture unit stage for rendering. See START_TEXTURE for
      * the details.
      */
-    public static final int STOP_TEXTURE = 28;
+    STOP_TEXTURE,
 
     /**
      * Start of a new layer. Use this to clear any buffers that may be needed
      * for this layer and begin the rendering process for the next layer.
      */
-    public static final int START_LAYER = 29;
+    START_LAYER,
 
     /** End of a layer. Clean up any post-compositing work */
-    public static final int STOP_LAYER = 30;
+    STOP_LAYER,
 
     /** Resize the viewport to a new size. */
-    public static final int START_VIEWPORT = 31;
+    START_VIEWPORT,
 
     /** End of the current viewport. */
-    public static final int STOP_VIEWPORT = 32;
+    STOP_VIEWPORT,
 
     /** Start a multipass process */
-    public static final int START_MULTIPASS = 33;
+    START_MULTIPASS,
 
     /** Start a single pass of the multipass process */
-    public static final int START_MULTIPASS_PASS = 34;
+    START_MULTIPASS_PASS,
 
     /** Start a buffer state change */
-    public static final int START_BUFFER_STATE = 35;
+    START_BUFFER_STATE,
 
     /** Set the buffer clear bit, but don't run the render method */
-    public static final int SET_BUFFER_CLEAR = 36;
+    SET_BUFFER_CLEAR,
 
     /** Take an existing active buffer state and change it. */
-    public static final int CHANGE_BUFFER_STATE = 37;
+    CHANGE_BUFFER_STATE,
 
     /** End using a particular buffer state, turning it off. */
-    public static final int STOP_BUFFER_STATE = 38;
+    STOP_BUFFER_STATE,
 
     /** Stop a single pass of the multipass process */
-    public static final int STOP_MULTIPASS_PASS = 39;
+    STOP_MULTIPASS_PASS,
 
     /** Stop a multipass rendering */
-    public static final int STOP_MULTIPASS = 40;
+    STOP_MULTIPASS,
 
     /** Set up a custom viewport for this multipass pass */
-    public static final int SET_VIEWPORT_STATE = 41;
+    SET_VIEWPORT_STATE,
 
     /**
      * Stop a custom viewport for this multipass pass and return to the
      * parent viewport state from the containing scene.
      */
-    public static final int STOP_VIEWPORT_STATE = 42;
+    STOP_VIEWPORT_STATE
 }
