@@ -816,12 +816,11 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     if (!prog.isValid(gl))
                     {
                         errorReporter.messageReport("Shader program not valid");
-                        currentShaderProgramId = INVALID_SHADER;
+                        currentShaderProgramId = null;
                         continue;
                     }
 
-// TODO: Optimise this to avoid the allocation. Use IntHashMap for lookup.
-                    currentShaderProgramId = new Integer(prog.getProgramId(gl));
+                    currentShaderProgramId = prog.getProgramId(gl);
                     prog.render(gl);
                     break;
 
@@ -835,7 +834,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                                                         Integer.toHexString(s.hashCode()));
                     }
 
-                    if (currentShaderProgramId == INVALID_SHADER)
+                    if (currentShaderProgramId == null)
                     {
                         errorReporter.messageReport("Shader program not valid");
                         continue;
@@ -844,7 +843,7 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                     obj = (ObjectRenderable) renderableList[i].renderable;
                     obj.postRender(gl);
 
-                    currentShaderProgramId = INVALID_SHADER;
+                    currentShaderProgramId = null;
                     break;
 
                 case SET_SHADER_ARGS:
@@ -857,8 +856,15 @@ public class DebugRenderingProcessor extends BaseRenderingProcessor
                                                         Integer.toHexString(s.hashCode()));
                     }
 
-                    if (currentShaderProgramId == INVALID_SHADER)
+                    if (currentShaderProgramId == null)
+                    {
+                        Renderable s = renderableList[i].renderable;
+                        errorReporter.messageReport("Skipping shader args set due to no current program ID" +
+                                                    s.getClass() +
+                                                    " 0x" +
+                                                    Integer.toHexString(s.hashCode()));
                         continue;
+                    }
 
                     comp = (ComponentRenderable) renderableList[i].renderable;
                     comp.render(gl, currentShaderProgramId);
