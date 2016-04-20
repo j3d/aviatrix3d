@@ -45,7 +45,6 @@ import org.j3d.aviatrix3d.pipeline.RenderOp;
  *
  * <b>Internationalisation Resource Names</b>
  * <ul>
- * <li>makeCurrentFailMsg: Error message when makeCurrent() failed.</li>
  * <li>generalRenderErrorMsg: Error message when some other general error
  *     occurred during the normal rendering loop.</li>
  * <li>glMajorVersionParseMsg: Error parsing the major version number</li>
@@ -68,10 +67,6 @@ public abstract class BaseRenderingProcessor
 {
     /** The invalid shader ID */
     protected static final Integer INVALID_SHADER = -1;
-
-    /** Message when the GL context failed to initialise */
-    private static final String FAILED_CONTEXT_PROP =
-        "org.j3d.aviatrix3d.output.graphics.BaseRenderingProcessor.makeCurrentFailMsg";
 
     /** If there's a GLException during the render loop */
     private static final String GL_RENDER_ERROR_PROP =
@@ -111,7 +106,7 @@ public abstract class BaseRenderingProcessor
 
 
     /** The owner device of us. Used to send out messages */
-    protected GraphicsOutputDevice ownerDevice;
+    private GraphicsOutputDevice ownerDevice;
 
     /** Flag to say if FBO extensions are available on the current platform.  */
     private boolean fboAvailable;
