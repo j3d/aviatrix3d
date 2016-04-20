@@ -19,8 +19,10 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.HashMap;
 
+import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 
+import com.jogamp.opengl.glu.GLU;
 import org.j3d.util.HashSet;
 import org.j3d.util.I18nManager;
 
@@ -58,6 +60,10 @@ import org.j3d.aviatrix3d.rendering.ComponentRenderable;
  * <li>notFloatMsg: Error message when trying set an int to an float type</li>
  * <li>invalidUniformMsg: Error message when the user requests a uniform</li>
  *     can't be located in the underlying shader.
+ * <li>invalidDataTypeChangeMsg: Error message when the uniform's data type
+ *     is changed - which isn't allowed</li>
+ * <li>invalidDataSizeChangeMsg: Error message when the uniform's data size
+ *     is changed - which isn't allowed</li>
  * </ul>
  *
  * @author Justin Couch
@@ -95,6 +101,20 @@ public class ShaderArguments extends NodeComponent
      */
     private static final String NOT_FLOAT_TYPE_PROP =
         "org.j3d.aviatrix3d.ShaderArguments.notFloatMsg";
+
+    /**
+     * Message for when the user tries to update an existing uniform and changes the
+     * data type that it was registered from
+     */
+    private static final String INVALID_TYPE_CHANGE_PROP =
+        "org.j3d.aviatrix3d.ShaderArguments.invalidDataTypeChangeMsg";
+
+    /**
+     * Message for when the user tries to update an existing uniform and changes the
+     * data size (not count) that it was registered from
+     */
+    private static final String INVALID_SIZE_CHANGE_PROP =
+        "org.j3d.aviatrix3d.ShaderArguments.invalidDataSizeChangeMsg";
 
     /** The uniform data type is an int array */
     public static final int INT_UNIFORM_TYPE = ShaderArgumentValue.INT_ARRAY;
@@ -155,8 +175,7 @@ public class ShaderArguments extends NodeComponent
             if((val.uniformLocation == -1) && !ignoredNames.contains(varNames[i]))
             {
                 val.uniformLocation =
-                    gl.glGetUniformLocationARB(((Integer)programId).intValue(),
-                                               varNames[i]);
+                    gl.glGetUniformLocation((Integer)programId, varNames[i]);
 
                 // Still not valid? Ignore it then.
                 // TODO: Maybe we want to issue an error message here
@@ -185,28 +204,28 @@ public class ShaderArguments extends NodeComponent
                     switch(val.size)
                     {
                         case 1:
-                            gl.glUniform1ivARB(val.uniformLocation,
+                            gl.glUniform1iv(val.uniformLocation,
                                                val.count,
                                                val.intData,
                                                0);
                             break;
 
                         case 2:
-                            gl.glUniform2ivARB(val.uniformLocation,
+                            gl.glUniform2iv(val.uniformLocation,
                                                val.count,
                                                val.intData,
                                                0);
                             break;
 
                         case 3:
-                            gl.glUniform3ivARB(val.uniformLocation,
+                            gl.glUniform3iv(val.uniformLocation,
                                                val.count,
                                                val.intData,
                                                0);
                             break;
 
                         case 4:
-                            gl.glUniform4ivARB(val.uniformLocation,
+                            gl.glUniform4iv(val.uniformLocation,
                                                val.count,
                                                val.intData,
                                                0);
@@ -218,28 +237,28 @@ public class ShaderArguments extends NodeComponent
                     switch(val.size)
                     {
                         case 1:
-                            gl.glUniform1fvARB(val.uniformLocation,
+                            gl.glUniform1fv(val.uniformLocation,
                                                val.count,
                                                val.floatData,
                                                0);
                             break;
 
                         case 2:
-                            gl.glUniform2fvARB(val.uniformLocation,
+                            gl.glUniform2fv(val.uniformLocation,
                                                val.count,
                                                val.floatData,
                                                0);
                             break;
 
                         case 3:
-                            gl.glUniform3fvARB(val.uniformLocation,
+                            gl.glUniform3fv(val.uniformLocation,
                                                val.count,
                                                val.floatData,
                                                0);
                             break;
 
                         case 4:
-                            gl.glUniform4fvARB(val.uniformLocation,
+                            gl.glUniform4fv(val.uniformLocation,
                                                val.count,
                                                val.floatData,
                                                0);
@@ -251,7 +270,7 @@ public class ShaderArguments extends NodeComponent
                     switch(val.size)
                     {
                         case 2:
-                            gl.glUniformMatrix2fvARB(val.uniformLocation,
+                            gl.glUniformMatrix2fv(val.uniformLocation,
                                                      val.count,
                                                      val.transposeMatrix,
                                                      val.floatData,
@@ -259,7 +278,7 @@ public class ShaderArguments extends NodeComponent
                             break;
 
                         case 3:
-                            gl.glUniformMatrix3fvARB(val.uniformLocation,
+                            gl.glUniformMatrix3fv(val.uniformLocation,
                                                      val.count,
                                                      val.transposeMatrix,
                                                      val.floatData,
@@ -267,7 +286,7 @@ public class ShaderArguments extends NodeComponent
                             break;
 
                         case 4:
-                            gl.glUniformMatrix4fvARB(val.uniformLocation,
+                            gl.glUniformMatrix4fv(val.uniformLocation,
                                                      val.count,
                                                      val.transposeMatrix,
                                                      val.floatData,
@@ -277,7 +296,7 @@ public class ShaderArguments extends NodeComponent
                     break;
 
                 case ShaderArgumentValue.SAMPLER:
-                    gl.glUniform1iARB(val.uniformLocation, val.intData[0]);
+                    gl.glUniform1i(val.uniformLocation, val.intData[0]);
                     break;
             }
         }
@@ -371,7 +390,7 @@ public class ShaderArguments extends NodeComponent
             Locale lcl = intl_mgr.getFoundLocale();
             NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-            Object[] msg_args = { new Integer(size) };
+            Object[] msg_args = { size };
             Format[] fmts = { n_fmt };
             MessageFormat msg_fmt =
                 new MessageFormat(msg_pattern, lcl);
@@ -388,7 +407,7 @@ public class ShaderArguments extends NodeComponent
             Locale lcl = intl_mgr.getFoundLocale();
             NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-            Object[] msg_args = { new Integer(count) };
+            Object[] msg_args = { count };
             Format[] fmts = { n_fmt };
             MessageFormat msg_fmt =
                 new MessageFormat(msg_pattern, lcl);
@@ -399,6 +418,8 @@ public class ShaderArguments extends NodeComponent
         }
 
         ShaderArgumentValue val = getValue(name);
+
+        checkForArgumentChange(val, ShaderArgumentValue.FLOAT_ARRAY, size);
 
         val.dataType = ShaderArgumentValue.FLOAT_ARRAY;
         val.size = size;
@@ -439,7 +460,7 @@ public class ShaderArguments extends NodeComponent
             Locale lcl = intl_mgr.getFoundLocale();
             NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-            Object[] msg_args = { new Integer(size) };
+            Object[] msg_args = { size };
             Format[] fmts = { n_fmt };
             MessageFormat msg_fmt =
                 new MessageFormat(msg_pattern, lcl);
@@ -456,7 +477,7 @@ public class ShaderArguments extends NodeComponent
             Locale lcl = intl_mgr.getFoundLocale();
             NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
 
-            Object[] msg_args = { new Integer(count) };
+            Object[] msg_args = { count };
             Format[] fmts = { n_fmt };
             MessageFormat msg_fmt =
                 new MessageFormat(msg_pattern, lcl);
@@ -467,6 +488,8 @@ public class ShaderArguments extends NodeComponent
         }
 
         ShaderArgumentValue val = getValue(name);
+
+        checkForArgumentChange(val, ShaderArgumentValue.INT_ARRAY, size);
 
         val.dataType = ShaderArgumentValue.INT_ARRAY;
         val.size = size;
@@ -542,6 +565,8 @@ public class ShaderArguments extends NodeComponent
 
         ShaderArgumentValue val = getValue(name);
 
+        checkForArgumentChange(val, ShaderArgumentValue.MATRIX, size);
+
         val.dataType = ShaderArgumentValue.MATRIX;
         val.size = size;
         val.count = count;
@@ -575,6 +600,8 @@ public class ShaderArguments extends NodeComponent
         // Can samplers be in an array too? If so, we need to provide a
         // count ability here as well.
         ShaderArgumentValue val = getValue(name);
+
+        checkForArgumentChange(val, ShaderArgumentValue.SAMPLER, 1);
 
         val.dataType = ShaderArgumentValue.SAMPLER;
         val.size = 1;
@@ -765,7 +792,7 @@ public class ShaderArguments extends NodeComponent
      */
     private ShaderArgumentValue getValue(String name)
     {
-        ShaderArgumentValue val = (ShaderArgumentValue)values.get(name);
+        ShaderArgumentValue val = values.get(name);
 
         if(val == null)
         {
@@ -785,6 +812,53 @@ public class ShaderArguments extends NodeComponent
         }
 
         return val;
+    }
+
+    /**
+     * Common method to ensure that, on update, the shader value does not change critical
+     * type definitions. This can lead to oddball OpenGL errors if this changes after the
+     * initial construction.
+     *
+     * @param existingArgs The argument object that we want to check against
+     * @param type The data type wanting to be set
+     * @param size The data size (not count) to validate
+     * @throws IllegalArgumentException There is an incompatible change
+     */
+    private void checkForArgumentChange(ShaderArgumentValue existingArgs, int type, int size)
+    {
+        if(existingArgs.dataType != 0 && existingArgs.dataType != type)
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(INVALID_TYPE_CHANGE_PROP);
+            Locale lcl = intl_mgr.getFoundLocale();
+            NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
+
+            Object[] msg_args = { existingArgs.dataType, type };
+            Format[] fmts = { n_fmt, n_fmt };
+            MessageFormat msg_fmt =
+                new MessageFormat(msg_pattern, lcl);
+            msg_fmt.setFormats(fmts);
+            String msg = msg_fmt.format(msg_args);
+
+            throw new IllegalArgumentException(msg);
+        }
+
+        if(existingArgs.size != 0 && existingArgs.size != size)
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(INVALID_SIZE_CHANGE_PROP);
+            Locale lcl = intl_mgr.getFoundLocale();
+            NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
+
+            Object[] msg_args = { existingArgs.size, size };
+            Format[] fmts = { n_fmt, n_fmt };
+            MessageFormat msg_fmt =
+                new MessageFormat(msg_pattern, lcl);
+            msg_fmt.setFormats(fmts);
+            String msg = msg_fmt.format(msg_args);
+
+            throw new IllegalArgumentException(msg);
+        }
     }
 
     /**
