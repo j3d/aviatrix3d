@@ -80,7 +80,7 @@ public class AccumulationBufferState extends BufferState
     public static final int FUNCTION_MULTIPLY = GL2.GL_MULT;
 
     /** Save the contents of the current accumulation buffer back to the colour buffer */
-//    public static final int FUNCTION_RETURN = GL.GL_RETURN;
+    public static final int FUNCTION_RETURN = GL2.GL_RETURN;
 
     /** The minimum range for the depth test */
     private float value;
@@ -229,7 +229,7 @@ public class AccumulationBufferState extends BufferState
             case FUNCTION_LOAD:
             case FUNCTION_ADD:
             case FUNCTION_MULTIPLY:
-//            case FUNCTION_RETURN:
+            case FUNCTION_RETURN:
                 function = func;
                 break;
 
