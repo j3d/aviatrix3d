@@ -189,6 +189,28 @@ public class ImageTextureComponent3D extends TextureComponent3D
     }
 
     //----------------------------------------------------------
+    // Methods defined by TextureComponent
+    //----------------------------------------------------------
+
+    @Override
+    public void clearLocalData()
+    {
+        int len = images.length;
+
+        for(int i=0; i < len; i++)
+        {
+            // Insure all openGL structures are created
+            if(data[i] == null)
+                data[i] = convertImage(i);
+
+            if(images[i] instanceof BufferedImage)
+                ((BufferedImage)images[i]).flush();
+        }
+
+        images = null;
+    }
+
+    //----------------------------------------------------------
     // Local methods
     //----------------------------------------------------------
 
@@ -298,27 +320,6 @@ public class ImageTextureComponent3D extends TextureComponent3D
                           depth,
                           level,
                           copyBuffer);
-    }
-
-    /**
-     * Clear local data stored in this node.  Only data needed for
-     * OpenGL calls will be retained;
-     */
-    public void clearLocalData()
-    {
-        int len = images.length;
-
-        for(int i=0; i < len; i++)
-        {
-            // Insure all openGL structures are created
-            if(data[i] == null)
-                data[i] = convertImage(i);
-
-            if(images[i] instanceof BufferedImage)
-                ((BufferedImage)images[i]).flush();
-        }
-
-        images = null;
     }
 
     /**
@@ -435,6 +436,8 @@ public class ImageTextureComponent3D extends TextureComponent3D
             for(int i = 0; i < srcImages.length; i++)
                 convertImage(ret_val, (BufferedImage)srcImages[i]);
         }
+
+        ret_val.rewind();
 
         return ret_val;
     }
@@ -698,18 +701,15 @@ public class ImageTextureComponent3D extends TextureComponent3D
                 msg_fmt.setFormats(fmts);
                 String msg = msg_fmt.format(msg_args);
         }
-
-        buffer.rewind();
     }
 
-   /**
+    /**
      * Convenience method to convert a buffered image into a NIO array of the
      * corresponding type. Images typically need to be swapped when doing this
      * by the Y axis is in the opposite direction to the one used by OpenGL.
      *
      * @param img The image to convert
      * @param buffer The buffer to put the converted pixels into
-     * @return an appropriate array type - either IntBuffer or ByteBuffer
      */
     private void convertImage(IntBuffer buffer, BufferedImage img)
     {
