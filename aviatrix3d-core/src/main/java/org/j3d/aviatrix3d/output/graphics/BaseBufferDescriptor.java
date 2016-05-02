@@ -106,11 +106,6 @@ public abstract class BaseBufferDescriptor implements OffscreenBufferDescriptor
     public abstract boolean initialise(GLContext parentContext);
 
     /**
-     * Reinitialise this descriptor because the GL context has changed.
-     */
-    public abstract void reinitialize();
-
-    /**
      * Enable this buffer for rendering to now. A buffer may fail to enable
      * depending on the state of the underlying buffer. The state object
      * describes the options available.

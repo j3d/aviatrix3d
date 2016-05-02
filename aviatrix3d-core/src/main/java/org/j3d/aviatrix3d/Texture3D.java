@@ -512,7 +512,7 @@ public class Texture3D extends Texture
         return boundaryModeR;
     }
 
-   /**
+    /**
      * Set the boundary handling for the T parameter.
      *
      * @param mode The new mode.
@@ -573,9 +573,6 @@ public class Texture3D extends Texture
 
         if(numSources == 0)
             return;
-
-        int num_mipmaps =
-            (mipMapMode == MODE_BASE_LEVEL) ? 1 : sources[0].getNumLevels();
 
         for(int i = 0; i < numSources; i++)
         {

@@ -400,24 +400,12 @@ public class OffscreenTexture2D extends Texture
     // Methods defined by OffscreenBufferRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Get the height of the texture in pixels. If no image is set, this returns
-     * -1.
-     *
-     * @return a number >= -1
-     */
     @Override
     public int getHeight()
     {
         return height;
     }
 
-    /**
-     * Set the background colour that this surface should be cleared to before
-     * the drawing step. Colours range from 0 to 1 in the normal manner.
-     *
-     * @param col An array of at least length 4 to copy values into
-     */
     @Override
     public void getClearColor(float[] col)
     {
@@ -427,76 +415,30 @@ public class OffscreenTexture2D extends Texture
         col[3] = clearColor[3];
     }
 
-    /**
-     * Get the format for this texture. As this is a single pBuffer texture,
-     * there is only ever one level, so the argument is ignored.
-     *
-     * @param level The mipmap level to get the format for
-     * @return The format.
-     */
-    public int getFormat(int level)
-    {
-        return format;
-    }
-
-    /**
-     * Get the number of render targets that this offscreen renderable manages. This
-     * should always return at least 1, being itself.
-     *
-     * @return A value greater than zero
-     */
     @Override
     public int getNumRenderTargets()
     {
         return 1;
     }
 
-    /**
-     * Get the child render target at the given index. If the index 0 is given, this
-     * will return a reference to ourselves.
-     *
-     * @param index The index of the target to fetch
-     * @return The render target at the given index
-     */
     @Override
     public OffscreenRenderTargetRenderable getRenderTargetRenderable(int index)
     {
         return index == 1 ? this : null;
     }
 
-    /**
-     * Check to see if the depth buffer has its own separate renderable object.
-     * Used when the offscreen needs to create the depth buffer separately as
-     * a texture to use in shading.
-     *
-     * @return True if a separate depth texture is wanted
-     */
     @Override
     public boolean hasSeparateDepthRenderable()
     {
         return false;
     }
 
-    /**
-     * If a separate depth render target has been requested, return the
-     * renderable for that object now. If not requested, this returns null.
-     *
-     * @return The depth target renderable or null
-     */
     @Override
     public OffscreenRenderTargetRenderable getDepthRenderable()
     {
         return null;
     }
 
-    /**
-     * Check to see if this buffer has resized since the last time it was used.
-     * If so, recreate the underlying setup, but keep everything else the same.
-     * Will reset the flag on read.
-     *
-     * @return true if the buffer has resized, requiring reallocation of the
-     *   underlying buffer objects
-     */
     @Override
     public boolean hasBufferResized()
     {
@@ -507,73 +449,30 @@ public class OffscreenTexture2D extends Texture
     // Methods defined by OffscreenRenderTargetRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Get the requested buffer setup that describes this offscreen buffer. Only
-     * called once when the buffer is first constructed.
-     *
-     * @return The requested capabilities of the buffer that needs to be created
-     */
     @Override
     public BufferSetupData getBufferSetup()
     {
         return bufferData;
     }
 
-    /**
-     * Check to see if this is a child render target of a parent multiple
-     * render target offscreen buffer. Returns true if it is, and the
-     * {@link #getOwnerOffscreenRenderable()} method will return the
-     * parent of this class.
-     *
-     * @return false always
-     */
     @Override
     public boolean isChildRenderTarget()
     {
         return false;
     }
 
-    /**
-     * If this is a child render target, return the owner renderable. If it
-     * is not a child, this returns null.
-     *
-     * @return null always
-     */
-    public OffscreenRenderTargetRenderable getOwnerOffscreenRenderable()
-    {
-        return null;
-    }
-
-    /**
-     * Get the currently registered pBuffer for the given key object. If there
-     * is no buffer registered for the current context, return null.
-     *
-     * @param obj The key used to register the buffer with
-     * @return buffer The buffer instance to use here.
-     */
     @Override
     public OffscreenBufferDescriptor getBuffer(Object obj)
     {
-        return (OffscreenBufferDescriptor)displayListMap.get(obj);
+        return displayListMap.get(obj);
     }
 
-    /**
-     * Register a pBuffer for a given key object.
-     *
-     * @param obj The key used to register the buffer with
-     * @param buffer The buffer instance to use here.
-     */
     @Override
     public void registerBuffer(Object obj, OffscreenBufferDescriptor buffer)
     {
         displayListMap.put(obj, buffer);
     }
 
-    /**
-     * Remove an already registered pBuffer for a given key object.
-     *
-     * @param obj The key used to register the buffer with
-     */
     @Override
     public void unregisterBuffer(Object obj)
     {
@@ -584,11 +483,6 @@ public class OffscreenTexture2D extends Texture
     // Methods defined by ObjectRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Issue ogl commands needed for this component
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void render(GL2 gl)
     {
@@ -693,11 +587,6 @@ public class OffscreenTexture2D extends Texture
         }
     }
 
-    /**
-     * Restore all openGL state to the given drawable
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void postRender(GL2 gl)
     {
@@ -707,18 +596,6 @@ public class OffscreenTexture2D extends Texture
     // Methods defined by SceneGraphObject
     //---------------------------------------------------------------
 
-    /**
-     * Check to see if this node is the same reference as the passed node that
-     * is a parent of this node. This is the downwards check to ensure that
-     * there is no cyclic scene graph structures at the point where someone
-     * adds a node to the scenegraph. When the reference and this are the
-     * same, an exception is generated. Since each class may have different
-     * lists of child node setups, this should be overriden by any class that
-     * can take children, and have the call passed along to the children.
-     *
-     * @param parent The reference to check against this class
-     * @throws CyclicSceneGraphStructureException Equal parent and child
-     */
     @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws InvalidWriteTimingException, CyclicSceneGraphStructureException
@@ -733,13 +610,6 @@ public class OffscreenTexture2D extends Texture
         }
     }
 
-    /**
-     * Notification that this object is live now. Overridden to make sure that
-     * the live state of the nodes represents the same state as the parent
-     * scene graph.
-     *
-     * @param state true if this should be marked as live now
-     */
     @Override
     protected void setLive(boolean state)
     {
@@ -760,13 +630,6 @@ public class OffscreenTexture2D extends Texture
         }
     }
 
-    /**
-     * Set the scenegraph update handler for this node.  It will notify
-     * all its children of the value. A null value will clear the current
-     * handler.
-     *
-     * @param handler The instance to use as a handler
-     */
     @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {

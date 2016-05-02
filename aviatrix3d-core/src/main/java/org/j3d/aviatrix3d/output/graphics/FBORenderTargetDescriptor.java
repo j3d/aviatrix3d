@@ -67,15 +67,6 @@ class FBORenderTargetDescriptor extends BaseBufferDescriptor
         return true;
     }
 
-    /**
-     * Reinitialise this descriptor because the GL context has changed.
-     */
-    @Override
-    public void reinitialize()
-	{
-		// do nothing in this case
-	}
-
     @Override
     public void enable(GLContext context) throws GLException
     {

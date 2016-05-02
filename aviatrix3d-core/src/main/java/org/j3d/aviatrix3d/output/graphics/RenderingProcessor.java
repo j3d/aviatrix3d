@@ -128,6 +128,13 @@ public interface RenderingProcessor
     public void setOwnerBuffer(BaseBufferDescriptor desc);
 
     /**
+     * Fetch the owner buffer descriptor that is used by this renderer.
+     *
+     * @return The descriptor of the owner. May be null if not yet initialised
+     */
+    public BaseBufferDescriptor getOwnerBuffer();
+
+    /**
      * Add a dependent child rendering buffer to this processor. If it is
      * already a current child, it will ignore the request.
      *

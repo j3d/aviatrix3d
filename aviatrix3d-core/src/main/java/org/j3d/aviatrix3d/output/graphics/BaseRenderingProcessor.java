@@ -108,16 +108,6 @@ public abstract class BaseRenderingProcessor
     /** The owner device of us. Used to send out messages */
     private GraphicsOutputDevice ownerDevice;
 
-    /** Flag to say if FBO extensions are available on the current platform.  */
-    private boolean fboAvailable;
-
-    /**
-     * Have we checked yet for the initial set of capabilities that a
-     * given surface has? Used to check for support for FBOs etc
-     */
-    private boolean bufferCheckComplete;
-
-
     /** The current clear colour */
     protected float[] clearColor;
 
@@ -266,8 +256,6 @@ public abstract class BaseRenderingProcessor
         terminate = false;
         contextNotDestroyed = true;
         alwaysLocalClear = true;
-        bufferCheckComplete = false;
-        fboAvailable = false;
 
         numRenderables = 0;
 
@@ -481,12 +469,9 @@ public abstract class BaseRenderingProcessor
 
         try
         {
-            if(!initComplete)
+            if(ownerRenderable != null)
             {
-                if(ownerRenderable != null)
-                {
-                    ownerRenderable.enable(localContext);
-                }
+                ownerRenderable.enable(localContext);
             }
 
             if(!terminate)
@@ -519,7 +504,7 @@ public abstract class BaseRenderingProcessor
     @Override
     public void reinitialize(GLContext localContext)
     {
-        ownerRenderable.reinitialize();
+        ownerRenderable.initialise(localContext );
         init(localContext);
     }
 
@@ -539,6 +524,11 @@ public abstract class BaseRenderingProcessor
             if(terminate)
             {
                 terminateCleanup(localContext);
+            }
+
+            if(ownerRenderable != null)
+            {
+                ownerRenderable.disable(localContext);
             }
         }
         catch(GLException ie)
@@ -684,13 +674,6 @@ public abstract class BaseRenderingProcessor
         return true;
     }
 
-    /**
-     * Set the buffer descriptor that represents the surface that this renderer
-     * works with. Can be used to enable and disable the buffer at the
-     * appropriate time for rendering.
-     *
-     * @param desc The descriptor of the buffer that this renders to
-     */
     @Override
     public void setOwnerBuffer(BaseBufferDescriptor desc)
     {
@@ -705,31 +688,29 @@ public abstract class BaseRenderingProcessor
         ownerRenderable = desc;
     }
 
-    /**
-     * Add a dependent child rendering buffer to this processor. If it is
-     * already a current child, it will ignore the request.
-     *
-     * @param rend The renderable instance to be updated
-     * @param proc The processor associated with the renderable
-     */
+    @Override
+    public BaseBufferDescriptor getOwnerBuffer()
+    {
+        return ownerRenderable;
+    }
+
     @Override
     public void addChildBuffer(OffscreenBufferRenderable rend,
                                RenderingProcessor proc)
     {
         if(removedBuffers.contains(rend))
+        {
             removedBuffers.remove(rend);
+        }
         else if(!addedBuffers.contains(rend) && !childBuffers.containsKey(rend))
         {
             addedBuffers.add(rend);
             addedProcessors.add(proc);
+
+            proc.setOwnerBuffer(new FBODescriptor(rend));
         }
     }
 
-    /**
-     * Request that the given buffer gets updated.
-     *
-     * @param rend The renderable instance to be added
-     */
     @Override
     public void updateChildBuffer(OffscreenBufferRenderable rend)
     {
@@ -747,12 +728,6 @@ public abstract class BaseRenderingProcessor
             removedBuffers.remove(rend);
     }
 
-    /**
-     * Remove a dependent child rendering buffer to this processor. If it is
-     * not a current child, it will ignore the request.
-     *
-     * @param rend The renderable instance to be added
-     */
     @Override
     public void removeChildBuffer(OffscreenBufferRenderable rend)
     {
@@ -763,15 +738,11 @@ public abstract class BaseRenderingProcessor
             addedProcessors.remove(idx);
         }
         else if(childBuffers.containsKey(rend))
+        {
             removedBuffers.add(rend);
+        }
     }
 
-    /**
-     * Add a surface info listener instance to this surface. Duplicate listener
-     * instance add requests are ignored, as are null values.
-     *
-     * @param l The new listener instance to add
-     */
     @Override
     public void addSurfaceInfoListener(SurfaceInfoListener l)
     {
@@ -779,12 +750,6 @@ public abstract class BaseRenderingProcessor
             SurfaceInfoListenerMulticaster.add(surfaceListeners, l);
     }
 
-    /**
-     * Remove a surface info listener from this surface. If the listener is not
-     * currently registered the request is ignored.
-     *
-     * @param l The listener instance to remove
-     */
     @Override
     public void removeSurfaceInfoListener(SurfaceInfoListener l)
     {
@@ -1072,9 +1037,10 @@ public abstract class BaseRenderingProcessor
      */
     private void processChildBuffers(GLContext localContext)
     {
-        for (OffscreenBufferRenderable rend : removedBuffers)
+        for(OffscreenBufferRenderable rend : removedBuffers)
         {
             BaseBufferDescriptor desc = childBuffers.remove(rend);
+            rend.unregisterBuffer(localContext);
             desc.delete(localContext);
         }
 
@@ -1082,13 +1048,16 @@ public abstract class BaseRenderingProcessor
         {
             OffscreenBufferRenderable rend = addedBuffers.get(i);
             RenderingProcessor proc = addedProcessors.get(i);
-            BaseBufferDescriptor desc = createBuffer(localContext, rend);
 
-            proc.setOwnerBuffer(desc);
+            // We know it is always FBO since those are the only
+            // child types we support now.
+            FBODescriptor desc = (FBODescriptor)proc.getOwnerBuffer();
             childBuffers.put(rend, desc);
+
+            registerBuffer(localContext, desc, rend);
         }
 
-        for (OffscreenBufferRenderable rend : updatedBuffers)
+        for(OffscreenBufferRenderable rend : updatedBuffers)
         {
             BaseBufferDescriptor desc = childBuffers.get(rend);
 
@@ -1467,71 +1436,44 @@ public abstract class BaseRenderingProcessor
     }
 
     /**
-     * Create an offscreen buffer for the given owner renderable requirments.
-     * If no matching buffer could be created, then return null. Assumes the
-     * context is current at the time of calling.
+     * Register an offscreen buffer now that we have a valid context. This will ensure
+     * the right construction is made.
      *
-     * @param localContext The GLContext wrapper to build with
+     * @param localContext The GL context this is to be registered with
+     * @param parentDesc The FBO descriptor that owns this buffer
      * @param renderable The renderable that defines what we need to have
      *   for the buffer
-     * @return The descriptor for the buffer that was created.
      */
-    private BaseBufferDescriptor createBuffer(GLContext localContext, OffscreenBufferRenderable renderable)
+    private void registerBuffer(GLContext localContext,
+                                FBODescriptor parentDesc,
+                                OffscreenBufferRenderable renderable)
     {
         // Note that since we are treating all offscreens as a flat list under
         // the root canvas, they all use the root GLContext instance as the
         // parent, regardless of whether the buffer is nested deeper.
 
-        if(!bufferCheckComplete)
+        BufferSetupData buffer_data = renderable.getBufferSetup();
+
+        for(int i = 1; i < buffer_data.getNumRenderTargets(); i++)
         {
-            GL gl = localContext.getGL();
+            OffscreenRenderTargetRenderable kid_render =
+                renderable.getRenderTargetRenderable(i);
 
-            if(gl.isExtensionAvailable("GL_EXT_framebuffer_object"))
-                fboAvailable = true;
+            BaseBufferDescriptor kid_desc =
+                parentDesc.getChildDescriptor(i);
 
-            bufferCheckComplete = true;
+            kid_render.registerBuffer(localContext, kid_desc);
         }
 
-        BaseBufferDescriptor ret_val = null;
-
-        // First try for FBOs if they are available and work on our current
-        // Platform.
-        if(fboAvailable)
+        if(renderable.hasSeparateDepthRenderable())
         {
-            BufferSetupData buffer_data = renderable.getBufferSetup();
+            OffscreenRenderTargetRenderable kid_render =
+                renderable.getDepthRenderable();
 
-            FBODescriptor parent_desc = new FBODescriptor(renderable);
-            ret_val = parent_desc;
-            if(!ret_val.initialise(localContext))
-            {
-                ret_val = null;
-            }
-            else
-            {
-                for(int i = 1; i < buffer_data.getNumRenderTargets(); i++)
-                {
-                    OffscreenRenderTargetRenderable kid_render =
-                        renderable.getRenderTargetRenderable(i);
+            BaseBufferDescriptor kid_desc =
+                parentDesc.getDepthDescriptor();
 
-                    BaseBufferDescriptor kid_desc =
-                        parent_desc.getChildDescriptor(i);
-
-                    if(kid_desc.initialise(localContext))
-                        kid_render.registerBuffer(localContext, kid_desc);
-                }
-
-                if(renderable.hasSeparateDepthRenderable())
-                {
-                    OffscreenRenderTargetRenderable kid_render =
-                        renderable.getDepthRenderable();
-
-                    BaseBufferDescriptor kid_desc =
-                        parent_desc.getDepthDescriptor();
-
-                    if(kid_desc.initialise(localContext))
-                        kid_render.registerBuffer(localContext, kid_desc);
-                }
-            }
+            kid_render.registerBuffer(localContext, kid_desc);
         }
 
         // No pbuffers at all? Uh oh, we're in trouble now. Exit nicely.
@@ -1539,11 +1481,6 @@ public abstract class BaseRenderingProcessor
         // implementation that uses the normal buffers and copies them through
         // to the offscreen texture.
 
-        if(ret_val != null)
-        {
-            renderable.registerBuffer(localContext, ret_val);
-        }
-
-        return ret_val;
+        renderable.registerBuffer(localContext, parentDesc);
     }
 }

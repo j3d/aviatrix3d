@@ -83,12 +83,6 @@ class FBODescriptor extends BaseBufferDescriptor
     }
 
     @Override
-    public void reinitialize()
-    {
-        createFBO(true);
-    }
-
-    @Override
     public void enable(GLContext localContext)
         throws GLException
     {
@@ -510,8 +504,7 @@ class FBODescriptor extends BaseBufferDescriptor
 
         int ok = gl.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER);
 
-        if(gl instanceof DebugGL2)
-            checkFBOStatus(ok);
+        checkFBOStatus(ok);
 
         boolean ret_val = (ok == GL.GL_FRAMEBUFFER_COMPLETE);
 

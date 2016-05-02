@@ -52,12 +52,6 @@ class MainCanvasDescriptor extends BaseBufferDescriptor
     }
 
     @Override
-    public void reinitialize()
-    {
-        // Do nothing for the main canvas.
-    }
-
-    @Override
     public void enable(GLContext context) throws GLException
     {
 
