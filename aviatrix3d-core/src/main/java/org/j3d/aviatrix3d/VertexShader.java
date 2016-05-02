@@ -14,6 +14,8 @@ package org.j3d.aviatrix3d;
 
 // External imports
 
+import java.util.Objects;
+
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 
@@ -41,6 +43,7 @@ import org.j3d.aviatrix3d.rendering.ShaderComponentRenderable;
  * @author Justin Couch
  * @version $Revision: 1.23 $
  */
+@Deprecated
 public class VertexShader extends GL14ShaderProgram
     implements ShaderComponentRenderable
 {
@@ -98,11 +101,6 @@ public class VertexShader extends GL14ShaderProgram
     // Methods defined by ShaderComponentRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Get the type of component this state represents.
-     *
-     * @return One of the _SHADER constants
-     */
     @Override
     public int getComponentType()
     {
@@ -113,18 +111,13 @@ public class VertexShader extends GL14ShaderProgram
     // Methods defined by ObjectRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Set up the rendering state now.
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void render(GL2 gl)
     {
         if(programString == null)
             return;
 
-        Integer p_id = (Integer)programIdMap.get(gl);
+        Integer p_id = programIdMap.get(gl);
 
         if(p_id == null)
         {
@@ -164,12 +157,6 @@ public class VertexShader extends GL14ShaderProgram
         gl.glEnable(GL2.GL_VERTEX_PROGRAM_ARB);
     }
 
-    /*
-     * This method is called after a node has been rendered.  This method
-     * must be re-entrant.
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void postRender(GL2 gl)
     {
@@ -180,16 +167,6 @@ public class VertexShader extends GL14ShaderProgram
     // Methods defined by Comparable
     //---------------------------------------------------------------
 
-    /**
-     * Compares this object with the specified object for order. Returns a
-     * negative integer, zero, or a positive integer as this object is less
-     * than, equal to, or greater than the specified object.
-     *
-     * @param o The objec to be compared
-     * @return -1, 0 or 1 depending on order
-     * @throws ClassCastException The specified object's type prevents it from
-     *    being compared to this Object
-     */
     @Override
     public int compareTo(Object o)
         throws ClassCastException
@@ -202,19 +179,10 @@ public class VertexShader extends GL14ShaderProgram
     // Methods defined by Object
     //---------------------------------------------------------------
 
-    /**
-     * Compare this object for equality to the given object.
-     *
-     * @param o The object to be compared
-     * @return True if these represent the same values
-     */
     @Override
     public boolean equals(Object o)
     {
-        if(!(o instanceof VertexShader))
-            return false;
-        else
-            return equals((VertexShader)o);
+        return o instanceof VertexShader && equals((VertexShader) o);
     }
 
     //---------------------------------------------------------------
@@ -314,7 +282,7 @@ public class VertexShader extends GL14ShaderProgram
             return 0;
 
         // compare the two strings first
-        if(programString != sh.programString)
+        if(!Objects.equals(programString, sh.programString))
         {
             if(programString == null)
                 return -1;
@@ -381,7 +349,7 @@ public class VertexShader extends GL14ShaderProgram
         if(sh == null)
             return false;
 
-        if(programString != sh.programString)
+        if(!Objects.equals(programString, sh.programString))
         {
             if((programString == null) ||
                !programString.equals(sh.programString))

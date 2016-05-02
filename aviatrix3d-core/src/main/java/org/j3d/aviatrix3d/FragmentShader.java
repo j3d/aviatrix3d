@@ -28,6 +28,7 @@ import com.jogamp.opengl.GL2;
  * @author Justin Couch
  * @version $Revision: 1.16 $
  */
+@Deprecated
 public class FragmentShader extends GL14ShaderProgram
 {
     /**

@@ -99,26 +99,12 @@ public class ShaderProgram extends NodeComponent
     // Methods defined by ShaderComponentRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Get the type of component this state represents.
-     *
-     * @return One of the _SHADER constants
-     */
     @Override
     public int getComponentType()
     {
         return PROGRAM_SHADER;
     }
 
-    /**
-     * Check to see if this is linked for the given GL context. This tests to
-     * see if a valid program ID has already been assigned, indicating that at
-     * least an internal link(gl) call has been made.
-     *
-     *
-     * @param gl The GL context to test for linkage against
-     * @return true if there is a valid ID to work with
-     */
     @Override
     public boolean isValid(GL2 gl)
     {
@@ -126,13 +112,6 @@ public class ShaderProgram extends NodeComponent
         return (p_id != null);
     }
 
-    /**
-     * Fetch the ID handle for this program for the given context.
-     *
-     *
-     * @param gl The GL context to get the ID for
-     * @return The ID value or 0 if none
-     */
     @Override
     public int getProgramId(GL2 gl)
     {
@@ -140,13 +119,6 @@ public class ShaderProgram extends NodeComponent
         return (p_id == null) ? 0 : p_id.intValue();
     }
 
-    /**
-     * Re-initialise this shader because the underlying GL context has
-     * changed. This should also reinitialise any resources that it is
-     * dependent on.
-     *
-     * @param gl The GL context to reinitialise with
-     */
     @Override
     public void reinitialize(GL2 gl)
     {
@@ -166,11 +138,6 @@ public class ShaderProgram extends NodeComponent
     // Methods defined by ObjectRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Issue ogl commands needed for this component
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void render(GL2 gl)
     {
@@ -189,11 +156,6 @@ public class ShaderProgram extends NodeComponent
         gl.glUseProgramObjectARB(p_id.intValue());
     }
 
-    /**
-     * Restore all openGL state to the given drawable
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void postRender(GL2 gl)
     {
@@ -204,15 +166,6 @@ public class ShaderProgram extends NodeComponent
     // Methods defined by ShaderSourceRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Link this shader now. If any uncompiled shader objects are found, they
-     * are automatically compiled and added to the list to be linked in. Old
-     * objects that used to be attached to the program object are detached,
-     * new objects attached, attribute names are bound, and finally everything
-     * is linked.
-     *
-     * @param gl The GL context to use to compile the code with
-     */
     @Override
     public void initialize(GL2 gl)
     {
@@ -251,7 +204,6 @@ public class ShaderProgram extends NodeComponent
         // Add anything new
         if(!new_program && pendingAdds != null)
         {
-            int size = pendingAdds.size();
             for (ShaderObject obj : pendingAdds)
             {
                 if (!obj.isCompiled(gl))
@@ -267,11 +219,9 @@ public class ShaderProgram extends NodeComponent
         // program objects, so go through the whole list and attach here
         if(new_program)
         {
-            int size = currentObjects.size();
-            for(int i = 0; i < size; i++)
+            for(ShaderObject obj : currentObjects)
             {
-                ShaderObject obj = currentObjects.get(i);
-                if(!obj.isCompiled(gl))
+                if (!obj.isCompiled(gl))
                     obj.initialize(gl);
 
                 gl.glAttachObjectARB(program_id, obj.getShaderId(gl));
@@ -303,12 +253,6 @@ public class ShaderProgram extends NodeComponent
             linked.put(gl, Boolean.TRUE);
     }
 
-    /**
-     * The user requested log information about the shader object, so now is
-     * the time to fetch it.
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void fetchLogInfo(GL2 gl)
     {
@@ -344,11 +288,6 @@ public class ShaderProgram extends NodeComponent
     // Methods defined by DeletableRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Cleanup the object now for the given GL context.
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void cleanup(GL2 gl)
     {
@@ -367,13 +306,6 @@ public class ShaderProgram extends NodeComponent
     // Methods defined by SceneGraphObject
     //---------------------------------------------------------------
 
-    /**
-     * Set the scenegraph update handler for this node.  It will notify
-     * all its children of the value. A null value will clear the current
-     * handler.
-     *
-     * @param handler The instance to use as a handler
-     */
     @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
@@ -394,13 +326,6 @@ public class ShaderProgram extends NodeComponent
             updateHandler.shaderRequiresLogInfo(this, true);
     }
 
-    /**
-     * Notification that this object is live now. Overridden to make sure that
-     * the live state of the nodes represents the same state as the parent
-     * scene graph.
-     *
-     * @param state true if this should be marked as live now
-     */
     @Override
     protected void setLive(boolean state)
     {
@@ -427,16 +352,6 @@ public class ShaderProgram extends NodeComponent
     // Methods defined by Comparable
     //---------------------------------------------------------------
 
-    /**
-     * Compares this object with the specified object for order. Returns a
-     * negative integer, zero, or a positive integer as this object is less
-     * than, equal to, or greater than the specified object.
-     *
-     * @param o The objec to be compared
-     * @return -1, 0 or 1 depending on order
-     * @throws ClassCastException The specified object's type prevents it from
-     *    being compared to this Object
-     */
     @Override
     public int compareTo(Object o)
         throws ClassCastException
@@ -449,12 +364,6 @@ public class ShaderProgram extends NodeComponent
     // Methods defined by Object
     //---------------------------------------------------------------
 
-    /**
-     * Compare this object for equality to the given object.
-     *
-     * @param o The object to be compared
-     * @return True if these represent the same values
-     */
     @Override
     public boolean equals(Object o)
     {
