@@ -35,22 +35,12 @@ import org.j3d.aviatrix3d.iutil.TextureUpdateData;
  * @version $Revision: 1.45 $
  */
 public class Texture2D extends Texture
-    implements MultipassTextureDestination
 {
     /** The boundary mode S value */
     protected int boundaryModeT;
 
     /** The height of the main texture. */
     protected int height;
-
-    /** The buffer that multipass source should read from */
-    protected int mpReadBuffer;
-
-    /** The offset for the multipass copy update per-mipmap. */
-    protected int[][] mpOffsets;
-
-    /** The current number of mp sources defined */
-    protected int mpNumSources;
 
     /**
      * Constructs a texture with default values.
@@ -60,7 +50,6 @@ public class Texture2D extends Texture
         super(GL.GL_TEXTURE_2D);
         height = -1;
         numSources = 0;
-        mpNumSources = 0;
 
         init();
     }
@@ -85,150 +74,10 @@ public class Texture2D extends Texture
                      MODE_BASE_LEVEL :
                      MODE_MIPMAP;
 
-        mpNumSources = (singleImage instanceof MultipassTextureSource) ? 1 : 0;
-
         width = singleImage.getWidth();
         height = singleImage.getHeight();
 
         init();
-    }
-
-    //---------------------------------------------------------------
-    // Methods defined by MultipassTextureDestination
-    //---------------------------------------------------------------
-
-    @Override
-    public int numMultipassSources()
-    {
-        return mpNumSources;
-    }
-
-    @Override
-    public void getMultipassSources(MultipassTextureSource[] sources,
-                                    int[] images)
-    {
-        if(mpNumSources == 0)
-            return;
-
-        sources[0] = (MultipassTextureSource)this.sources[0];
-        images[0] = 0;
-    }
-
-    @Override
-    public void updateMultipassSource(GL2 gl,
-                                      int x,
-                                      int y,
-                                      int width,
-                                      int height,
-                                      int imgNum,
-                                      int level)
-    {
-        gl.glReadBuffer(mpReadBuffer);
-
-        // Not handling mipmaps right now.
-        Integer t_id = textureIdMap.get(gl);
-        if(t_id == null)
-        {
-            int[] tex_id_tmp = new int[1];
-            gl.glGenTextures(1, tex_id_tmp, 0);
-            textureIdMap.put(gl, new Integer(tex_id_tmp[0]));
-
-            gl.glBindTexture(textureType, tex_id_tmp[0]);
-
-            int comp_format = sources[0].getFormat(level);
-            int int_format = GL.GL_RGB;
-
-            switch(comp_format)
-            {
-                case TextureComponent.FORMAT_RGB:
-                    int_format = GL.GL_RGB;
-                    break;
-
-                case TextureComponent.FORMAT_RGBA:
-                    int_format = GL.GL_RGBA;
-                    break;
-
-                case TextureComponent.FORMAT_BGR:
-                    int_format = GL2.GL_BGR;
-                    break;
-
-                case TextureComponent.FORMAT_BGRA:
-                    int_format = GL.GL_BGRA;
-                    break;
-
-
-                case TextureComponent.FORMAT_INTENSITY_ALPHA:
-                    int_format = GL.GL_LUMINANCE_ALPHA;
-                    break;
-
-                case TextureComponent.FORMAT_SINGLE_COMPONENT:
-                    switch(format)
-                    {
-                        case FORMAT_INTENSITY:
-                            int_format = GL.GL_LUMINANCE;
-                            break;
-
-                        case FORMAT_ALPHA:
-                            int_format = GL.GL_ALPHA;
-                    }
-                    break;
-
-                default:
-            }
-
-            gl.glCopyTexImage2D(GL.GL_TEXTURE_2D,
-                                level,
-                                int_format,
-                                x,
-                                y,
-                                width,
-                                height,
-                                0);
-        }
-        else
-        {
-            gl.glBindTexture(textureType, t_id.intValue());
-            gl.glCopyTexSubImage2D(GL.GL_TEXTURE_2D,
-                                   level,
-                                   mpOffsets[level][0],
-                                   mpOffsets[level][1],
-                                   x,
-                                   y,
-                                   width,
-                                   height);
-        }
-    }
-
-    @Override
-    public void setReadBuffer(int imgNum, int buffer)
-        throws InvalidWriteTimingException
-    {
-        if(isLive() && updateHandler != null &&
-           !updateHandler.isDataWritePermitted(this))
-            throw new InvalidWriteTimingException(getDataWriteTimingMessage());
-
-        mpReadBuffer = buffer;
-    }
-
-    @Override
-    public int getReadBuffer(int imgNum)
-    {
-        return mpReadBuffer;
-    }
-
-    @Override
-    public void setCopyOffset(int imgNum, int level, int xoffset, int yoffset)
-        throws InvalidWriteTimingException
-    {
-        mpOffsets[level][0] = xoffset;
-        mpOffsets[level][1] = yoffset;
-    }
-
-    @Override
-    public void getCopyOffset(int imgNum, int level, int[] offsets)
-    {
-        offsets[0] = mpOffsets[level][0];
-        offsets[1] = mpOffsets[level][1];
     }
 
     //---------------------------------------------------------------
@@ -247,13 +96,8 @@ public class Texture2D extends Texture
         if(num <= 0)
             return;
 
-        // Check to see if the source is a multipass source or not.
-        mpNumSources = (texSources[0] instanceof MultipassTextureSource) ? 1 : 0;
-
-        if(sources[0] instanceof TextureComponent)
+        if(sources[0] instanceof TextureComponent2D)
             height = ((TextureComponent2D)sources[0]).getHeight();
-        else if(sources[0] instanceof MultipassTextureSource)
-            height = ((MultipassTextureSource)sources[0]).getHeight();
 
         stateChanged.setAll(true);
     }
@@ -619,7 +463,6 @@ public class Texture2D extends Texture
      */
     private void init()
     {
-        mpReadBuffer = GL.GL_BACK;
         boundaryModeT = BM_CLAMP;
 
         if(numSources == 0)
@@ -628,63 +471,56 @@ public class Texture2D extends Texture
         int num_mipmaps =
             (mipMapMode == MODE_BASE_LEVEL) ? 1 : sources[0].getNumLevels();
 
-        if((sources[0] instanceof MultipassTextureSource))
+        for(int i = 0; i < numSources; i++)
         {
-            mpOffsets = new int[num_mipmaps][2];
-        }
-        else
-        {
-            for(int i = 0; i < numSources; i++)
+            int comp_format = sources[i].getFormat(0);
+            int tex_format = GL.GL_RGB;
+
+            switch(comp_format)
             {
-                int comp_format = sources[i].getFormat(0);
-                int tex_format = GL.GL_RGB;
+                case TextureComponent.FORMAT_RGB:
+                    tex_format = GL.GL_RGB;
+                    break;
 
-                switch(comp_format)
-                {
-                    case TextureComponent.FORMAT_RGB:
-                        tex_format = GL.GL_RGB;
-                        break;
+                case TextureComponent.FORMAT_RGBA:
+                    tex_format = GL.GL_RGBA;
+                    break;
 
-                    case TextureComponent.FORMAT_RGBA:
-                        tex_format = GL.GL_RGBA;
-                        break;
+                case TextureComponent.FORMAT_BGR:
+                    tex_format = GL2.GL_BGR;
+                    break;
 
-                    case TextureComponent.FORMAT_BGR:
-                        tex_format = GL2.GL_BGR;
-                        break;
+                case TextureComponent.FORMAT_BGRA:
+                    tex_format = GL.GL_BGRA;
+                    break;
 
-                    case TextureComponent.FORMAT_BGRA:
-                        tex_format = GL.GL_BGRA;
-                        break;
+                case TextureComponent.FORMAT_INTENSITY_ALPHA:
+                    tex_format = GL.GL_LUMINANCE_ALPHA;
+                    break;
 
-                    case TextureComponent.FORMAT_INTENSITY_ALPHA:
-                        tex_format = GL.GL_LUMINANCE_ALPHA;
-                        break;
+                case TextureComponent.FORMAT_SINGLE_COMPONENT:
+                    switch(format)
+                    {
+                        case FORMAT_INTENSITY:
+                            tex_format = GL2.GL_INTENSITY;
+                            break;
 
-                    case TextureComponent.FORMAT_SINGLE_COMPONENT:
-                        switch(format)
-                        {
-                            case FORMAT_INTENSITY:
-                                tex_format = GL2.GL_INTENSITY;
-                                break;
+                        case FORMAT_LUMINANCE:
+                            tex_format = GL.GL_LUMINANCE;
+                            break;
 
-                            case FORMAT_LUMINANCE:
-                                tex_format = GL.GL_LUMINANCE;
-                                break;
+                        case FORMAT_ALPHA:
+                            tex_format = GL.GL_ALPHA;
+                    }
+                    break;
 
-                            case FORMAT_ALPHA:
-                                tex_format = GL.GL_ALPHA;
-                        }
-                        break;
-
-                    default:
-                }
+                default:
+            }
     // TODO:
     // Check this logic to see whether the manager is per component or
     // per level of mipmap.
-                updateManagers[i].setTextureFormat(tex_format);
-                ((TextureComponent)sources[i]).addUpdateListener(updateManagers[i]);
-            }
+            updateManagers[i].setTextureFormat(tex_format);
+            ((TextureComponent)sources[i]).addUpdateListener(updateManagers[i]);
         }
     }
 }
