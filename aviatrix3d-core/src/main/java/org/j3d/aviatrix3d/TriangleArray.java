@@ -60,9 +60,6 @@ public class TriangleArray extends VertexGeometry
     /** Buffer for holding vertex data */
     private ByteBuffer edgeBuffer;
 
-    /** Reference to the user array of colors used */
-    private boolean[] edgeFlags;
-
     /** Offset to edge flags in VBO */
     private long edgeOffset;
 
@@ -95,11 +92,6 @@ public class TriangleArray extends VertexGeometry
     // Methods defined by GeometryRenderable
     //----------------------------------------------------------
 
-    /**
-     * Issue ogl commands needed for this renderable object.
-     *
-     * @param gl The gl context to draw with
-     */
     @Override
     public void render(GL2 gl)
     {
@@ -133,18 +125,6 @@ public class TriangleArray extends VertexGeometry
     // Methods defined by VertexGeometry
     //----------------------------------------------------------
 
-    /**
-     * Set the number of vertices to the new number.
-     * <p>
-     *
-     * In a live scene graph, can only be called during the bounds changed
-     * callback.
-     *
-     * @param count The new number, must be >= 0
-     * @throws IllegalArgumentException The number is negative
-     * @throws InvalidWriteTimingException An attempt was made to write outside
-     *   of the NodeUpdateListener callback method
-     */
     @Override
     public void setValidVertexCount(int count)
         throws IllegalArgumentException, InvalidWriteTimingException
@@ -153,22 +133,6 @@ public class TriangleArray extends VertexGeometry
         numRequiredCoords = count;
     }
 
-    /**
-     * Set the vertex array reference to the new array. The number of valid
-     * items is taken from the second parameter. This replaces the existing
-     * vertex list array reference with the new reference.
-     * <p>
-     *
-     * In a live scene graph, can only be called during the bounds changed
-     * callback.
-     *
-     * @param type The number of dimensions to the coordinates - 2D, 3D or 4D
-     * @param vertices The new array reference to use for vertex information
-     * @param numValid The number of valid values to use in the array
-     * @throws IllegalArgumentException The number is negative
-     * @throws InvalidWriteTimingException An attempt was made to write outside
-     *   of the NodeUpdateListener callback method
-     */
     @Override
     public void setVertices(int type, float[] vertices, int numValid)
         throws IllegalArgumentException, InvalidWriteTimingException
@@ -177,14 +141,6 @@ public class TriangleArray extends VertexGeometry
         numRequiredCoords = numValid;
     }
 
-    /**
-     * Compute the total size of vertex buffer data, used for allocating VBOs.
-     * It is called by <code>setVertexStateVBO</code>, and should not be called
-     * other places. <p>
-     * Must be overridden in subclasses that has vertex data in addition to what
-     * is in <code>VertexGeometry</code>. See <code>TriangleArray</code> for
-     * examples.
-     */
     @Override
     protected int computeBufferSize()
     {
@@ -196,15 +152,6 @@ public class TriangleArray extends VertexGeometry
         return buf_size;
     }
 
-    /**
-     * Fill VBOs with vertex buffer data. The
-     * VBO must be bound and allocated with glBufferData before the method is called.
-     * This method is called by <code>setVertexStateVBO</code>, and should not be called
-     * other places. <p>
-     * Must be overridden in subclasses that has vertex data in addition to what
-     * is in <code>VertexGeometry</code>. See <code>TriangleArray</code> for
-     * examples.
-     */
     @Override
     protected int fillBufferData(GL2 gl)
      {
@@ -223,23 +170,6 @@ public class TriangleArray extends VertexGeometry
     // Methods defined by Geometry
     //----------------------------------------------------------
 
-    /**
-     * Check for all intersections against this geometry using a line segment and
-     * return the exact distance away of the closest picking point.
-     *
-     * @param start The start point of the segment
-     * @param end The end point of the segment
-     * @param findAny True if it only has to find a single intersection and can
-     *   exit as soon as it finds the first intersection. False if it must find
-     *   the closest polygon
-     * @param dataOut An array to put the data in for the intersection. Exact
-     *   format is described by the flags
-     * @param dataOutFlags A set of derived-class specific flags describing what
-     *   data should be included in the output array
-     * @return True if an intersection was found according to the input request
-     * @throws NotPickableException This object has been marked as non pickable,
-     *   but you decided to try to call the method anyway
-     */
     @Override
     public boolean pickLineSegment(float[] start,
                                    float[] end,
@@ -395,23 +325,6 @@ public class TriangleArray extends VertexGeometry
         return found;
     }
 
-    /**
-     * Check for all intersections against this geometry using a line ray and
-     * return the exact distance away of the closest picking point.
-     *
-     * @param origin The start point of the ray
-     * @param direction The direction vector of the ray
-     * @param findAny True if it only has to find a single intersection and can
-     *   exit as soon as it finds the first intersection. False if it must find
-     *   the closest polygon
-     * @param dataOut An array to put the data in for the intersection. Exact
-     *   format is described by the flags
-     * @param dataOutFlags A set of derived-class specific flags describing what
-     *   data should be included in the output array
-     * @return True if an intersection was found according to the input request
-     * @throws NotPickableException This object has been marked as non pickable,
-     *   but you decided to try to call the method anyway
-     */
     @Override
     public boolean pickLineRay(float[] origin,
                                float[] direction,
@@ -515,16 +428,6 @@ public class TriangleArray extends VertexGeometry
     // Methods defined by Comparable
     //---------------------------------------------------------------
 
-    /**
-     * Compares this object with the specified object for order. Returns a
-     * negative integer, zero, or a positive integer as this object is less
-     * than, equal to, or greater than the specified object.
-     *
-     * @param o The objec to be compared
-     * @return -1, 0 or 1 depending on order
-     * @throws ClassCastException The specified object's type prevents it from
-     *    being compared to this Object
-     */
     @Override
     public int compareTo(Object o)
         throws ClassCastException
@@ -537,12 +440,6 @@ public class TriangleArray extends VertexGeometry
     // Methods defined by Object
     //---------------------------------------------------------------
 
-    /**
-     * Compare this object for equality to the given object.
-     *
-     * @param o The object to be compared
-     * @return True if these represent the same values
-     */
     @Override
     public boolean equals(Object o)
     {
@@ -600,8 +497,6 @@ public class TriangleArray extends VertexGeometry
             throw new IllegalArgumentException(msg);
         }
 
-        edgeFlags = flags;
-
         if(numCoords > edgeBuffer.capacity())
             edgeBuffer = createBuffer(numCoords);
         else
@@ -618,6 +513,7 @@ public class TriangleArray extends VertexGeometry
             vertexFormat |= EDGES;
             edgeBuffer.rewind();
         }
+
         dataChanged.setAll(true);
     }
 
