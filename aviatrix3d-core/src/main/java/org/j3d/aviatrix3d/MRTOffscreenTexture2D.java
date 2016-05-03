@@ -22,6 +22,8 @@ import java.util.HashMap;
 import org.j3d.util.I18nManager;
 
 // Local imports
+import static org.j3d.aviatrix3d.Texture.FORMAT_LUMINANCE_ALPHA;
+
 import org.j3d.aviatrix3d.rendering.*;
 
 /**
@@ -37,7 +39,7 @@ import org.j3d.aviatrix3d.rendering.*;
  * <p>
  * Since the format information is provided as part of the GLCapabilities
  * instance, normally there is no need for it to be passed into the constructor
- * like the other texture types do. The logic for determing the format is as
+ * like the other texture types do. The logic for determining the format is as
  * follows using the depth bit values:
  * <p>
  * <pre>
@@ -370,7 +372,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
                 if(b != 0)
                     format = Texture.FORMAT_RGBA;
                 else if(r != 0)
-                    format = FORMAT_INTENSITY_ALPHA;
+                    format = Texture.FORMAT_LUMINANCE_ALPHA;
                 else
                     format = Texture.FORMAT_ALPHA;
             }
@@ -383,7 +385,7 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
             }
         }
 
-        renderTargetMap = new HashMap<Integer, MRTTexture2D>();
+        renderTargetMap = new HashMap<>();
         renderTargetMap.put(0, this);
 
         bufferData = new BufferSetupData();
@@ -434,22 +436,12 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
     // Methods defined by OffscreenCullable
     //---------------------------------------------------------------
 
-    /**
-     * Get the current state of the repainting enabled flag.
-     *
-     * @return true when the texture requires re-drawing
-     */
     @Override
     public boolean isRepaintRequired()
     {
         return repaintNeeded;
     }
 
-    /**
-     * Get the cullable layer child that for the given layer index.
-     *
-     * @return The layer cullable at the given index or null
-     */
     @Override
     public LayerCullable getCullableLayer(int layerIndex)
     {
@@ -465,24 +457,12 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
         return layers[layerIndex].getCullable(0);
     }
 
-    /**
-     * Returns the number of valid cullable children to process. If there are
-     * no valid renderable children return -1.
-     *
-     * @return A number greater than or equal to zero or -1
-     */
     @Override
     public int numCullableChildren()
     {
         return numLayers;
     }
 
-
-    /**
-     * Fetch the renderable that this offscreen cullable will draw to.
-     *
-     * @return The renderable instance that we deposit pixels to
-     */
     @Override
     public OffscreenBufferRenderable getOffscreenRenderable()
     {
@@ -493,12 +473,6 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
     // Methods defined by OffscreenBufferRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Set the background colour that this surface should be cleared to before
-     * the drawing step. Colours range from 0 to 1 in the normal manner.
-     *
-     * @param col An array of at least length 4 to copy values into
-     */
     @Override
     public void getClearColor(float[] col)
     {
@@ -508,64 +482,30 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
         col[3] = clearColor[3];
     }
 
-    /**
-     * Get the number of render targets that this offscreen renderable manages. This
-     * should always return at least 1, being itself.
-     *
-     * @return A value greater than zero
-     */
     @Override
     public int getNumRenderTargets()
     {
         return numRenderTargets;
     }
 
-    /**
-     * Get the child render target at the given index. If the index 0 is given, this
-     * will return a reference to ourselves.
-     *
-     * @param index The index of the target to fetch
-     * @return The render target at the given index
-     */
     @Override
     public OffscreenRenderTargetRenderable getRenderTargetRenderable(int index)
     {
         return renderTargetMap.get(index);
     }
 
-    /**
-     * Check to see if the depth buffer has its own separate renderable object.
-     * Used when the offscreen needs to create the depth buffer separately as
-     * a texture to use in shading.
-     *
-     * @return True if a separate depth texture is wanted
-     */
     @Override
     public boolean hasSeparateDepthRenderable()
     {
         return depthTarget != null;
     }
 
-    /**
-     * If a separate depth render target has been requested, return the
-     * renderable for that object now. If not requested, this returns null.
-     *
-     * @return The depth target renderable or null
-     */
     @Override
     public OffscreenRenderTargetRenderable getDepthRenderable()
     {
         return depthTarget;
     }
 
-    /**
-     * Check to see if this buffer has resized since the last time it was used.
-     * If so, recreate the underlying setup, but keep everything else the same.
-     * Will reset the flag on read.
-     *
-     * @return true if the buffer has resized, requiring reallocation of the
-     *   underlying buffer objects
-     */
     @Override
     public boolean hasBufferResized()
     {
@@ -579,12 +519,6 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
     // Methods defined by OffscreenRenderTargetRenderable
     //---------------------------------------------------------------
 
-    /**
-     * Check to see if this is a child render target of a parent multiple
-     * render target offscreen buffer. Returns true if it is.
-     *
-     * @return true if this is a child, false if the parent
-     */
     @Override
     public boolean isChildRenderTarget()
     {
@@ -595,15 +529,6 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
     // Methods defined by Texture
     //---------------------------------------------------------------
 
-    /**
-     * Compares this object with the specified object for order. Returns a
-     * negative integer, zero, or a positive integer as this object is less
-     * than, equal to, or greater than the specified object. Derived instances
-     * should override this to add texture-specific extensions.
-     *
-     * @param tex The texture instance to be compared
-     * @return -1, 0 or 1 depending on order
-     */
     @Override
     public int compareTo(Texture tex)
     {
@@ -646,12 +571,6 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
         return 0;
     }
 
-    /**
-     * Compares this object with the specified object to check for equivalence.
-     *
-     * @param tex The texture instance to be compared
-     * @return true if the objects represent identical values
-     */
     @Override
     public boolean equals(Texture tex)
     {
@@ -686,18 +605,6 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
     // Methods defined by SceneGraphObject
     //---------------------------------------------------------------
 
-    /**
-     * Check to see if this node is the same reference as the passed node that
-     * is a parent of this node. This is the downwards check to ensure that
-     * there is no cyclic scene graph structures at the point where someone
-     * adds a node to the scenegraph. When the reference and this are the
-     * same, an exception is generated. Since each class may have different
-     * lists of child node setups, this should be overriden by any class that
-     * can take children, and have the call passed along to the children.
-     *
-     * @param parent The reference to check against this class
-     * @throws CyclicSceneGraphStructureException Equal parent and child
-     */
     @Override
     protected void checkForCyclicChild(SceneGraphObject parent)
         throws InvalidWriteTimingException, CyclicSceneGraphStructureException
@@ -712,13 +619,6 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
         }
     }
 
-    /**
-     * Notification that this object is live now. Overridden to make sure that
-     * the live state of the nodes represents the same state as the parent
-     * scene graph.
-     *
-     * @param state true if this should be marked as live now
-     */
     @Override
     protected void setLive(boolean state)
     {
@@ -739,13 +639,6 @@ public class MRTOffscreenTexture2D extends MRTTexture2D
         }
     }
 
-    /**
-     * Set the scenegraph update handler for this node.  It will notify
-     * all its children of the value. A null value will clear the current
-     * handler.
-     *
-     * @param handler The instance to use as a handler
-     */
     @Override
     protected void setUpdateHandler(NodeUpdateHandler handler)
     {
