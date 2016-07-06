@@ -2,25 +2,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>aviatrix3d-core</artifactId>
-    <version>3.0.0-RC2</version>
+
+    <artifactId>aviatrix3d-swt</artifactId>
+    <version>3.0.0-RC1</version>
 
     <parent>
         <groupId>org.j3d</groupId>
         <artifactId>aviatrix3d</artifactId>
-        <version>3.0.0-RC2</version>
+        <version>3.0.0-RC1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>org.j3d</groupId>
-            <artifactId>j3d-geom</artifactId>
-            <version>${j3d.tools.version}</version>
-            <scope>test</scope>
+            <artifactId>aviatrix3d-core</artifactId>
+            <version>3.0.0-RC1</version>
+        </dependency>
+
+        <!-- Blah... ugly. Why can't eclipse do this properly? -->
+        <dependency>
+            <groupId>org.eclipse.swt.win32.win32</groupId>
+            <artifactId>x86</artifactId>
+            <version>3.3.0-v3346</version>
         </dependency>
     </dependencies>
-
+    
 </project>

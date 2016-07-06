@@ -5,12 +5,12 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>aviatrix3d-core</artifactId>
-    <version>3.0.0-RC2</version>
+    <version>3.0.0-RC1</version>
 
     <parent>
         <groupId>org.j3d</groupId>
         <artifactId>aviatrix3d</artifactId>
-        <version>3.0.0-RC2</version>
+        <version>3.0.0-RC1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
