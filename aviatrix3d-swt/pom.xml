@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>aviatrix3d-swt</artifactId>
-    <version>3.0.0-RC1</version>
+    <version>3.0-SNAPSHOT</version>
 
     <parent>
         <groupId>org.j3d</groupId>
         <artifactId>aviatrix3d</artifactId>
-        <version>3.0.0-RC1</version>
+        <version>3.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>org.j3d</groupId>
             <artifactId>aviatrix3d-core</artifactId>
-            <version>3.0.0-RC1</version>
+            <version>3.0-SNAPSHOT</version>
         </dependency>
 
         <!-- Blah... ugly. Why can't eclipse do this properly? -->
